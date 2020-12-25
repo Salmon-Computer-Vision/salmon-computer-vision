@@ -1,0 +1,641 @@
+video,num_fish,species_id,timeframe,sex,timeframe,adipose_clip,timeframe,floy_tag,timeframe,injury,timeframe,id_person,confidence_level,note
+09-23-2019 20-16-34 M Right Bank Underwater,1,chum,,male,,no,,no,,NA,,STB,3,watched it 10 times
+09-24-2019 21-32-44 M Right Bank Underwater,3,chum,0:00:14,male,0:00:14,no,0:00:16,NA,NA,no,,STB,3,"pink till 00:00:14, unknown fish (coho?) at 00:01:55"
+09-23-2019 22 -42-18 M Right Bank Underwater,1,chum,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:06,STB,3,
+09-25-2019 00-30-56 M Right Bank Underwater,2,chum,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:07,STB,3,coho hidden at the beginning
+09-25-2019 00-46-14 M Right Bank Underwater,1,coho,0:00:12,male,0:00:12,no,0:00:12,NA,NA,no,0:00:12,STB,2,potentially a female? Small hooked mouth
+08-12-2019 14-37-05 M Right Bank Underwater,1,pink,0:00:03,male,0:00:03,no,0:00:04,NA,NA,no,0:00:05,STB,3,
+08-12-2019 14-37-45  M Right Bank Underwater,1,pink,0:00:06,male,0:00:04,no,0:00:08,NA,NA,no,0:00:08,STB,3,
+09-24-2019 07-14-28 M Right Bank Underwater,1,sockeye,0:00:05,female,0:00:05,no,0:00:05,NA,NA,no,0:00:08,STB,2,
+09-24-2019 23-32-05  M Right Bank Underwater,1,sockeye,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+10-07-2019 09-51-41 M Right Bank Underwater,1,sockeye,0:00:12,male,0:00:12,no,0:00:12,NA,NA,no,0:00:12,STB,3,
+09-23-2019 20-22-58 M Right Bank Underwater,1,coho,0:00:13,female,0:00:13,no,0:00:13,NA,NA,no,0:00:13,STB,2,
+09-24-2019 06-47-09 M Right Bank Underwater,1,coho,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+09-24-2019 07-42-52 M Right Bank Underwater,1,coho,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+09-24-2019 23-04-35 M Right Bank Underwater,1,coho,0:00:10,male,0:00:10,no,0:00:10,NA,NA,no,0:00:10,STB,3,
+09-24-2019 23-10-45 M Right Bank Underwater,1,coho,0:00:06,male,0:00:06,no,0:00:06,NA,NA,yes,0:00:05,STB,3,
+09-24-2019 23-53-29 M Right Bank Underwater,1,coho,0:00:06,male,0:00:06,no,0:00:06,NA,NA,yes,0:00:28,STB,3,
+09-24-2019 00-17-24 M Right Bank Underwater,1,coho,0:00:09,male,0:00:09,no,0:00:04,NA,NA,no,0:00:09,STB,3,
+10-24-2019 15-17-47 M Right Bank Underwater,1,coho,0:00:14,male,0:00:14,no,0:00:14,NA,NA,no,0:00:14,STB,2,very big and dark for a coho
+08-12-2019 14-32-39 M Right Bank Underwater,1,pink,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,3,
+08-12-2019 10-15-12 M Underwater Bank,1,pink,0:00:11,male,0:00:11,no,0:00:11,NA,NA,NA,,STB,3,
+08-12-2019 14-30-31,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,3,
+08-12-2019 14-30-37,1,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+08-12-2019 14-31-30,1,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+09-25-2019 00-14-04,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,STB,3,
+09-25-2019 00-26-48,1,coho,0:00:03,female,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,3,
+09-25-2019 00-29-36,1,chum,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,3,
+09-25-2019 0:30:33,1,coho,0:00:03,jack,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,1,jack?
+09-25-2019 00-33-40,1,coho,0:00:16,female,0:00:17,no,0:00:17,NA,NA,no,0:00:17,STB,2,sex
+09-25-2019 00-33-48,1,coho,0:00:05,male,0:00:05,no,0:00:05,NA,NA,maybe,0:00:07,STB,3,white mark eye
+09-25-2019 00-13-58,1,coho,0:00:04,male,0:00:04,no,0:00:04,NA,NA,maybe,,STB,3,white mark eye
+09-25-2019 00-15-41,1,coho,0:00:14,female,0:00:14,no,0:00:14,NA,NA,no,0:00:14,STB,2,sex
+09-25-2019 00-30-18,1,coho,0:00:05,male,0:00:05,no,0:00:05,NA,NA,no,0:00:05,STB,3,
+2019-10-07 10-26-37,1,steelhead,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,2,sex
+2019-10-07 18-00-29 Right Bank,1,coho,0:00:20,male,0:00:20,no,0:00:20,NA,NA,no,0:00:20,STB,1,species;sockeye?
+2019-08-10 11-44-43 Right Bank,1,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-08-10 11-45-10 Right Bank,1,pink,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+2019-08-10 11-46-37 Right Bank,1,pink,0:00:06,male,0:00:06,no,0:00:06,NA,NA,no,0:00:06,STB,3,
+2019-08-10 11-47-09 Right Bank,1,pink,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:06,STB,3,
+2019-08-10 11-50-58 Right Bank,2,pink,0:00:19,male,0:00:19,no,0:00:19,NA,NA,no,0:00:19,STB,3,female at the beginning
+2019-08-10 11-52-12 Right Bank,1,pink,0:00:08,male,0:00:08,no,0:00:08,NA,NA,no,0:00:08,STB,3,
+2019-08-10 11-59-32 Right Bank,1,pink,0:00:04,jack,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,2,male?
+2019-08-10 11-59-34 Right Bank,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,2,female? Hump pretty small
+2019-08-10 12-00-10 Right Bank,1,pink,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,3,
+2019-08-10 12-01-19 Right Bank,1,pink,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,3,
+2019-08-10 12-02-02 Right Bank,1,pink,0:00:08,male,0:00:08,no,0:00:08,NA,NA,no,0:00:08,STB,3,
+2019-08-10 12-03-26 Right Bank,1,pink,0:00:03,male,0:00:03,no,0:00:06,NA,NA,no,0:00:06,STB,3,
+2019-08-10 12-06-21 Right Bank,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,3,
+2019-08-10 12-11-34 Right Bank,1,pink,0:00:05,female,0:00:05,no,0:00:05,NA,NA,no,0:00:05,STB,2,small humpy male?
+2019-08-10 12-12-11 Right Bank,1,pink,0:00:05,female,0:00:05,no,0:00:05,NA,NA,no,0:00:05,STB,3,
+2019-08-10 12-14-05 Right Bank,1,pink,0:00:03,female,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,3,
+2019-08-10 12-14-10 Right Bank,1,pink,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+2019-08-10 12-24-00,1,pink,0:00:05,male,0:00:05,no,0:00:05,NA,NA,no,0:00:05,STB,3,
+2019-08-10 12-26-26 Right Bank,1,pink,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-09-23 14-19-48,1,pink,0:00:01,jack,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,2,male?
+2019-10-07 18-02-20 Right Bank,1,coho,0:00:24,female,0:00:25,yes,0:00:24,NA,NA,no,0:00:28,WIA,3,
+2019-10-07 18-02-25,1,coho,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:04,WIA,3,
+2019-10-07 18-06-42 Right Bank,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:13,WIA,3,
+2019-10-07 23-11-11 Left Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:04,NA,NA,NA,NA,WIA,3,
+2019-10-22 17-24-11 Right Bank,1,coho,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:03,STB,3,
+2019-10-22 17-28-36 Right Bank,1,NA,,,,,,,,,,,,"trout? whitefish? has adipose fin, so salmonidae"
+2019-10-22 17-34-08 Right Bank,1,coho,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-10-22 17-35-15 Right Bank,1,coho,0:00:02,male,0:00:02,no,0:00:02,NA,NA,yes,0:00:02,STB,3,head 
+2019-10-22 17-36-39 Right Bank,1,coho,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,2,small for a male
+2019-10-22 17-55-49 Right Bank,1,coho,0:00:02,female,0:00:08,no,0:00:04,NA,NA,yes,0:00:08,STB,2,snout 
+2019-10-22 17-57-46 Right Bank,1,coho,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+2019-10-22 18-00-51 Right Bank,1,coho,0:00:08,male,0:00:08,no,0:00:08,NA,NA,no,0:00:08,STB,3,
+2019-10-22 18-16-32 Right Bank,1,coho,0:00:02,male,0:00:02,no,0:00:06,NA,NA,no,0:00:06,STB,3,
+2019-10-22 18-30-10 Right Bank,1,coho,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-10-22 18-35-11 Right Bank,1,steelhead,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,1,species ?!?!
+2019-10-21 18-56-44 Right Bank,1,sockeye,0:00:02,female,0:00:02,no,0:00:02,NA,NA,maybe,0:00:02,STB,2,mouth bleeding? sex?
+2019-10-21 19-04-54 Right Bank,1,steelhead,0:00:03,female,0:00:03,no,0:00:03,NA,NA,no,0:00:02,STB,1,trout? steelhead?
+2019-10-21 19-33-21 Right Bank,1,coho,0:00:03,female,0:00:03,no,0:00:03,NA,NA,yes,0:00:03,STB,3,head half missing
+2019-10-07 18-05-44 Right Bank,1,coho,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:07,STB,3,
+2019-10-07 18-06-42 Right Bank,1,coho,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:08,STB,3,
+2019-10-07 18-12-25 Right Bank,1,coho,0:00:08,female,0:00:08,no,0:00:08,NA,NA,yes,0:00:08,STB,3,tail
+2019-10-07 18-18-49 Right Bank,1,sockeye,0:00:01,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-10-07 18-13-47 Rigth Bank,1,coho,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:03,STB,3,
+2019-10-07 18-20-06 Right Bank,1,coho,0:00:07,male,0:00:02,no,0:00:07,NA,NA,no,0:00:07,STB,3,
+2019-10-07 18-31-58 Right Bank,1,coho,00:00:03,male,00:00:03,no,0:00:06,NA,NA,no,0:00:06,STB,3,
+2019-10-07 18-31-59 Right Bank,1,steelhead,0:00:02,male,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,2,sex
+2019-10-07 18-32-04 Right Bank,1,coho,0:00:07,male,0:00:07,no,0:00:07,NA,NA,no,0:00:07,STB,3,
+2019-10-07 18-35-55 Right Bank,1,coho,0:00:15,male,0:00:15,no,0:00:15,NA,NA,no,0:00:15,STB,3,
+2019-10-07 18-41-17 Right Bank,1,coho,0:00:08,female,0:00:06,no,0:00:15,NA,NA,no,0:00:15,STB,3,
+2019-10-07 18-41-33 Right Bank,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,3,
+2019-10-07 18-42-39 Right Bank,1,coho,0:00:02,male,0:00:6,no,0:00:02,NA,NA,no,0:00:01,STB,3,
+2019-10-07 18-47-35 Right Bank,1,coho ,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:02,STB,3,
+2019-10-07 18-47-49 Right Bank,1,coho,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+2019-10-07 18-50-08 Right Bank,1,coho,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+2019-10-07 18-50-19 Right Bank,1,coho,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no ,0:00:03,STB,3,
+2019-10-07 18-56-41 Right Bank,1,coho,0:00:06,male,0:00:04,no,0:00:04,NA,NA,no,0:00:06,STB,2,
+2019-10-07 18-57-54 Right Bank,1,coho,0:00:03,male,0:00:04,no,0:00:04,NA,NA,no,0:00:06,STB,3,
+2019-10-07 18-58-07 Right Bank,1,coho,0:00:20,male,0:00:20,no,0:00:20,NA,NA,no,0:00:20,STB,3,
+2019-10-07 18-58-30 Right Bank,1,sockeye,0:00:04,female,0:00:04,no,0:00:06,NA,NA,no,0:00:06,STB,1,sex?species?
+2019-10-07 18-59-36 Right Bank,1,coho,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:06,STB,2,
+10-07-2019 22-54-05 LeftBank Underwater,1,coho,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:06,STB,3,
+10-07-2019 23-06-09 Left Bank Underwater,1,coho,0:00:010,male,0:00:10,no,0:00:10,NA,NA,yes,0:00:11,STB,3,tail
+10-07-2019 23-12-09 Left Bank Underwater,1,coho,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:06,STB,3,
+10-07-2019 23-14-29 Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,3,
+10-07-2019 23-15-00,1,sockeye,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,2,
+10-07-2019 23-15-35 Left Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,2,very fast fish
+10-07-2019 23-18-34 Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,2,very fast fish
+2019-10-08 00-00-18 Right Bank,1,coho,0:00:04,male,0:00:04,yes,0:00:17,NA,NA,no,0:00:17 ,STB,3,
+2019-10-08 00-02-26 Right Bank,1,coho,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-10-08 00-04-20 Right Bank,1,sockeye,0:00:01,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-10-08 00-04-28 Right Bank,1,coho,0:00:15,male,0:00:15,NA,NA,NA,NA,NA,NA,STB,3,
+2019-10-08 00-06-45 Right Bank,1,sockeye,0:00:02,female,0:00:02,NA,NA,NA,NA,NA,NA,STB,2,sex?
+2019-10-08 00-06-47 Right Bank,1,coho,0:00:07,jack,0:00:10,no,0:00:05,NA,NA,no,0:00:10,STB,2,jack?
+2019-10-08 00-08-28 Right Bank,1,sockeye,0:00:01,male,0:00:01,no,0:00:02,NA,NA,NA,NA,STB,2,sex?
+2019-10-08 00-09-12 Right Bank,1,coho,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,STB,3,
+2019-10-08 00-10-53 Right Bank,1,coho,0:00:06,male,0:00:06,no,0:00:06,NA,NA,no,0:00:06,STB,3,
+2019-10-08 00-11-14 Right Bank,1,coho,0:00:30,female,0:00:30,no,0:00:30,NA,NA,no,0:00:30,STB,3,
+2019-10-08 00-13-03 Right Bank,1,coho,0:00:03,female,0:00:05,no,0:00:04,NA,NA,no,0:00:05,STB,3,
+2019-10-08 00-19-00 Right Bank,1,sockeye,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,2,
+2019-10-08 00-23-16 Right Bank,1,coho,0:00:02,male,0:00:05,no,0:00:02,NA,NA,no,0:00:03,STB,3,
+2019-10-08 00-26-42 Right Bank,1,coho,0:00:03,female,0:00:03,no,0:00:03,NA,NA,no,0:00:03,STB,3,
+2019-10-08 00-31-32 Right Bank,1,coho,0:00:07,female,0:00:07,no,0:00:07,NA,NA,no,0:00:07,STB,2,
+2019-10-08 00-34-53 Right Bank,1,coho,0:00:13 ,female,0:00:13,no,0:00:13,NA,NA,no,0:00:13,STB,3,
+2019-10-08 00-39-24 Right Bank,1,coho,0:00:02,male,0:00:02,no,0:00:02,NA,NA,yes,0:00:02,STB,3,tail
+2019-10-08 00-44-14 Right Bank,1,coho,0:00:04,male,0:00:17,no,0:00:17,NA,NA,no,0:00:15,STB,3,
+2019-10-08 00-44-33 Right Bank,1,coho,0:00:04,male,0:00:04,yes,0:00:06,NA,NA,no,00:00:10,STB,3,
+2019-10-08 00-45-03 Right Bank,1,coho,0:00:12,male,0:00:15,no,0:00:12,NA,NA,no,0:00:12,STB,3,
+2019-10-08 00-47-15 Right Bank,1,coho,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+2019-10-08 00-50-49 Right Bank,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,3,
+2019-10-08 00-51-05 Right Bank,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,STB,2,
+2019-10-08 00-52-38 Right Bank,1,coho,0:00:08,male,0:00:05,no,0:00:08,NA,NA,no,0:00:08,STB,3,
+2019-10-08 00-59-58 Right Bank,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:02,STB,3,
+2019-10-08 01-03-22 Right Bank,1,coho,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-10-08 01-06-49 Right Bank,1,sockeye,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:02,STB,2,sex?
+2019-10-08 01-12-53 Right Bank,1,coho,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,1,sex?jack?
+2019-10-08 01-14-10 Right Bank,1,coho,0:00:01,male,0:00:01,no,0:00:20,NA,NA,no,0:00:20,STB,3,
+2019-10-08 01-23-49 Right Bank,1,coho,0:00:01,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,STB,3,
+2019-10-08 01-25-02 Right Bank,1,coho,0:00:02,female,0:00:03,no,0:00:02,NA,NA,no,0:00:05,STB,3,
+2019-10-08 01-26-32 Right Bank,1,coho,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:03,STB,3,
+2019-10-08 01-27-37 Right Bank,1,coho,0:00:03,female,0:00:03,no,0:00:04,NA,NA,no,0:00:04,STB,3,
+2019-10-08 01-34-46 Right Bank,1,coho,0:00:03,male,0:00:03,no,0:00:02,NA,NA,no,0:00:03,STB,2,
+2019-10-08 01-37-57 Right Bank,1,sockeye,0:00:03,female,0:00:03,NA,NA,NA,NA,NA,NA,STB,1,sex
+2019-10-08 01-40-32 Right Bank,1,coho,0:00:04,male,0:00:05,no,0:00:03,NA,NA,no,0:00:05,STB,3,
+2019-10-08 01-46-05 Right Bank,1,sockeye,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:03,STB,2,sex
+2019-10-08 01-48-35 Right Bank,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,NA,NA,STB,3,
+2019-10-08 01-54-13 Right Bank,1,coho,0:00:04,male,0:00:02,no,0:00:05,NA,NA,no,0:00:06,STB,3,
+2019-10-08 01-58-53 Right Bank,1,coho,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:04,STB,3,
+2019-10-08 01-58-57 Right Bank,1,coho,0:00:06,male ,0:00:06,no,0:00:06,NA,NA,no,0:00:06,STB,3,
+08-10-2019 11-44-15 M Underwater camera,2,pink,0:00:11,female,0:00:01,no,0:00:17,NA,NA,no,0:00:17,WIA,3,two fish in the video
+08-10-2019 11-44-15 M Underwater camera,2,pink,0:00:12,male,0:00:12,no,0:00:16,NA,NA,no,0:00:17,WIA,3,two fish in the video
+08-10-2019 11-45-14 M Underwater camera,1,pink,0:00:02,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,WIA,3,
+08-10-2019 11-45-35 M Underwater camera,3,pink,0:00:01,male,0:00:01,no,0:00:12,NA,NA,no,0:00:13,WIA,3,three fish in the video
+08-10-2019 11-45-35 M Underwater camera,3,pink,0:00:15,female,0:00:15,no,0:00:16,NA,NA,no,0:00:16,WIA,3,three fish in the video
+08-10-2019 11-45-35 M Underwater camera,3,pink,0:00:16,male,0:00:16,no,0:00:16,NA,NA,no,0:00:16,WIA,3,three fish in the video
+08-10-2019 11-46-30 M Underwater camera,1,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:06,WIA,3,
+08-10-2019 11-46-59 M Underwater camera,1,pink,0:00:02,female,0:00:02,no,0:00:10,NA,NA,no,0:00:10,WIA,3,
+08-10-2019 11-48-29 M Underwater camera,2,pink,0:00:02,female,0:00:02,no,0:00:03,NA,NA,yes,0:00:03,WIA,3,two fish in screen - tail injury on fish in foreground
+08-10-2019 11-48-29 M Underwater camera,2,pink,0:00:02,female,0:00:02,no,0:00:03,NA,NA,no,0:00:05,WIA,3,two fish in screen - tail injury on fish in foreground
+08-10-2019 11-49-27 M Underwater camera,3,pink,0:00:03,male,0:00:02,no,0:00:05,NA,NA,no,0:00:06,WIA,3,three fish in the video
+08-10-2019 11-49-27 M Underwater camera,3,pink,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:06,WIA,3,three fish in the video
+08-10-2019 11-49-27 M Underwater camera,3,pink,0:00:13,female,0:00:13,NA,NA,NA,NA,NA,NA,WIA,3,three fish in the video - could not assess adipose or injury on final fish due to incomplete observation
+08-10-2019 11-50-52 M Underwater camera,1,pink,0:00:02,male,0:00:02,no,0:00:12,NA,NA,no,0:00:12,WIA,3,
+08-10-2019 11-51-51 M Underwater camera,2,pink,0:00:02,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,WIA,3,two fish in the video
+08-10-2019 11-51-51 M Underwater camera,2,pink,0:00:04,male,0:00:04,no,0:00:06,NA,NA,no,0:00:06,WIA,3,two fish in the video
+08-10-2019 11-52-10 M Underwater camera,1,pink,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,WIA,3,
+08-10-2019 11-52-37 M Underwater camera,3,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:04,WIA,3,three fish in video
+08-10-2019 11-52-37 M Underwater camera,3,pink,0:00:05,male,0:00:05,no,0:00:12,NA,NA,no,0:00:12,WIA,3,three fish in video
+08-10-2019 11-52-37 M Underwater camera,3,pink,0:00:12,female,0:00:12,no,0:00:13,NA,NA,no,0:00:13,WIA,3,three fish in video
+08-10-2019 11-55-40 M Underwater camera,3,pink,0:00:00,female,0:00:00,no,0:00:02,NA,NA,NA,NA,WIA,1,three fish in video - this female we never see the whole body
+08-10-2019 11-55-40 M Underwater camera,3,pink,0:00:05,male,0:00:05,no,0:00:13,NA,NA,no,0:00:13,WIA,3,three fish in video
+08-10-2019 11-55-40 M Underwater camera,3,pink,0:00:06,male,0:00:06,no,0:00:19,NA,NA,no,0:00:19,WIA,3,three fish in video
+08-10-2019 11-56-14 M Underwater camera,3,pink,0:00:02,female,0:00:02,NA,NA,NA,NA,NA,NA,WIA,1,three fish in video - this female we never see the whole body
+08-10-2019 11-56-14 M Underwater camera,3,pink,0:00:08,male,0:00:08,no,0:00:13,NA,NA,no,0:00:14,WIA,3,three fish in video
+08-10-2019 11-56-14 M Underwater camera,3,pink,0:00:10,male,0:00:10,no,0:00:11,NA,NA,no,0:00:11,WIA,3,three fish in video
+08-10-2019 11-56-44 M Underwater camera,4,pink,0:00:00,male,0:00:00,NA,NA,NA,NA,NA,NA,WIA,2,four fish in video
+08-10-2019 11-56-44 M Underwater camera,4,pink,0:00:00,male,0:00:00,NA,NA,NA,NA,NA,NA,WIA,2,four fish in video
+08-10-2019 11-56-44 M Underwater camera,4,pink,0:00:03,female,0:00:03,no,0:00:04,NA,NA,no,0:00:05,WIA,3,four fish in video
+08-10-2019 11-56-44 M Underwater camera,4,pink,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:06,WIA,3,four fish in video
+08-10-2019 11-58-32 M Underwater camera,3,pink,0:00:05,female,0:00:05,no,0:00:05,NA,NA,no,0:00:08,WIA,3,three fish in video
+08-10-2019 11-58-32 M Underwater camera,3,pink,0:00:05,female,0:00:05,no,0:00:06,NA,NA,no,0:00:06,WIA,3,three fish in video
+08-10-2019 11-58-32 M Underwater camera,3,pink,0:00:05,female,0:00:05,no,0:00:09,NA,NA,no,0:00:09,WIA,3,three fish in video
+08-10-2019 11-59-29 M Underwater camera,2,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,WIA,3,two fish in video
+08-10-2019 11-59-29 M Underwater camera,2,pink,0:00:03,male,0:00:03,no,0:00:04,NA,NA,no,0:00:04,WIA,3,two fish in video
+08-10-2019 12-00-06 M Underwater camera,1,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:04,WIA,3,
+08-10-2019 12-01-16 M Underwater camera,1,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:04,WIA,3,
+08-10-2019 12-02-06 M Underwater camera,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,WIA,3,
+08-10-2019 12-02-48 M Underwater camera,1,pink,0:00:01,male,0:00:01,NA,NA,NA,NA,NA,NA,WIA,3,
+08-10-2019 12-06-37 M Underwater camera,2,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,WIA,3,two fish in video
+08-10-2019 12-06-37 M Underwater camera,2,pink,0:00:03,female,0:00:03,no,0:00:05,NA,NA,no,0:00:05,WIA,3,two fish in video
+08-10-2019 12-08-06 M Underwater camera,1,pink,0:00:02,male,0:00:02,NA,NA,NA,NA,NA,NA,WIA,3,
+08-10-2019 12-10-06 M Underwater camera,2,pink,0:00:02,female,0:00:02,no,0:00:09,NA,NA,no,0:00:09,WIA,3,two fish in video
+08-10-2019 12-10-06 M Underwater camera,2,pink,0:00:05,male,0:00:05,no,0:00:06,NA,NA,no,0:00:06,WIA,3,two fish in video
+08-10-2019 12-11-21 M Underwater camera,1,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:04,WIA,3,
+08-10-2019 12-12-11 M Underwater camera,3,pink,0:00:00,female,0:00:00,no,0:00:00,NA,NA,no,0:00:00,WIA,3,three fish in video
+08-10-2019 12-12-11 M Underwater camera,3,pink,0:00:10,female,0:00:10,no,0:00:11,NA,NA,no,0:00:11,WIA,3,three fish in video
+08-10-2019 12-12-11 M Underwater camera,3,pink,0:00:12,female,0:00:12,no,0:00:13,NA,NA,no,0:00:14,WIA,3,three fish in video
+08-12-2019 09-35-10 M Underwater camera,20,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:04,WIA,3,this video is a cluster fuck of probably 20 fish
+10-07-2019 23-01-12 C Left Bank Underwater,1,coho,0:00:03,male,0:00:08,no,0:00:01,NA,NA,no,0:00:02,BNA,2,sex - jack?
+10-07-2019 23-13-44 C Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,1,sex - fast fish
+10-07-2019 22-46-40 C Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,1,sex - fast fish
+10-07-2019 23-08-14 C Left Bank Underwater,1,coho,0:00:02,female,0:00:03,no,0:00:04,NA,NA,no,0:00:01,BNA,3,
+10-07-2019 22-46-16 C Left Bank Underwater,1,coho,0:00:03,female,0:00:03,no,0:00:04,NA,NA,no,0:00:01,BNA,3,
+2019-10-08 14-13-36 C Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-08 14-06-30 C Left Bank Underwater,1,coho,0:00:01,female,0:00:02,no,0:00:02,NA,NA,no,0:00:01,BNA,3,
+2019-10-08 14-30-12 C Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,BNA,3,
+2019-10-08 14-32-37 C Left Bank Underwater,1,rainbow,0:00:01,NA,NA,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,Torn dorsal fin
+2019-10-08 15-20-26 C Left Bank Underwater,1,coho,0:00:01,jack,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,2,jack? adipose fin misclip
+2019-10-17 00-32-02 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+2019-10-17 00-33-27 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 00-34-38 M Left Bank Underwater,3,coho,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,BNA,3,1/3 coho in video
+2019-10-17 00-34-38 M Left Bank Underwater,3,coho,0:00:01,male,0:00:52,no,0:00:01,NA,NA,no,0:00:01,BNA,3,"Pushes first fish out of the frame (around 0:04 mark). Coho 2/3 holds just ahead of the field of view, doesnt drop back fully into the frame for approx. 50 sec"
+2019-10-17 00-34-38 M Left Bank Underwater,3,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,3/3 coho in video (around 2:03 mark). Very fast fish
+2019-10-17 00-37-43 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,1,"Very fast fish swims only partially through the field of view. Hard to get a good look at the head profile, but think its a male if slowed down frame by frame"
+2019-10-17 00-38-00 M Left Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? very fast fish
+2019-10-17 00-38-36 M Left Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 00-39-59 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 00-40-43 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 00-40-59 M Left Bank Underwater,1,sockeye,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 00-41-52 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 00-41-56 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 00-42-19 M Left Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 00-42-45 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,very clear ID. Fish slowly swims through frame
+2019-10-17 00-44-17 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 00-44-25 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,very clear ID. Fish slowly swims through frame
+2019-10-17 00-45-25 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,very clear ID. Fish slowly swims through frame
+2019-10-17 00-45-53 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 00-47-06 M Left Bank Underwater,3,coho,0:00:01,male,0:00:02,no,0:00:02,NA,NA,no,0:00:04,BNA,3,First fish in video. 
+2019-10-17 00-47-06 M Left Bank Underwater,3,coho,0:00:01,male,0:00:05,no,0:00:02,NA,NA,no,0:00:02,BNA,3,Second fish in video. Pushes first fish out of the frame at 0:07
+2019-10-17 00-47-06 M Left Bank Underwater,3,coho,0:00:01,male,0:00:01,no,0:00:04,NA,NA,no,0:00:06,BNA,3,Third fish in video. Appears at 00:40 as fish #2 drops back. Fish #2 passes camera again at 00:50
+2019-10-17 00-48-27 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 00-48-54 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,2,sex?  
+2019-10-17 00-48-57 M Left Bank Underwater ,1,coho,0:00:02,male,0:00:03,no,0:00:03,NA,NA,no,0:00:08,BNA,3,
+2019-10-17 00-50-17 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 00-54-39 M Left Bank Underwater ,1,coho,0:00:04,male,0:00:03,no,0:00:12,NA,NA,no,0:00:13,BNA,3,"fish enters the frame, drops back, then re-enters the frame"
+2019-10-17 00-56-09 M Left Bank Underwater ,1,coho,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+2019-10-17 00-57-07 M Left Bank Underwater ,3,coho,0:00:02,female,0:00:02,no,0:00:04,NA,NA,no,0:00:05,BNA,2,First fish in video. female or jack?
+2019-10-17 00-57-07 M Left Bank Underwater ,3,coho,0:00:01,male,0:00:01,NA,NA,NA,NA,NA,NA,BNA,2,"Second fish in video, passes behind fish #1 at 00:03. Clear view obscured by fish in front"
+2019-10-17 00-57-07 M Left Bank Underwater ,3,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,"Third fish in video, enters at 00:05."
+2019-10-17 00-57-15 M Left Bank Underwater ,2,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,2,First fish in video. jack?
+2019-10-17 00-57-15 M Left Bank Underwater ,2,steelhead,0:00:01,male,0:00:06,no,0:00:01,NA,NA,yes,0:00:01,BNA,2,Second fish in video. Enters frame at 00:02. sex? Torn dorsal fin.
+2019-10-17 00-58-09 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,2,"sex? very fast fish. White patches on head, tail, caudal peduncle"
+2019-10-17 00-58-38 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:02,no,0:00:09,NA,NA,no,0:00:10,BNA,3,very clear ID
+2019-10-17 00-59-16 M Left Bank Underwater ,1,coho,0:00:02,male,0:00:02,no,0:00:05,NA,NA,no,0:00:05,BNA,3,"late stage spawner, very clear ID"
+2019-10-17 01-00-25 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,very clear ID
+2019-10-17 01-01-55 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 01-06-01 M Left Bank Underwater ,1,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,BNA,1,very fast fish. bull trout?
+2019-10-17 01-06-29 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:03,no,0:00:04,NA,NA,yes,0:00:02,BNA,3,white patch on right cheek
+2019-10-17 01-09-44 M Left Bank Underwater ,1,sockeye,0:00:01,female,0:00:01,no,0:00:02,NA,NA,yes,0:00:02,BNA,3,torn dorsal fin
+2019-10-17 01-11-52 M Left Bank Underwater ,1,sockeye,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+2019-10-17 01-20-16 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 01-20-22 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:05,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+2019-10-17 01-21-22 M Left Bank Underwater ,1,whitefish,0:00:01,NA,NA,NA,NA,NA,NA,NA,NA,BNA,1,very fast fish. 
+2019-10-17 01-26-00 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 01-28-17 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,jack or small female? fast fish
+2019-10-17 01-29-40 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 01-30-41 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 01-32-39 M Left Bank Underwater ,1,whitefish,0:00:01,NA,NA,no,0:00:01,NA,NA,no,0:00:01,BNA,2,fast fish
+2019-10-17 01-35-31 M Left Bank Underwater ,1,steelhead,0:00:01,female,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+2019-10-17 01-37-25 M Left Bank Underwater ,1,coho,0:00:01,jack,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,jack
+2019-10-17 01-37-37 M Left Bank Underwater ,2,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,fish pushes jack out of the frame
+2019-10-17 01-38-34 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:02,BNA,2,sex? fast fish
+2019-10-17 01-40-31 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 01-47-08 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,2,sex? fast fish. Torn tail fin
+2019-10-17 01-52-07 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 01-52-56 M Left Bank Underwater ,1,whitefish,0:00:01,NA,NA,no,0:00:01,NA,NA,no,0:00:01,BNA,2,fast fish
+2019-10-17 02-11-01 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 02-22-05 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:02,no,0:00:04,NA,NA,no,0:00:05,BNA,3,
+2019-10-17 02-26-31 M Left Bank Underwater ,1,coho,0:00:01,male,00:00:01,no,0:00:03,NA,NA,no,0:00:03,BNA,3,fish stays in the frame for >3 min
+2019-10-17 02-30-09 M Left Bank Underwater ,2,coho,0:00:01,male,0:00:03,no,0:00:04,NA,NA,no,0:00:04,BNA,3,Fish in foreground is from previous file. Data corresponds to fish swimming in the background
+2019-10-17 03-22-04 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? very fast fish
+2019-10-17 03-25-48 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,
+2019-10-17 03-25-54 M Left Bank Underwater ,2,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in frame is from the previous file. Data corresponds to fish entering the frame at 00:03.
+2019-10-17 03-26-12 M Left Bank Underwater ,2,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,First fish in frame is from the previous file. Data corresponds to fish entering the frame at 00:01 and exiting the frme at 00:03.
+2019-10-17 03-28-48 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? Fish is only partially visible in the frame
+2019-10-17 03-29-40 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? very fast fish. jack or small female?
+2019-10-17 03-29-59 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 03-30-23 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 03-30-43 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:06,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 03-36-15 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:06,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 03-43-15 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? very fast fish
+2019-10-17 03-46-16 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 03-48-55 M Left Bank Underwater ,1,coho,0:00:01,jack,0:00:02,no,0:00:05,NA,NA,no,0:00:07,BNA,2,jack?  
+2019-10-17 05-37-30 M Left Bank Underwater ,1,bull,0:00:02,NA,NA,no,0:00:01,NA,NA,no,0:00:02,BNA,3,
+2019-10-17 05-38-42 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? very fast fish
+2019-10-17 05-39-12 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? very fast fish
+2019-10-17 05-39-39 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,1,jack? very fast fish
+2019-10-17 05-47-55 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 05-48-02 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? very fast fish
+2019-10-17 05-56-48 M Left Bank Underwater ,1,sockeye,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 05-59-12 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 06-00-17 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 06-08-16 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,"Fish enters frame from left, then drops back out to the left"
+2019-10-17 07-35-19 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:15,yes,0:00:02,NA,NA,no,0:00:02,BNA,3,
+2019-10-17 07-35-43 M Left Bank Underwater  ,1,coho,0:00:01,male,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 18-51-25 M Left Bank Underwater  ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,Scratches on back half of fish
+2019-10-17 19-08-39 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 19-11-49 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 19-15-34 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 19-17-09 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:04,no,0:00:03,NA,NA,no,0:00:04,BNA,3,
+2019-10-17 19-17-36 M Left Bank Underwater  ,2,coho,0:00:01,female,0:00:05,no,0:00:02,NA,NA,no,0:00:04,BNA,3,First fish in video is from the previous file. Data corresponds to the second fish that appears.
+2019-10-17 19-20-10 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 19-21-34 M Left Bank Underwater  ,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,yes,0:00:02,BNA,3,Bite taken out of the upper lobe of the caudal fin
+2019-10-17 19-22-03 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 19-22-33 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 19-25-14 M Left Bank Underwater  ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 19-25-59 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:04,yes,0:00:02,NA,NA,yes,0:00:07,BNA,3,adipose misclip. anal fin is a bit frayed
+2019-10-17 19-26-44 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 19-27-27 M Left Bank Underwater  ,1,coho,0:00:01,female,0:00:05,yes,0:00:04,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 19-28-52 M Left Bank Underwater  ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,smaller male
+2019-10-17 19-29-10 M Left Bank Underwater ,2,coho,0:00:09,female,0:00:09,no,0:00:04,NA,NA,no,0:00:10,BNA,3,First fish in video is from the previous file. Data corresponds to the second fish that appears.
+2019-10-17 19-29-28 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 19-30-30 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 19-30-35 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:06,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 19-31-28 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 19-31-39 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:02,no,0:00:03,NA,NA,no,0:00:04,BNA,3,
+2019-10-17 19-32-31 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:09,no,0:00:02,NA,NA,no,0:00:09,BNA,3,
+2019-10-17 19-37-31 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,yes,0:00:07,BNA,3,open wound on lower lobe of caudal fin. Fish drops back out of the frame to the left
+2019-10-17 19-38-33 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 19-39-18 M Left Bank Underwater ,1,coho ,0:00:01,jack,0:00:01,yes,0:00:05,NA,NA,no,0:00:01,BNA,2,"sex? very small coho so I'm leaning towards a jack, but there are no defining characteristics in the head profile to suggest one or the other"
+2019-10-17 19-39-42 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:11,no,0:00:03,NA,NA,no,0:00:04,BNA,3,
+2019-10-17 19-40-52 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:03,no,0:00:02,NA,NA,no,0:00:03,BNA,2,sex?
+2019-10-17 19-41-39 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 19-42-23 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+2019-10-17 19-44-05 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:04,no,0:00:02,NA,NA,no,0:00:03,BNA,3,
+2019-10-17 19-44-44 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 19-47-15 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+2019-10-17 19-47-40 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:04,no,0:00:02,NA,NA,no,0:00:01,BNA,3,
+2019-10-17 19-47-49 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+2019-10-17 19-49-30 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 00-09-21 M Left Bank Underwater,1,sockeye,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 00-22-18 M Left Bank Underwater,1,coho,0:00:01,female,0:00:04,no,0:00:01,NA,NA,no,0:00:04,BNA,3,
+10-18-2019 00-24-14 M Left Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 00-28-48 M Left Bank Underwater,1,coho,0:00:01,female,0:00:03,no,0:00:02,NA,NA,no,0:00:03,BNA,3,
+10-18-2019 00-29-03 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:07,NA,NA,no,0:00:01,BNA,3,
+10-18-2019 00-32-13 M Left Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 00-33-42 M Left Bank Underwater,1,coho,0:00:04,female,0:00:05,no,0:00:02,NA,NA,yes,0:00:04,BNA,3,dorsal fin damage
+10-18-2019 00-34-31 M Left Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 00-37-48 M Left Bank Underwater,1,coho,0:00:03,jack,0:00:03,yes,0:00:02,NA,NA,no,0:00:03,BNA,3,
+10-18-2019 00-37-51 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+10-18-2019 00-42-50 M Left Bank Underwater ,1,coho,0:00:02,jack,0:00:10,no,0:00:10,NA,NA,no,0:00:11,BNA,2,jack or small female?
+10-18-2019 00-47-06 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 00-47-48 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,2,sex? fast fish. Potential white patches on top and bottom edges of caudal fin
+10-18-2019 00-47-53 M Left Bank Underwater ,1,coho,0:00:03,female,0:00:04,no,0:00:01,NA,NA,yes,0:00:03,BNA,3,Missing scales above pelvic fin
+10-18-2019 00-50-02 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+10-18-2019 01-02-51 M Left Bank Underwater ,1,coho,0:00:05,female,0:00:05,no,0:00:01,NA,NA,no,0:00:05,BNA,3,
+10-18-2019 01-03-56 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,BNA,3,long clip (~9 min)
+10-18-2019 01-14-30 M Left Bank Underwater ,3,coho,0:00:01,male,0:00:02,no,0:00:05,NA,NA,no,0:00:10,BNA,3,"First fish in video is from the previous file. Data corresponds to the second fish in the video. Third fish passes behind at the 00:09 mark, but there is never a clear enough view to get a positive ID."
+10-18-2019 01-20-33 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,
+10-18-2019 01-20-48 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:02,no,0:00:03,NA,NA,no,0:00:04,BNA,3,
+10-18-2019 01-21-33 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:05,no,0:00:02,NA,NA,no,0:00:03,BNA,2,small hooked nose but girth and body colour suggest female
+10-18-2019 01-22-55 M Left Bank Underwater ,1,coho,0:00:05,female,0:00:04,NA,NA,NA,NA,NA,NA,BNA,3,Back half of fish is never visible. Fish drops back out of the frame.
+10-18-2019 01-24-47 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+10-18-2019 01-26-52 M Left Bank Underwater ,1,coho,0:00:02,female,0:00:05,no,0:00:02,NA,NA,yes,0:00:03,BNA,2,sex? small hooked nose but girth and body colour suggest female. damage near adipose fin
+10-18-2019 01-27-22 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+10-18-2019 01-35-13 M Left Bank Underwater ,1,coho,0:00:01,jack,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 01-44-33 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 01-45-05 M Left Bank Underwater ,1,coho,0:00:01,jack,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,"fast fish. Dark patch under eye, may be partially blind. Fish drops back out of frame"
+10-18-2019 01-47-43 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:04,no,0:00:01,NA,NA,no,0:00:04,BNA,3,
+10-18-2019 02-03-26 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:02,no,0:00:03,NA,NA,no,0:00:01,BNA,3,
+10-18-2019 02-07-52 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 02-13-43 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,yes,0:00:01,NA,NA,yes,0:00:01,BNA,3,fast fish. Torn anal fin
+10-18-2019 02-24-46 M Left Bank Underwater ,1,coho,0:00:05,female,0:00:05,no,0:00:01,NA,NA,no,0:00:05,BNA,3,
+10-18-2019 02-35-09 M Left Bank Underwater ,1,sockeye,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 02-52-50 M Left Bank Underwater ,1,sockeye,0:00:01,female,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,fast fish. Torn upper lobe of caudal fin
+10-18-2019 19-18-24 M Left Bank Underwater ,1,bull,0:00:01,NA,NA,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish. Orange anal + pelvic fins with white leading edge 
+10-18-2019 19-19-29 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-18-2019 19-28-00 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+10-18-2019 19-28-37 M Left Bank Underwater ,1,coho,0:00:06,male,0:00:06,no,0:00:03,NA,NA,no,0:00:06,BNA,3,
+10-18-2019 19-28-56 M Left Bank Underwater ,3,coho,0:00:03,male,0:00:03,no,0:00:04,NA,NA,yes,0:00:04,BNA,3,First fish in the video is from previous clip. Data corresponds to second fish that appears. Tail is rough around the  edges
+10-18-2019 19-28-56 M Left Bank Underwater ,3,coho,0:00:01,female,0:00:03,no,0:00:01,NA,NA,yes,0:00:03,BNA,3,"Third fish that appears in the video, at the 00:05 mark. Part of the gill plate is missing"
+10-18-2019 19-31-07 M Left Bank Underwater ,1,coho,0:00:02,male,0:00:02,no,0:00:04,NA,NA,yes,0:00:04,BNA,3,Same fish as the one in the previous clip. Tail is rough around the edges. Long clip
+10-18-2019 20-00-12 M Left Bank Underwater ,1,coho,0:00:02,male,0:00:02,no,0:00:04,NA,NA,yes,0:00:04,BNA,3,Upper lobe of caudal fin is torn
+10-18-2019 20-01-04 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,small adult male or jack? 
+10-18-2019 20-09-45 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 20-17-04 M Left Bank Underwater ,1,whitefish,0:00:01,NA,NA,NA,NA,NA,NA,no,0:00:01,BNA,3,fast fish
+10-18-2019 20-23-36 M Left Bank Underwater ,1,bull,0:00:02,NA,NA,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+10-21-2019 20-16-32 C Left Bank Underwater ,1,coho,0:00:01,female,0:00:02,no,0:00:02,NA,NA,yes,0:00:02,BNA,3,"Missing some scales on flank, torn pelvic fin"
+10-24-2019 18-23-20 M Left Bank Underwater ,1,whitefish,0:00:01,NA,NA,NA,NA,NA,NA,no,0:00:01,BNA,3,fast fish
+10-25-2019 16-56-14 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,Dirty camera. sex? fast fish
+10-25-2019 17-00-03 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:02,no,0:00:02,NA,NA,no,0:00:04,BNA,3,Dirty camera.  
+10-25-2019 17-02-30 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,Dirty camera. sex? fast fish
+10-25-2019 23-46-29 M Left Bank Underwater ,1,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,BNA,1,"Murky water, fast fish. Jack or rainbow or bull trout?"
+10-26-2019 00-23-44 M Left Bank Underwater ,1,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,BNA,1,"Murky water, fast fish. Coho or chrome steelhead?"
+10-26-2019 00-35-39 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,Murky water. sex? fast fish
+10-26-2019 00-47-32 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-26-2019 01-07-51 M Left Bank Underwater ,1,sockeye,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-26-2019 01-24-19 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-26-2019 01-27-07 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-26-2019 01-46-43 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,sex? fast fish
+10-26-2019 02-00-19 M Left Bank Underwater ,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+10-26-2019 17-43-18 M Left Bank Underwater ,1,whitefish,0:00:01,NA,NA,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Long clear video of whitefish ID
+10-26-2019 17-44-13 M Left Bank Underwater ,2,coho,0:00:01,jack,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,First fish is whitefish from previous clip. Data corresponds to the second fish that appears in the video.
+10-26-2019 17-54-18 M Left Bank Underwater ,1,whitefish,0:00:01,NA,NA,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-26-2019 17-54-53 M Left Bank Underwater ,1,steelhead,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-26-2019 17-55-14 M Left Bank Underwater ,1,rainbow,0:00:01,NA,NA,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-26-2019 18-13-00 M Left Bank Underwater ,2,whitefish,0:00:01,NA,NA,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Two whitefish in this video clip
+10-26-2019 18-39-13 M Left Bank Underwater ,1,bull,0:00:02,NA,NA,no,0:00:01,NA,NA,no,0:00:02,BNA,3,
+10-26-2019 18-41-23 M Left Bank Underwater ,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,fast fish
+08-12-2019 09-35-09 C Right Bank Underwater ,1,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 09-35-15 C Right Bank Underwater ,3,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in the video.
+08-12-2019 09-35-15 C Right Bank Underwater ,3,pink,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:04,BNA,3,Second fish in the video
+08-12-2019 09-35-15 C Right Bank Underwater ,3,pink,0:00:05,male,0:00:05,no,0:00:05,NA,NA,yes,0:00:05,BNA,3,Third fish in the video. Open wound on the back and flank.
+08-12-2019 09-35-22 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 09-35-25 C Right Bank Underwater ,4,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:03,BNA,3,First fish in the video.
+08-12-2019 09-35-25 C Right Bank Underwater ,4,pink,0:00:04,male,0:00:04,no,0:00:05,NA,NA,no,0:00:05,BNA,3,"Second fish in the video. Another fish swims along the far side of the second fish, mostly hidden from view. Hidden fish drops back and reappears as the last fish in the video"
+08-12-2019 09-35-25 C Right Bank Underwater ,4,pink,0:00:05,female,0:00:05,no,0:00:07,NA,NA,no,0:00:07,BNA,3,Fourth fish in the video (the one that swims closest to the camera).
+08-12-2019 09-35-25 C Right Bank Underwater ,4,pink,0:00:07,male,0:00:07,no,0:00:08,NA,NA,no,0:00:08,BNA,3,Last fish in the video. Big humpy
+08-12-2019 09-35-47 C Right Bank Underwater ,2,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,First fish in the video.
+08-12-2019 09-35-47 C Rght Bank Underwater ,2,pink,0:00:03,male,0:00:03,no,0:00:05,NA,NA,yes,0:00:05,BNA,3,Second fish in the video. 
+08-12-2019 09-35-53 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,Torn dorsal fin
+08-12-2019 09-35-55 C Right Bank Underwater ,6,pink,0:00:01,female,0:00:01,no,0:00:04,NA,NA,no,0:00:04,BNA,3,First fish in the video.
+08-12-2019 09-35-55 C Right Bank Underwater ,6,pink,0:00:04,male,0:00:04,no,0:00:05,NA,NA,no,0:00:05,BNA,3,Second fish in the video. 
+08-12-2019 09-35-55 C Right Bank Underwater ,6,pink,0:00:04,female,0:00:05,no,0:00:05,NA,NA,no,0:00:05,BNA,3,Third fish that appears in the video. This fish slides in front of the second fish
+08-12-2019 09-35-55 C Right Bank Underwater ,6,pink,0:00:05,male,0:00:06,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Fourth fish to appear in the video.
+08-12-2019 09-35-55 C Right Bank Underwater ,6,pink,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Fifth fish to appear in the video. Fish #5 obstructs the view of fish #4
+08-12-2019 09-35-55 C Right Bank Underwater ,6,pink,0:00:07,male,0:00:07,no,0:00:08,NA,NA,no,0:00:09,BNA,3,Last fish in the video. 
+08-12-2019 09-36-17 C Right Bank Underwater,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 09-36-22 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,yes,0:00:02,BNA,3,Torn anal fin
+08-12-2019 09-36-26 C Right Bank Underwater,1,pink,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:04,BNA,3,
+08-12-2019 09-36-39 C Right Bank Underwater ,3,pink,0:00:01,male,0:00:02,no,0:00:05,NA,NA,no,0:00:06,BNA,3,First fish in the video
+08-12-2019 09-36-39 C Right Bank Underwater ,3,pink,0:00:02,male,0:00:02,no,0:00:04,NA,NA,no,0:00:06,BNA,3,Second fish in the video. 
+08-12-2019 09-36-39 C Right Bank Underwater ,3,pink,0:00:06,male,0:00:06,no,0:00:06,NA,NA,no,0:00:07,BNA,3,Third fish that appears in the video. This fish slides in front of the second fish
+08-12-2019 09-36-47 C Right Bank Underwater,2,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:03,BNA,3,First fish in the video
+08-12-2019 09-36-47 C Right Bank Underwater,2,pink,0:00:03,male,0:00:03,no,0:00:05,NA,NA,no,0:00:05,BNA,3,Second fish in the video
+08-12-2019 09-36-59 C Right Bank Underwater ,2,pink,0:00:01,female,0:00:01,NA,NA,NA,NA,NA,NA,BNA,3,First fish in the video
+08-12-2019 09-36-59 C Right Bank Underwater ,2,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,Second fish in the video
+08-12-2019 09-37-06 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Fish drops back out of the frame
+08-12-2019 09-38-22 C Right Bank Underwater ,7,pink,0:00:02,female,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,First fish in video
+08-12-2019 09-38-22 C Right Bank Underwater ,7,pink,0:00:03,male,0:00:03,no,0:00:05,NA,NA,no,0:00:05,BNA,3,Second fish in video
+08-12-2019 09-38-22 C Right Bank Underwater ,7,pink,0:00:10,female,0:00:10,no,0:00:10,NA,NA,no,0:00:10,BNA,3,"Third fish in video. Fish #3 (front of camera), 4, 5, and 6 (furthest away from camera) all swim next to each other at the same time. 5 and 6 are never fully visible."
+08-12-2019 09-38-22 C Right Bank Underwater ,7,pink,0:00:10,female,0:00:10,no,0:00:10,NA,NA,no,0:00:10,BNA,3,Fourth fish in video
+08-12-2019 09-38-36 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 09-38-52 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,First fish in video. Fish drops back out of the frame.
+08-12-2019 09-38-52 C Right Bank Underwater ,2,pink,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:04,BNA,3,Second fish in video.
+08-12-2019 09-39-04 C Right Bank Underwater ,1,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 09-39-22 C Right Bank Underwater ,5,pink,0:00:03,female,0:00:03,no,0:00:04,NA,NA,no,0:00:04,BNA,3,First fish in video.
+08-12-2019 09-39-22 C Right Bank Underwater ,5,pink,0:00:03,male,0:00:03,no,0:00:06,NA,NA,no,0:00:06,BNA,3,"Second fish in video, closest to the camera."
+08-12-2019 09-39-22 C Right Bank Underwater ,5,pink,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:06,BNA,3,Third fish in video. Fish turns around and drops back out of frame.
+08-12-2019 09-39-22 C Right Bank Underwater ,5,pink,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Fourth fish in video
+08-12-2019 09-39-22 C Right Bank Underwater ,5,pink,0:00:07,male,0:00:07,no,0:00:07,NA,NA,no,0:00:07,BNA,3,Fifth fish in video
+08-12-2019 09-40-20 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,
+08-12-2019 09-40-31 C Right Bank Underwater  ,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Big humpy
+08-12-2019 09-41-18 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 09-41-24 C Right Bank Underwater ,4,pink,0:00:01,female,0:00:01,no,0:00:06,NA,NA,no,0:00:06,BNA,3,First fish in video
+08-12-2019 09-41-24 C Right Bank Underwater ,4,pink,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:04,BNA,3,Second fish in video
+08-12-2019 09-41-24 C Right Bank Underwater ,4,pink,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:07,BNA,3,"Third fish in video appears, then drops back out of frame."
+08-12-2019 09-41-24 C Right Bank Underwater ,4,pink,0:00:10,female,0:00:10,no,0:00:11,NA,NA,no,0:00:12,BNA,3,Fourth fish in video. Appears then drops back out of frame
+08-12-2019 09-41-46 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,First fish in video
+08-12-2019 09-41-46 C Right Bank Underwater ,2,pink,0:00:03,male,0:00:03,no,0:00:05,NA,NA,no,0:00:05,BNA,3,Second fish in video
+08-12-2019 09-41-53 C Right Bank Underwater ,2,pink,0:00:03,male,0:00:03,no,0:00:04,NA,NA,no,0:00:07,BNA,3,First fish in video
+08-12-2019 09-41-53 C Right Bank Underwater ,2,pink,0:00:09,male,0:00:09,no,0:00:10,NA,NA,no,0:00:10,BNA,3,Second fish in video
+08-12-2019 09-42-06 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 09-42-08 C Right Bank Underwater ,1,pink,0:00:02,female,0:00:02,no,0:00:04,NA,NA,no,0:00:04,BNA,3,
+08-12-2019 09-43-32 C Right Bank Underwater ,3,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,First fish in video
+08-12-2019 09-43-32 C Right Bank Underwater ,3,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Second fish in video. Eventually drops back out of the frame
+08-12-2019 09-43-32 C Right Bank Underwater ,3,pink,0:00:03,male,0:00:03,no,0:00:04,NA,NA,no,0:00:05,BNA,3,Third fish in video. Big humpy
+08-12-2019 09-43-45 C Right Bank Underwater ,4,pink,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:05,BNA,3,First fish in video
+08-12-2019 09-43-45 C Right Bank Underwater ,4,pink,0:00:04,male,0:00:04,no,0:00:05,NA,NA,no,0:00:05,BNA,3,"Second fish in video.Third fish swims behind second fish, mostly obscured from view."
+08-12-2019 09-43-45 C Right Bank Underwater ,4,pink,0:00:08,male,0:00:08,no,0:00:12,NA,NA,no,0:00:12,BNA,3,Fourth fish in video
+08-12-2019 09-43-58 C Right Bank Underwater ,4,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,First fish in video
+08-12-2019 09-43-58 C Right Bank Underwater ,4,pink,0:00:07,female,0:00:07,no,0:00:07,NA,NA,yes,0:00:07,BNA,3,Second fish in video (second from the front). Large gash above pelvic fin
+08-12-2019 09-43-58 C Right Bank Underwater ,4,pink,0:00:07,female,0:00:07,no,0:00:07,NA,NA,no,0:00:07,BNA,2,Third fish from the front. Mostly obscured from view so not certain about the sex
+08-12-2019 09-43-58 C Right Bank Underwater ,4,pink,0:00:06,male,0:00:06,no,0:00:08,NA,NA,yes,0:00:08,BNA,2,Fish farthest from the camera. Small gash above pelvic fin
+08-12-2019 09-44-21 C Right Bank Underwater ,2,pink,0:00:02,male,0:00:02,no,0:00:04,NA,NA,no,0:00:04,BNA,3,"First fish in video, closest to the camera"
+08-12-2019 09-44-21 C Right Bank Underwater ,2,pink,0:00:04,male,0:00:04,no,0:00:04,NA,NA,NA,NA,BNA,3,Second fish is behind first fish. Hump visible but head and lower half is obscured from view. Unable to assess injury.
+08-12-2019 09-45-42 C Right Bank Underwater ,4,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video
+08-12-2019 09-45-42 C Right Bank Underwater ,4,pink,0:00:02,female,0:00:02,no,0:00:02,NA,NA,NA,NA,BNA,2,Second fish in video obscured by first fish. Sex ID based off of the top half of fish that is visible (no hump).
+08-12-2019 09-45-42 C Right Bank Underwater ,4,pink,0:00:04,female,0:00:04,no,0:00:05,NA,NA,NA,NA,BNA,2,Third fish in video obscured by first fish.
+08-12-2019 09-45-42 C Right Bank Underwater ,4,pink,0:00:06,male,0:00:06,no,0:00:07,NA,NA,no,0:00:07,BNA,3,Fourth fish in video
+08-12-2019 09-45-52 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:06,NA,NA,no,0:00:07,BNA,3,
+08-12-2019 09-46-54 C Right Bank Underwater ,5,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video
+08-12-2019 09-46-54 C Right Bank Underwater ,5,pink,0:00:03,female,0:00:03,no,0:00:04,NA,NA,no,0:00:04,BNA,3,Second fish in video
+08-12-2019 09-46-54 C Right Bank Underwater ,5,pink,0:00:05,female,0:00:05,no,0:00:06,NA,NA,no,0:00:07,BNA,3,Third fish in video
+08-12-2019 09-46-54 C Right Bank Underwater ,5,pink,0:00:09,female,0:00:09,no,0:00:10,NA,NA,no,0:00:10,BNA,3,Fourth fish in video
+08-12-2019 09-46-54 C Right Bank Underwater ,5,pink,0:00:13,female,0:00:13,no,0:00:17,NA,NA,no,0:00:17,BNA,3,Fifth fish in video
+08-12-2019 09-47-56 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,
+08-12-2019 09-48-14 C Right Bank Underwater ,2,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,First fish in video
+08-12-2019 09-48-14 C Right Bank Underwater ,2,pink,0:00:02,male,0:00:02,no,0:00:04,NA,NA,no,0:00:04,BNA,3,Second fish in video
+08-12-2019 09-48-49 C Right Bank Underwater  ,1,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,
+08-12-2019 09-48-54 C Right Bank Underwater ,3,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,First fish in video
+08-12-2019 09-48-54 C Right Bank Underwater ,3,pink,0:00:02,female,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Second fish in video. Fish drops back out of frame behind third fish.
+08-12-2019 09-48-54 C Right Bank Underwater ,3,pink,0:00:04,female,0:00:04,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Third fish in video
+08-12-2019 09-49-01 C Right Bank Underwater ,1,pink,0:00:02,female,0:00:03,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Fish drops back out of frame
+08-12-2019 09-49-56 C Right Bank Underwater ,2,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,First fish in video
+08-12-2019 09-49-56 C Right Bank Underwater ,2,pink,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:03,BNA,3,Second fish in video. Fish drops back out of the frame
+08-12-2019 09-50-04 C Right Bank Underwater  ,3,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,Fish closest to the camera
+08-12-2019 09-50-04 C Right Bank Underwater  ,3,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,Fish directly behind the first fish. Big hump
+08-12-2019 09-50-04 C Right Bank Underwater  ,3,pink,0:00:01,female,0:00:01,NA,NA,NA,NA,NA,NA,BNA,2,Fish furthest away from the camera. View mostly obstructed by the other fish
+08-12-2019 09-51-07 C Right Bank Underwater ,1,rainbow,0:00:01,juvenile,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 09-51-13 C Right Bank Underwater ,3,pink,0:00:01,male,0:00:06,no,0:00:07,NA,NA,no,0:00:07,BNA,3,Fish closest to the camera at the beginning of the video. Fish eventually drops back out of the frame
+08-12-2019 09-51-13 C Right Bank Underwater ,3,pink,0:00:01,male,0:00:02,no,0:00:02,NA,NA,no,0:00:03,BNA,3,Fish directly behind the first fish. Big hump. Fish eventually drops back out of the frame
+08-12-2019 09-51-13 C Right Bank Underwater ,3,pink,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Fish farthest away from the camera
+08-12-2019 09-51-33 C Right Bank Underwater ,6,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video. *Fish in this clip move back and forth past the camera several times*
+08-12-2019 09-51-33 C Right Bank Underwater ,6,pink,0:00:03,male,0:00:03,no,0:00:07,NA,NA,no,0:00:08,BNA,3,Second fish in video
+08-12-2019 09-51-33 C Right Bank Underwater ,6,pink,0:00:04,female,0:00:04,no,0:00:04,NA,NA,no,0:00:05,BNA,3,Third fish in video
+08-12-2019 09-51-33 C Right Bank Underwater ,6,pink,0:00:10,male,0:00:10,no,0:00:11,NA,NA,yes,0:00:12,BNA,3,Fourth fish in video. Torn pelvic fin. Fish drops back out of the frame at 00:13 and reappears at 00:18
+08-12-2019 09-51-33 C Right Bank Underwater ,6,pink,0:00:10,male,0:00:10,no,0:00:13,NA,NA,no,0:00:14,BNA,3,Fifth fish in video. Fish drops back out of the frame and reappears at 00:22 and 00:26
+08-12-2019 09-51-33 C Right Bank Underwater ,6,pink,0:00:13,male,0:00:13,no,0:00:15,NA,NA,no,0:00:15,BNA,3,Sixth fish in video
+08-12-2019 09-52-01 C Right Bank Underwater  ,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 09-52-06 C Right Bank Underwater  ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 09-52-11 C Right Bank Underwater ,3,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video
+08-12-2019 09-52-11 C Right Bank Underwater ,3,pink,0:00:02,male,0:00:03,no,0:00:04,NA,NA,no,0:00:04,BNA,3,"Second fish in video, closest to the camera"
+08-12-2019 09-52-11 C Right Bank Underwater ,3,pink,0:00:03,female,0:00:03,NA,NA,NA,NA,NA,NA,BNA,3,"Third fish in video, farthest away from the camera. Fish is mostly obscured from view"
+08-12-2019 09-52-30 C Right Bank Underwater  ,3,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,First fish in video. Fish drops back out of the frame several times.
+08-12-2019 09-52-30 C Right Bank Underwater  ,3,pink,0:00:09,male,0:00:09,no,0:00:10,NA,NA,no,0:00:14,BNA,3,"Second fish in video, closest to the camera"
+08-12-2019 09-52-30 C Right Bank Underwater  ,3,pink,0:00:12,female,0:00:12,no,0:00:13,NA,NA,no,0:00:13,BNA,3,Third fish in video. Small cut above anal fin
+08-12-2019 09-53-01 C Right Bank Underwater ,3,pink,0:00:02,male,0:00:02,NA,NA,NA,NA,NA,NA,BNA,3,First fish in video
+08-12-2019 09-53-01 C Right Bank Underwater ,3,pink,0:00:04,female,0:00:04,no,0:00:06,NA,NA,no,0:00:06,BNA,3,"Second fish in video, closest to the camera"
+08-12-2019 09-53-01 C Right Bank Underwater ,3,pink,0:00:05,male,0:00:05,no,0:00:06,NA,NA,no,0:00:06,BNA,3,"Third fish in video, farthest away from the camera. Big hump. Fish is mostly obscured from view"
+08-12-2019 09-53-40 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:11,BNA,3,
+08-12-2019 09-53-52 C Right Bank Underwater  ,2,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,First fish in video
+08-12-2019 09-53-52 C Right Bank Underwater  ,2,pink,0:00:01,male,0:00:02,no,0:00:01,NA,NA,no,0:00:02,BNA,3,Second fish in video
+08-12-2019 09-54-18 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video
+08-12-2019 09-54-18 C Right Bank Underwater ,2,pink,0:00:04,female,0:00:04,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Second fish in video
+08-12-2019 09-55-32 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,
+08-12-2019 09-55-36 C Right Bank Underwater ,2,pink,0:00:03,male,0:00:03,no,0:00:15,NA,NA,no,0:00:15,BNA,3,First fish in video
+08-12-2019 09-55-36 C Right Bank Underwater ,2,pink,0:00:09,female,0:00:10,no,0:00:11,NA,NA,yes,0:00:12,BNA,3,Second fish in video. Missing scales below adipose fin
+08-12-2019 09-56-06 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,First fish in video
+08-12-2019 09-56-06 C Right Bank Underwater ,2,pink,0:00:04,male,0:00:04,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Second fish in video
+08-12-2019 09-56-14 C Right Bank Underwater ,2,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,First fish in video. Fish drops back out of frame
+08-12-2019 09-56-14 C Right Bank Underwater ,2,pink,0:00:03,female,0:00:03,no,0:00:06,NA,NA,NA,NA,BNA,2,"Second fish in video. Adipose fin hard to see, blends in with fish behind it. Caudal peduncle and caudal fin never visible in video. Fish drops back out of frame."
+08-12-2019 09-56-32 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:06,NA,NA,no,0:00:06,BNA,3,"Another pink swims behind this fish, but only the tail is visible. "
+08-12-2019 09-57-25 C Right Bank Underwater  ,1,pink,0:00:01,female,0:00:01,no,0:00:06,NA,NA,no,0:00:06,BNA,3,
+08-12-2019 09-58-56 C Right Bank Underwater ,3,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video
+08-12-2019 09-58-56 C Right Bank Underwater ,3,pink,0:00:03,male,0:00:03,no,0:00:05,NA,NA,yes,0:00:06,BNA,3,Second fish in video. Small wound above pelvic fin
+08-12-2019 09-58-56 C Right Bank Underwater ,3,pink,0:00:06,male,0:00:06,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Third fish in video. Hump and back half of fish is visible. No clear view of head.
+08-12-2019 09-59-36 C Right Bank Underwater ,1,pink,0:00:02,female,0:00:02,no,0:00:04,NA,NA,no,0:00:04,BNA,3,"Head of second fish appears, then drops back at the end of the video"
+08-12-2019 10-00-00 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,yes,0:00:02,BNA,3,"Scratch near pelvic fin, damaged dorsal fin."
+08-12-2019 11-00-47 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 11-02-17 C Right Bank Underwater ,2,pink,0:00:02,female,0:00:02,NA,NA,NA,NA,NA,NA,BNA,3,Back half of fish not visible in video. Fish drops back out of frame.
+08-12-2019 11-02-17 C Right Bank Underwater ,2,sockeye,0:00:03,female,0:00:03,no,0:00:03,NA,NA,no,0:00:03,BNA,2,Very dark sockeye?
+08-12-2019 11-03-34 C Right Bank Underwater  ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 11-08-57 C Right Bank Underwater  ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 11-10-02 C Right Bank Underwater  ,1,pink,0:00:01,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 11-10-10 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 14-28-49 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,First fish in video
+08-12-2019 14-28-49 C Right Bank Underwater ,2,pink,0:00:08,male,0:00:08,no,0:00:08,NA,NA,NA,NA,BNA,3,"Second fish in video. Head is never visible in video, as fish passes behind first fish"
+08-12-2019 14-29-00 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,First fish in video. Torn dorsal fin
+08-12-2019 14-29-00 C Right Bank Underwater ,2,pink,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,Second fish in video 
+08-12-2019 14-29-08 C Right Bank Underwater ,2,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video
+08-12-2019 14-29-08 C Right Bank Underwater ,2,pink,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Second fish in video
+08-12-2019 14-29-14 C Right Bank Underwater ,3,pink,0:00:02,female,0:00:02,no,0:00:06,NA,NA,no,0:00:06,BNA,3,First fish in video
+08-12-2019 14-29-14 C Right Bank Underwater ,3,pink,0:00:08,female,0:00:09,no,0:00:09,NA,NA,no,0:00:10,BNA,3,Second fish in video
+08-12-2019 14-29-14 C Right Bank Underwater ,3,pink,0:00:09,male,0:00:09,NA,NA,NA,NA,NA,NA,BNA,3,"Third fish in video. View of fish is limited to the hump, the mouth, and the tail. Adipose fin never visible"
+08-12-2019 14-29-27 C Right Bank Underwater ,3,pink,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:04,BNA,3,First fish in video
+08-12-2019 14-29-27 C Right Bank Underwater ,3,pink,0:00:04,male,0:00:04,no,0:00:05,NA,NA,no,0:00:05,BNA,3,Second fish in video
+08-12-2019 14-29-27 C Right Bank Underwater ,3,pink,0:00:07,female,0:00:07,no,0:00:07,NA,NA,no,0:00:07,BNA,3,Third fish in video.  
+08-12-2019 14-29-36 C Right Bank Underwater ,2,pink,0:00:02,male,0:00:07,no,0:00:07,NA,NA,no,0:00:08,BNA,3,First fish in video. Small rips in dorsal fin
+08-12-2019 14-29-36 C Right Bank Underwater ,2,pink,0:00:16,female,0:00:16,no,0:00:16,NA,NA,no,0:00:17,BNA,3,Second fish in video
+08-12-2019 14-29-54 C Right Bank Underwater ,1,pink,0:00:02,male,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,
+08-12-2019 14-29-59 C Right Bank Underwater ,4,pink,0:00:01,female,0:00:01,no,0:00:06,NA,NA,yes,0:00:05,BNA,3,"First fish in video, briefly drops back before reentering the frame. Large scar above pelvic fin"
+08-12-2019 14-29-59 C Right Bank Underwater ,4,pink,0:00:02,female,0:00:02,no,0:00:02,NA,NA,no,0:00:04,BNA,3,Second fish in video
+08-12-2019 14-29-59 C Right Bank Underwater ,4,pink,0:00:04,male,0:00:04,no,0:00:04,NA,NA,no,0:00:05,BNA,3,Third fish in video
+08-12-2019 14-29-59 C Right Bank Underwater ,4,pink,0:00:06,male,0:00:06,no,0:00:06,NA,NA,NA,NA,BNA,3,"Fourth fish in video. Head and pectoral fins obscured by other fish, but hump, adipose and tail are visible."
+08-12-2019 14-30-11 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 14-30-29 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 14-30-33 C Right Bank Underwater  ,1,chinook,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 14-30-35 C Right Bank Underwater  ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-30-41 C Right Bank Underwater  ,1,chinook,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-30-44C Right Bank Underwater   ,1,chinook,0:00:02,female,0:00:02,no,0:00:03,NA,NA,yes,0:00:03,BNA,3,Torn caudal fin
+08-12-2019 14-31-28 C Right Bank Underwater  ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-31-31 C Right Bank Underwater  ,2,pink,0:00:02,female,0:00:02,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Fish closest to the camera
+08-12-2019 14-31-31 C Right Bank Underwater  ,2,pink,0:00:02,female,0:00:02,no,0:00:03,NA,NA,NA,NA,BNA,3,Fish furthest away from the camera. Injury? Most of fish is obscured by the fish in the front
+08-12-2019 14-31-44 C Right Bank Underwater  ,2,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:02,BNA,3,First fish in video
+08-12-2019 14-31-44 C Right Bank Underwater  ,2,pink,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:02,BNA,3,Second fish in video
+08-12-2019 14-31-51 C Right Bank Underwater  ,2,pink,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,BNA,3,First fish in video. Furthest away from the camera
+08-12-2019 14-31-51 C Right Bank Underwater  ,2,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,Second fish in video. Closest to the camera
+08-12-2019 14-32-04 C Right Bank Underwater  ,3,pink,0:00:01,female,0:00:01,no,0:00:06,NA,NA,no,0:00:06,BNA,3,First fish in video
+08-12-2019 14-32-04 C Right Bank Underwater  ,3,pink,0:00:06,female,0:00:06,no,0:00:07,NA,NA,no,0:00:07,BNA,3,Second fish in video
+08-12-2019 14-32-04 C Right Bank Underwater  ,3,pink,0:00:09,female,0:00:09,no,0:00:10,NA,NA,no,0:00:10,BNA,3,Third fish in video. Fish drops back out of frame
+08-12-2019 14-32-41 C Right Bank Underwater  ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-32-55 C Right Bank Underwater  ,5,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video
+08-12-2019 14-32-55 C Right Bank Underwater  ,5,pink,0:00:02,female,0:00:02,no,0:00:02,NA,NA,NA,NA,BNA,3,"Second fish in video. Head and pectoral fins obscured by other fish,"
+08-12-2019 14-32-55 C Right Bank Underwater  ,5,pink,0:00:03,male,0:00:03,no,0:00:04,NA,NA,no,0:00:04,BNA,3,Third fish in video
+08-12-2019 14-32-55 C Right Bank Underwater  ,5,pink,0:00:05,male,0:00:05,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Fourth fish in video
+08-12-2019 14-32-55 C Right Bank Underwater  ,5,pink,0:00:07,female,0:00:07,no,0:00:08,NA,NA,no,0:00:09,BNA,3,Fifth fish in video
+08-12-2019 14-33-17 C Right Bank Underwater  ,1,chinook,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-34-24 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 14-34-26 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-35-06 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:02,BNA,3,Fish closest to camera at start of video. Fish turns around and drops back out of frame
+08-12-2019 14-35-06 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,NA,NA,NA,NA,NA,NA,BNA,3,Only front half of fish is visible. Fish drops back out of frame
+08-12-2019 14-35-27 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,yes,0:00:02,BNA,3,Part of caudal fin missing. Fish turns around and drops back out of frame
+08-12-2019 14-35-32 C Right Bank Underwater ,2,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,yes,0:00:02,BNA,3,First fish in video. Same fish as in previous video. Part of caudal fin missing. 
+08-12-2019 14-35-32 C Right Bank Underwater ,2,pink,0:00:02,female,0:00:02,no,0:00:05,NA,NA,no,0:00:05,BNA,3,Second fish in video
+08-12-2019 14-36-47 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,"Fish appears, drops back out of frame and then swims past the camera."
+08-12-2019 14-37-08 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:03,BNA,3,
+08-12-2019 14-37-48 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:05,NA,NA,no,0:00:05,BNA,3,
+08-12-2019 14-38-15 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-38-20 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-38-40 C Right Bank Underwater ,1,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-38-56 C Right Bank Underwater ,1,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:03,BNA,3,
+08-12-2019 14-39-50 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-41-09 C Right Bank Underwater ,1,pink,0:00:02,female,0:00:02,no,0:00:04,NA,NA,no,0:00:04,BNA,3,
+08-12-2019 14-41-49 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:04,NA,NA,no,0:00:04,BNA,3,Fish turns around and drops back out of frame
+08-12-2019 14-41-58 C Right Bank Underwater ,2,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,First fish in video. Same fish as the previous video
+08-12-2019 14-41-58 C Right Bank Underwater ,2,pink,0:00:03,male,0:00:03,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Second fish in video.
+08-12-2019 14-42-11 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-43-47 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+08-12-2019 14-43-53 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:03,BNA,3,
+08-12-2019 14-47-56 C Right Bank Underwater ,1,pink,0:00:01,male,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-12-2019 14-49-22 C Right Bank Underwater ,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,
+08-14-2019 09-15-09 C Right Bank Underwater ,,NA,,,,,,,,,,,,Visibility is very poor (<few inches). Is this footage still useful when we are unable to make an educated guess for the shadows passing by?  I exported all of the fish that passed through on 08-14-2019 in this 30 sec clip. 
+09-12-2019 08-54-26 M Right Bank Underwater,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,Murky water
+09-12-2019 08-55-08 M Right Bank Underwater,1,pink,0:00:01,female,0:00:01,no,0:00:02,NA,NA,no,0:00:02,BNA,3,Murky water
+09-12-2019 08-56-05 C Right Bank Underwater,1,pink,0:00:02,male,0:00:02,no,0:00:02,NA,NA,no,0:00:03,BNA,3,Murky water
+09-12-2019 15-04-08 C Right Bank Underwater,3,pink,0:00:04,female,0:00:04,no,0:00:05,NA,NA,no,0:00:05,BNA,3,First fish in video. Murky water
+09-12-2019 15-04-08 C Right Bank Underwater,3,pink,0:00:06,female,0:00:06,no,0:00:07,NA,NA,no,0:00:07,BNA,3,Second fish in video. Murky water
+09-12-2019 15-04-08 C Right Bank Underwater,3,pink,0:00:09,female,0:00:09,no,0:00:10,NA,NA,no,0:00:10,BNA,3,Third fish in video. Fish drops back out of frame. Murky water
+09-12-2019 15-04-24 C Right Bank Underwater,2,coho,0:00:05,male,0:00:05,no,0:00:05,NA,NA,no,0:00:05,BNA,3,First fish in video. Murky water
+09-12-2019 15-04-24 C Right Bank Underwater,2,pink,0:00:08,male,0:00:08,no,0:00:16,NA,NA,no,0:00:16,BNA,3,Second fish in video. Murky water
+09-12-2019 15-04-57 C Right Bank Underwater,2,pink,0:00:04,female,0:00:04,no,0:00:04,NA,NA,yes,0:00:04,BNA,1,Dark pink or coho? First fish in video. Torn caudal fin. Fast fish in murky water
+09-12-2019 15-04-57 C Right Bank Underwater,2,steelhead,0:00:03,female,0:00:03,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Second fish in video. Murky water
+09-12-2019 15-05-06 C Right Bank Underwater,1,pink,0:00:07,female,0:00:07,no,0:00:07,NA,NA,no,0:00:07,BNA,3,Murky water
+09-12-2019 15-05-19 C Right Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,2,Species ID? Fast fish. Murky water
+09-12-2019 15-05-20 C Right Bank Underwater,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Murky water. Fast fish
+09-12-2019 15-05-26 C Right Bank Underwater,1,pink,0:00:03,female,0:00:03,no,0:00:03,NA,NA,no,0:00:03,BNA,3,Murky water
+09-12-2019 15-05-42 C Right Bank Underwater,1,coho,0:00:05,female,0:00:05,yes,0:00:05,NA,NA,no,0:00:05,BNA,2,female? Murky water
+09-23-2019 13-14-59 C Right Bank Underwater,1,chum,0:00:01,male,0:00:01,no,0:00:03,NA,NA,yes,0:00:03,BNA,3,"White patch on hump, white pectoral and pelvic fin"
+09-23-2019 13-53-32 C Right Bank Underwater,1,sockeye,0:00:01,male,0:00:01,no,0:00:02,NA,NA,yes,0:00:02,BNA,3,Torn anal and caudal fins. White patch behind dorsal fin. 
+09-25-2019 00-05-28 C Right Bank Underwater,1,coho,0:00:03,male,0:00:05,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Fish drops back out of frame
+09-25-2019 03-07-52 C Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+09-25-2019 03-21-10 C Right Bank Underwater,1,pink,0:00:01,male,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,Post-spawn zombie pink. White patches throughout body. Fish drops back out of frame
+09-25-2019 03-26-16 C Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+09-25-2019 03-26-52 C Right Bank Underwater,1,coho,0:00:01,jack,0:00:01,yes,0:00:01,NA,NA,no,0:00:01,BNA,2,Jack. Hatchery misclip?
+09-25-2019 03-28-00 C Right Bank Underwater,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,Post spawn zombie pink. White patches throughout body. Fish drops back out of frame
+09-25-2019 03-34-09 C Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,Piece missing from top of caudal fin
+09-25-2019 03-39-13 C Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Fish drops back out of frame
+09-25-2019 03-43-16 C Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Fish drops back out of frame
+09-25-2019 03-44-16 C Right Bank Underwater,1,bull,0:00:01,NA,NA,no,0:00:01,NA,NA,no,0:00:01,BNA,2,Fast fish. Red anal + pelvic fins with white tips suggests bull trout/dolly.
+09-25-2019 03-44-20 C Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:01,BNA,3,
+09-25-2019 03-45-11 C Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:01,BNA,3,
+09-25-2019 03-54-33 C Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:03,NA,NA,no,0:00:01,BNA,3,
+09-25-2019 03-58-15 C Right Bank Underwater,1,pink,0:00:01,female,0:00:01,no,0:00:01,NA,NA,yes,0:00:01,BNA,3,Post-spawn fish. White patches on tail. Fish drops back out of frame
+10-01-2019 21-04-51 C Right Bank Underwater,1,chum,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-01-2019 21-20-15 C Right Bank Underwater,1,bull,0:00:01,NA,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-01-2019 23-37-56 C Right Bank Underwater,1,bull,0:00:01,NA,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-01-2019 20-23-30 C Right Bank Underwater,1,bull,0:00:01,NA,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Fast fish. Fish turns around and drops back out of frame
+10-01-2019 20-24-05 C Right Bank Underwater,1,chum,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Fish drops back out of the frame
+10-01-2019 22-35-13 C Right Bank Underwater,1,rainbow,0:00:01,juvenile,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Fish drops back out of the frame
+10-02-2019 05-44-24 M Right Bank Underwater,1,coho,0:00:01,female,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Fish drops back out of the frame
+10-02-2019 07-59-04 M Right Bank Underwater,1,bull,0:00:01,NA,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-02-2019 21-13-52 M Right Bank Underwater,1,coho,0:00:01,male,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-02-2019 21-44-33 M Right Bank Underwater,1,bull,0:00:01,NA,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,
+10-02-2019 21-47-25 M Right Bank Underwater,1,coho,0:00:01,female,0:00:01,NA,NA,NA,NA,NA,NA,BNA,3,Back half of fish is never visible. Fish swims upstream halfway then drops back out of frame
+10-02-2019 22-04-50 M Right Bank Underwater,1,bull,0:00:01,NA,0:00:01,no,0:00:01,NA,NA,no,0:00:01,BNA,3,Fast fish
+10-02-2019 22-05-35 M Right Bank Underwater,1,steelhead,0:00:06,female,0:00:06,no,0:00:06,NA,NA,no,0:00:06,BNA,3,Fast fish
