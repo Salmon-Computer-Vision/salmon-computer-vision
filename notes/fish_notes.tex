@@ -1,0 +1,90 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{hyperref}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=4
+}
+
+\begin{document}
+\title{(Pending) Network Issues of Federated Learning}
+\author{Sami Ma - 301 251 923}
+\date{\today}
+\maketitle
+
+Automated Analysis of Wild Fish Behavior in a Natural Habitat
+\cite{10.1145/2764873.2764875}
+
+\begin{itemize}
+    \item 
+\end{itemize}
+
+An Application of Image Classification to Saltwater Fish Identification in
+Louisiana Fisheries \cite{10.1145/3325917.3325934}
+
+\begin{itemize}
+    \item Tensorflow: Transfer Learning with Inception-v3
+    \item 14 million fish images with over 20,000 categories
+\end{itemize}
+
+Employing Deep Learning for Fish Recognition \cite{dl-fish-rec}
+
+Tracking Fish Abundance by Underwater Image Recognition \cite{Marini2018}
+
+Fish detection automation from ARIS and DIDSON SONAR data \cite{fish-det-sonar}
+
+\begin{itemize}
+    \item Background subtraction (Maybe ARIS software can help?)
+    \item Preprocessing
+        \begin{itemize}
+            \item Reduce framerate
+            \item Reduce RGB/HSV to grayscale
+        \end{itemize}
+    \item Tracking alg used is Kalman filtering - predicts future observations according to previous measurements
+\end{itemize}
+
+Deep Neural Networks for Marine Debris Detection in Sonar Images \cite{DBLP:journals/corr/abs-1905-05241}
+
+\begin{itemize}
+    \item CNN used
+        \begin{itemize}
+            \item ClassicNet
+            \item TinyNet
+            \item FireNet
+        \end{itemize}
+    \item ADAM optimizer with initial learning rate $\alpha = 0.01$
+    \item Transfer Learning
+\end{itemize}
+
+Can help with converting ARIS files to videos:
+
+\url{https://github.com/EminentCodfish/pyARIS}
+
+\newpage
+
+\bibliography{fish_count}
+\bibliographystyle{ieeetr}
+
+\end{document}
