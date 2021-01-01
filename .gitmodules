@@ -1,0 +1,3 @@
+[submodule "extract_aris/pyARIS"]
+	path = extract_aris/pyARIS
+	url = https://github.com/KamiCreed/pyARIS.git
