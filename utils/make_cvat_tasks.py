@@ -19,17 +19,12 @@ def main():
         name_path_dict[name] = full_path
   #print(name_path_dict)
 
-  count = 0
   for name in name_path_dict:
     #vid_path = name_path_dict[name]
-
     print(name)
-
-    try:
-      count = count + 1
-    except ValueError:
-      continue
-  #print(count)
+    process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+    output, error = process.communicate()
+    return
 
   return
 
