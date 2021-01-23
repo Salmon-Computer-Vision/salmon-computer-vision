@@ -1,0 +1,10 @@
+FROM tensorflow/tensorflow:latest-gpu
+
+RUN apt update && apt install -y -q python3-pip git
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+
+# Custom python packages
+RUN pip3 install opencv-python image
+
+# datumaro
+RUN pip3 install 'git+https://github.com/openvinotoolkit/datumaro'
