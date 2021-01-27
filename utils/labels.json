@@ -244,5 +244,46 @@
             "values": "NA"
          }
       ]
+   },
+   {
+      "name": "Steelhead",
+      "color": "#66ff66",
+      "attributes": [
+         {
+            "name": "Sex",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "Male",
+            "values": "Male\nFemale"
+         },
+         {
+            "name": "Adipose Clipped",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "No",
+            "values": "No\nYes\nNA"
+         },
+         {
+            "name": "Injury",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "No",
+            "values": "No\nYes\nNA"
+         },
+         {
+            "name": "Confidence Level",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "3",
+            "values": "3\n2\n1"
+         },
+         {
+            "name": "Notes",
+            "mutable": "False",
+            "input_type": "text",
+            "default_value": "NA",
+            "values": "NA"
+         }
+      ]
    }
 ]
