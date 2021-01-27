@@ -7,6 +7,8 @@ labels=$4
 anno_folder=$5
 drive_share=$6
 
+task_list=`"${cli}" --auth "${auth}" --server-host "${host}" ls`
+
 for anno in "${anno_folder}"/*.zip; do
     tmp=`echo ${anno} | grep -oP '\d{2}-\d{2}-\d{4}_\d{2}-\d{2}-\d{2}'`
     name=${tmp//_/ }
@@ -16,15 +18,23 @@ for anno in "${anno_folder}"/*.zip; do
     filename=`basename "${filepath}"`
     filename=${filename%.*} # Remove extension
 
-    task_list=`"${cli}" --auth "${auth}" --server-host "${host}" ls`
     if echo "${task_list}" | grep -q "${filename}"; then
         continue
     fi
 
+    TMP=$(mktemp)
     "${cli}" --auth "${auth}" --server-host "${host}" \
         create --labels "${labels}" \
         --annotation_path "${anno}" \
         --annotation_format "CVAT 1.1" \
         "${filename}" \
-        share "${share_path}"
+        share "${share_path}" 2>&1 | tee $TMP
+
+    err_msg=$(cat $TMP)
+    
+    # Delete the task if there is an error
+    if [ $? -ne 0 ] || [[ "$err_msg" == *"Error"* ]]; then
+        task_id=`"${cli}" --auth "${auth}" --server-host "${host}" ls | grep -oP "\d+(?=,${filename})"`
+        "${cli}" --auth "${auth}" --server-host "${host}" delete ${task_id}
+    fi
 done
