@@ -10,9 +10,12 @@ drive_share=$6
 task_list=`"${cli}" --auth "${auth}" --server-host "${host}" ls`
 
 for anno in "${anno_folder}"/*.zip; do
-    tmp=`echo ${anno} | grep -oP '\d{2}-\d{2}-\d{4}_\d{2}-\d{2}-\d{2}'`
+    tmp=`echo ${anno} | grep -oP '\d{2}-\d{2}-\d{4}_\d{2}.*(?=.zip)'`
     name=${tmp//_/ }
-    filepath=`find "${drive_share}/Kitwanga Fish Video" "${drive_share}/Training dataset" -name "${name}*"`
+
+    [ -z "$name" ] && continue # If empty, skip
+
+    filepath=`find "${drive_share}/Kitwanga Fish Video" "${drive_share}/Training dataset" -name "${name}*" | head -n 1`
     share_path=${filepath#${drive_share}}
 
     filename=`basename "${filepath}"`

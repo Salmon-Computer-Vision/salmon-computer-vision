@@ -42,7 +42,7 @@
    },
    {
       "name": "Pink",
-      "color": "#fa3253",
+      "color": "#fa7dbb",
       "attributes": [
          {
             "name": "Adipose Clipped",
@@ -125,6 +125,88 @@
    {
       "name": "Chum",
       "color": "#b83df5",
+      "attributes": [
+         {
+            "name": "Sex",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "Male",
+            "values": "Male\nFemale"
+         },
+         {
+            "name": "Adipose Clipped",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "No",
+            "values": "No\nYes\nNA"
+         },
+         {
+            "name": "Injury",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "No",
+            "values": "No\nYes\nNA"
+         },
+         {
+            "name": "Confidence Level",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "3",
+            "values": "3\n2\n1"
+         },
+         {
+            "name": "Notes",
+            "mutable": "False",
+            "input_type": "text",
+            "default_value": "NA",
+            "values": "NA"
+         }
+      ]
+   },
+   {
+      "name": "Whitefish",
+      "color": "#e2f1ee",
+      "attributes": [
+         {
+            "name": "Sex",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "NA",
+            "values": "NA"
+         },
+         {
+            "name": "Adipose Clipped",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "No",
+            "values": "No\nYes\nNA"
+         },
+         {
+            "name": "Injury",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "No",
+            "values": "No\nYes\nNA"
+         },
+         {
+            "name": "Confidence Level",
+            "mutable": "False",
+            "input_type": "select",
+            "default_value": "3",
+            "values": "3\n2\n1"
+         },
+         {
+            "name": "Notes",
+            "mutable": "False",
+            "input_type": "text",
+            "default_value": "NA",
+            "values": "NA"
+         }
+      ]
+   },
+   {
+      "name": "Sockeye",
+      "color": "#fa3253",
       "attributes": [
          {
             "name": "Sex",
