@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cli=$1
-auth=$2 # username:pass-file
+auth=$2 # username:pass-env
 host=$3
 labels=$4
 anno_folder=$5
