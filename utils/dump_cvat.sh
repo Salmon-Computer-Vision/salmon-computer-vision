@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Will create annotation directories for each task at the destination folder
+# Good to have an empty destination folder
+# This will NOT overwrite existing files
 
 # TODO: Turn these into options
 cli=$1
@@ -17,7 +19,7 @@ tmp=$(mktemp)
 task_list=$(cat $tmp)
 
 for ((i=start; i<=last; i++)); do
-    if ! (echo "${task_list}" | grep -e "^$i,"); then
+    if ! (echo "${task_list}" | grep -qe "^$i,"); then
         continue
     fi
 
@@ -28,6 +30,6 @@ for ((i=start; i<=last; i++)); do
 
     "${cli}" --auth "${auth}" --server-host "${host}" \
         dump --format "Datumaro 1.0" $i "${task_dir}.zip"
-    unzip "${task_dir}.zip" -d "$task_dir"
+    unzip -qn "${task_dir}.zip" -d "$task_dir"
     rm -v "${task_dir}.zip"
 done
