@@ -1,5 +1,8 @@
+salmon_vids=$1
+dataset=$2
+
 docker run --gpus all -it -v $PWD:/tmp \
-    -v '/home/sami/gdrive/Salmon Videos:/tmp/data' \
-    -v '/home/sami/salmon-count-labels:/tmp/labels' \
+    -v "${salmon_vids}:/tmp/data" \
+    -v "${dataset}:/tmp/labels" \
     -w /tmp \
     od
