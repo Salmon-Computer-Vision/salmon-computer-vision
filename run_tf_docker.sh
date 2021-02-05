@@ -1,8 +1,14 @@
-salmon_vids=$1
-dataset=$2
+#!/usr/bin/env bash
+die () {
+    echo >&2 "$@"
+    exit 1
+}
 
-docker run --gpus all -it -v $PWD:/tmp \
-    -v "${salmon_vids}:/tmp/data" \
-    -v "${dataset}:/tmp/labels" \
-    -w /tmp \
+dataset=$1
+
+[ "$#" -eq 1 ] || die "1 argument required for the dataset path, $# provided"
+
+docker run --gpus all -it -v $PWD:code \
+    -v "${dataset}:data" \
+    -w code \
     od
