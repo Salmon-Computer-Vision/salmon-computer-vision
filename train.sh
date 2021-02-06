@@ -15,6 +15,7 @@ while getopts ":c:m:e:h" o; do
             ;;
         e)
             eval=true
+            ;;
         h)
             usage
             ;;
