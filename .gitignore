@@ -4,6 +4,8 @@
 
 /pre-trained-models/*
 !.gitkeep
+/models/*
+!pipeline.config
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
