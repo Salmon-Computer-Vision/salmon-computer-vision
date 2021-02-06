@@ -5,7 +5,7 @@ usage() { echo "Usage: $0 [-e] [-h] [-c path/to/pipeline.config] [-m path/to/mod
 pipeline=models/my_faster_rcnn_resnet50_v1_800x1333/pipeline.config
 model_dir=models/my_faster_rcnn_resnet50_v1_800x1333
 
-while getopts ":c:m:e:h" o; do
+while getopts ":ehc:m:" o; do
     case "${o}" in
         c)
             pipeline=${OPTARG}
@@ -30,7 +30,7 @@ while getopts ":c:m:e:h" o; do
     esac
 done
 
-if [ eval = true ]; then
+if [ "$eval" = true ]; then
     python ~/models/research/object_detection/model_main_tf2.py \
         --pipeline_config_path=${pipeline} \
         --model_dir=${model_dir} \
@@ -40,5 +40,6 @@ else
     python ~/models/research/object_detection/model_main_tf2.py \
         --pipeline_config_path=${pipeline} \
         --model_dir=${model_dir} \
-        --alsologtostderr \
+        --alsologtostderr
 fi
+
