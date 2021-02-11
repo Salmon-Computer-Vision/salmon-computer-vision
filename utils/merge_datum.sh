@@ -36,7 +36,7 @@ done
 datum merge "${filtered_dir}"/* -o "${dest_dir}"
 
 # Split training, validation, and test sets
-datum transform -p "$dest_dir" -o "${dest_dir}_split" -t detection_split --overwrite -- -s train:.7 -s val:.15 -s test:.15
+datum transform -p "$dest_dir" -o "${dest_dir}_split" -t detection_split --overwrite -- -s train_1:.175 -s train_2:.175 -s train_3:.175 -s train_4:.175 -s val:.15 -s test:.15
 
 # Copy cvat REST plugin
 #tasks=( "${source_dir}"/* )
