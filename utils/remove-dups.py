@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Does not work for near duplicated video frames, only image datasets
+
 import sys
 import argparse
 
@@ -17,7 +19,7 @@ def run_simularity(args):
   model_name = "mobilenet-v2-imagenet-torch"
 
   model = foz.load_zoo_model(model_name)
-  embeddings = dataset.compute_embeddings(model)
+  embeddings = dataset.compute_embeddings(model, embeddings_field="embeddings")
   print(embeddings.shape)
 
   similarity_matrix = cosine_similarity(embeddings)
@@ -29,7 +31,7 @@ def run_simularity(args):
     sample["max_similarity"] = max_similarity
     sample.save()
 
-  print("Max similarity saved to dataset. Check the app for the changes")
+  print("Max similarity saved to dataset. Please restart the app to see the changes.")
 
 def launch_app(args):
   import fiftyone as fo
