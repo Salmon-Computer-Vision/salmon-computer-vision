@@ -19,7 +19,7 @@ def run_simularity(args):
   model_name = "mobilenet-v2-imagenet-torch"
 
   model = foz.load_zoo_model(model_name)
-  embeddings = dataset.compute_embeddings(model, embeddings_field="embeddings")
+  embeddings = dataset.compute_embeddings(model)
   print(embeddings.shape)
 
   similarity_matrix = cosine_similarity(embeddings)
