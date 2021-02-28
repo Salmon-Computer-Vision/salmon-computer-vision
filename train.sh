@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
+set -e
 
 usage() { echo "Usage: $0 [-eh] [-u <cur_epoch>] [-n <num_steps>] [-p <epoch_steps>] [-k <checkpoint_steps>] [-c path/to/pipeline.config] [-m path/to/model/dir] [-d path/to/checkpoint/dir]" 1>&2; exit 1; }
+
+# Use tensorboard to see eval and loss
+# python -m tensorboard.main --logdir=models/my_ssd_resnet50_v1_fpn_640x640_longer/ --bind_all
 
 pipeline=models/my_faster_rcnn_resnet50_v1_800x1333/pipeline.config
 model_dir=models/my_faster_rcnn_resnet50_v1_800x1333
