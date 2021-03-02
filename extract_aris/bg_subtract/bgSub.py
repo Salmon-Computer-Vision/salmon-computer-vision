@@ -15,14 +15,27 @@ class BackgroundSub:
         bg_subtractor = self.__get_subtractor()
         bgSub_frames = []
         for index in range(len(self.frames)):
-            img_2d = bg_subtractor.apply(self.frames[index])
-            img_color_channel = self.__add_color_channel_to(img_2d)
-            bgSub_frames.append(img_color_channel)
+            frame = self.frames[index]
+            frame = self.__blur_frame(frame)
+            frame = bg_subtractor.apply(frame)
+            frame = self.__do_morphological_operation(frame)
+            frame = self.__add_color_channel_to(frame)
+            bgSub_frames.append(frame)
         return BgSubtractFrames(bgSub_frames)
+
+    def __blur_frame(self, frame, kernel_size=5):
+        frame = cv2.blur(frame, (kernel_size, kernel_size))
+        return frame
 
     def __add_color_channel_to(self, img_2d):
         img_color_channel = np.stack((img_2d,)*3, axis=-1)
         return img_color_channel
+
+    def __do_morphological_operation(self, frame, kernel_size=3):
+        kernel = np.ones((kernel_size, kernel_size), np.uint8)
+        frame = cv2.morphologyEx(frame, cv2.MORPH_OPEN, kernel)
+        frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
+        return frame
 
     def __get_subtractor(self):
         if self.algorithm == "MOG2":
@@ -44,6 +57,10 @@ class BgSubtractFrames:
     def __init__(self, frames):
         super().__init__()
         self.frames = frames
+
+    def invert_color(self):
+        for index in range(len(self.frames)):
+            self.frames[index] = cv2.bitwise_not(self.frames[index])
 
     def get_video(self, file_name):
         height = self.frames[0].shape[0]

@@ -12,8 +12,13 @@ def main():
     aris_data, frame = pyARIS.DataImport(file_path)
     frames = extract_frames(aris_data, frame_start, frame_end)
 
-    _bgSub = bgSub.BackgroundSub(frames)
+    history = 100
+    varThreshold = 60
+    detectShadows = True
+
+    _bgSub = bgSub.BackgroundSub(frames, history=history, varThreshold=varThreshold, detectShadows=detectShadows)
     bgSub_frame = _bgSub.subtract_background()
+    bgSub_frame.invert_color()
     bgSub_frame.get_video("bg_sub_test.mp4")
 
 
