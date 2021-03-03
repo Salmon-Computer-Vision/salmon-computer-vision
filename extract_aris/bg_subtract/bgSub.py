@@ -19,6 +19,7 @@ class BackgroundSub:
             frame = self.__blur_frame(frame)
             frame = bg_subtractor.apply(frame)
             frame = self.__do_morphological_operation(frame)
+            frame = self.__convert_to_binary(frame)
             frame = self.__add_color_channel_to(frame)
             bgSub_frames.append(frame)
         return BgSubtractFrames(bgSub_frames)
@@ -27,14 +28,18 @@ class BackgroundSub:
         frame = cv2.blur(frame, (kernel_size, kernel_size))
         return frame
 
+    def __convert_to_binary(self, frame):
+        ret, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
+        return thresh
+
     def __add_color_channel_to(self, img_2d):
         img_color_channel = np.stack((img_2d,)*3, axis=-1)
         return img_color_channel
 
     def __do_morphological_operation(self, frame, kernel_size=3):
         kernel = np.ones((kernel_size, kernel_size), np.uint8)
-        frame = cv2.morphologyEx(frame, cv2.MORPH_OPEN, kernel)
         frame = cv2.morphologyEx(frame, cv2.MORPH_CLOSE, kernel)
+        frame = cv2.morphologyEx(frame, cv2.MORPH_OPEN, kernel)
         return frame
 
     def __get_subtractor(self):
