@@ -1,4 +1,5 @@
 from bg_subtract import bgSub
+from bg_object_label import bgObjLabel
 from pyARIS import pyARIS
 import os
 
@@ -16,9 +17,15 @@ def main():
     varThreshold = 60
     detectShadows = True
 
-    _bgSub = bgSub.BackgroundSub(frames, history=history, varThreshold=varThreshold, detectShadows=detectShadows)
+    _bgSub = bgSub.BackgroundSub(
+        frames, history=history, varThreshold=varThreshold, detectShadows=detectShadows)
     bgSub_frame = _bgSub.subtract_background()
-    bgSub_frame.get_video("bg_sub_test.mp4")
+
+    objLabel = bgObjLabel.ObjectLabel(bgSub_frame.frames)
+    objLabel.label_objects()
+
+    objBgSubFrame = bgSub.BgSubtractFrames(objLabel.frames_bbox)
+    objBgSubFrame.get_video("bg_sub_test.mp4")
 
 
 def get_file_path(filename):
