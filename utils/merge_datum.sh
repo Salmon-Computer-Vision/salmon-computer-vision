@@ -9,6 +9,8 @@
 #   <task_id>/
 #   ...
 
+# Ex. ./merge_datum.sh kami "${pass}" dump dump_filt merged
+
 user=$1
 pass=$2 # Pass using env var
 source_dir=$3

@@ -3,6 +3,8 @@
 # Good to have an empty destination folder
 # This will NOT overwrite existing files
 
+# Ex. ./dump_cvat.sh ../../cvat/utils/cli/cli.py kami:${pass} localhost 160 460 dump
+
 # TODO: Turn these into options
 cli=$1
 auth=$2 # username:pass-env

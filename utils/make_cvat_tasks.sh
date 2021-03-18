@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Ex. ./make_cvat_tasks.sh ../../cvat/utils/cli/cli.py kami:${pass} 10.0.0.146 labels-converted.json ../../salmon-count-labels/annotation /mnt/salmon-videos/
+
+set -e
+
 cli=$1
 auth=$2 # username:pass-env
 host=$3
