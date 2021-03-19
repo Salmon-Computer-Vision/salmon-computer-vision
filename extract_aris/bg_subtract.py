@@ -1,5 +1,6 @@
 from bg_subtract import bgSub
 from bg_object_label import bgObjLabel
+from frame_extract import FrameExtract
 from pyARIS import pyARIS
 import os
 
@@ -11,7 +12,8 @@ def main():
     frame_end = 2782
 
     aris_data, frame = pyARIS.DataImport(file_path)
-    frames = extract_frames(aris_data, frame_start, frame_end)
+    frame_extract = FrameExtract(aris_data)
+    frames = frame_extract.extract_frames(frame_start, frame_end, skipFrame=24)
 
     history = 100
     varThreshold = 60
