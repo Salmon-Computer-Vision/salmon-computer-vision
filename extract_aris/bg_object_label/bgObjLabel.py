@@ -26,6 +26,7 @@ class ObjectLabel:
             for j in range(1, numLabels):
                 xywh = self.__get_bbox_xywh(stats[j])
                 frame = self.__draw_bbox(frame, xywh)
+                frame = self.__draw_label(frame, str(j), xywh)
             self.frames_bbox.append(frame)
             self.stats.append(stats)
 
@@ -62,6 +63,11 @@ class ObjectLabel:
         _frame = cv2.rectangle(
             frame, (x, y), (x + width, y + height), color, thickness)
         return _frame
+
+    def __draw_label(self, frame, label, xywh, color=(0, 255, 0), thickness=1):
+        frame = cv2.putText(
+            frame, label, (xywh['x'], xywh['y'] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness)
+        return frame
 
     def __get_frame_channel(self, frame):
         if (len(frame.shape) == 2):
