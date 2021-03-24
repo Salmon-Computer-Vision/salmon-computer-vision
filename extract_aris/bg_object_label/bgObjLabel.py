@@ -1,5 +1,8 @@
 import numpy as np
 import cv2
+import json
+import os
+from PIL import Image
 
 
 class ObjectLabel:
@@ -22,13 +25,51 @@ class ObjectLabel:
             output = cv2.connectedComponentsWithStats(
                 self.frames_gray[i], 4, cv2.CV_32S)
             (numLabels, labels, stats, centroids) = output
-            frame = self.frames_color[i]
+            frame = self.frames_color[i].copy()
             for j in range(1, numLabels):
                 xywh = self.__get_bbox_xywh(stats[j])
                 frame = self.__draw_bbox(frame, xywh)
                 frame = self.__draw_label(frame, str(j), xywh)
             self.frames_bbox.append(frame)
             self.stats.append(stats)
+
+    def export_data(self):
+        if len(self.stats) == 0 or len(self.frames_bbox) == 0:
+            raise NoBoundingBoxFrameError()
+        
+        dir_name = "export"
+        self.__create_dir_if_not_exist(dir_name)
+        json_data = {
+            "metadata": []
+        }
+        for i in range(len(self.frames_color)):
+            frame = self.frames_color[i]
+            img = Image.fromarray(frame, "RGB")
+            file_name = dir_name + "/" + str(i) + ".png"
+            img.save(file_name)
+            json_data["metadata"].append(self.__create_frame_metadata_dict())
+            json_data["metadata"][i]["name"] = file_name
+            for j in range(1, len(self.stats[i])):
+                stat = self.stats[i][j]
+                xywh = self.__get_bbox_xywh(stat)
+                xywh["x"] = int(xywh["x"])
+                xywh["y"] = int(xywh["y"])
+                xywh["w"] = int(xywh["w"])
+                xywh["h"] = int(xywh["h"])
+                json_data["metadata"][i]["bounding_boxes"].append(xywh)
+        with open(dir_name + "/" + "json.txt", 'w') as outfile:
+            json.dump(json_data, outfile)
+
+    def __create_dir_if_not_exist(self, name):
+        if not os.path.exists(name):
+            os.makedirs(name)
+
+    def __create_frame_metadata_dict(self):
+        metadata = {
+            "name": "",
+            "bounding_boxes": []
+        }
+        return metadata
 
     def get_stats(self):
         return self.stats
@@ -78,3 +119,12 @@ class ObjectLabel:
     def __add_color_channel_to(self, frame):
         img_color_channel = np.stack((frame,)*3, axis=-1)
         return img_color_channel
+
+class Error(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+class NoBoundingBoxFrameError(Error):
+    def __init__(self):
+        super().__init__("No bounding box frames and label data to export.")
