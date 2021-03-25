@@ -45,23 +45,31 @@ class LeftFrame:
 class RightFrame:
     def __init__(self):
         super().__init__()
+        self.__state = {
+            "image": None,
+            "current_index": None,
+            "stats": None,
+        }
+        self.__observers = set()
+
         self.root = tk.Frame()
         self.__create_input_box_for_removing_label()
         self.__create_buttons()
         self.__create_console_text()
         self.__create_load_json_button()
-        self.json_loaded_observers = []
 
     def pack(self, side=tk.RIGHT):
         self.root.pack(side=side)
 
-    def add_json_loaded_observer(self, observer):
-        self.json_loaded_observers.append(observer)
+    def attach_observer(self, observer):
+        self.__observers.add(observer)
 
-    def __notify_json_loaded_observer(self):
-        for i in range(len(self.json_loaded_observers)):
-            observer = self.add_json_loaded_observer(i)
-            observer.notify()
+    def detach_observer(self, observer):
+        self.__observers.discard(observer)
+
+    def __notify_observer(self):
+        for observer in self.__observers:
+            observer.notify(self.__state)
 
     def __create_input_box_for_removing_label(self):
         label = tk.Label(master=self.root,
@@ -116,6 +124,17 @@ class GUI:
     def __pack_ui(self):
         self.left_frame.pack(side=tk.LEFT)
         self.right_frame.pack(side=tk.LEFT)
+
+        # Add observer object from left_frame to the right_frame
+
+
+class Observer:
+    def __init__(self, action):
+        super().__init__()
+        self.action = action
+
+    def notify(self, state):
+        self.action(state)
 
 
 def get_thread_task(task):
