@@ -24,8 +24,8 @@ def main():
     bgSub_frame = _bgSub.subtract_background()
 
     objLabel = bgObjLabel.ObjectLabel(bgSub_frame.frames)
-    objLabel.label_objects()
-    objLabel.export_data()
+    bboxData = objLabel.label_objects()
+    bboxData.export_data()
 
     objBgSubFrame = bgSub.BgSubtractFrames(objLabel.frames_bbox)
     objBgSubFrame.get_video("bg_sub_test.mp4")
