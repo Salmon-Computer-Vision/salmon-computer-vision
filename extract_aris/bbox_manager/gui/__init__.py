@@ -1,7 +1,9 @@
 import threading
 import tkinter as tk
+from tkinter import filedialog
 import time
 from PIL import ImageTk, Image
+import json
 
 
 class LeftFrame:
@@ -47,9 +49,19 @@ class RightFrame:
         self.__create_input_box_for_removing_label()
         self.__create_buttons()
         self.__create_console_text()
+        self.__create_load_json_button()
+        self.json_loaded_observers = []
 
     def pack(self, side=tk.RIGHT):
         self.root.pack(side=side)
+
+    def add_json_loaded_observer(self, observer):
+        self.json_loaded_observers.append(observer)
+
+    def __notify_json_loaded_observer(self):
+        for i in range(len(self.json_loaded_observers)):
+            observer = self.add_json_loaded_observer(i)
+            observer.notify()
 
     def __create_input_box_for_removing_label(self):
         label = tk.Label(master=self.root,
@@ -73,6 +85,19 @@ class RightFrame:
             master=self.root, height=5, width=30)
         self.console_text.pack()
 
+    def __create_load_json_button(self):
+        button_frame = tk.Frame(master=self.root)
+        load_button = tk.Button(
+            master=button_frame, text="Load JSON File", command=get_thread_task(self.__load_json_file_action))
+        load_button.pack(side=tk.LEFT)
+        button_frame.pack()
+
+    def __load_json_file_action(self):
+        filename = filedialog.askopenfilename()
+        with open(filename) as f:
+            data = json.load(f)
+        self.__notify_json_loaded_observer()
+
 
 class GUI:
     def __init__(self):
@@ -92,9 +117,11 @@ class GUI:
         self.left_frame.pack(side=tk.LEFT)
         self.right_frame.pack(side=tk.LEFT)
 
-    def __get_thread_task(self, task):
-        return lambda: self.__start_thread_task(task)
 
-    def __start_thread_task(self, task):
-        thread = threading.Thread(target=task)
-        thread.start()
+def get_thread_task(task):
+    return lambda: start_thread_task(task)
+
+
+def start_thread_task(task):
+    thread = threading.Thread(target=task)
+    thread.start()
