@@ -22,6 +22,10 @@ track_idx=0
 
 exp_script="$(pwd)/script.exp"
 
+# Must export PYTHONPATH to find cvat module
+PYTHONPATH=':'
+export PYTHONPATH
+
 for task in "${source_dir}"/*; do
     t_name=$(basename "$task")
     task_filt="$(pwd)/${filtered_dir}/${t_name}"
