@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 # Expects source_dir to have file paths
 # ${source_dir}/
@@ -17,11 +18,17 @@ source_dir=$3
 filtered_dir=$4
 dest_dir=$5
 
+track_idx=0
+
 exp_script="$(pwd)/script.exp"
 
 for task in "${source_dir}"/*; do
     t_name=$(basename "$task")
     task_filt="$(pwd)/${filtered_dir}/${t_name}"
+
+    # Update tracking ID(s)
+    #jq 'walk(if type == "object" and .track_id then .track_id += 1 else . end)' "${
+    
 
     if [ -d "${task}"/sources/*/images ]; then
        (cd "${task}"; datum export -o "${task_filt}" -e '/item/annotation' --filter-mode i+a -f datumaro -- --save-images)
