@@ -9,7 +9,7 @@ dest_dir=$2
 # Update tracking ID(s) to be unique
 track_id=0
 for task in "${filtered_dir}"/*; do
-    anno_file="${task}"/annotations/default.json
+    anno_file="${task}"/dataset/annotations/default.json
     jq --arg ID "$track_id" 'walk(if type == "object" and .track_id then .track_id += ($ID|tonumber) else . end)' "${anno_file}" > "${anno_file}"
 
     # Get last tracking ID
