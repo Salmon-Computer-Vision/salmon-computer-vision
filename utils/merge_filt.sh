@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 # ./merge_datum.sh dump_filt merged
 
