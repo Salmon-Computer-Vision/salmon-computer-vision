@@ -10,7 +10,7 @@ set -e
 #   <task_id>/
 #   ...
 
-# Ex. ./merge_datum.sh kami "${pass}" dump dump_filt
+# Ex. ./download_frames.sh kami "${pass}" dump dump_filt
 
 user=$1
 pass=$2 # Pass using env var
@@ -30,12 +30,12 @@ for task in "${source_dir}"/*; do
     task_filt="${filtered_dir}/${t_name}"
 
     if [ -d "${task}"/sources/*/images ]; then
-       (cd "${task}"; datum export -o "${task_filt}" -e '/item/annotation' --filter-mode i+a -f datumaro -- --save-images)
+       (cd "${task}"; datum export --overwrite -o "${task_filt}" -e '/item/annotation' --filter-mode i+a -f datumaro -- --save-images)
     else
        (cd "${task}"; "${exp_script}" "${user}" "${pass}" "${task_filt}")
     fi
 
-    datum import -i "${task_filt}" -o "${task_filt}" -f datumaro
+    datum import -i "${task_filt}" -o "${task_filt}" -f datumaro --overwrite
 
     #(cd "${task}"; datum filter -e '/item/annotation' -m i+a -o "${task_filt}" --overwrite)
     datum transform -p "${task_filt}" -o "${task_filt}" -t rename --overwrite -- -e "|frame_(\d+)|${t_name}_\1|"
