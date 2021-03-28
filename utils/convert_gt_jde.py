@@ -80,7 +80,8 @@ def main():
       y_center = y + box_height / 2.0
 
       # JDE currently can only do one class tracking
-      label_str = f"{class_id} {new_track_id} {x_center / width} {y_center / height} {box_width / width} {box_height / height}\n"
+      #label_str = f"{class_id} {new_track_id} {x_center / width} {y_center / height} {box_width / width} {box_height / height}\n"
+      label_str = f"0 {new_track_id} {x_center / width} {y_center / height} {box_width / width} {box_height / height}\n"
       with open(os.path.join(label_out_path, f"{frame_name}.txt"), 'a') as out:
           out.write(label_str)
 
