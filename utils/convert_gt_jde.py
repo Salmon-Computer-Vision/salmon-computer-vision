@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
-import os
+import glob, os
+import numpy as np
+import random
 from pathlib import Path
 
 # MOT GT Seq
@@ -8,13 +10,38 @@ from pathlib import Path
 # Must delete labels_with_ids folder if already exists
 
 def create_data_list(dataset_path):
-  imgs_path = os.path.join(dataset_path, 'images')
-  root_path = os.path.basename(os.path.normpath(dataset_path))
-  rel_imgs_path = os.path.join(root_path, 'images')
+  images_folder = 'images'
+  imgs_path = os.path.join(dataset_path, images_folder)
+  set_name = os.path.basename(os.path.normpath(dataset_path))
+  rel_imgs_path = os.path.join(set_name, images_folder)
   img_filenames = os.listdir(imgs_path)
 
+  task_ids = list(dict.fromkeys([name[:-10] for name in img_filenames]))
+  id_map = {}
+
+  random.shuffle(task_ids)
+  train, val, test = np.split(task_ids, [int(len(task_ids)*0.7), int(len(task_ids)*0.85)])
+  print(len(train), len(val), len(test))
+
+  os.chdir(os.path.join(dataset_path, '..'))
+  def write_paths(task, f):
+      img_paths = glob.glob(os.path.join(rel_imgs_path, f"{task}*"))
+      f.writelines(f"{rel_filename}\n" for rel_filename in img_paths)
+
+  print("Writing training image list...")
   with open(os.path.join(dataset_path, 'salmon.train'), 'w') as f:
-    f.writelines(f"{os.path.join(rel_imgs_path, filename)}\n" for filename in img_filenames)
+    for task in train:
+      write_paths(task, f)
+
+  print("Writing validation image list...")
+  with open(os.path.join(dataset_path, 'salmon.val'), 'w') as f:
+    for task in val:
+      write_paths(task, f)
+
+  print("Writing testing image list...")
+  with open(os.path.join(dataset_path, 'salmon.test'), 'w') as f:
+    for task in test:
+      write_paths(task, f)
 
 def main():
   height = 1080
@@ -28,9 +55,10 @@ def main():
   dataset_path = sys.argv[1]
   gt_file_path = os.path.join(dataset_path, "gt", "gt.txt")
   label_out_path = os.path.join(dataset_path, "labels_with_ids")
-  Path(label_out_path).mkdir(parents=True, exist_ok=False)
 
   create_data_list(dataset_path)
+
+  Path(label_out_path).mkdir(parents=True, exist_ok=False)
 
   print("Reading", gt_file_path)
   with open(gt_file_path) as f:
