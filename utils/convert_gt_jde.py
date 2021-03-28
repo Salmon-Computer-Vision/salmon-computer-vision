@@ -17,7 +17,6 @@ def create_data_list(dataset_path):
   img_filenames = os.listdir(imgs_path)
 
   task_ids = list(dict.fromkeys([name[:-10] for name in img_filenames]))
-  id_map = {}
 
   random.shuffle(task_ids)
   train, val, test = np.split(task_ids, [int(len(task_ids)*0.7), int(len(task_ids)*0.85)])
