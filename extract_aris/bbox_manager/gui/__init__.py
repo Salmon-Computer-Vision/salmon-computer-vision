@@ -4,6 +4,48 @@ from tkinter import filedialog
 import time
 from PIL import ImageTk, Image
 import json
+import os
+
+
+class BBoxManager:
+    def __init__(self):
+        super().__init__()
+        self.__state = {
+            "base_path": "",
+            "frames_data": {},
+            "current_index": 0
+        }
+        self.__observers = set()
+
+    def set_frames_data(self, frames_data, base_path):
+        self.__state["frames_data"] = frames_data
+        self.__set_base_path(base_path)
+        self.__notify_observers()
+
+    def __set_base_path(self, path):
+        self.__state["base_path"] = path
+
+    def next_frame(self):
+        self.__state["current_index"] += 1
+        if self.__state["current_index"] >= len(self.__state["frames_data"]["metadata"]):
+            self.__state["current_index"] = 0
+        self.__notify_observers()
+
+    def prev_frame(self):
+        self.__state["current_index"] -= 1
+        if self.__state["current_index"] < 0:
+            self.__state["current_index"] = len(self.__state["frames_data"]["metadata"])- 1
+        self.__notify_observers()
+
+    def attach_observer(self, observer):
+        self.__observers.add(observer)
+
+    def detach_observer(self, observer):
+        self.__observers.discard(observer)
+
+    def __notify_observers(self):
+        for observer in self.__observers:
+            observer.notify(self.__state)
 
 
 class LeftFrame:
@@ -12,24 +54,17 @@ class LeftFrame:
         self.frame_scale = 0.6
         self.frame_height = int(1275 * self.frame_scale)
         self.frame_width = int(619 * self.frame_scale)
-
         self.root = tk.Frame()
         self.image_frame = tk.Frame(
             master=self.root)
-
         self.create_canvas()
-        # Test
-        self.add_image()
 
     def pack(self, side=tk.LEFT):
         self.root.pack(side=side)
         self.image_frame.pack(fill=tk.BOTH, expand=True)
 
-    def add_image(self):
-        # TODO: Remove the placeholder
-        img = Image.open(
-            "C:/Users/mrycc/Desktop/salmon project program/salmon-computer-vision/extract_aris/bbox_manager/gui/bbox_img_placeholder.png")
-
+    def add_image(self, path):
+        img = Image.open(path)
         resize_img = img.resize((self.frame_width, self.frame_height))
         # Important: Keep PhotoImage as class instance to avoid being recycled by GC
         self.photo_image = ImageTk.PhotoImage(resize_img)
@@ -43,15 +78,9 @@ class LeftFrame:
 
 
 class RightFrame:
-    def __init__(self):
+    def __init__(self, bbox_manager):
         super().__init__()
-        self.__state = {
-            "image": None,
-            "current_index": None,
-            "stats": None,
-        }
-        self.__observers = set()
-
+        self.__bbox_manager = bbox_manager
         self.root = tk.Frame()
         self.__create_input_box_for_removing_label()
         self.__create_buttons()
@@ -60,16 +89,6 @@ class RightFrame:
 
     def pack(self, side=tk.RIGHT):
         self.root.pack(side=side)
-
-    def attach_observer(self, observer):
-        self.__observers.add(observer)
-
-    def detach_observer(self, observer):
-        self.__observers.discard(observer)
-
-    def __notify_observer(self):
-        for observer in self.__observers:
-            observer.notify(self.__state)
 
     def __create_input_box_for_removing_label(self):
         label = tk.Label(master=self.root,
@@ -81,8 +100,16 @@ class RightFrame:
     def __create_buttons(self):
         button_frame = tk.Frame(master=self.root)
         remove_button = tk.Button(master=button_frame, text="Remove")
-        prev_button = tk.Button(master=button_frame, text="Previous")
-        next_button = tk.Button(master=button_frame, text="Next")
+        prev_button = tk.Button(
+            master=button_frame,
+            text="Previous",
+            command=get_thread_task(self.__bbox_manager.prev_frame)
+        )
+        next_button = tk.Button(
+            master=button_frame,
+            text="Next",
+            command=get_thread_task(self.__bbox_manager.next_frame)
+        )
         remove_button.pack(side=tk.LEFT)
         prev_button.pack(side=tk.LEFT)
         next_button.pack(side=tk.LEFT)
@@ -104,14 +131,17 @@ class RightFrame:
         filename = filedialog.askopenfilename()
         with open(filename) as f:
             data = json.load(f)
-        self.__notify_json_loaded_observer()
+        base_path = os.path.dirname(filename)
+        self.__bbox_manager.set_frames_data(data, base_path)
 
 
 class GUI:
     def __init__(self):
         super().__init__()
+        self.__bbox_manager = BBoxManager()
         self.__create_ui()
         self.__pack_ui()
+        self.__register_observers()
 
     def start(self):
         self.tk.mainloop()
@@ -119,13 +149,21 @@ class GUI:
     def __create_ui(self):
         self.tk = tk.Tk()
         self.left_frame = LeftFrame()
-        self.right_frame = RightFrame()
+        self.right_frame = RightFrame(self.__bbox_manager)
 
     def __pack_ui(self):
         self.left_frame.pack(side=tk.LEFT)
         self.right_frame.pack(side=tk.LEFT)
 
-        # Add observer object from left_frame to the right_frame
+    def __register_observers(self):
+        left_frame_observer = Observer(self.__update_left_frame)
+        self.__bbox_manager.attach_observer(left_frame_observer)
+
+    def __update_left_frame(self, state):
+        current_index = state["current_index"]
+        data = state["frames_data"]["metadata"][current_index]
+        path = state["base_path"] + "/" + data["name"]
+        self.left_frame.add_image(path)
 
 
 class Observer:
