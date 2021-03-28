@@ -18,6 +18,7 @@ for task in "${filtered_dir}"/*; do
 
     jq --arg ID "$track_id" 'walk(if type == "object" and .track_id then .track_id += ($ID|tonumber) else . end)' "${anno_file}" > "$temp_file"
 
+    cp "$anno_file" "${anno_file}.back"
     cp "$temp_file" "$anno_file"
     rm "$temp_file"
 
