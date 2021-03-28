@@ -7,6 +7,15 @@ from pathlib import Path
 # <Frame num>,<Identity num>,<box left>,<box top>,<box width>,<box height>,<confidence>,<class>,<visibility>
 # Must delete labels_with_ids folder if already exists
 
+def create_data_list(dataset_path):
+  imgs_path = os.path.join(dataset_path, 'images')
+  root_path = os.path.basename(os.path.normpath(dataset_path))
+  rel_imgs_path = os.path.join(root_path, 'images')
+  img_filenames = os.listdir(imgs_path)
+
+  with open(os.path.join(dataset_path, 'salmon.train'), 'w') as f:
+    f.writelines(f"{os.path.join(rel_imgs_path, filename)}\n" for filename in img_filenames)
+
 def main():
   height = 1080
   width = 1920
@@ -15,10 +24,13 @@ def main():
     print(f"Usage: {sys.argv[0]} <path/to/mot_seq_folder>")
     return
 
+
   dataset_path = sys.argv[1]
   gt_file_path = os.path.join(dataset_path, "gt", "gt.txt")
   label_out_path = os.path.join(dataset_path, "labels_with_ids")
   Path(label_out_path).mkdir(parents=True, exist_ok=False)
+
+  create_data_list(dataset_path)
 
   print("Reading", gt_file_path)
   with open(gt_file_path) as f:
