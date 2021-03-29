@@ -5,6 +5,8 @@ import time
 from PIL import ImageTk, Image
 import json
 import os
+import cv2
+from numpy import asarray
 
 
 class BBoxManager:
@@ -13,13 +15,16 @@ class BBoxManager:
         self.__state = {
             "base_path": "",
             "frames_data": {},
-            "current_index": 0
+            "current_index": 0,
+            "frame": None,
+            "bbox_frame": None
         }
         self.__observers = set()
 
     def set_frames_data(self, frames_data, base_path):
         self.__state["frames_data"] = frames_data
         self.__set_base_path(base_path)
+        self.__process_frame()
         self.__notify_observers()
 
     def __set_base_path(self, path):
@@ -29,13 +34,43 @@ class BBoxManager:
         self.__state["current_index"] += 1
         if self.__state["current_index"] >= len(self.__state["frames_data"]["metadata"]):
             self.__state["current_index"] = 0
+        self.__process_frame()
         self.__notify_observers()
 
     def prev_frame(self):
         self.__state["current_index"] -= 1
         if self.__state["current_index"] < 0:
-            self.__state["current_index"] = len(self.__state["frames_data"]["metadata"])- 1
+            self.__state["current_index"] = len(
+                self.__state["frames_data"]["metadata"]) - 1
+        self.__process_frame()
         self.__notify_observers()
+
+    def __process_frame(self):
+        base_path = self.__state["base_path"]
+        current_index = self.__state["current_index"]
+        data = self.__state["frames_data"]["metadata"][current_index]
+        path = self.__state["base_path"] + "/" + data["name"]
+        img = Image.open(path)
+        img_array = asarray(img)
+        self.__state["frame"] = img
+        self.__draw_bounding_boxes(img_array.copy(), data["bounding_boxes"])
+
+    def __draw_bounding_boxes(self, frame, bounding_boxes, color=(0, 255, 0), thickness=1):
+        for i in range(len(bounding_boxes)):
+            bbox = bounding_boxes[i]
+            x = bbox['x']
+            y = bbox['y']
+            width = bbox['w']
+            height = bbox['h']
+            frame = cv2.rectangle(
+                frame, (x, y), (x + width, y + height), color, thickness)
+            frame = self.__draw_label(frame, str(i), bbox)
+        self.__state["bbox_frame"] = Image.fromarray(frame)
+
+    def __draw_label(self, frame, label, bbox, color=(0, 255, 0), thickness=1):
+        frame = cv2.putText(
+            frame, label, (bbox['x'], bbox['y'] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness)
+        return frame
 
     def attach_observer(self, observer):
         self.__observers.add(observer)
@@ -63,8 +98,7 @@ class LeftFrame:
         self.root.pack(side=side)
         self.image_frame.pack(fill=tk.BOTH, expand=True)
 
-    def add_image(self, path):
-        img = Image.open(path)
+    def add_image(self, img):
         resize_img = img.resize((self.frame_width, self.frame_height))
         # Important: Keep PhotoImage as class instance to avoid being recycled by GC
         self.photo_image = ImageTk.PhotoImage(resize_img)
@@ -160,10 +194,7 @@ class GUI:
         self.__bbox_manager.attach_observer(left_frame_observer)
 
     def __update_left_frame(self, state):
-        current_index = state["current_index"]
-        data = state["frames_data"]["metadata"][current_index]
-        path = state["base_path"] + "/" + data["name"]
-        self.left_frame.add_image(path)
+        self.left_frame.add_image(state["bbox_frame"])
 
 
 class Observer:
