@@ -5,6 +5,8 @@ import numpy as np
 import random
 from pathlib import Path
 
+from utils import deserialize_anno
+
 # MOT GT Seq
 # <Frame num>,<Identity num>,<box left>,<box top>,<box width>,<box height>,<confidence>,<class>,<visibility>
 # Must delete labels_with_ids folder if already exists
@@ -55,26 +57,32 @@ def main():
   gt_file_path = os.path.join(dataset_path, "gt", "gt.txt")
   label_out_path = os.path.join(dataset_path, "labels_with_ids")
 
-  create_data_list(dataset_path)
+  #create_data_list(dataset_path)
 
   Path(label_out_path).mkdir(parents=True, exist_ok=False)
 
   print("Reading", gt_file_path)
   with open(gt_file_path) as f:
+    cur_track_id = -1
+    last_task_id = -1
+    max_track_id = -1
     for line in f:
       parts = line.strip().split(',')
-      # Frame name formatted as <task ID><6 digit frame ID>
-      frame_name = parts[0]
-      track_id = parts[1]
-      x = float(parts[2])
-      y = float(parts[3])
-      box_width = float(parts[4])
-      box_height = float(parts[5])
-      class_id = parts[7]
-      #print(frame_name, track_id, box_left, box_top, box_width, box_height, class_id)
+      frame_name, track_id, x, y, box_width, box_height, class_id = deserialize_anno(parts)
+      
 
-      task_id = frame_name[:-6]
-      new_track_id = f"{task_id}{track_id}" # Task IDs should be unique
+      track_id = int(track_id) - 1 # Offset for JDE format
+      task_id = int(frame_name[:-6])
+
+      if track_id > max_track_id:
+        max_track_id = track_id
+
+      if not last_task_id == task_id:
+        cur_track_id += max_track_id + 1
+        last_task_id = task_id
+        max_track_id = -1
+
+      new_track_id = track_id + cur_track_id
 
       x_center = x + box_width / 2.0
       y_center = y + box_height / 2.0
