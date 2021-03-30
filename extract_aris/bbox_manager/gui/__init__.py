@@ -17,7 +17,8 @@ class BBoxManager:
             "frames_data": {},
             "current_index": 0,
             "frame": None,
-            "bbox_frame": None
+            "bbox_frame": None,
+            "show_bbox": True,
         }
         self.__observers = set()
 
@@ -71,6 +72,10 @@ class BBoxManager:
         frame = cv2.putText(
             frame, label, (bbox['x'], bbox['y'] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness)
         return frame
+
+    def toggle_bbox(self):
+        self.__state["show_bbox"] = not self.__state["show_bbox"]
+        self.__notify_observers()
 
     def attach_observer(self, observer):
         self.__observers.add(observer)
@@ -144,9 +149,15 @@ class RightFrame:
             text="Next",
             command=get_thread_task(self.__bbox_manager.next_frame)
         )
+        toggle_button = tk.Button(
+            master=button_frame,
+            text="Toggle Bounding Boxes",
+            command=get_thread_task(self.__bbox_manager.toggle_bbox)
+        )
         remove_button.pack(side=tk.LEFT)
         prev_button.pack(side=tk.LEFT)
         next_button.pack(side=tk.LEFT)
+        toggle_button.pack(side=tk.LEFT)
         button_frame.pack()
 
     def __create_console_text(self):
@@ -194,7 +205,10 @@ class GUI:
         self.__bbox_manager.attach_observer(left_frame_observer)
 
     def __update_left_frame(self, state):
-        self.left_frame.add_image(state["bbox_frame"])
+        if state["show_bbox"]:
+            self.left_frame.add_image(state["bbox_frame"])
+        else:
+            self.left_frame.add_image(state["frame"])
 
 
 class Observer:
