@@ -77,6 +77,13 @@ class BBoxManager:
         self.__state["show_bbox"] = not self.__state["show_bbox"]
         self.__notify_observers()
 
+    def remove_bounding_boxes(self, label):
+        current_index = self.__state["current_index"]
+        bounding_boxes = self.__state["frames_data"]["metadata"][current_index]["bounding_boxes"]
+        del bounding_boxes[label]
+        self.__process_frame()
+        self.__notify_observers()
+
     def attach_observer(self, observer):
         self.__observers.add(observer)
 
@@ -132,13 +139,17 @@ class RightFrame:
     def __create_input_box_for_removing_label(self):
         label = tk.Label(master=self.root,
                          text="Enter label number to remove:")
-        label_input_box = tk.Entry(master=self.root)
+        self.__remove_label_entry = tk.Entry(master=self.root)
         label.pack()
-        label_input_box.pack()
+        self.__remove_label_entry.pack()
 
     def __create_buttons(self):
         button_frame = tk.Frame(master=self.root)
-        remove_button = tk.Button(master=button_frame, text="Remove")
+        remove_button = tk.Button(
+            master=button_frame,
+            text="Remove",
+            command=get_thread_task(self.__remove_label_action)
+        )
         prev_button = tk.Button(
             master=button_frame,
             text="Previous",
@@ -178,6 +189,10 @@ class RightFrame:
             data = json.load(f)
         base_path = os.path.dirname(filename)
         self.__bbox_manager.set_frames_data(data, base_path)
+
+    def __remove_label_action(self):
+        label = self.__remove_label_entry.get()
+        self.__bbox_manager.remove_bounding_boxes(int(label))
 
 
 class GUI:
