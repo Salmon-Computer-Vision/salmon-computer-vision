@@ -109,7 +109,7 @@ class BBoxData:
             for j in range(1, len(self.stats[i])):
                 stat = self.stats[i][j]
                 xywh = self.__get_xywh(stat)
-                json_data["metadata"][i]["bounding_boxes"].append(xywh)
+                json_data["metadata"][i]["bounding_boxes"]["interested_objects"].append(xywh)
         self.__write_data_to_file(json_data)
 
     def __create_dir_if_not_exist(self, name):
@@ -132,7 +132,10 @@ class BBoxData:
     def __create_default_frame_metadata(self):
         metadata = {
             "name": "",
-            "bounding_boxes": []
+            "bounding_boxes": {
+                "interested_objects": [],
+                "noises": []
+            }
         }
         return metadata
 

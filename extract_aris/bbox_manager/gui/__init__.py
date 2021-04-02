@@ -47,14 +47,30 @@ class BBoxManager:
         self.__notify_observers()
 
     def __process_frame(self):
-        base_path = self.__state["base_path"]
-        current_index = self.__state["current_index"]
-        data = self.__state["frames_data"]["metadata"][current_index]
+        self.__open_img()
+        self.__draw_bbox_for_interested_object()
+        self.__draw_bbox_for_noise()
+
+    def __open_img(self):
+        data = self.__get_current_frame_data()
         path = self.__state["base_path"] + "/" + data["name"]
         img = Image.open(path)
-        img_array = asarray(img)
         self.__state["frame"] = img
-        self.__draw_bounding_boxes(img_array.copy(), data["bounding_boxes"])
+        self.__state["bbox_frame"] = img
+
+    def __draw_bbox_for_interested_object(self):
+        green = (0, 255, 0)
+        data = self.__get_current_frame_data()
+        img = self.__state["bbox_frame"]
+        img_array = asarray(img)
+        self.__draw_bounding_boxes(img_array.copy(), data["bounding_boxes"]["interested_objects"], color=green)
+    
+    def __draw_bbox_for_noise(self):
+        red = (255, 0, 0)
+        data = self.__get_current_frame_data()
+        img = self.__state["bbox_frame"]
+        img_array = asarray(img)
+        self.__draw_bounding_boxes(img_array.copy(), data["bounding_boxes"]["noises"], color=red)
 
     def __draw_bounding_boxes(self, frame, bounding_boxes, color=(0, 255, 0), thickness=1):
         for i in range(len(bounding_boxes)):
@@ -65,7 +81,7 @@ class BBoxManager:
             height = bbox['h']
             frame = cv2.rectangle(
                 frame, (x, y), (x + width, y + height), color, thickness)
-            frame = self.__draw_label(frame, str(i), bbox)
+            frame = self.__draw_label(frame, str(i), bbox, color=color)
         self.__state["bbox_frame"] = Image.fromarray(frame)
 
     def __draw_label(self, frame, label, bbox, color=(0, 255, 0), thickness=1):
@@ -78,11 +94,32 @@ class BBoxManager:
         self.__notify_observers()
 
     def remove_bounding_boxes(self, label):
-        current_index = self.__state["current_index"]
-        bounding_boxes = self.__state["frames_data"]["metadata"][current_index]["bounding_boxes"]
-        del bounding_boxes[label]
+        bounding_boxes = self.__get_bounding_boxes()
+        bbox = self.__get_bbox_by_label(label)
+        bounding_boxes.remove(bbox)
         self.__process_frame()
         self.__notify_observers()
+
+    def mark_as_noise(self, label):
+        bbox = self.__get_bbox_by_label(label)
+        self.remove_bounding_boxes(label)
+        frame_data = self.__get_current_frame_data()
+        frame_data["bounding_boxes"]["noises"].append(bbox)
+        self.__process_frame()
+        self.__notify_observers()
+        
+    def __get_bbox_by_label(self, label):
+        bounding_boxes = self.__get_bounding_boxes()
+        return bounding_boxes[label]
+
+    def __get_bounding_boxes(self):
+        current_index = self.__state["current_index"]
+        bounding_boxes = self.__state["frames_data"]["metadata"][current_index]["bounding_boxes"]["interested_objects"]
+        return bounding_boxes
+
+    def __get_current_frame_data(self):
+        current_index = self.__state["current_index"]
+        return self.__state["frames_data"]["metadata"][current_index]
 
     def attach_observer(self, observer):
         self.__observers.add(observer)
@@ -145,6 +182,11 @@ class RightFrame:
 
     def __create_buttons(self):
         button_frame = tk.Frame(master=self.root)
+        mark_noise_button = tk.Button(
+            master=button_frame,
+            text="Mark Noise",
+            command=get_thread_task(self.__mark_noise_action)
+        )
         remove_button = tk.Button(
             master=button_frame,
             text="Remove",
@@ -165,6 +207,7 @@ class RightFrame:
             text="Toggle Bounding Boxes",
             command=get_thread_task(self.__bbox_manager.toggle_bbox)
         )
+        mark_noise_button.pack(side=tk.LEFT)
         remove_button.pack(side=tk.LEFT)
         prev_button.pack(side=tk.LEFT)
         next_button.pack(side=tk.LEFT)
@@ -193,6 +236,10 @@ class RightFrame:
     def __remove_label_action(self):
         label = self.__remove_label_entry.get()
         self.__bbox_manager.remove_bounding_boxes(int(label))
+    
+    def __mark_noise_action(self):
+        label = self.__remove_label_entry.get()
+        self.__bbox_manager.mark_as_noise(int(label))
 
 
 class GUI:
