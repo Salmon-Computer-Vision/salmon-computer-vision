@@ -63,16 +63,26 @@ class BBoxManager:
         data = self.__get_current_frame_data()
         img = self.__state["bbox_frame"]
         img_array = asarray(img)
-        self.__draw_bounding_boxes(img_array.copy(), data["bounding_boxes"]["interested_objects"], color=green)
-    
+        self.__draw_bounding_boxes(
+            img_array.copy(), data["bounding_boxes"]["interested_objects"], color=green)
+
     def __draw_bbox_for_noise(self):
         red = (255, 0, 0)
         data = self.__get_current_frame_data()
         img = self.__state["bbox_frame"]
         img_array = asarray(img)
-        self.__draw_bounding_boxes(img_array.copy(), data["bounding_boxes"]["noises"], color=red)
+        self.__draw_bounding_boxes(
+            img_array.copy(),
+            data["bounding_boxes"]["noises"],
+            color=red,
+            label_start=self.__get_num_interested_objects()
+        )
 
-    def __draw_bounding_boxes(self, frame, bounding_boxes, color=(0, 255, 0), thickness=1):
+    def __get_num_interested_objects(self):
+        data = self.__get_current_frame_data()
+        return len(data["bounding_boxes"]["interested_objects"])
+
+    def __draw_bounding_boxes(self, frame, bounding_boxes, color=(0, 255, 0), thickness=1, label_start=0):
         for i in range(len(bounding_boxes)):
             bbox = bounding_boxes[i]
             x = bbox['x']
@@ -81,7 +91,8 @@ class BBoxManager:
             height = bbox['h']
             frame = cv2.rectangle(
                 frame, (x, y), (x + width, y + height), color, thickness)
-            frame = self.__draw_label(frame, str(i), bbox, color=color)
+            frame = self.__draw_label(
+                frame, str(label_start + i), bbox, color=color)
         self.__state["bbox_frame"] = Image.fromarray(frame)
 
     def __draw_label(self, frame, label, bbox, color=(0, 255, 0), thickness=1):
@@ -96,7 +107,10 @@ class BBoxManager:
     def remove_bounding_boxes(self, label):
         bounding_boxes = self.__get_bounding_boxes()
         bbox = self.__get_bbox_by_label(label)
-        bounding_boxes.remove(bbox)
+        if label < len(bounding_boxes["interested_objects"]):
+            bounding_boxes["interested_objects"].remove(bbox)
+        else:
+            bounding_boxes["noises"].remove(bbox)
         self.__process_frame()
         self.__notify_observers()
 
@@ -107,14 +121,18 @@ class BBoxManager:
         frame_data["bounding_boxes"]["noises"].append(bbox)
         self.__process_frame()
         self.__notify_observers()
-        
+
     def __get_bbox_by_label(self, label):
         bounding_boxes = self.__get_bounding_boxes()
-        return bounding_boxes[label]
+        if label < len(bounding_boxes["interested_objects"]):
+            return bounding_boxes["interested_objects"][label]
+        else:
+            index = label - len(bounding_boxes["interested_objects"])
+            return bounding_boxes["noises"][index]
 
     def __get_bounding_boxes(self):
         current_index = self.__state["current_index"]
-        bounding_boxes = self.__state["frames_data"]["metadata"][current_index]["bounding_boxes"]["interested_objects"]
+        bounding_boxes = self.__state["frames_data"]["metadata"][current_index]["bounding_boxes"]
         return bounding_boxes
 
     def __get_current_frame_data(self):
@@ -236,7 +254,7 @@ class RightFrame:
     def __remove_label_action(self):
         label = self.__remove_label_entry.get()
         self.__bbox_manager.remove_bounding_boxes(int(label))
-    
+
     def __mark_noise_action(self):
         label = self.__remove_label_entry.get()
         self.__bbox_manager.mark_as_noise(int(label))
