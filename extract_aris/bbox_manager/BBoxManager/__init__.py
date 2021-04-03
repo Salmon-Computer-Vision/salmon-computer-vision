@@ -183,7 +183,7 @@ class RightFrame:
         super().__init__()
         self.__bbox_manager = bbox_manager
         self.root = tk.Frame()
-        self.__create_input_box_for_removing_label()
+        self.__create_mark_bbox_frame()
         self.__create_buttons()
         self.__create_console_text()
         self.__create_load_json_button()
@@ -191,46 +191,59 @@ class RightFrame:
     def pack(self, side=tk.RIGHT):
         self.root.pack(side=side)
 
-    def __create_input_box_for_removing_label(self):
-        label = tk.Label(master=self.root,
-                         text="Enter label number to remove:")
-        self.__remove_label_entry = tk.Entry(master=self.root)
-        label.pack()
-        self.__remove_label_entry.pack()
-
-    def __create_buttons(self):
-        button_frame = tk.Frame(master=self.root)
+    def __create_mark_bbox_frame(self):
+        control_frame = tk.LabelFrame(
+            master=self.root, text="Mark Bounding Boxes", padx=10, pady=10)
+        self.__create_input_box_for_removing_label(master=control_frame)
+        row_1_buttons = tk.Frame(master=control_frame)
         mark_noise_button = tk.Button(
-            master=button_frame,
+            master=row_1_buttons,
             text="Mark Noise",
             command=get_thread_task(self.__mark_noise_action)
         )
         remove_button = tk.Button(
-            master=button_frame,
+            master=row_1_buttons,
             text="Remove",
             command=get_thread_task(self.__remove_label_action)
         )
+        row_1_buttons.pack()
+        mark_noise_button.pack(side=tk.LEFT)
+        remove_button.pack(side=tk.LEFT)
+        control_frame.pack()
+
+    def __create_input_box_for_removing_label(self, master):
+        label = tk.Label(master=master,
+                         text="Enter label number to remove:")
+        self.__remove_label_entry = tk.Entry(master=master)
+        label.pack()
+        self.__remove_label_entry.pack()
+
+    def __create_buttons(self):
+        row_1_buttons = tk.Frame(master=self.root)
+        row_2_buttons = tk.Frame(master=self.root)
+        row_3_buttons = tk.Frame(master=self.root)
+
         prev_button = tk.Button(
-            master=button_frame,
+            master=row_2_buttons,
             text="Previous",
             command=get_thread_task(self.__bbox_manager.prev_frame)
         )
         next_button = tk.Button(
-            master=button_frame,
+            master=row_2_buttons,
             text="Next",
             command=get_thread_task(self.__bbox_manager.next_frame)
         )
         toggle_button = tk.Button(
-            master=button_frame,
+            master=row_3_buttons,
             text="Toggle Bounding Boxes",
             command=get_thread_task(self.__bbox_manager.toggle_bbox)
         )
-        mark_noise_button.pack(side=tk.LEFT)
-        remove_button.pack(side=tk.LEFT)
         prev_button.pack(side=tk.LEFT)
         next_button.pack(side=tk.LEFT)
         toggle_button.pack(side=tk.LEFT)
-        button_frame.pack()
+        row_1_buttons.pack()
+        row_2_buttons.pack()
+        row_3_buttons.pack()
 
     def __create_console_text(self):
         self.console_text = tk.Text(
