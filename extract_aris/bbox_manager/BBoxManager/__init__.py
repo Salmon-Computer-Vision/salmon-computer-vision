@@ -198,12 +198,13 @@ class LeftFrame:
 class RightFrame:
     def __init__(self, bbox_manager):
         super().__init__()
+        self.button_width = 20
+        self.button_height = 2
         self.__bbox_manager = bbox_manager
-        self.root = tk.Frame()
+        self.root = tk.Frame(padx=10)
         self.__create_mark_bbox_frame()
-        self.__create_buttons()
-        self.__create_load_json_button()
-        self.__create_export_json_button()
+        self.__create_navigation_frame()
+        self.__create_json_load_export_frame()
 
     def pack(self, side=tk.RIGHT):
         self.root.pack(side=side)
@@ -212,26 +213,34 @@ class RightFrame:
         control_frame = tk.LabelFrame(
             master=self.root, text="Mark Bounding Boxes", padx=10, pady=10)
         self.__create_input_box_for_removing_label(master=control_frame)
-        row_1_buttons = tk.Frame(master=control_frame)
+        buttons_frame = tk.Frame(master=control_frame, pady=10)
         mark_interested_object_button = tk.Button(
-            master=row_1_buttons,
+            master=buttons_frame,
             text="Mark Interested Object",
-            command=get_thread_task(self.__mark_interested_object_action)
+            command=get_thread_task(self.__mark_interested_object_action),
+            width=self.button_width,
+            height=self.button_height,
+            bg="#8feb34"
         )
         mark_noise_button = tk.Button(
-            master=row_1_buttons,
+            master=buttons_frame,
             text="Mark Noise",
-            command=get_thread_task(self.__mark_noise_action)
+            command=get_thread_task(self.__mark_noise_action),
+            width=self.button_width,
+            height=self.button_height,
+            bg="#fa93a1"
         )
         remove_button = tk.Button(
-            master=row_1_buttons,
+            master=buttons_frame,
             text="Remove",
-            command=get_thread_task(self.__remove_label_action)
+            command=get_thread_task(self.__remove_label_action),
+            width=self.button_width,
+            height=self.button_height
         )
-        row_1_buttons.pack()
-        mark_interested_object_button.pack(side=tk.LEFT)
-        mark_noise_button.pack(side=tk.LEFT)
-        remove_button.pack(side=tk.LEFT)
+        buttons_frame.pack()
+        mark_interested_object_button.pack()
+        mark_noise_button.pack()
+        remove_button.pack()
         control_frame.pack()
 
     def __create_input_box_for_removing_label(self, master):
@@ -241,43 +250,66 @@ class RightFrame:
         label.pack()
         self.__remove_label_entry.pack()
 
-    def __create_buttons(self):
-        row_1_buttons = tk.Frame(master=self.root)
-        row_2_buttons = tk.Frame(master=self.root)
-        row_3_buttons = tk.Frame(master=self.root)
+    def __create_navigation_frame(self):
+        navigation_frame = tk.LabelFrame(
+            master=self.root, text="Navigation", padx=10, pady=10)
+        buttons_frame = tk.Frame(master=navigation_frame)
         prev_button = tk.Button(
-            master=row_2_buttons,
+            master=buttons_frame,
             text="Previous",
-            command=get_thread_task(self.__bbox_manager.prev_frame)
+            command=get_thread_task(self.__bbox_manager.prev_frame),
+            width=self.button_width,
+            height=self.button_height
         )
         next_button = tk.Button(
-            master=row_2_buttons,
+            master=buttons_frame,
             text="Next",
-            command=get_thread_task(self.__bbox_manager.next_frame)
+            command=get_thread_task(self.__bbox_manager.next_frame),
+            width=self.button_width,
+            height=self.button_height
         )
         toggle_button = tk.Button(
-            master=row_3_buttons,
+            master=buttons_frame,
             text="Toggle Bounding Boxes",
-            command=get_thread_task(self.__bbox_manager.toggle_bbox)
+            command=get_thread_task(self.__bbox_manager.toggle_bbox),
+            width=self.button_width,
+            height=self.button_height
         )
-        prev_button.pack(side=tk.LEFT)
-        next_button.pack(side=tk.LEFT)
-        toggle_button.pack(side=tk.LEFT)
-        row_1_buttons.pack()
-        row_2_buttons.pack()
-        row_3_buttons.pack()
+        prev_button.pack()
+        next_button.pack()
+        toggle_button.pack()
+        buttons_frame.pack()
+        navigation_frame.pack()
 
-    def __create_load_json_button(self):
-        button_frame = tk.Frame(master=self.root)
+    def __create_json_load_export_frame(self):
+        json_load_export_frame = tk.LabelFrame(
+            master=self.root, text="JSON Load/Export", padx=10, pady=10)
+        self.__create_load_json_button(json_load_export_frame)
+        self.__create_export_json_button(json_load_export_frame)
+        json_load_export_frame.pack()
+
+    def __create_load_json_button(self, master):
+        button_frame = tk.Frame(master=master)
         load_button = tk.Button(
-            master=button_frame, text="Load JSON File", command=get_thread_task(self.__load_json_file_action))
+            master=button_frame,
+            text="Load JSON File",
+            command=get_thread_task(self.__load_json_file_action),
+            width=self.button_width,
+            height=self.button_height,
+            bg="#feffb3"
+        )
         load_button.pack(side=tk.LEFT)
         button_frame.pack()
 
-    def __create_export_json_button(self):
-        button_frame = tk.Frame(master=self.root)
+    def __create_export_json_button(self, master):
+        button_frame = tk.Frame(master=master)
         load_button = tk.Button(
-            master=button_frame, text="Export JSON File", command=get_thread_task(self.__export_json_file_action))
+            master=button_frame,
+            text="Export JSON File",
+            command=get_thread_task(self.__export_json_file_action),
+            width=self.button_width,
+            height=self.button_height
+        )
         load_button.pack(side=tk.LEFT)
         button_frame.pack()
 
@@ -319,8 +351,14 @@ class GUI:
 
     def __create_ui(self):
         self.tk = tk.Tk()
+        self.tk.title("BBox Manager")
+        self.tk.iconbitmap(self.__get_window_icon_path())
         self.left_frame = LeftFrame()
         self.right_frame = RightFrame(self.__bbox_manager)
+
+    def __get_window_icon_path(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        return current_dir + "/" + "BBoxManagerIcon.ico"
 
     def __pack_ui(self):
         self.left_frame.pack(side=tk.LEFT)
