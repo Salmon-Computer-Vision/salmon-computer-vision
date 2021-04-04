@@ -7,6 +7,7 @@ import json
 import os
 import cv2
 from numpy import asarray
+from enum import Enum
 
 
 class BBoxManager:
@@ -114,11 +115,16 @@ class BBoxManager:
         self.__process_frame()
         self.__notify_observers()
 
-    def mark_as_noise(self, label):
+    def mark_bounding_boxes(self, label, type):
         bbox = self.__get_bbox_by_label(label)
         self.remove_bounding_boxes(label)
         frame_data = self.__get_current_frame_data()
-        frame_data["bounding_boxes"]["noises"].append(bbox)
+        if type == BBoxType.NOISE:
+            frame_data["bounding_boxes"]["noises"].append(bbox)
+        elif type == BBoxType.INTERESTED_OBJECT:
+            frame_data["bounding_boxes"]["interested_objects"].append(bbox)
+        else:
+            raise BoundingBoxTypeError()
         self.__process_frame()
         self.__notify_observers()
 
@@ -148,6 +154,11 @@ class BBoxManager:
     def __notify_observers(self):
         for observer in self.__observers:
             observer.notify(self.__state)
+
+
+class BBoxType(Enum):
+    NOISE = 0
+    INTERESTED_OBJECT = 1
 
 
 class LeftFrame:
@@ -196,6 +207,11 @@ class RightFrame:
             master=self.root, text="Mark Bounding Boxes", padx=10, pady=10)
         self.__create_input_box_for_removing_label(master=control_frame)
         row_1_buttons = tk.Frame(master=control_frame)
+        mark_interested_object_button = tk.Button(
+            master=row_1_buttons,
+            text="Mark Interested Object",
+            command=get_thread_task(self.__mark_interested_object_action)
+        )
         mark_noise_button = tk.Button(
             master=row_1_buttons,
             text="Mark Noise",
@@ -207,6 +223,7 @@ class RightFrame:
             command=get_thread_task(self.__remove_label_action)
         )
         row_1_buttons.pack()
+        mark_interested_object_button.pack(side=tk.LEFT)
         mark_noise_button.pack(side=tk.LEFT)
         remove_button.pack(side=tk.LEFT)
         control_frame.pack()
@@ -268,9 +285,15 @@ class RightFrame:
         label = self.__remove_label_entry.get()
         self.__bbox_manager.remove_bounding_boxes(int(label))
 
+    def __mark_interested_object_action(self):
+        label = self.__remove_label_entry.get()
+        self.__bbox_manager.mark_bounding_boxes(
+            int(label), type=BBoxType.INTERESTED_OBJECT)
+
     def __mark_noise_action(self):
         label = self.__remove_label_entry.get()
-        self.__bbox_manager.mark_as_noise(int(label))
+        self.__bbox_manager.mark_bounding_boxes(
+            int(label), type=BBoxType.NOISE)
 
 
 class GUI:
@@ -311,6 +334,17 @@ class Observer:
 
     def notify(self, state):
         self.action(state)
+
+
+class Error(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
+class BoundingBoxTypeError(Error):
+    def __init__(self):
+        super().__init__("Please specify a valid bounding box type.")
 
 
 def get_thread_task(task):
