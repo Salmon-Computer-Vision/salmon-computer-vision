@@ -145,6 +145,12 @@ class BBoxManager:
         current_index = self.__state["current_index"]
         return self.__state["frames_data"]["metadata"][current_index]
 
+    def export_json(self):
+        frames_data = self.__state["frames_data"]
+        base_path = self.__state["base_path"]
+        with open(base_path + "/BBoxManagerJson.txt", "w") as outfile:
+            json.dump(frames_data, outfile)
+
     def attach_observer(self, observer):
         self.__observers.add(observer)
 
@@ -196,8 +202,8 @@ class RightFrame:
         self.root = tk.Frame()
         self.__create_mark_bbox_frame()
         self.__create_buttons()
-        self.__create_console_text()
         self.__create_load_json_button()
+        self.__create_export_json_button()
 
     def pack(self, side=tk.RIGHT):
         self.root.pack(side=side)
@@ -239,7 +245,6 @@ class RightFrame:
         row_1_buttons = tk.Frame(master=self.root)
         row_2_buttons = tk.Frame(master=self.root)
         row_3_buttons = tk.Frame(master=self.root)
-
         prev_button = tk.Button(
             master=row_2_buttons,
             text="Previous",
@@ -262,15 +267,17 @@ class RightFrame:
         row_2_buttons.pack()
         row_3_buttons.pack()
 
-    def __create_console_text(self):
-        self.console_text = tk.Text(
-            master=self.root, height=5, width=30)
-        self.console_text.pack()
-
     def __create_load_json_button(self):
         button_frame = tk.Frame(master=self.root)
         load_button = tk.Button(
             master=button_frame, text="Load JSON File", command=get_thread_task(self.__load_json_file_action))
+        load_button.pack(side=tk.LEFT)
+        button_frame.pack()
+
+    def __create_export_json_button(self):
+        button_frame = tk.Frame(master=self.root)
+        load_button = tk.Button(
+            master=button_frame, text="Export JSON File", command=get_thread_task(self.__export_json_file_action))
         load_button.pack(side=tk.LEFT)
         button_frame.pack()
 
@@ -280,6 +287,9 @@ class RightFrame:
             data = json.load(f)
         base_path = os.path.dirname(filename)
         self.__bbox_manager.set_frames_data(data, base_path)
+
+    def __export_json_file_action(self):
+        self.__bbox_manager.export_json()
 
     def __remove_label_action(self):
         label = self.__remove_label_entry.get()
