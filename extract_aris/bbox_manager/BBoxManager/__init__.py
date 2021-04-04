@@ -245,7 +245,7 @@ class RightFrame:
 
     def __create_input_box_for_removing_label(self, master):
         label = tk.Label(master=master,
-                         text="Enter label number to remove:")
+                         text="Enter label number to operate:")
         self.__remove_label_entry = tk.Entry(master=master)
         label.pack()
         self.__remove_label_entry.pack()
