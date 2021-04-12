@@ -15,7 +15,7 @@ def main():
     frame_extract = FrameExtract(aris_data)
     frames = frame_extract.extract_frames(frame_start, frame_end, skipFrame=0)
 
-    ### Background subtraction parameters
+    # Background subtraction parameters
     history = 100
     varThreshold = 20
     kernel_size = 3
@@ -32,6 +32,10 @@ def main():
 
     objBgSubFrame = bgSub.BgSubtractFrames(objLabel.frames_bbox)
     objBgSubFrame.get_video("bg_sub_test.mp4")
+
+    original_bbox_frames = objLabel.get_bbox_on_frames(frames)
+    originalBBoxFrames = bgSub.BgSubtractFrames(original_bbox_frames)
+    originalBBoxFrames.get_video("original_bbox_frames.mp4")
 
 
 def get_file_path(filename):
