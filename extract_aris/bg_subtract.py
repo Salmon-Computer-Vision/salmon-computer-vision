@@ -13,14 +13,17 @@ def main():
 
     aris_data, frame = pyARIS.DataImport(file_path)
     frame_extract = FrameExtract(aris_data)
-    frames = frame_extract.extract_frames(frame_start, frame_end, skipFrame=24)
+    frames = frame_extract.extract_frames(frame_start, frame_end, skipFrame=0)
 
+    ### Background subtraction parameters
     history = 100
     varThreshold = 60
+    kernel_size = 3
+    bg_algorithm = "MOG2"
     detectShadows = True
 
     _bgSub = bgSub.BackgroundSub(
-        frames, history=history, varThreshold=varThreshold, detectShadows=detectShadows)
+        frames, history, varThreshold, kernel_size, algorithm=bg_algorithm, detectShadows=detectShadows)
     bgSub_frame = _bgSub.subtract_background()
 
     objLabel = bgObjLabel.ObjectLabel(bgSub_frame.frames)
