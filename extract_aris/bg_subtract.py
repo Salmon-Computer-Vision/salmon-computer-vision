@@ -17,7 +17,7 @@ def main():
 
     ### Background subtraction parameters
     history = 100
-    varThreshold = 60
+    varThreshold = 20
     kernel_size = 3
     bg_algorithm = "MOG2"
     detectShadows = True
