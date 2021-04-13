@@ -1,7 +1,7 @@
-from bg_subtract import bgSub
-from bg_object_label import bgObjLabel
-from frame_extract import FrameExtract
-from pyARIS import pyARIS
+from bg_sub.FrameExtract import *
+from bg_sub.BgSubtract import *
+from bg_sub.BgObjLabel import *
+import pyARIS.pyARIS as pyARIS
 import os
 
 
@@ -9,7 +9,7 @@ def main():
     filename = "2020-05-27_071000.aris"
     file_path = get_file_path(filename)
     frame_start = 1775
-    frame_end = 2782
+    frame_end = 1800 # 2782
 
     aris_data, frame = pyARIS.DataImport(file_path)
     frame_extract = FrameExtract(aris_data)
@@ -22,19 +22,19 @@ def main():
     bg_algorithm = "MOG2"
     detectShadows = True
 
-    _bgSub = bgSub.BackgroundSub(
+    _bgSub = BackgroundSub(
         frames, history, varThreshold, kernel_size, algorithm=bg_algorithm, detectShadows=detectShadows)
     bgSub_frame = _bgSub.subtract_background()
 
-    objLabel = bgObjLabel.ObjectLabel(bgSub_frame.frames)
+    objLabel = ObjectLabel(bgSub_frame.frames)
     bboxData = objLabel.label_objects()
-    bboxData.export_data()
+    # bboxData.export_data()
 
-    objBgSubFrame = bgSub.BgSubtractFrames(objLabel.frames_bbox)
-    objBgSubFrame.get_video("bg_sub_test.mp4")
+    objBgSubFrame = BgSubtractFrames(objLabel.frames_bbox)
+    # objBgSubFrame.get_video("bg_sub_test.mp4")
 
     original_bbox_frames = objLabel.get_bbox_on_frames(frames)
-    originalBBoxFrames = bgSub.BgSubtractFrames(original_bbox_frames)
+    originalBBoxFrames = BgSubtractFrames(original_bbox_frames)
     originalBBoxFrames.get_video("original_bbox_frames.mp4")
 
 

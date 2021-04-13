@@ -1,5 +1,5 @@
 import unittest
-import BBoxManager as bbm
+from BBoxManager import *
 import json
 import os
 
@@ -10,13 +10,13 @@ class BBoxManagerTest(unittest.TestCase):
         super().__init__(methodName)
 
     def __get_built_bbox_manager(self):
-        bbox_manager = bbm.BBoxManager()
+        bbox_manager = BBoxManager()
         bbox_manager = self.__set_frames_data(bbox_manager)
         return bbox_manager
 
     def __set_frames_data(self, bbox_manager):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        filename = current_dir + "/tests/test_json/json.txt"
+        filename = current_dir + "/test_assets/test_json/json.txt"
         with open(filename) as f:
             data = json.load(f)
         self.base_path = os.path.dirname(filename)
