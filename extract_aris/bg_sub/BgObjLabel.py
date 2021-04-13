@@ -13,12 +13,18 @@ class ObjectLabel:
         self.frames_bbox = []
         self.stats = []
 
+        [frames_color, frames_gray] = self.__preprocess_frames(frames)
+        self.frames_color = frames_color
+        self.frames_gray = frames_gray
+
+    def __preprocess_frames(self, frames):
         if self.__get_frame_channel(frames[0]) == 1:
-            self.frames_gray = frames
-            self.frames_color = self.__convert_to_color(frames)
+            frames_gray = frames
+            frames_color = self.__convert_to_color(frames)
         else:
-            self.frames_color = frames
-            self.frames_gray = self.__convert_to_gray(frames)
+            frames_color = frames
+            frames_gray = self.__convert_to_gray(frames)
+        return [frames_color, frames_gray]
 
     def label_objects(self):
         for i in range(len(self.frames_gray)):
@@ -64,6 +70,7 @@ class ObjectLabel:
         y = xywh['y']
         width = xywh['w']
         height = xywh['h']
+        frame = np.ascontiguousarray(frame)
         _frame = cv2.rectangle(
             frame, (x, y), (x + width, y + height), color, thickness)
         return _frame
@@ -82,6 +89,18 @@ class ObjectLabel:
     def __add_color_channel_to(self, frame):
         img_color_channel = np.stack((frame,)*3, axis=-1)
         return img_color_channel
+
+    def get_bbox_on_frames(self, frames):
+        [frames_color, frames_gray] = self.__preprocess_frames(frames)
+        frames_bbox = []
+        for i in range(len(self.stats)):
+            frame = frames_color[i]
+            stat = self.stats[i]
+            for j in range(1, len(stat)):
+                xywh = self.__get_bbox_xywh(stat[j])
+                frame = self.__draw_bbox(frame, xywh)
+            frames_bbox.append(frame)
+        return frames_bbox
 
 
 class BBoxData:
@@ -109,7 +128,8 @@ class BBoxData:
             for j in range(1, len(self.stats[i])):
                 stat = self.stats[i][j]
                 xywh = self.__get_xywh(stat)
-                json_data["metadata"][i]["bounding_boxes"]["interested_objects"].append(xywh)
+                json_data["metadata"][i]["bounding_boxes"]["interested_objects"].append(
+                    xywh)
         self.__write_data_to_file(json_data)
 
     def __create_dir_if_not_exist(self, name):
