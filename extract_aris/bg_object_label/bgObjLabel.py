@@ -70,6 +70,7 @@ class ObjectLabel:
         y = xywh['y']
         width = xywh['w']
         height = xywh['h']
+        frame = np.ascontiguousarray(frame)
         _frame = cv2.rectangle(
             frame, (x, y), (x + width, y + height), color, thickness)
         return _frame
@@ -96,14 +97,8 @@ class ObjectLabel:
             frame = frames_color[i]
             stat = self.stats[i]
             for j in range(1, len(stat)):
-                x = stat[j, cv2.CC_STAT_LEFT]
-                y = stat[j, cv2.CC_STAT_TOP]
-                w = stat[j, cv2.CC_STAT_WIDTH]
-                h = stat[j, cv2.CC_STAT_HEIGHT]
-                frame = np.ascontiguousarray(frame)
-                frame = cv2.rectangle(
-                    frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-
+                xywh = self.__get_bbox_xywh(stat[j])
+                frame = self.__draw_bbox(frame, xywh)
             frames_bbox.append(frame)
         return frames_bbox
 
