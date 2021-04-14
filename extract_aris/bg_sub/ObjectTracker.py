@@ -1,7 +1,7 @@
 import math
 
 
-class Tracker:
+class ObjectTracker:
     def __init__(self, stats):
         super().__init__()
 
