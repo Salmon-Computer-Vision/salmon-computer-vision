@@ -4,9 +4,10 @@ from JSONFormatter import *
 
 
 class ObjectTracker:
-    def __init__(self, frames: BgFrame, json_formatter: JSONFormatter):
+    def __init__(self, radius: int, frames: BgFrame, json_formatter: JSONFormatter):
         super().__init__()
         self.assignable_id = 0
+        self.radius = radius
         self.frames = frames
         self.json_formatter = json_formatter
 
@@ -17,7 +18,9 @@ class ObjectTracker:
         first_frame = self.__init_id(self.frames[0])
         self.json_formatter.add_frame(first_frame)
         for i in range(1, len(self.frames)):
-            self.__track_frame(self.frames[i-1], self.frames[i])
+            updated_frame = self.__track_and_return_updated_frame(
+                self.frames[i-1], self.frames[i])
+            json_formatter.add_frame(updated_frame)
 
     def __init_id(self, frame: BgFrame):
         bgObjects: [BgObject] = frame.get_all_objects()
@@ -28,8 +31,21 @@ class ObjectTracker:
                 self.__get_and_increment_assignable_id(), bgObject.get_xywh())
         return new_frame
 
-    def __track_frame(self, frame1: BgFrame, frame2: BgFrame):
-        pass
+    def __track_and_return_updated_frame(self, base_frame: BgFrame, updating_frame: BgFrame):
+        updated_frame = BgFrame()
+        base_objects = base_frame.get_all_objects()
+        updating_objects = updating_frame.get_all_objects()
+        for i in range(len(base_objects)):
+            for j in range(len(updating_objects)):
+                base = base_objects[i]
+                updating = updating_objects[j]
+                if self.__is_same(base.get_xywh(), updating.get_xywh(), self.radius):
+                    updated_frame.create_and_add_object(
+                        base.get_id(), updating.get_xywh())
+                else:
+                    updated_frame.create_and_add_object(
+                        updating.get_id(), updating.get_xywh())
+        return updated_frame
 
     def __is_same(self, xywh1, xywh2, radius):
         centroid1 = self.__calculate_centroid(xywh1)
