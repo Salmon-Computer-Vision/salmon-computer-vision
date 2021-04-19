@@ -1,15 +1,15 @@
 import math
-from BgFrame import *
-from JSONFormatter import *
+from .BgFrame import *
+from .JSONFormatter import *
 
 
 class ObjectTracker:
-    def __init__(self, radius: int, frames: BgFrame, json_formatter: JSONFormatter):
+    def __init__(self, radius: int, frames: [BgFrame]):
         super().__init__()
         self.assignable_id = 0
         self.radius = radius
         self.frames = frames
-        self.json_formatter = json_formatter
+        self.json_formatter = JSONFormatter()
 
     def track(self):
         self.__track_frames()
@@ -20,7 +20,7 @@ class ObjectTracker:
         for i in range(1, len(self.frames)):
             updated_frame = self.__track_and_return_updated_frame(
                 self.frames[i-1], self.frames[i])
-            json_formatter.add_frame(updated_frame)
+            self.json_formatter.add_frame(updated_frame)
 
     def __init_id(self, frame: BgFrame):
         bgObjects: [BgObject] = frame.get_all_objects()

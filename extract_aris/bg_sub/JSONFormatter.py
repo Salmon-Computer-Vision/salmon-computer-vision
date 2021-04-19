@@ -1,4 +1,4 @@
-from BgFrame import *
+from .BgFrame import *
 
 class JSONFormatter:
     def __init__(self):

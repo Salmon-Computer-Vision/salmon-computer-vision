@@ -1,8 +1,8 @@
 import unittest
-from ObjectTracker import *
-from BgObjLabel import *
-from JSONFormatter import *
-from BgFrame import *
+from .ObjectTracker import *
+from .BgObjLabel import *
+from .JSONFormatter import *
+from .BgFrame import *
 
 
 class TrackerTest(unittest.TestCase):
