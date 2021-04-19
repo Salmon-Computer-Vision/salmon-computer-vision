@@ -23,7 +23,7 @@ class BackgroundSub:
             frame = self.__convert_to_binary(frame)
             frame = self.__add_color_channel_to(frame)
             bgSub_frames.append(frame)
-        return BgSubtractFrames(bgSub_frames)
+        return bgSub_frames
 
     def __blur_frame(self, frame, kernel_size):
         frame = cv2.blur(frame, (kernel_size, kernel_size))
@@ -56,24 +56,3 @@ class BackgroundSub:
                 varThreshold=self.varThreshold,
                 detectShadows=self.detectShadows
             )
-
-
-class BgSubtractFrames:
-
-    def __init__(self, frames):
-        super().__init__()
-        self.frames = frames
-
-    def invert_color(self):
-        for index in range(len(self.frames)):
-            self.frames[index] = cv2.bitwise_not(self.frames[index])
-
-    def get_video(self, file_name):
-        height = self.frames[0].shape[0]
-        width = self.frames[0].shape[1]
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter(file_name, fourcc, 4.8, (width, height))
-        for i in range(len(self.frames)):
-            video.write(self.frames[i])
-        video.release()
-        cv2.destroyAllWindows()
