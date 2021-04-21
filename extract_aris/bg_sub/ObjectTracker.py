@@ -13,6 +13,7 @@ class ObjectTracker:
 
     def track(self):
         self.__track_frames()
+        return self.json_formatter
 
     def __track_frames(self):
         first_frame = self.__init_id(self.frames[0])
@@ -33,6 +34,7 @@ class ObjectTracker:
 
     def __track_and_return_updated_frame(self, base_frame: BgFrame, updating_frame: BgFrame):
         updated_frame = BgFrame()
+        updated_frame.set_filename(base_frame.get_filename())
         base_objects = base_frame.get_all_objects()
         updating_objects = updating_frame.get_all_objects()
         for i in range(len(base_objects)):

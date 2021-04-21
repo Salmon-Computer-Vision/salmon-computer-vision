@@ -33,13 +33,14 @@ def main():
     bgFrames = convert_bboxData_to_bgFrames(bboxData)
 
     tracker = ObjectTracker(5, bgFrames)
-    tracker.track()
+    json_formatter = tracker.track()
+    json_formatter.export_json()
 
-    BgUtility.export_video(objLabel.frames_bbox,
-                           "bg_sub_test.mp4", invert_color=False)
+    # BgUtility.export_video(objLabel.frames_bbox,
+    #                        "bg_sub_test.mp4", invert_color=False)
 
-    BgUtility.export_video(objLabel.get_bbox_on_frames(frames),
-                           "original_bbox_frames.mp4", invert_color=False)
+    # BgUtility.export_video(objLabel.get_bbox_on_frames(frames),
+    #                        "original_bbox_frames.mp4", invert_color=False)
 
 
 def extract_frames():
@@ -76,7 +77,7 @@ def convert_bboxData_to_bgFrames(bboxData: BBoxData):
     bgFrames = []
     for i in range(len(stats)):
         stat = stats[i]
-        bgFrame = BgFrame.value_of(stat)
+        bgFrame = BgFrame.of(stat, "{}.png".format(i))
         bgFrames.append(bgFrame)
     return bgFrames
 
