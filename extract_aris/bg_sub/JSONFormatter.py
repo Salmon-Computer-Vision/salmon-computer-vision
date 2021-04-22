@@ -19,6 +19,9 @@ class JSONFormatter:
     def add_frame(self, frame: BgFrame):
         self.frames.append(frame)
 
+    def set_frames(self, frames):
+        self.frames = frames
+
     def add_category(self, cat_id, name, supercategory):
         self.coco_format["categories"].append(
             {

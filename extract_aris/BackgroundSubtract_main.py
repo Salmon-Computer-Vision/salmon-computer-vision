@@ -22,7 +22,9 @@ config = {
     "varThreshold": 20,
     "kernel_size": 3,
     "bg_algorithm": "MOG2",
-    "detectShadows": True
+    "detectShadows": True,
+    "object_tracker_radius": 5,
+    "object_tracker_frame_threshold": 10,
 }
 
 
@@ -34,8 +36,12 @@ def main():
 
     # bboxData.export_data()
 
-    tracker = ObjectTracker(5, bgFrames)
-    json_formatter = tracker.track()
+    tracker = ObjectTracker(
+        config["object_tracker_radius"], 
+        bgFrames, 
+        config["object_tracker_frame_threshold"]
+    )
+    json_formatter = tracker.start()
     json_formatter.export_json()
 
     # BgUtility.export_video(objLabel.frames_bbox,
@@ -80,9 +86,9 @@ def convert_bboxData_to_bgFrames(bboxData: BBoxData):
     for i in range(len(stats)):
         stat = stats[i]
         bgFrame = BgFrame.of(
-            stat, 
-            "{}.png".format(i), 
-            bboxData.width, 
+            stat,
+            "{}.png".format(i),
+            bboxData.width,
             bboxData.height
         )
         bgFrames.append(bgFrame)
