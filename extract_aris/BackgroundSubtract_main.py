@@ -77,7 +77,12 @@ def convert_bboxData_to_bgFrames(bboxData: BBoxData):
     bgFrames = []
     for i in range(len(stats)):
         stat = stats[i]
-        bgFrame = BgFrame.of(stat, "{}.png".format(i))
+        bgFrame = BgFrame.of(
+            stat, 
+            "{}.png".format(i), 
+            bboxData.width, 
+            bboxData.height
+        )
         bgFrames.append(bgFrame)
     return bgFrames
 

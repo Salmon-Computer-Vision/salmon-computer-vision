@@ -25,7 +25,7 @@ class ObjectTracker:
 
     def __init_id(self, frame: BgFrame):
         bgObjects: [BgObject] = frame.get_all_objects()
-        new_frame = BgFrame()
+        new_frame = BgFrame.clone_bgFrame_metadata(frame)
         for i in range(len(bgObjects)):
             bgObject = bgObjects[i]
             new_frame.create_and_add_object(
@@ -33,8 +33,7 @@ class ObjectTracker:
         return new_frame
 
     def __track_and_return_updated_frame(self, base_frame: BgFrame, updating_frame: BgFrame):
-        updated_frame = BgFrame()
-        updated_frame.set_filename(base_frame.get_filename())
+        updated_frame = BgFrame.clone_bgFrame_metadata(updating_frame)
         base_objects = base_frame.get_all_objects()
         updating_objects = updating_frame.get_all_objects()
         for i in range(len(base_objects)):

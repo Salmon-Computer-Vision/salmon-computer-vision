@@ -19,7 +19,11 @@ class BgFrame:
     def __init__(self):
         super().__init__()
         self.objects = dict()
-        self.filename = None
+        self.metadata = {
+            "filename": "",
+            "height": 0,
+            "width": 0
+        }
 
     def get_all_objects(self):
         return list(self.objects.values())
@@ -32,12 +36,6 @@ class BgFrame:
 
     def remove_object(self, id):
         del self.objects[id]
-    
-    def set_filename(self, filename):
-        self.filename = filename
-
-    def get_filename(self):
-        return self.filename
 
     @staticmethod
     def value_of_stat(stat):
@@ -55,7 +53,15 @@ class BgFrame:
         return bgFrame
     
     @staticmethod
-    def of(stat, filename):
+    def of(stat, filename, width, height):
         bgFrame = BgFrame.value_of_stat(stat)
-        bgFrame.set_filename(filename)
+        bgFrame.metadata["filename"] = filename
+        bgFrame.metadata["width"] = width
+        bgFrame.metadata["height"] = height
+        return bgFrame
+    
+    @staticmethod
+    def clone_bgFrame_metadata(base_bgFrame):
+        bgFrame = BgFrame()
+        bgFrame.metadata = base_bgFrame.metadata
         return bgFrame

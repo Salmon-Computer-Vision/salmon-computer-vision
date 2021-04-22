@@ -110,6 +110,8 @@ class BBoxData:
         self.stats = stats
         self.dir_name = "export"
         self.img_ext = ".png"
+        self.height = frames[0].shape[0]
+        self.width = frames[0].shape[1]
 
     def export_data(self):
         if len(self.stats) == 0:

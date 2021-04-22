@@ -30,9 +30,9 @@ class JSONFormatter:
     def __parse_frame_to_coco(self, frame):
         self.coco_format["images"].append({
             "id": self.img_id,
-            "width": 0,
-            "height": 0,
-            "file_name": frame.get_filename(),
+            "width": frame.metadata["width"],
+            "height": frame.metadata["height"],
+            "file_name": frame.metadata["filename"],
             "license": 1,
         })
 
