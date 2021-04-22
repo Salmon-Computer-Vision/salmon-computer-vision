@@ -9,7 +9,8 @@ class JSONFormatter:
         self.frames: [BgFrame] = []
         self.coco_format = {
             "images": [],
-            "annotations": []
+            "annotations": [],
+            "categories": [],
         }
 
     def get_frame(self, index) -> BgFrame:
@@ -18,9 +19,18 @@ class JSONFormatter:
     def add_frame(self, frame: BgFrame):
         self.frames.append(frame)
 
+    def add_category(self, cat_id, name, supercategory):
+        self.coco_format["categories"].append(
+            {
+                "id": cat_id,
+                "name": name,
+                "supercategory": supercategory,
+            }
+        )
+
     def export_json(self):
         self.__frames_to_coco()
-        with open("coco_json.txt", 'w') as outfile:
+        with open("object_coco.json", 'w') as outfile:
             json.dump(self.coco_format, outfile)
 
     def __frames_to_coco(self):
@@ -49,6 +59,7 @@ class JSONFormatter:
                 "id": bgObject.get_id(),
                 "image_id": self.img_id,
                 "category_id": 0,
-                "bbox": [bbox]
+                "bbox": bbox,
+                "segmentation": [],
             })
         self.img_id = self.img_id + 1

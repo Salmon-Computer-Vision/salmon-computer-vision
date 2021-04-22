@@ -10,6 +10,7 @@ class ObjectTracker:
         self.radius = radius
         self.frames = frames
         self.json_formatter = JSONFormatter()
+        self.json_formatter.add_category(0, "salmon", "")
 
     def track(self):
         self.__track_frames()

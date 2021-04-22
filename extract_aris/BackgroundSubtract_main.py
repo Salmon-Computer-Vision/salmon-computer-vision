@@ -32,6 +32,8 @@ def main():
     (objLabel, bboxData) = label_objects(bgSub_frames, exportData=False)
     bgFrames = convert_bboxData_to_bgFrames(bboxData)
 
+    # bboxData.export_data()
+
     tracker = ObjectTracker(5, bgFrames)
     json_formatter = tracker.track()
     json_formatter.export_json()
