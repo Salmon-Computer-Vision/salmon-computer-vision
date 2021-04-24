@@ -57,6 +57,7 @@ User:*" {
         send -- "${user}\r"
         expect "Password:"
         send -- "${pass}\r"
+        expect eof
     }
     eof
 }
