@@ -37,8 +37,14 @@ class ObjectLabel:
                 frame = self.__draw_bbox(frame, xywh)
                 frame = self.__draw_label(frame, str(j), xywh)
             self.frames_bbox.append(frame)
+            stats = self.__remove_background_stat(stats)
             self.stats.append(stats)
         return BBoxData(self.frames_color, self.stats)
+
+    def __remove_background_stat(self, stats):
+        if len(stats) > 0:
+            stats = np.delete(stats, 0, 0)
+        return stats
 
     def get_stats(self):
         return self.stats
