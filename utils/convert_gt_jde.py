@@ -3,6 +3,7 @@ import sys
 import glob, os
 import numpy as np
 import random
+import argparse
 from pathlib import Path
 
 from utils import deserialize_anno
@@ -11,7 +12,39 @@ from utils import deserialize_anno
 # <Frame num>,<Identity num>,<box left>,<box top>,<box width>,<box height>,<confidence>,<class>,<visibility>
 # Must delete labels_with_ids folder if already exists
 
-def create_data_list(dataset_path):
+def create_data_list(args):
+  if args.all:
+    create_data_list_all(args.data_dir)
+  else:
+    create_data_list_task(args.data_dir)
+
+def create_data_list_all(dataset_path):
+  images_folder = 'images'
+  imgs_path = os.path.join(dataset_path, images_folder)
+  set_name = os.path.basename(os.path.normpath(dataset_path))
+  rel_imgs_path = os.path.join(set_name, images_folder)
+  img_filenames = os.listdir(imgs_path)
+
+  random.shuffle(img_filenames)
+  train, val, test = np.split(img_filenames, [int(len(img_filenames)*0.7), int(len(img_filenames)*0.85)])
+  print(len(train), len(val), len(test))
+
+  os.chdir(os.path.join(dataset_path, '..'))
+  def write_paths(out_path, path_list):
+    with open(os.path.join(dataset_path, out_path), 'w') as f:
+      for filename in path_list:
+        f.write(os.path.join(rel_imgs_path,  f"{filename}\n"))
+
+  print("Writing training image list...")
+  write_paths('salmon.train', train)
+
+  print("Writing validation image list...")
+  write_paths('salmon.val', val)
+
+  print("Writing testing image list...")
+  write_paths('salmon.test', test)
+
+def create_data_list_task(dataset_path):
   images_folder = 'images'
   imgs_path = os.path.join(dataset_path, images_folder)
   set_name = os.path.basename(os.path.normpath(dataset_path))
@@ -44,20 +77,13 @@ def create_data_list(dataset_path):
     for task in test:
       write_paths(task, f)
 
-def main():
+def convert_to_jde(args):
   height = 1080
   width = 1920
 
-  if len(sys.argv) < 2:
-    print(f"Usage: {sys.argv[0]} <path/to/mot_seq_folder>")
-    return
-
-
-  dataset_path = sys.argv[1]
+  dataset_path = args.data_dir
   gt_file_path = os.path.join(dataset_path, "gt", "gt.txt")
   label_out_path = os.path.join(dataset_path, "labels_with_ids")
-
-  #create_data_list(dataset_path)
 
   Path(label_out_path).mkdir(parents=True, exist_ok=False)
 
@@ -69,7 +95,6 @@ def main():
     for line in f:
       parts = line.strip().split(',')
       frame_name, track_id, x, y, box_width, box_height, class_id = deserialize_anno(parts)
-      
 
       track_id = int(track_id) - 1 # Offset for JDE format
       task_id = int(frame_name[:-6])
@@ -93,4 +118,18 @@ def main():
       with open(os.path.join(label_out_path, f"{frame_name}.txt"), 'a') as out:
           out.write(label_str)
 
-main()
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='Convert MOT Seq to JDE and split dataset into train, val, test sets')
+  subp = parser.add_subparsers()
+
+  split_p = subp.add_parser('split')
+  split_p.add_argument('-a', '--all', action='store_true', help='Shuffle all the images in the list disregarding video ID')
+  split_p.add_argument('data_dir')
+  split_p.set_defaults(func=create_data_list)
+
+  convert_p = subp.add_parser('convert')
+  convert_p.add_argument('data_dir')
+  convert_p.set_defaults(func=convert_to_jde)
+
+  args = parser.parse_args()
+  args.func(args)

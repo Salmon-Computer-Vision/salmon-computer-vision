@@ -1,14 +1,21 @@
 #!/usr/bin/env python
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Suppress TensorFlow logging (1)
+import sys
+
+if len(sys.argv) < 5:
+  print(f"Usage: {sys.argv[0]} <path/to/video> <path/to/model/dir/> <path/to/ckpt-0> <path/to/labels.pbtxt>")
+  exit(1)
+
 import pathlib
 import tensorflow as tf
 
 tf.get_logger().setLevel('ERROR')           # Suppress TensorFlow logging (2)
 
-IMAGE_PATHS = download_images()
-PATH_TO_MODEL_DIR = download_model(MODEL_NAME, MODEL_DATE)
-PATH_TO_LABELS = download_labels(LABEL_FILENAME)
+PATH_TO_VIDEO = sys.argv[1]
+PATH_TO_MODEL_DIR = sys.argv[2]
+PATH_TO_CKPT = sys.argv[3]
+PATH_TO_LABELS = sys.argv[4]
 
 # Enable GPU dynamic memory allocation
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -26,7 +33,6 @@ from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 
 PATH_TO_CFG = PATH_TO_MODEL_DIR + "/pipeline.config"
-PATH_TO_CKPT = PATH_TO_MODEL_DIR + "/checkpoint"
 
 print('Loading model... ', end='')
 start_time = time.time()
@@ -38,7 +44,7 @@ detection_model = model_builder.build(model_config=model_config, is_training=Fal
 
 # Restore checkpoint
 ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
-ckpt.restore(os.path.join(PATH_TO_CKPT, 'ckpt-0')).expect_partial()
+ckpt.restore(PATH_TO_CKPT).expect_partial()
 
 @tf.function
 def detect_fn(image):
@@ -82,7 +88,7 @@ category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABE
 # * Set ``min_score_thresh`` to other values (between 0 and 1) to allow more detections in or to filter out more detections.
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
+import cv2
 import warnings
 warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 
@@ -102,11 +108,17 @@ def load_image_into_numpy_array(path):
     return np.array(Image.open(path))
 
 
-for image_path in IMAGE_PATHS:
+cap = cv2.VideoCapture(PATH_TO_VIDEO)
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+out = cv2.VideoWriter('out_detector.mp4', fourcc, 25.0, (1920,1080))
 
-    print('Running inference for {}... '.format(image_path), end='')
+count = 0
+while(cap.isOpened()):
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-    image_np = load_image_into_numpy_array(image_path)
+    #image_np = load_image_into_numpy_array(image_path)
 
     # Things to try:
     # Flip horizontally
@@ -116,7 +128,9 @@ for image_path in IMAGE_PATHS:
     # image_np = np.tile(
     #     np.mean(image_np, 2, keepdims=True), (1, 1, 3)).astype(np.uint8)
 
-    input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
+    print(f"Frame {count}")
+
+    input_tensor = tf.convert_to_tensor(np.expand_dims(frame, 0), dtype=tf.float32)
 
     detections = detect_fn(input_tensor)
 
@@ -132,7 +146,7 @@ for image_path in IMAGE_PATHS:
     detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
 
     label_id_offset = 1
-    image_np_with_detections = image_np.copy()
+    image_np_with_detections = frame.copy()
 
     viz_utils.visualize_boxes_and_labels_on_image_array(
             image_np_with_detections,
@@ -142,10 +156,13 @@ for image_path in IMAGE_PATHS:
             category_index,
             use_normalized_coordinates=True,
             max_boxes_to_draw=200,
-            min_score_thresh=.30,
+            min_score_thresh=.50,
             agnostic_mode=False)
 
-    plt.figure()
-    plt.imshow(image_np_with_detections)
-    print('Done')
-plt.show()
+    # Save frame 
+    out.write(image_np_with_detections)
+    count += 1
+
+cap.release()
+out.release()
+print('Done')
