@@ -11,6 +11,7 @@ from utils import deserialize_anno
 # MOT GT Seq
 # <Frame num>,<Identity num>,<box left>,<box top>,<box width>,<box height>,<confidence>,<class>,<visibility>
 # Must delete labels_with_ids folder if already exists
+images_folder = 'images'
 
 def create_data_list(args):
   if args.all:
@@ -19,7 +20,6 @@ def create_data_list(args):
     create_data_list_task(args.data_dir)
 
 def create_data_list_all(dataset_path):
-  images_folder = 'images'
   imgs_path = os.path.join(dataset_path, images_folder)
   set_name = os.path.basename(os.path.normpath(dataset_path))
   rel_imgs_path = os.path.join(set_name, images_folder)
@@ -45,7 +45,6 @@ def create_data_list_all(dataset_path):
   write_paths('salmon.test', test)
 
 def create_data_list_task(dataset_path):
-  images_folder = 'images'
   imgs_path = os.path.join(dataset_path, images_folder)
   set_name = os.path.basename(os.path.normpath(dataset_path))
   rel_imgs_path = os.path.join(set_name, images_folder)
@@ -60,6 +59,7 @@ def create_data_list_task(dataset_path):
   os.chdir(os.path.join(dataset_path, '..'))
   def write_paths(task, f):
       img_paths = glob.glob(os.path.join(rel_imgs_path, f"{task}*"))
+      img_paths.sort()
       f.writelines(f"{rel_filename}\n" for rel_filename in img_paths)
 
   print("Writing training image list...")
@@ -117,6 +117,9 @@ def convert_to_jde(args):
       label_str = f"0 {new_track_id} {x_center / width} {y_center / height} {box_width / width} {box_height / height}\n"
       with open(os.path.join(label_out_path, f"{frame_name}.txt"), 'a') as out:
           out.write(label_str)
+
+  print("Renaming img1 to", images_folder);
+  os.rename(os.path.join(dataset_path, 'img1'), os.path.join(dataset_path, images_folder))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Convert MOT Seq to JDE and split dataset into train, val, test sets')
