@@ -6,6 +6,7 @@ class JSONFormatter:
     def __init__(self):
         super().__init__()
         self.img_id = 0
+        self.ann_id = 0
         self.frames: [BgFrame] = []
         self.coco_format = {
             "images": [],
@@ -31,9 +32,9 @@ class JSONFormatter:
             }
         )
 
-    def export_json(self):
+    def export_json(self, path):
         self.__frames_to_coco()
-        with open("object_coco.json", 'w') as outfile:
+        with open("{}/object_coco.json".format(path), 'w') as outfile:
             json.dump(self.coco_format, outfile)
 
     def __frames_to_coco(self):
@@ -59,10 +60,16 @@ class JSONFormatter:
             bbox.append(xywh["w"])
             bbox.append(xywh["h"])
             self.coco_format["annotations"].append({
-                "id": bgObject.get_id(),
+                "id": self.__get_and_increment_ann_id(),
+                "object_id": bgObject.get_id(),
                 "image_id": self.img_id,
                 "category_id": 0,
                 "bbox": bbox,
                 "segmentation": [],
             })
         self.img_id = self.img_id + 1
+    
+    def __get_and_increment_ann_id(self):
+        ann_id = self.ann_id
+        self.ann_id = self.ann_id + 1
+        return ann_id

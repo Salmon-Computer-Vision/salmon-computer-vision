@@ -51,7 +51,7 @@ class ObjectTracker:
                         base.get_id(), updating.get_xywh())
                 else:
                     updated_frame.create_and_add_object(
-                        updating.get_id(), updating.get_xywh())
+                        self.__get_and_increment_assignable_id(), updating.get_xywh())
         return updated_frame
 
     def __is_same(self, xywh1, xywh2, radius):
