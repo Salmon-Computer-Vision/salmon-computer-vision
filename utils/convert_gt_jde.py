@@ -20,6 +20,7 @@ def create_data_list(args):
     create_data_list_task(args.data_dir)
 
 def create_data_list_all(dataset_path):
+  labels_path = os.path.join(dataset_path, 'labels_with_ids')
   imgs_path = os.path.join(dataset_path, images_folder)
   set_name = os.path.basename(os.path.normpath(dataset_path))
   rel_imgs_path = os.path.join(set_name, images_folder)
@@ -34,6 +35,9 @@ def create_data_list_all(dataset_path):
     with open(os.path.join(dataset_path, out_path), 'w') as f:
       for filename in path_list:
         f.write(os.path.join(rel_imgs_path,  f"{filename}\n"))
+        name = os.path.splitext(os.path.basename(filename))[0]
+        label_path = os.path.join(labels_path, f"{name}.txt")
+        open(label_path, 'w').close()
 
   print("Writing training image list...")
   write_paths('salmon.train', train)
@@ -45,6 +49,7 @@ def create_data_list_all(dataset_path):
   write_paths('salmon.test', test)
 
 def create_data_list_task(dataset_path):
+  labels_path = os.path.join(dataset_path, 'labels_with_ids')
   imgs_path = os.path.join(dataset_path, images_folder)
   set_name = os.path.basename(os.path.normpath(dataset_path))
   rel_imgs_path = os.path.join(set_name, images_folder)
@@ -58,9 +63,15 @@ def create_data_list_task(dataset_path):
 
   os.chdir(os.path.join(dataset_path, '..'))
   def write_paths(task, f):
-      img_paths = glob.glob(os.path.join(rel_imgs_path, f"{task}*"))
-      img_paths.sort()
-      f.writelines(f"{rel_filename}\n" for rel_filename in img_paths)
+    img_paths = glob.glob(os.path.join(rel_imgs_path, f"{task}*"))
+    img_paths.sort()
+    f.writelines(f"{rel_filename}\n" for rel_filename in img_paths)
+    for rel_filepath in img_paths:
+      name = os.path.splitext(os.path.basename(rel_filepath))[0]
+      label_path = os.path.join(labels_path, f"{name}.txt")
+      if not os.path.exists(label_path) or os.stat(label_path).st_size == 0:
+        with open(label_path, 'w') as label_f:
+          label_f.write('\n')
 
   print("Writing training image list...")
   with open(os.path.join(dataset_path, 'salmon.train'), 'w') as f:
@@ -118,8 +129,10 @@ def convert_to_jde(args):
       with open(os.path.join(label_out_path, f"{frame_name}.txt"), 'a') as out:
           out.write(label_str)
 
-  print("Renaming img1 to", images_folder);
-  os.rename(os.path.join(dataset_path, 'img1'), os.path.join(dataset_path, images_folder))
+  img1_path = os.path.join(dataset_path, 'img1') 
+  if os.path.exists(img1_path):
+    print("Renaming img1 to", images_folder);
+    os.rename(img1_path, os.path.join(dataset_path, images_folder))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Convert MOT Seq to JDE and split dataset into train, val, test sets')
