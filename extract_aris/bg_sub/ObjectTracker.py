@@ -42,16 +42,19 @@ class ObjectTracker:
         updated_frame = BgFrame.clone_bgFrame_metadata(updating_frame)
         base_objects = base_frame.get_all_objects()
         updating_objects = updating_frame.get_all_objects()
-        for i in range(len(base_objects)):
-            for j in range(len(updating_objects)):
-                base = base_objects[i]
-                updating = updating_objects[j]
+        for i in range(len(updating_objects)):
+            is_different = True
+            updating = updating_objects[i]
+            for j in range(len(base_objects)):
+                base = base_objects[j]
                 if self.__is_same(base.get_xywh(), updating.get_xywh(), self.radius):
                     updated_frame.create_and_add_object(
                         base.get_id(), updating.get_xywh())
-                else:
-                    updated_frame.create_and_add_object(
-                        self.__get_and_increment_assignable_id(), updating.get_xywh())
+                    is_different = False
+                    break
+            if is_different:
+                updated_frame.create_and_add_object(
+                            self.__get_and_increment_assignable_id(), updating.get_xywh())
         return updated_frame
 
     def __is_same(self, xywh1, xywh2, radius):

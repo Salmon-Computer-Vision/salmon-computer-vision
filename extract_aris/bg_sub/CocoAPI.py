@@ -29,7 +29,6 @@ class CocoAPI:
 
     def get_all_annotated_imgs(self, show_label=False):
         annotated_images = []
-        # all_annotations = self.get_all_annotations()
         img_metadata = self.get_all_img_metadata()
         for img in img_metadata:
             I = cv2.imread('{}/{}'.format(self.dataDir, img['file_name']))
