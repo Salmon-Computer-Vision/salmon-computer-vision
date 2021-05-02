@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from .BgUtility import *
 
 
 class BackgroundSub:
@@ -21,7 +22,7 @@ class BackgroundSub:
             frame = bg_subtractor.apply(frame)
             frame = self.__do_morphological_operation(frame, self.kernel_size)
             frame = self.__convert_to_binary(frame)
-            frame = self.__add_color_channel_to(frame)
+            frame = BgUtility.convert_to_color_frame(frame)
             bgSub_frames.append(frame)
         return bgSub_frames
 
@@ -32,10 +33,6 @@ class BackgroundSub:
     def __convert_to_binary(self, frame):
         ret, thresh = cv2.threshold(frame, 0, 255, cv2.THRESH_OTSU)
         return thresh
-
-    def __add_color_channel_to(self, img_2d):
-        img_color_channel = np.stack((img_2d,)*3, axis=-1)
-        return img_color_channel
 
     def __do_morphological_operation(self, frame, kernel_size):
         kernel = np.ones((kernel_size, kernel_size), np.uint8)

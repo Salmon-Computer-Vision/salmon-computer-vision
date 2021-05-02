@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import json
 import os
+from .BgUtility import *
 from PIL import Image
 
 
@@ -59,7 +60,7 @@ class ObjectLabel:
     def __convert_to_color(self, frames):
         color_frames = []
         for i in range(len(frames)):
-            color_frame = self.__add_color_channel_to(frames[i])
+            color_frame = BgUtility.convert_to_color_frame(frames[i])
             color_frames.append(color_frame)
         return color_frames
 
@@ -92,10 +93,6 @@ class ObjectLabel:
         else:
             return frame.shape[2]
 
-    def __add_color_channel_to(self, frame):
-        img_color_channel = np.stack((frame,)*3, axis=-1)
-        return img_color_channel
-
     def get_bbox_on_frames(self, frames):
         [frames_color, frames_gray] = self.__preprocess_frames(frames)
         frames_bbox = []
@@ -123,7 +120,7 @@ class BBoxData:
         if len(self.stats) == 0:
             raise NoBoundingBoxDataError()
 
-        self.__create_dir_if_not_exist(self.dir_name)
+        BgUtility.create_dir_if_not_exist(self.dir_name)
         json_data = self.__create_default_json_data()
         for i in range(len(self.frames)):
             frame = self.frames[i]
@@ -139,10 +136,6 @@ class BBoxData:
                 json_data["metadata"][i]["bounding_boxes"]["interested_objects"].append(
                     xywh)
         self.__write_data_to_file(json_data)
-
-    def __create_dir_if_not_exist(self, name):
-        if not os.path.exists(name):
-            os.makedirs(name)
 
     def __create_default_json_data(self):
         json_data = {

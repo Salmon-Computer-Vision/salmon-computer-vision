@@ -27,11 +27,11 @@ class CocoAPI:
         all_annotation_ids = self.coco.getAnnIds()
         return self.coco.loadAnns(all_annotation_ids)
 
-    def get_all_annotated_imgs(self, show_label=False):
+    def get_all_annotated_imgs(self, show_label=False, img_prefix = ""):
         annotated_images = []
         img_metadata = self.get_all_img_metadata()
         for img in img_metadata:
-            I = cv2.imread('{}/{}'.format(self.dataDir, img['file_name']))
+            I = cv2.imread('{}/{}'.format(self.dataDir, img_prefix + img['file_name']))
             annIds = self.coco.getAnnIds(imgIds=img['id'])
             anns = self.coco.loadAnns(annIds)
             for ann in anns:

@@ -1,5 +1,8 @@
 import cv2
+import os
+import numpy as np
 from .CocoAPI import CocoAPI
+from PIL import Image
 
 
 class BgUtility:
@@ -28,3 +31,25 @@ class BgUtility:
             video.write(frames[i])
         video.release()
         cv2.destroyAllWindows()
+
+    @staticmethod
+    def save_frame_as_image(frame, path, file_name):
+        if BgUtility.__is_frame_gray(frame):
+            frame = BgUtility.convert_to_color_frame(frame)
+        BgUtility.create_dir_if_not_exist(path)
+        img = Image.fromarray(frame, "RGB")
+        img.save("{}/{}".format(path, file_name))
+
+    @staticmethod
+    def __is_frame_gray(frame):
+        return len(frame.shape) == 2
+
+    @staticmethod
+    def convert_to_color_frame(frame):
+        frame = np.stack((frame,)*3, axis=-1)
+        return frame
+
+    @staticmethod
+    def create_dir_if_not_exist(name):
+        if not os.path.exists(name):
+            os.makedirs(name)
