@@ -26,7 +26,7 @@ class ObjectTracker:
         self.tracked_frames.append(first_frame)
         for i in range(1, len(self.frames)):
             updated_frame = self.__track_and_return_updated_frame(
-                self.frames[i-1], self.frames[i])
+                self.tracked_frames[i-1], self.frames[i])
             self.tracked_frames.append(updated_frame)
 
     def __init_id(self, frame: BgFrame):
