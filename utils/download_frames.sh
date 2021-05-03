@@ -12,10 +12,23 @@ set -e
 
 # Ex. ./download_frames.sh kami "${pass}" dump dump_filt
 
+if [ "$#" -le 4 ]; then
+    echo "Must have at least 4 parameters"
+fi
+
 user=$1
 pass=$2 # Pass using env var
 source_dir=$3
 filtered_dir=$4
+
+# XPath to filter every other frame
+# /item[number(substring(/item/id, 7)) mod 2 = 0]
+xpath_filt='/item'
+if [ "$#" -eq 5 ]; then
+    xpath_filt=$5
+fi
+
+echo $xpath_filt
 
 track_idx=0
 
@@ -29,11 +42,7 @@ for task in "${source_dir}"/*; do
     t_name=$(basename "$task")
     task_filt="${filtered_dir}/${t_name}"
 
-    if [ -d "${task}"/sources/*/images ]; then
-       (cd "${task}"; datum export --overwrite -o "${task_filt}" -e '/item/annotation' --filter-mode i+a -f datumaro -- --save-images)
-    else
-       (cd "${task}"; "${exp_script}" "${user}" "${pass}" "${task_filt}")
-    fi
+   (cd "${task}"; "${exp_script}" "${user}" "${pass}" "${task_filt}" "${xpath_filt}")
 
     datum import -i "${task_filt}" -o "${task_filt}" -f datumaro --overwrite
 

@@ -3,6 +3,7 @@ import sys
 import glob, os
 import numpy as np
 import random
+import argparse
 from pathlib import Path
 
 from utils import deserialize_anno
@@ -10,9 +11,45 @@ from utils import deserialize_anno
 # MOT GT Seq
 # <Frame num>,<Identity num>,<box left>,<box top>,<box width>,<box height>,<confidence>,<class>,<visibility>
 # Must delete labels_with_ids folder if already exists
+images_folder = 'images'
 
-def create_data_list(dataset_path):
-  images_folder = 'images'
+def create_data_list(args):
+  if args.all:
+    create_data_list_all(args.data_dir)
+  else:
+    create_data_list_task(args.data_dir)
+
+def create_data_list_all(dataset_path):
+  labels_path = os.path.join(dataset_path, 'labels_with_ids')
+  imgs_path = os.path.join(dataset_path, images_folder)
+  set_name = os.path.basename(os.path.normpath(dataset_path))
+  rel_imgs_path = os.path.join(set_name, images_folder)
+  img_filenames = os.listdir(imgs_path)
+
+  random.shuffle(img_filenames)
+  train, val, test = np.split(img_filenames, [int(len(img_filenames)*0.7), int(len(img_filenames)*0.85)])
+  print(len(train), len(val), len(test))
+
+  os.chdir(os.path.join(dataset_path, '..'))
+  def write_paths(out_path, path_list):
+    with open(os.path.join(dataset_path, out_path), 'w') as f:
+      for filename in path_list:
+        f.write(os.path.join(rel_imgs_path,  f"{filename}\n"))
+        name = os.path.splitext(os.path.basename(filename))[0]
+        label_path = os.path.join(labels_path, f"{name}.txt")
+        open(label_path, 'w').close()
+
+  print("Writing training image list...")
+  write_paths('salmon.train', train)
+
+  print("Writing validation image list...")
+  write_paths('salmon.val', val)
+
+  print("Writing testing image list...")
+  write_paths('salmon.test', test)
+
+def create_data_list_task(dataset_path):
+  labels_path = os.path.join(dataset_path, 'labels_with_ids')
   imgs_path = os.path.join(dataset_path, images_folder)
   set_name = os.path.basename(os.path.normpath(dataset_path))
   rel_imgs_path = os.path.join(set_name, images_folder)
@@ -26,8 +63,15 @@ def create_data_list(dataset_path):
 
   os.chdir(os.path.join(dataset_path, '..'))
   def write_paths(task, f):
-      img_paths = glob.glob(os.path.join(rel_imgs_path, f"{task}*"))
-      f.writelines(f"{rel_filename}\n" for rel_filename in img_paths)
+    img_paths = glob.glob(os.path.join(rel_imgs_path, f"{task}*"))
+    img_paths.sort()
+    f.writelines(f"{rel_filename}\n" for rel_filename in img_paths)
+    for rel_filepath in img_paths:
+      name = os.path.splitext(os.path.basename(rel_filepath))[0]
+      label_path = os.path.join(labels_path, f"{name}.txt")
+      if not os.path.exists(label_path) or os.stat(label_path).st_size == 0:
+        with open(label_path, 'w') as label_f:
+          label_f.write('\n')
 
   print("Writing training image list...")
   with open(os.path.join(dataset_path, 'salmon.train'), 'w') as f:
@@ -44,20 +88,13 @@ def create_data_list(dataset_path):
     for task in test:
       write_paths(task, f)
 
-def main():
+def convert_to_jde(args):
   height = 1080
   width = 1920
 
-  if len(sys.argv) < 2:
-    print(f"Usage: {sys.argv[0]} <path/to/mot_seq_folder>")
-    return
-
-
-  dataset_path = sys.argv[1]
+  dataset_path = args.data_dir
   gt_file_path = os.path.join(dataset_path, "gt", "gt.txt")
   label_out_path = os.path.join(dataset_path, "labels_with_ids")
-
-  #create_data_list(dataset_path)
 
   Path(label_out_path).mkdir(parents=True, exist_ok=False)
 
@@ -69,7 +106,6 @@ def main():
     for line in f:
       parts = line.strip().split(',')
       frame_name, track_id, x, y, box_width, box_height, class_id = deserialize_anno(parts)
-      
 
       track_id = int(track_id) - 1 # Offset for JDE format
       task_id = int(frame_name[:-6])
@@ -93,4 +129,23 @@ def main():
       with open(os.path.join(label_out_path, f"{frame_name}.txt"), 'a') as out:
           out.write(label_str)
 
-main()
+  img1_path = os.path.join(dataset_path, 'img1') 
+  if os.path.exists(img1_path):
+    print("Renaming img1 to", images_folder);
+    os.rename(img1_path, os.path.join(dataset_path, images_folder))
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='Convert MOT Seq to JDE and split dataset into train, val, test sets')
+  subp = parser.add_subparsers()
+
+  split_p = subp.add_parser('split')
+  split_p.add_argument('-a', '--all', action='store_true', help='Shuffle all the images in the list disregarding video ID')
+  split_p.add_argument('data_dir')
+  split_p.set_defaults(func=create_data_list)
+
+  convert_p = subp.add_parser('convert')
+  convert_p.add_argument('data_dir')
+  convert_p.set_defaults(func=convert_to_jde)
+
+  args = parser.parse_args()
+  args.func(args)

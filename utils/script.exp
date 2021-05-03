@@ -47,12 +47,17 @@ set timeout -1
 set user [lindex $argv 0]
 set pass [lindex $argv 1]
 set out [lindex $argv 2]
+set filt [lindex $argv 3]
 
-spawn datum export -o "$out" -e "/item/annotation" --filter-mode i+a -f datumaro --overwrite -- --save-images
+spawn datum export -o "$out" -e "$filt" --filter-mode i -f datumaro --overwrite -- --save-images
 match_max 100000
-expect "*Enter credentials for * to read task data:\r
-User:*"
-send -- "${user}\r"
-expect "Password:"
-send -- "${pass}\r"
-expect eof
+expect {
+    "*Enter credentials for * to read task data:\r
+User:*" {
+        send -- "${user}\r"
+        expect "Password:"
+        send -- "${pass}\r"
+        expect eof
+    }
+    eof
+}

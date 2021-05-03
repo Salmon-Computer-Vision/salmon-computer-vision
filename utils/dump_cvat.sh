@@ -9,8 +9,8 @@
 cli=$1
 auth=$2 # username:pass-env
 host=$3
-start=$4
-last=$5
+start_id=$4
+last_id=$5
 dest_dir=$6
 
 mkdir -p "$dest_dir"
@@ -20,7 +20,7 @@ tmp=$(mktemp)
 
 task_list=$(cat $tmp)
 
-for ((i=start; i<=last; i++)); do
+for ((i=start_id; i<=last_id; i++)); do
     if ! (echo "${task_list}" | grep -qe "^$i,"); then
         continue
     fi
