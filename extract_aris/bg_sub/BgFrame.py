@@ -19,6 +19,11 @@ class BgFrame:
     def __init__(self):
         super().__init__()
         self.objects = dict()
+        self.metadata = {
+            "filename": "",
+            "height": 0,
+            "width": 0
+        }
 
     def get_all_objects(self):
         return list(self.objects.values())
@@ -33,7 +38,7 @@ class BgFrame:
         del self.objects[id]
 
     @staticmethod
-    def value_of(stat):
+    def value_of_stat(stat):
         bgFrame = BgFrame()
         id = 0
         for i in range(len(stat)):
@@ -45,4 +50,18 @@ class BgFrame:
             xywh["h"] = int(s[cv2.CC_STAT_HEIGHT])
             bgFrame.create_and_add_object(id, xywh)
             id = id + 1
+        return bgFrame
+    
+    @staticmethod
+    def of(stat, filename, width, height):
+        bgFrame = BgFrame.value_of_stat(stat)
+        bgFrame.metadata["filename"] = filename
+        bgFrame.metadata["width"] = width
+        bgFrame.metadata["height"] = height
+        return bgFrame
+    
+    @staticmethod
+    def clone_bgFrame_metadata(base_bgFrame):
+        bgFrame = BgFrame()
+        bgFrame.metadata = base_bgFrame.metadata
         return bgFrame

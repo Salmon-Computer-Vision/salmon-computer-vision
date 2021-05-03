@@ -4,6 +4,7 @@ from bg_sub.BgObjLabel import *
 from bg_sub.BgFrame import BgFrame
 from bg_sub.ObjectTracker import ObjectTracker
 from bg_sub.BgUtility import BgUtility
+from bg_sub.CocoAPI import CocoAPI
 from pyARIS import pyARIS
 import os
 
@@ -17,29 +18,25 @@ def get_file_path(filename):
 config = {
     "file_path": get_file_path("2020-05-27_071000.aris"),
     "frame_start": 1775,
-    "frame_end": 1800,  # 2782
+    "frame_end": 2782,
     "history": 100,
     "varThreshold": 20,
     "kernel_size": 3,
     "bg_algorithm": "MOG2",
-    "detectShadows": True
+    "detectShadows": True,
+    "object_tracker_radius": 5,
+    "object_tracker_frame_threshold": 5,
 }
 
 
 def main():
     frames = extract_frames()
     bgSub_frames = subtract_background(frames)
-    (objLabel, bboxData) = label_objects(bgSub_frames, exportData=False)
-    bgFrames = convert_bboxData_to_bgFrames(bboxData)
+    (objLabel, bboxData) = label_objects(bgSub_frames, exportData=True)
 
-    tracker = ObjectTracker(5, bgFrames)
-    tracker.track()
-
-    BgUtility.export_video(objLabel.frames_bbox,
-                           "bg_sub_test.mp4", invert_color=False)
-
-    BgUtility.export_video(objLabel.get_bbox_on_frames(frames),
-                           "original_bbox_frames.mp4", invert_color=False)
+    start_tracker_and_export(bboxData, export_path="export")
+    get_annotated_frames_from_coco(export_video=True)
+    get_annotated_original_frames_from_coco(frames, export_video=True)
 
 
 def extract_frames():
@@ -76,9 +73,55 @@ def convert_bboxData_to_bgFrames(bboxData: BBoxData):
     bgFrames = []
     for i in range(len(stats)):
         stat = stats[i]
-        bgFrame = BgFrame.value_of(stat)
+        bgFrame = BgFrame.of(
+            stat,
+            "{}.png".format(i),
+            bboxData.width,
+            bboxData.height
+        )
         bgFrames.append(bgFrame)
     return bgFrames
+
+
+def start_tracker_and_export(bboxData, export_path):
+    bgFrames = convert_bboxData_to_bgFrames(bboxData)
+    tracker = ObjectTracker(
+        config["object_tracker_radius"],
+        bgFrames,
+        config["object_tracker_frame_threshold"]
+    )
+    json_formatter = tracker.start()
+    json_formatter.export_json(export_path)
+
+
+def get_annotated_frames_from_coco(export_video=False):
+    coco_api = CocoAPI("export/object_coco.json", "export")
+    annotated_images = coco_api.get_all_annotated_imgs(show_label=True)
+    if export_video:
+        BgUtility.export_video(
+            annotated_images, "tracked_test.mp4", invert_color=False)
+    return annotated_images
+
+
+def get_annotated_original_frames_from_coco(frames, save_frames=False, export_video=False):
+    coco_api = CocoAPI("export/object_coco.json", "export")
+    save_frames_as_images(frames, "original_")
+    annotated_original_images = coco_api.get_all_annotated_imgs(
+        show_label=True, img_prefix="original_")
+    if save_frames:
+        save_frames_as_images(annotated_original_images, prefix="original_")
+    if export_video:
+        BgUtility.export_video(
+            annotated_original_images, "tracked_original_test.mp4", invert_color=False)
+    return annotated_original_images
+
+
+def save_frames_as_images(frames, prefix=""):
+    path = "export"
+    for i in range(len(frames)):
+        frame = frames[i]
+        BgUtility.save_frame_as_image(
+            frame, path, "{}.png".format(prefix + str(i)))
 
 
 main()

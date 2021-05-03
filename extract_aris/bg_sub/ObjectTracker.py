@@ -4,27 +4,34 @@ from .JSONFormatter import *
 
 
 class ObjectTracker:
-    def __init__(self, radius: int, frames: [BgFrame]):
+    def __init__(self, radius: int, frames: [BgFrame], frame_threshold: int):
         super().__init__()
         self.assignable_id = 0
         self.radius = radius
         self.frames = frames
         self.json_formatter = JSONFormatter()
+        self.json_formatter.add_category(0, "salmon", "")
 
-    def track(self):
+        self.frame_threshold = frame_threshold
+        self.tracked_frames = []
+
+    def start(self):
         self.__track_frames()
+        self.__remove_noises()
+        self.json_formatter.set_frames(self.tracked_frames)
+        return self.json_formatter
 
     def __track_frames(self):
         first_frame = self.__init_id(self.frames[0])
-        self.json_formatter.add_frame(first_frame)
+        self.tracked_frames.append(first_frame)
         for i in range(1, len(self.frames)):
             updated_frame = self.__track_and_return_updated_frame(
-                self.frames[i-1], self.frames[i])
-            self.json_formatter.add_frame(updated_frame)
+                self.tracked_frames[i-1], self.frames[i])
+            self.tracked_frames.append(updated_frame)
 
     def __init_id(self, frame: BgFrame):
         bgObjects: [BgObject] = frame.get_all_objects()
-        new_frame = BgFrame()
+        new_frame = BgFrame.clone_bgFrame_metadata(frame)
         for i in range(len(bgObjects)):
             bgObject = bgObjects[i]
             new_frame.create_and_add_object(
@@ -32,19 +39,22 @@ class ObjectTracker:
         return new_frame
 
     def __track_and_return_updated_frame(self, base_frame: BgFrame, updating_frame: BgFrame):
-        updated_frame = BgFrame()
+        updated_frame = BgFrame.clone_bgFrame_metadata(updating_frame)
         base_objects = base_frame.get_all_objects()
         updating_objects = updating_frame.get_all_objects()
-        for i in range(len(base_objects)):
-            for j in range(len(updating_objects)):
-                base = base_objects[i]
-                updating = updating_objects[j]
+        for i in range(len(updating_objects)):
+            is_different = True
+            updating = updating_objects[i]
+            for j in range(len(base_objects)):
+                base = base_objects[j]
                 if self.__is_same(base.get_xywh(), updating.get_xywh(), self.radius):
                     updated_frame.create_and_add_object(
                         base.get_id(), updating.get_xywh())
-                else:
-                    updated_frame.create_and_add_object(
-                        updating.get_id(), updating.get_xywh())
+                    is_different = False
+                    break
+            if is_different:
+                updated_frame.create_and_add_object(
+                            self.__get_and_increment_assignable_id(), updating.get_xywh())
         return updated_frame
 
     def __is_same(self, xywh1, xywh2, radius):
@@ -76,3 +86,42 @@ class ObjectTracker:
 
     def __increment_id(self):
         self.assignable_id = self.assignable_id + 1
+
+    def __remove_noises(self):
+        counts = self.__count_objects_frequency()
+        counts = self.__clean_counts_by_threshold(counts)
+        self.__remove_frame_objects_by_threshold(counts)
+
+    def __count_objects_frequency(self):
+        counts = dict()
+        for i in range(len(self.tracked_frames)):
+            frame = self.tracked_frames[i]
+            objects = frame.get_all_objects()
+            for j in range(len(objects)):
+                obj = objects[j]
+                obj_id = obj.get_id()
+                if obj_id in counts:
+                    counts[obj_id] = counts[obj_id] + 1
+                else:
+                    counts[obj_id] = 1
+        return counts
+
+    def __clean_counts_by_threshold(self, counts):
+        lower_than_threshold_keys = []
+        for key in counts:
+            if counts[key] < self.frame_threshold:
+                lower_than_threshold_keys.append(key)
+        for i in range(len(lower_than_threshold_keys)):
+            del counts[lower_than_threshold_keys[i]]
+        return counts
+
+    def __remove_frame_objects_by_threshold(self, counts):
+        for i in range(len(self.tracked_frames)):
+            frame = self.tracked_frames[i]
+            objects = frame.get_all_objects()
+
+            for j in range(len(objects)):
+                obj = objects[j]
+                obj_id = obj.get_id()
+                if obj_id not in counts:
+                    frame.remove_object(obj_id)

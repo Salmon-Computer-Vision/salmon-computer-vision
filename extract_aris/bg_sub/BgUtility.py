@@ -1,10 +1,14 @@
 import cv2
+import os
+import numpy as np
+from .CocoAPI import CocoAPI
+from PIL import Image
 
 
 class BgUtility:
     def __init__(self):
         super().__init__()
-    
+
     @staticmethod
     def export_video(frames, filename, invert_color=False):
         if invert_color:
@@ -16,7 +20,7 @@ class BgUtility:
         for index in range(len(frames)):
             frames[index] = cv2.bitwise_not(frames[index])
         return frames
-    
+
     @staticmethod
     def __get_video(frames, filename):
         height = frames[0].shape[0]
@@ -27,3 +31,25 @@ class BgUtility:
             video.write(frames[i])
         video.release()
         cv2.destroyAllWindows()
+
+    @staticmethod
+    def save_frame_as_image(frame, path, file_name):
+        if BgUtility.__is_frame_gray(frame):
+            frame = BgUtility.convert_to_color_frame(frame)
+        BgUtility.create_dir_if_not_exist(path)
+        img = Image.fromarray(frame, "RGB")
+        img.save("{}/{}".format(path, file_name))
+
+    @staticmethod
+    def __is_frame_gray(frame):
+        return len(frame.shape) == 2
+
+    @staticmethod
+    def convert_to_color_frame(frame):
+        frame = np.stack((frame,)*3, axis=-1)
+        return frame
+
+    @staticmethod
+    def create_dir_if_not_exist(name):
+        if not os.path.exists(name):
+            os.makedirs(name)

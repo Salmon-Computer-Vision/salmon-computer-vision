@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import json
 import os
+from .BgUtility import *
 from PIL import Image
 
 
@@ -37,8 +38,14 @@ class ObjectLabel:
                 frame = self.__draw_bbox(frame, xywh)
                 frame = self.__draw_label(frame, str(j), xywh)
             self.frames_bbox.append(frame)
+            stats = self.__remove_background_stat(stats)
             self.stats.append(stats)
         return BBoxData(self.frames_color, self.stats)
+
+    def __remove_background_stat(self, stats):
+        if len(stats) > 0:
+            stats = np.delete(stats, 0, 0)
+        return stats
 
     def get_stats(self):
         return self.stats
@@ -53,7 +60,7 @@ class ObjectLabel:
     def __convert_to_color(self, frames):
         color_frames = []
         for i in range(len(frames)):
-            color_frame = self.__add_color_channel_to(frames[i])
+            color_frame = BgUtility.convert_to_color_frame(frames[i])
             color_frames.append(color_frame)
         return color_frames
 
@@ -86,10 +93,6 @@ class ObjectLabel:
         else:
             return frame.shape[2]
 
-    def __add_color_channel_to(self, frame):
-        img_color_channel = np.stack((frame,)*3, axis=-1)
-        return img_color_channel
-
     def get_bbox_on_frames(self, frames):
         [frames_color, frames_gray] = self.__preprocess_frames(frames)
         frames_bbox = []
@@ -110,12 +113,14 @@ class BBoxData:
         self.stats = stats
         self.dir_name = "export"
         self.img_ext = ".png"
+        self.height = frames[0].shape[0]
+        self.width = frames[0].shape[1]
 
     def export_data(self):
         if len(self.stats) == 0:
             raise NoBoundingBoxDataError()
 
-        self.__create_dir_if_not_exist(self.dir_name)
+        BgUtility.create_dir_if_not_exist(self.dir_name)
         json_data = self.__create_default_json_data()
         for i in range(len(self.frames)):
             frame = self.frames[i]
@@ -131,10 +136,6 @@ class BBoxData:
                 json_data["metadata"][i]["bounding_boxes"]["interested_objects"].append(
                     xywh)
         self.__write_data_to_file(json_data)
-
-    def __create_dir_if_not_exist(self, name):
-        if not os.path.exists(name):
-            os.makedirs(name)
 
     def __create_default_json_data(self):
         json_data = {
