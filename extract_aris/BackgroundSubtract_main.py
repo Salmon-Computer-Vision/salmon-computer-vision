@@ -38,6 +38,7 @@ def main():
     get_annotated_frames_from_coco(export_video=True)
     get_annotated_original_frames_from_coco(frames, export_video=True)
 
+    export_sample_frames(frames, skip_frame=50)
 
 def extract_frames():
     aris_data, frame = pyARIS.DataImport(config["file_path"])
@@ -122,6 +123,11 @@ def save_frames_as_images(frames, prefix=""):
         frame = frames[i]
         BgUtility.save_frame_as_image(
             frame, path, "{}.png".format(prefix + str(i)))
+
+
+def export_sample_frames(frames, skip_frame=0):
+    for i in range(0, len(frames), skip_frame+1):
+        BgUtility.save_frame_as_image(frames[i], "export/samples", "{}.png".format(i))
 
 
 main()

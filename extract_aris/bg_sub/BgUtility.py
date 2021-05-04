@@ -28,7 +28,10 @@ class BgUtility:
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         video = cv2.VideoWriter(filename, fourcc, 4.8, (width, height))
         for i in range(len(frames)):
-            video.write(frames[i])
+            frame = frames[i]
+            if BgUtility.__is_frame_gray(frame):
+                frame = BgUtility.convert_to_color_frame(frame)
+            video.write(frame)
         video.release()
         cv2.destroyAllWindows()
 
