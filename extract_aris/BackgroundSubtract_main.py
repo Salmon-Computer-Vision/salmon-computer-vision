@@ -37,8 +37,9 @@ def main():
     start_tracker_and_export(bboxData, export_path="export")
     get_annotated_frames_from_coco(export_video=True)
     get_annotated_original_frames_from_coco(frames, export_video=True)
-
+    export_bbox_result()
     export_sample_frames(frames, skip_frame=50)
+
 
 def extract_frames():
     aris_data, frame = pyARIS.DataImport(config["file_path"])
@@ -125,8 +126,13 @@ def save_frames_as_images(frames, prefix=""):
             frame, path, "{}.png".format(prefix + str(i)))
 
 
+def export_bbox_result():
+    coco_api = CocoAPI("export/object_coco.json", "export")
+    coco_api.export_bbox_result()
+
+
 def export_sample_frames(frames, skip_frame=0):
-    for i in range(0, len(frames), skip_frame+1):
+    for i in range(0, len(frames), skip_frame + 1):
         BgUtility.save_frame_as_image(frames[i], "export/samples", "{}.png".format(i))
 
 
