@@ -84,9 +84,9 @@ class TrackerTest(unittest.TestCase):
         updated_frame = tracker._ObjectTracker__track_and_return_updated_frame(
             base_frame, updating_frame)
 
-        self.assertEqual(updated_frame.get_object(2).get_id(),
-                         updating_frame.get_object(2).get_id())
-        self.assertEqual(updated_frame.get_object(2).get_xywh(),
+        new_assigned_id = 0
+        self.assertEqual(updated_frame.get_object(0).get_id(), new_assigned_id)
+        self.assertEqual(updated_frame.get_object(0).get_xywh(),
                          updating_frame.get_object(2).get_xywh())
 
     def __build_frames_with_different_objects(self):
