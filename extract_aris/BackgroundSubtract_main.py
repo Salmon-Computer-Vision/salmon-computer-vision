@@ -128,7 +128,7 @@ def save_frames_as_images(frames, prefix=""):
 
 def export_bbox_result():
     coco_api = CocoAPI("export/object_coco.json", "export")
-    coco_api.export_bbox_result()
+    coco_api.export_bbox_pred_result(skip_frame=50)
 
 
 def export_sample_frames(frames, skip_frame=0):

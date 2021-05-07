@@ -55,13 +55,14 @@ class CocoAPI:
             annotated_images.append(I)
         return annotated_images
 
-    def export_bbox_result(self):
+    def export_bbox_pred_result(self, skip_frame):
         """
         Bbox file format follows this document:
         https://github.com/Cartucho/mAP#create-the-ground-truth-files
         """
         img_ids = self.coco.getImgIds()
-        for img_id in img_ids:
+        for i in range(0, len(img_ids), skip_frame + 1):
+            img_id = img_ids[i]
             img = self.coco.loadImgs(img_id)[0]
             img_file_name_no_ext = img["file_name"][0:-4]
             BgUtility.create_dir_if_not_exist("{}/bbox_result".format(self.dataDir))
@@ -70,9 +71,11 @@ class CocoAPI:
                 anns = self.coco.loadAnns(annIds)
                 for ann in anns:
                     cat = self.coco.loadCats(ann["category_id"])[0]
+                    confidence = 1
                     bbox = ann["bbox"]
-                    line_content = "{} {} {} {} {}\n".format(
+                    line_content = "{} {} {} {} {} {}\n".format(
                         cat["name"],
+                        confidence,
                         bbox[0],
                         bbox[1],
                         bbox[0] + bbox[2],
