@@ -116,7 +116,7 @@ class BBoxData:
         self.height = frames[0].shape[0]
         self.width = frames[0].shape[1]
 
-    def export_data(self):
+    def export_data(self, export_img=False):
         if len(self.stats) == 0:
             raise NoBoundingBoxDataError()
 
@@ -126,7 +126,8 @@ class BBoxData:
             frame = self.frames[i]
             file_name = str(i) + self.img_ext
             export_path = self.__get_export_path(file_name)
-            self.__save_frame_as_image(export_path, frame)
+            if export_img:
+                self.__save_frame_as_image(export_path, frame)
             default_frame_metadata = self.__create_default_frame_metadata()
             json_data["metadata"].append(default_frame_metadata)
             json_data["metadata"][i]["name"] = file_name
