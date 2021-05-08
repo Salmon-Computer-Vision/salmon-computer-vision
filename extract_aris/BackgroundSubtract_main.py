@@ -32,12 +32,21 @@ config = {
 def main():
     frames = extract_frames()
     bgSub_frames = subtract_background(frames)
-    (objLabel, bboxData) = label_objects(bgSub_frames, exportData=True)
+    (objLabel, bboxData) = label_objects(bgSub_frames, exportData=True, export_img=False)
 
     start_tracker_and_export(bboxData, export_path="export")
-    get_annotated_frames_from_coco(export_video=True)
-    get_annotated_original_frames_from_coco(frames, export_video=True)
     export_bbox_result()
+
+    ###
+    # Export frames and videos
+    ###
+    # get_annotated_frames_from_coco(export_video=True)
+    # get_annotated_original_frames_from_coco(
+    #     frames,
+    #     save_annotated_original_frames=True,
+    #     export_video=True,
+    #     save_original_frames=True
+    # )
     export_sample_frames(frames, skip_frame=50)
 
 
@@ -62,11 +71,11 @@ def subtract_background(frames):
     return bgSub_frame
 
 
-def label_objects(frames, exportData=False):
+def label_objects(frames, exportData=False, export_img=False):
     objLabel = ObjectLabel(frames)
     bboxData = objLabel.label_objects()
     if exportData:
-        bboxData.export_data()
+        bboxData.export_data(export_img=export_img)
     return (objLabel, bboxData)
 
 
@@ -105,12 +114,18 @@ def get_annotated_frames_from_coco(export_video=False):
     return annotated_images
 
 
-def get_annotated_original_frames_from_coco(frames, save_frames=False, export_video=False):
+def get_annotated_original_frames_from_coco(
+        frames,
+        save_annotated_original_frames=False,
+        export_video=False,
+        save_original_frames=False
+):
     coco_api = CocoAPI("export/object_coco.json", "export")
-    save_frames_as_images(frames, "original_")
+    if save_original_frames:
+        save_frames_as_images(frames, "original_")
     annotated_original_images = coco_api.get_all_annotated_imgs(
         show_label=True, img_prefix="original_")
-    if save_frames:
+    if save_annotated_original_frames:
         save_frames_as_images(annotated_original_images, prefix="original_")
     if export_video:
         BgUtility.export_video(
