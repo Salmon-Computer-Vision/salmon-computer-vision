@@ -28,7 +28,7 @@ class BgUtility:
         video = cv2.VideoWriter(filename, fourcc, 4.8, (width, height))
         for i in range(len(frames)):
             frame = frames[i]
-            if BgUtility.__is_frame_gray(frame):
+            if BgUtility.is_frame_gray(frame):
                 frame = BgUtility.convert_to_color_frame(frame)
             video.write(frame)
         video.release()
@@ -36,14 +36,14 @@ class BgUtility:
 
     @staticmethod
     def save_frame_as_image(frame, path, file_name):
-        if BgUtility.__is_frame_gray(frame):
+        if BgUtility.is_frame_gray(frame):
             frame = BgUtility.convert_to_color_frame(frame)
         BgUtility.create_dir_if_not_exist(path)
         img = Image.fromarray(frame, "RGB")
         img.save("{}/{}".format(path, file_name))
 
     @staticmethod
-    def __is_frame_gray(frame):
+    def is_frame_gray(frame):
         return len(frame.shape) == 2
 
     @staticmethod

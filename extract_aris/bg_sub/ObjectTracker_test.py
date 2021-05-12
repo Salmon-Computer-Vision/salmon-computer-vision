@@ -13,7 +13,7 @@ class TrackerTest(unittest.TestCase):
 
     def __build_tracker(self):
         radius = 5
-        return ObjectTracker(radius, self.__build_BgFrame(), self.json_formatter)
+        return ObjectTracker(radius, self.__build_BgFrame(), self.json_formatter, history=10)
 
     def __build_BgFrame(self):
         return BgFrame()
@@ -60,7 +60,7 @@ class TrackerTest(unittest.TestCase):
             base_frame, updating_frame)
 
         self.assertEqual(updated_frame.get_object(1).get_id(),
-                         base_frame.get_object(1).get_id())
+                         base_frame[0].get_object(1).get_id())
         self.assertEqual(updated_frame.get_object(1).get_xywh(),
                          updating_frame.get_object(2).get_xywh())
 
@@ -75,7 +75,7 @@ class TrackerTest(unittest.TestCase):
         frame1.create_and_add_object(1, xywh1)
         frame2.create_and_add_object(2, xywh2)
 
-        return (frame1, frame2)
+        return ([frame1], frame2)
 
     def test_track_and_return_updated_frame_different_objects(self):
         tracker = self.__build_tracker()
@@ -100,7 +100,7 @@ class TrackerTest(unittest.TestCase):
         frame1.create_and_add_object(1, xywh1)
         frame2.create_and_add_object(2, xywh2)
 
-        return (frame1, frame2)
+        return ([frame1], frame2)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 from pycocotools.coco import COCO
 from .BgUtility import BgUtility
 
@@ -28,32 +29,54 @@ class CocoAPI:
         return self.coco.loadAnns(all_annotation_ids)
 
     def get_all_annotated_imgs(self, show_label=False, img_prefix=""):
-        annotated_images = []
+        annotated_frames = []
         img_metadata = self.get_all_img_metadata()
         for img in img_metadata:
             I = cv2.imread('{}/{}'.format(self.dataDir, img_prefix + img['file_name']))
             annIds = self.coco.getAnnIds(imgIds=img['id'])
             anns = self.coco.loadAnns(annIds)
-            for ann in anns:
-                bbox = ann["bbox"]
-                x = bbox[0]
-                y = bbox[1]
-                w = bbox[2]
-                h = bbox[3]
-                I = cv2.rectangle(
-                    I, (x, y), (x + w, y + h), (0, 255, 0), 1)
-                if show_label:
-                    I = cv2.putText(
-                        I,
-                        str(ann["object_id"]),
-                        (x, y - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.9,
-                        (0, 255, 0),
-                        1
-                    )
-            annotated_images.append(I)
-        return annotated_images
+            annotated_frame = self.__draw_bbox_by_anns(I, anns, show_label=show_label)
+            annotated_frames.append(annotated_frame)
+        return annotated_frames
+
+    def get_all_annotated_imgs_from_memory(self, frames, show_label=False):
+        annotated_frames = []
+        img_metadata = self.get_all_img_metadata()
+        for i in range(len(img_metadata)):
+            img = img_metadata[i]
+            frame = self.__clean_frame(frames[i])
+            annIds = self.coco.getAnnIds(imgIds=img['id'])
+            anns = self.coco.loadAnns(annIds)
+            annotated_frame = self.__draw_bbox_by_anns(frame, anns, show_label=show_label)
+            annotated_frames.append(annotated_frame)
+        return annotated_frames
+
+    def __clean_frame(self, frame):
+        if BgUtility.is_frame_gray(frame):
+            frame = BgUtility.convert_to_color_frame(frame)
+        frame = np.ascontiguousarray(frame)
+        return frame
+
+    def __draw_bbox_by_anns(self, frame, anns, show_label=False):
+        for ann in anns:
+            bbox = ann["bbox"]
+            x = bbox[0]
+            y = bbox[1]
+            w = bbox[2]
+            h = bbox[3]
+            frame = cv2.rectangle(
+                frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
+            if show_label:
+                frame = cv2.putText(
+                    frame,
+                    str(ann["object_id"]),
+                    (x, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9,
+                    (0, 255, 0),
+                    1
+                )
+        return frame
 
     def export_bbox_pred_result(self, skip_frame):
         """
