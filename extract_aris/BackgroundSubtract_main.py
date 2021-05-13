@@ -23,9 +23,10 @@ config = {
     "varThreshold": 20,
     "kernel_size": 3,
     "bg_algorithm": "MOG2",
-    "detectShadows": True,
-    "object_tracker_radius": 5,
-    "object_tracker_frame_threshold": 5,
+    "detectShadows": False,
+    "object_tracker_radius": 15,
+    "object_tracker_frame_threshold": 50,
+    "object_tracker_history": 20,
 }
 
 
@@ -40,14 +41,15 @@ def main():
     ###
     # Export frames and videos
     ###
-    # get_annotated_frames_from_coco(export_video=True)
+    get_annotated_frames_from_coco(from_memory=True, frames=frames, export_video=True)
+    # get_annotated_frames_from_coco(from_memory=True, frames=bgSub_frames, export_video=True)
     # get_annotated_original_frames_from_coco(
     #     frames,
     #     save_annotated_original_frames=True,
     #     export_video=True,
     #     save_original_frames=True
     # )
-    export_sample_frames(frames, skip_frame=50)
+    # export_sample_frames(frames, skip_frame=50)
 
 
 def extract_frames():
@@ -99,15 +101,19 @@ def start_tracker_and_export(bboxData, export_path):
     tracker = ObjectTracker(
         config["object_tracker_radius"],
         bgFrames,
-        config["object_tracker_frame_threshold"]
+        config["object_tracker_frame_threshold"],
+        config["object_tracker_history"]
     )
     json_formatter = tracker.start()
     json_formatter.export_json(export_path)
 
 
-def get_annotated_frames_from_coco(export_video=False):
+def get_annotated_frames_from_coco(from_memory=False, frames=None, export_video=False):
     coco_api = CocoAPI("export/object_coco.json", "export")
-    annotated_images = coco_api.get_all_annotated_imgs(show_label=True)
+    if from_memory:
+        annotated_images = coco_api.get_all_annotated_imgs_from_memory(frames, show_label=True)
+    else:
+        annotated_images = coco_api.get_all_annotated_imgs(show_label=True)
     if export_video:
         BgUtility.export_video(
             annotated_images, "tracked_test.mp4", invert_color=False)

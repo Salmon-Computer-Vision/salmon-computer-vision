@@ -4,10 +4,11 @@ from .JSONFormatter import *
 
 
 class ObjectTracker:
-    def __init__(self, radius: int, frames: [BgFrame], frame_threshold: int):
+    def __init__(self, radius: int, frames: [BgFrame], frame_threshold: int, history: int):
         super().__init__()
         self.assignable_id = 0
         self.radius = radius
+        self.history = history
         self.frames = frames
         self.json_formatter = JSONFormatter()
         self.json_formatter.add_category(0, "object", "")
@@ -25,9 +26,19 @@ class ObjectTracker:
         first_frame = self.__init_id(self.frames[0])
         self.tracked_frames.append(first_frame)
         for i in range(1, len(self.frames)):
+            history_tracked_frames = self.__get_history_tracked_frames(i)
             updated_frame = self.__track_and_return_updated_frame(
-                self.tracked_frames[i-1], self.frames[i])
+                history_tracked_frames, self.frames[i])
             self.tracked_frames.append(updated_frame)
+
+    def __get_history_tracked_frames(self, index):
+        history_tracked_frames = []
+        for i in range(self.history):
+            history_index = index - i - 1
+            if history_index < 0:
+                break
+            history_tracked_frames.insert(0, self.tracked_frames[history_index])
+        return history_tracked_frames
 
     def __init_id(self, frame: BgFrame):
         bgObjects: [BgObject] = frame.get_all_objects()
@@ -38,24 +49,48 @@ class ObjectTracker:
                 self.__get_and_increment_assignable_id(), bgObject.get_xywh())
         return new_frame
 
-    def __track_and_return_updated_frame(self, base_frame: BgFrame, updating_frame: BgFrame):
-        updated_frame = BgFrame.clone_bgFrame_metadata(updating_frame)
-        base_objects = base_frame.get_all_objects()
+    def __track_and_return_updated_frame(self, base_frames: [], updating_frame: BgFrame):
         updating_objects = updating_frame.get_all_objects()
-        for i in range(len(updating_objects)):
-            is_different = True
-            updating = updating_objects[i]
-            for j in range(len(base_objects)):
-                base = base_objects[j]
-                if self.__is_same(base.get_xywh(), updating.get_xywh(), self.radius):
-                    updated_frame.create_and_add_object(
-                        base.get_id(), updating.get_xywh())
-                    is_different = False
-                    break
-            if is_different:
-                updated_frame.create_and_add_object(
-                            self.__get_and_increment_assignable_id(), updating.get_xywh())
+        updated_frame = BgFrame.clone_bgFrame_metadata(updating_frame)
+        updated_frame = self.__track_updating_objects(base_frames, updating_objects, updated_frame)
         return updated_frame
+
+    def __track_updating_objects(self, base_frames: [], updating_objects: [], updated_frame: BgFrame):
+        for updating_object in updating_objects:
+            updated_frame = self.__compare_base_frames(base_frames, updating_object, updated_frame)
+        return updated_frame
+
+    def __compare_base_frames(self, base_frames: [], updating_object: BgObject, updated_frame: BgFrame):
+        is_same = False
+        for base_frame in base_frames:
+            base_objects = base_frame.get_all_objects()
+            updated_frame, is_same = self.__compare_base_objects(base_objects, updating_object, updated_frame)
+            if is_same:
+                break
+        if not is_same:
+            updated_frame.create_and_add_object(
+                self.__get_and_increment_assignable_id(), updating_object.get_xywh())
+        return updated_frame
+
+    def __compare_base_objects(self, base_objects: [], updating_object: BgObject, updated_frame: BgFrame):
+        is_same = False
+        for base_object in base_objects:
+            is_same, updated_frame = self.__compare_objects_and_update_frame(base_object, updating_object,
+                                                                             updated_frame)
+            if is_same:
+                break
+        return updated_frame, is_same
+
+    def __compare_objects_and_update_frame(self, base_object: BgObject, updating_object: BgObject,
+                                           updated_frame: BgFrame):
+        if self.__is_same(base_object.get_xywh(), updating_object.get_xywh(), self.radius):
+            updated_frame.create_and_add_object(
+                base_object.get_id(), updating_object.get_xywh())
+            is_same = True
+            return is_same, updated_frame
+        else:
+            is_same = False
+            return is_same, updated_frame
 
     def __is_same(self, xywh1, xywh2, radius):
         centroid1 = self.__calculate_centroid(xywh1)
