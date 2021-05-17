@@ -9,9 +9,14 @@ auth=$2 # username:pass-env
 host=$3
 labels=$4
 anno_folder=$5
-drive_share=$6
+drive_folder=$6 # Assuming drive share is initialized with `drive init`
 
 task_list=`"${cli}" --auth "${auth}" --server-host "${host}" ls`
+
+echo '' > "new_created_tasks.txt"
+
+# Hardcoded list name
+salmon_list="${drive_folder}/salmon_list.txt"
 
 for anno in "${anno_folder}"/*.zip; do
     tmp=`echo ${anno} | grep -oP '\d{2}-\d{2}-\d{4}_\d{2}.*(?=.zip)'`
@@ -19,8 +24,16 @@ for anno in "${anno_folder}"/*.zip; do
 
     [ -z "$name" ] && continue # If empty, skip
 
-    filepath=`find "${drive_share}/Kitwanga Fish Video" "${drive_share}/Training dataset" -name "${name}*" | head -n 1`
-    share_path=${filepath#${drive_share}}
+    drivepath=$(cat "${salmon_list}" | grep "${name}")
+    [ -z "$drivepath" ] && continue
+    drivepath="${drivepath/\//}" # Remove leading forward slash
+
+    # Download video
+    (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
+
+    filepath="${drive_folder}/${drivepath}"
+    #filepath=`find "${drive_folder}/Kitwanga Fish Video" "${drive_folder}/Training dataset" -name "${name}*" | head -n 1`
+    share_path=${filepath#${drive_folder}}
 
     filename=`basename "${filepath}"`
     filename=${filename%.*} # Remove extension
@@ -37,6 +50,9 @@ for anno in "${anno_folder}"/*.zip; do
         "${filename}" \
         share "${share_path}" 2>&1 | tee $TMP
 
+    # Delete video
+    rm -v "$filepath"
+
     err_msg=$(cat $TMP)
     
     # Delete the task if there is an error
@@ -44,4 +60,6 @@ for anno in "${anno_folder}"/*.zip; do
         task_id=`"${cli}" --auth "${auth}" --server-host "${host}" ls | grep -oP "\d+(?=,${filename})"`
         "${cli}" --auth "${auth}" --server-host "${host}" delete ${task_id}
     fi
+    
+    echo "$err_msg" | grep "Created task ID: "
 done

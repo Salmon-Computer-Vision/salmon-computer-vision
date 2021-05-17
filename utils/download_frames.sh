@@ -45,7 +45,7 @@ for task in "${source_dir}"/*; do
    (cd "${task}"; "${exp_script}" "${user}" "${pass}" "${task_filt}" "${xpath_filt}")
 
     if [ ! -f "${task_filt}/annotations/default.json" ]; then
-        rm -r "${task_filt}"
+        rm -rv "${task_filt}"
         continue
     fi
 

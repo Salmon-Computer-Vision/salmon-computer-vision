@@ -1,5 +1,14 @@
 # Utility Tools
 
+If there are new labels, first, manually convert the XML \<labels\> in the `annotation.xml` file to JSON. Copy
+it to `labels.json` Then, run
+
+```bash
+./jq-labels.sh labels.json > labels-converted.json
+```
+
+This creates the labels required to create CVAT tasks.
+
 ```bash
 ./make_cvat_tasks.sh path/to/cvat/cli.py "user:${pass-env}" localhost path/to/labels.json path/to/annotations share_path
 ```
