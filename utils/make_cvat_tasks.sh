@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Ex. ./make_cvat_tasks.sh ../../cvat/utils/cli/cli.py kami:${pass} 10.0.0.146 labels-converted.json ../../salmon-count-labels/annotation /mnt/salmon-videos/
+# Ex. ./make_cvat_tasks.sh ../../cvat/utils/cli/cli.py kami:${pass} 10.0.0.146 labels-converted.json ../../salmon-count-labels/annotation ~/gdrive
 
 set -e
 
@@ -62,5 +62,5 @@ for anno in "${anno_folder}"/*.zip; do
         "${cli}" --auth "${auth}" --server-host "${host}" delete ${task_id}
     fi
     
-    echo "$err_msg" | grep "(?<=Created task ID: )[0-9]+" >> "$new_tasks_list"
+    echo "$err_msg" | grep -oP "(?<=Created task ID: )[0-9]+" >> "$new_tasks_list"
 done
