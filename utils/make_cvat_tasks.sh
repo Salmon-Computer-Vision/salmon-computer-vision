@@ -20,14 +20,19 @@ echo '' > "$new_tasks_list"
 salmon_list="${drive_folder}/salmon_list.txt"
 
 for anno in "${anno_folder}"/*.zip; do
-    tmp=`echo ${anno} | grep -oP '\d{2}-\d{2}-\d{4}_\d{2}.*(?=.zip)'`
+    tmp=`echo ${anno} | grep -oP '\d{2}-\d{2}-\d{4}.*(?=.zip)'`
     name=${tmp//_/ }
 
     [ -z "$name" ] && continue # If empty, skip
 
-    drivepath=$(cat "${salmon_list}" | grep "${name}")
+    drivepath=$(cat "${salmon_list}" | grep -m1 "${name}") # -m1 to get first video path if multiple
     [ -z "$drivepath" ] && continue
     drivepath="${drivepath/\//}" # Remove leading forward slash
+
+    if echo "${task_list}" | grep -q "${name}"; then
+        echo "Skipping ${name}"
+        continue
+    fi
 
     # Download video
     (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
@@ -38,10 +43,6 @@ for anno in "${anno_folder}"/*.zip; do
 
     filename=`basename "${filepath}"`
     filename=${filename%.*} # Remove extension
-
-    if echo "${task_list}" | grep -q "${filename}"; then
-        continue
-    fi
 
     TMP=$(mktemp)
     "${cli}" --auth "${auth}" --server-host "${host}" \
@@ -60,7 +61,7 @@ for anno in "${anno_folder}"/*.zip; do
     if [ $? -ne 0 ] || [[ "$err_msg" == *"Error"* ]]; then
         task_id=`"${cli}" --auth "${auth}" --server-host "${host}" ls | grep -oP "\d+(?=,${filename})"`
         "${cli}" --auth "${auth}" --server-host "${host}" delete ${task_id}
+    else
+        echo "$err_msg" | grep -oP "(?<=Created task ID: )[0-9]+" >> "$new_tasks_list"
     fi
-    
-    echo "$err_msg" | grep -oP "(?<=Created task ID: )[0-9]+" >> "$new_tasks_list"
 done
