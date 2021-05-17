@@ -13,7 +13,8 @@ drive_folder=$6 # Assuming drive share is initialized with `drive init`
 
 task_list=`"${cli}" --auth "${auth}" --server-host "${host}" ls`
 
-echo '' > "new_created_tasks.txt"
+new_tasks_list="new_created_tasks.txt"
+echo '' > "$new_tasks_list"
 
 # Hardcoded list name
 salmon_list="${drive_folder}/salmon_list.txt"
@@ -61,5 +62,5 @@ for anno in "${anno_folder}"/*.zip; do
         "${cli}" --auth "${auth}" --server-host "${host}" delete ${task_id}
     fi
     
-    echo "$err_msg" | grep "Created task ID: "
+    echo "$err_msg" | grep "(?<=Created task ID: )[0-9]+" >> "$new_tasks_list"
 done
