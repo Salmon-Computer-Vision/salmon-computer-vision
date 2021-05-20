@@ -44,6 +44,11 @@ for task in "${source_dir}"/*; do
 
    (cd "${task}"; "${exp_script}" "${user}" "${pass}" "${task_filt}" "${xpath_filt}")
 
+    if [ ! -f "${task_filt}/annotations/default.json" ]; then
+        rm -rv "${task_filt}"
+        continue
+    fi
+
     datum import -i "${task_filt}" -o "${task_filt}" -f datumaro --overwrite
 
     #(cd "${task}"; datum filter -e '/item/annotation' -m i+a -o "${task_filt}" --overwrite)
