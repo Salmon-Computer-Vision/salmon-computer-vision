@@ -69,9 +69,6 @@ def create_data_list_task(dataset_path):
     for rel_filepath in img_paths:
       name = os.path.splitext(os.path.basename(rel_filepath))[0]
       label_path = os.path.join(labels_path, f"{name}.txt")
-      if not os.path.exists(label_path) or os.stat(label_path).st_size == 0:
-        with open(label_path, 'w') as label_f:
-          label_f.write('\n')
 
   print("Writing training image list...")
   with open(os.path.join(dataset_path, 'salmon.train'), 'w') as f:
