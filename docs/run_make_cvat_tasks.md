@@ -1,15 +1,5 @@
 # Run make_cvat_tasks.sh Script
 
-## Make sure WSL 2 can access CVAT
-
-Make sure Docker Desktop is running on WSL2 instead of Hyper-V.
-
-![](assets/run_make_cvat_tasks/docker_wsl2.png)
-
-After switching to WSL 2 backend, we need to create a new CVAT container for WSL 2 backend.
-
-We can send GET request to CVAT and get response to test it. The requests must be sent with credentials. The credential token can be found by authorizing on [localhost:8080/api/swagger](http://localhost:8080/api/swagger) page.
-
 ## Install Go
 
 To use drive command, we need to install Go.
@@ -39,7 +29,7 @@ source ~/.bashrc # To reload the settings and get the newly set ones # Or open a
 
 ### ~/.bashrc
 
-Every time we turn on WSL2, this script will be run to set up system, including PATH variable. Therefore, we need to include PATH variable set up here so that we won't lose it next time we restart WSL2.
+Every time we turn on WSL 2, this script will be run to set up system, including PATH variable. Therefore, we need to include PATH variable set up here so that we won't lose it next time we restart WSL 2.
 
 ## Drive Command
 
@@ -71,11 +61,19 @@ Note that right now there is no files in gdrive. There is only a hidden credenti
 ![](assets/run_make_cvat_tasks/gdrive_hidden_file.png)
 
 ![](assets/run_make_cvat_tasks/gdrive_credentials_file.png)
-## Install CVAT on WSL 2
+## Install CVAT
 
 We will need to run some of CVAT's scripts later.
 
 [GitHub Repository: openvinotoolkit/cvat](https://github.com/openvinotoolkit/cvat)
+
+### Docker Desktop WSL 2 Backend
+
+If you are using WSL 2, make sure Docker Desktop is running on WSL 2 instead of Hyper-V.
+
+![](assets/run_make_cvat_tasks/docker_wsl2.png)
+
+Also, make sure CVAT containers are built from WSL 2 side by running commands from WSL 2.
 
 ### Create **docker-compose.override.yml**
 
@@ -98,7 +96,7 @@ volumes:
       o: bind
 ```
 
-Please note that if you are using WSL2, you may get an error message saying that the binding path does not exist. In this case, we need to modify docker-compose.override.yml file and do some manually copying. Please go to the **Troubleshooting** section and read **Failed to mount local volume: No such file or directory**.
+Please note that if you are using WSL 2, you may get an error message saying that the binding path does not exist. In this case, we need to modify docker-compose.override.yml file and do some manually copying. Please go to the **Troubleshooting** section and read **Failed to mount local volume: No such file or directory**.
 
 ### Create docker containers
 
@@ -112,6 +110,8 @@ docker-compose up -d
 All containers should be up and running now.
 
 ![](assets/run_make_cvat_tasks/cvat_containers_running.png)
+
+We can send GET request to CVAT and get response to test it. The requests must be sent with credentials. The credential token can be found by authorizing on [localhost:8080/api/swagger](http://localhost:8080/api/swagger) page.
 
 ## Get labels-converted.json
 
@@ -129,7 +129,7 @@ Then, run this command to convert labels:
 ./jq-labels.sh labels.json > labels-converted.json
 ```
 
-Note that jq is a Linux command, so we should run it on WSL2.
+Note that jq is a Linux command, so we should run it on Linux environment or WSL 2.
 
 ## Get annotation folder ready
 
@@ -182,6 +182,8 @@ The script assumes Salmon Videos folder is at your Google Drive folder. Therefor
 
 ## Run make_cvat_tasks.sh
 
+Run make_cvat_tasks.sh on Linux environment or WSL 2.
+
 ```powershell
 ./make_cvat_tasks.sh {path to cvat/utils/cli/cli.py} {cvat_username}:{cvat_password} {cvat host url(e.g. localhost)} {path to labels-converted.json} {path to annotation folder} {path to gdrive}
 ```
@@ -196,7 +198,7 @@ After running the above command, you should see messages like this:
 
 ![](assets/run_make_cvat_tasks/after_running_script.png)
 
-When all of tasks are done, you can go to cvat web interface by typing the following URL from Google Chrome on Windows system:
+When all of tasks are done, you can go to cvat web interface by typing the following URL from Google Chrome:
 
 ```bash
 http://localhost:8080/
@@ -218,13 +220,13 @@ This path is on cvat container.
 
 We need to mount our ~/gdrive to cvat_share. Make sure you have followed the **Create docker-compose.override.yml** step.
 
-## Failed to mount local volume: No such file or directory
+### Failed to mount local volume: No such file or directory
 
-Looks like the volume mount point does not exist on WSL 2 Docker Desktop Integration.
+If you are using WSL 2, this section may be useful to you.
 
-Looks like WSL 2 does not support binding WSL 2 local file system to docker containers. For example, we want to bind ~/gdrive on WSL 2 to cvat_share on cvat container. However, this will always fail when we try to build the container because docker will try to bind the path /var/lib/docker/volumes/cvat_cvat_share/_data, but this path does not exist.
+Looks like the volume mount point does not exist on WSL 2 Docker Desktop Integration. WSL 2 does not support binding WSL 2 local file system to docker containers. For example, we want to bind ~/gdrive on WSL 2 to cvat_share on cvat container. However, this will always fail when we try to build the container because docker will try to bind the path /var/lib/docker/volumes/cvat_cvat_share/_data, but this path does not exist.
 
-WSL 2 maps /var/lib/docker/volumes/ to \\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes. We need to use PowerShell from Windows system and cd to the following path to see the location of docker volumes.
+WSL 2 maps /var/lib/docker/volumes/ to \\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes. We need to use PowerShell from Windows system and cd to the following path to see files at the location of docker volumes.
 
 ```yaml
 \\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes>
@@ -232,9 +234,9 @@ WSL 2 maps /var/lib/docker/volumes/ to \\wsl$\docker-desktop-data\version-pack-d
 
 [Locating data volumes in Docker Desktop (Windows)](https://stackoverflow.com/questions/43181654/locating-data-volumes-in-docker-desktop-windows/64418064)
 
-[Docker volumes on WSL2 using Docker Desktop](https://stackoverflow.com/questions/63552052/docker-volumes-on-wsl2-using-docker-desktop)
+[Docker volumes on WSL 2 using Docker Desktop](https://stackoverflow.com/questions/63552052/docker-volumes-on-wsl2-using-docker-desktop)
 
-### Workaround
+#### Workaround
 
 First of all, we do not want to bind cvat_share in docker-compose.override.yml file. Please change the file to the following:
 
