@@ -2,6 +2,16 @@
 
 The **make_cvat_tasks.sh** script can help us create CVAT tasks with labelled videos automatically. We need to supply with input videos and annotation files, and then CVAT tasks will be created. After that, we can go to CVAT server and dump those labelled annotations in other formats, or we can do any modification directly from CVAT.
 
+## Install Drive through Snap
+
+If you are running Ubuntu 20.04 and up, you can install `drive` using Snap instead of compiling with Go. Run the following command:
+
+```
+sudo snap install drive
+```
+
+Skip to [initializing drive](#drive-command).
+
 ## Install Go
 
 To use drive command, we need to install Go.
@@ -123,7 +133,7 @@ We already have labels-converted.json in our salmon-computer-vision repository a
 
 If we have new labels, we will need to generate new labels-converted.json file.
 
-Convert the **labels field of the XML file** to JSON and write it in labels.json file.
+Convert the **labels field of the XML annotations file** to JSON and write it in labels.json file.
 
 Then, run this command to convert labels:
 
