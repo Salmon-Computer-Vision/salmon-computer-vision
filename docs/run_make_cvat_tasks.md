@@ -1,5 +1,7 @@
 # Run make_cvat_tasks.sh Script
 
+The **make_cvat_tasks.sh** script can help us create CVAT tasks with labelled videos automatically. We need to supply with input videos and annotation files, and then CVAT tasks will be created. After that, we can go to CVAT server and dump those labelled annotations in other formats, or we can do any modification directly from CVAT.
+
 ## Install Go
 
 To use drive command, we need to install Go.
