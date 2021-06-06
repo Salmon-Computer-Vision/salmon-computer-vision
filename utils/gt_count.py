@@ -39,10 +39,10 @@ def count_jde(args):
       out.write(f"{categ[0]}, {len(categ[1])}\n")
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Count ground thruth classes')
+  parser = argparse.ArgumentParser(description='Count ground truth classes')
 
   parser.add_argument('data_dir')
-  split_p.set_defaults(func=count_jde)
+  parser.set_defaults(func=count_jde)
 
   args = parser.parse_args()
   args.func(args)
