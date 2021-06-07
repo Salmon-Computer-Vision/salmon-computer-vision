@@ -40,7 +40,7 @@ export PYTHONPATH
 
 for task in "${source_dir}"/*; do
     t_name=$(basename "$task")
-    task_filt="${filtered_dir}/${t_name}"
+    task_filt=$(realpath ${filtered_dir}/${t_name})
 
    (cd "${task}"; "${exp_script}" "${user}" "${pass}" "${task_filt}" "${xpath_filt}")
 
