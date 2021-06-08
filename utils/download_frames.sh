@@ -12,8 +12,10 @@ set -e
 
 # Ex. ./download_frames.sh kami "${pass}" dump dump_filt
 
-if [ "$#" -le 4 ]; then
-    echo "Must have at least 4 parameters"
+min_num_param=4
+if [ "$#" -lt $min_num_param ]; then
+    echo "Must have at least ${min_num_param} parameters"
+    return
 fi
 
 user=$1
