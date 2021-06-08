@@ -12,7 +12,7 @@ An example of the command:
 
 ## Start ID and Last ID
 
-The start_id and last_id in the command is the ID of the first task and the ID of the last task. This script assumes all tasks' IDs are consecutive.
+The start_id and last_id in the command is the ID of the first task and the ID of the last task.
 
 You can find tasks' IDs in a file produced by make_cvat_tasks.sh script. The file name is **new_created_tasks.txt**, and this is an example of its content:
 
