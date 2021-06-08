@@ -7,6 +7,7 @@ cat_csv="$(pwd)/category_nums.csv"
 
 if [ $# -ne 1 ]; then
     echo "Usage: $0 <path/to/dataset_dir>"
+    echo "Counts the number of labeled frames for each label class"
     exit 0
 fi
 
