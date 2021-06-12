@@ -3,7 +3,7 @@ set -e
 
 # Requires datumaro and jq
 
-# ./merge_datum.sh dump_filt merged
+# ./merge_filt.sh dump_filt merged
 
 filtered_dir=$1
 dest_dir=$2

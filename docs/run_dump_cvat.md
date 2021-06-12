@@ -1,13 +1,13 @@
 # Run dump_cvat.sh
 
 ```bash
-./dump_cvat.sh {path to cvat cli.py} {username}:{password} {start_id} {last_id} {dest_dir}
+./dump_cvat.sh {path to cvat cli.py} {username}:{password} {cvat host} {start_id} {last_id} {dest_dir}
 ```
 
 An example of the command:
 
 ```bash
-./dump_cvat.sh ../../cvat/utils/cli/cli.py username:password 1 4 dump
+./dump_cvat.sh ../../cvat/utils/cli/cli.py username:password localhost 1 4 dump
 ```
 
 ## Start ID and Last ID
