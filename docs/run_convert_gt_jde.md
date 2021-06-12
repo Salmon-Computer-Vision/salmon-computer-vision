@@ -21,6 +21,20 @@ After running the script, please go to the merged_mot_gt folder you have specifi
 ![](assets/run_convert_gt_jde/convert_result1.png)
 ![](assets/run_convert_gt_jde/convert_result2.png)
 
+### Troubleshooting
+
+```text
+invalid literal for int() with base 10: ''
+```
+
+The root cause of this issue is likely that the CVAT images' names are not following the assumed format.
+
+Please make sure the uploaded images on CVAT server follow this naming format:
+
+```text
+frame_000001, frame_000002, ...
+```
+
 ## Split JED annotations
 
 After we have converted annotations to JDE format, we want to split the data into train, validation and test dataset. Run this command to split data:

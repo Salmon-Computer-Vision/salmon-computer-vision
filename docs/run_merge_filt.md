@@ -17,3 +17,15 @@ An example of this command is:
 After running the script, you should see the following messages:
 
 ![](assets/run_merge_filt/after_running.png)
+
+# Troubleshooting
+
+## requires at least 2 arguments
+
+```text
+argparse.ArgumentTypeError: Argument 'project' requires at least 2 arguments
+```
+
+If you see this error message, it is likely that you only have one task folder in the source folder. Therefore, when you run this script, the script will try to run datum merge on a single task folder, which does not make sense.
+
+If you only have one task folder, you do not need to merge it. You can skip to the next script.
