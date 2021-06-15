@@ -9,10 +9,10 @@ class BgUtility:
         super().__init__()
 
     @staticmethod
-    def export_video(frames, filename, invert_color=False):
+    def export_video(frames, filename, invert_color=False, fps=4):
         if invert_color:
             frames = BgUtility.__invert_color(frames)
-        BgUtility.__get_video(frames, filename)
+        BgUtility.__get_video(frames, filename, fps)
 
     @staticmethod
     def __invert_color(frames):
@@ -21,11 +21,11 @@ class BgUtility:
         return frames
 
     @staticmethod
-    def __get_video(frames, filename):
+    def __get_video(frames, filename, fps):
         height = frames[0].shape[0]
         width = frames[0].shape[1]
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video = cv2.VideoWriter(filename, fourcc, 4.8, (width, height))
+        video = cv2.VideoWriter(filename, fourcc, fps, (width, height))
         for i in range(len(frames)):
             frame = frames[i]
             if BgUtility.is_frame_gray(frame):
