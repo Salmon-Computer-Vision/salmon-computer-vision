@@ -19,7 +19,7 @@ if (cap.isOpened()== False):
 
 start = time()
 timme = strftime("%m-%d-%Y %H-%M-%S", gmtime())
-filename = os.path.join(save_folder, f"{timme} {suffix}")
+filename = os.path.join(save_folder, f"{timme} {suffix}.mp4")
 v_out = cv2.VideoWriter(filename, codec, cap.get(cv2.CAP_PROP_FPS), 
     (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 print(f"Recording to {filename}")
@@ -37,7 +37,7 @@ while(cap.isOpened()):
     if now - start > interval:
       start = now
       timme = strftime("%m-%d-%Y %H-%M-%S", gmtime())
-      filename = os.path.join(save_folder, f"{timme} {suffix}")
+      filename = os.path.join(save_folder, f"{timme} {suffix}.mp4")
       v_out.release()
       v_out = cv2.VideoWriter(filename, codec, cap.get(cv2.CAP_PROP_FPS), 
           (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
