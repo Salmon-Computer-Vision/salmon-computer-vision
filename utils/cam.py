@@ -6,6 +6,7 @@ import os
 
 suffix = 'Coquitlam Dam'
 interval = 3600 # In seconds
+fps = 25
 save_folder = 'save'
 
 codec = cv2.VideoWriter_fourcc(*'mp4v')
@@ -20,7 +21,7 @@ if (cap.isOpened()== False):
 start = time()
 timme = strftime("%m-%d-%Y %H-%M-%S", gmtime())
 filename = os.path.join(save_folder, f"{timme} {suffix}.mp4")
-v_out = cv2.VideoWriter(filename, codec, cap.get(cv2.CAP_PROP_FPS), 
+v_out = cv2.VideoWriter(filename, codec, fps, 
     (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 print(f"Recording to {filename}")
 
@@ -39,7 +40,7 @@ while(cap.isOpened()):
       timme = strftime("%m-%d-%Y %H-%M-%S", gmtime())
       filename = os.path.join(save_folder, f"{timme} {suffix}.mp4")
       v_out.release()
-      v_out = cv2.VideoWriter(filename, codec, cap.get(cv2.CAP_PROP_FPS), 
+      v_out = cv2.VideoWriter(filename, codec, fps, 
           (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
       print(f"Recording to {filename}")
 
