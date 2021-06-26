@@ -1,9 +1,15 @@
 #!/bin/env python3
 import cv2
 import numpy as np
+from time import time, gmtime, strftime
+import os
 
-# Create a VideoCapture object and read from input file
-# If the input is the camera, pass 0 instead of the video file name
+suffix = 'Coquitlam Dam'
+interval = 3600 # In seconds
+save_folder = 'save'
+
+codec = cv2.VideoWriter_fourcc(*'mp4v')
+
 cap = cv2.VideoCapture('rtsp://11.0.0.106/av0_0')
 
 # Check if camera opened successfully
@@ -11,10 +17,12 @@ if (cap.isOpened()== False):
   print("Error opening video stream or file")
 
 
-timme = strftime(f"%m-%d-%Y %H-%M-%S {suffix}", gmtime())
-v_out = cv2.VideoWriter(
+start = time()
+timme = strftime("%m-%d-%Y %H-%M-%S", gmtime())
+filename = os.path.join(save_folder, f"{timme} {suffix}")
+v_out = cv2.VideoWriter(filename, codec, cap.get(cv2.CAP_PROP_FPS), 
+    (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
-frame_id = 0
 # Read until video is completed
 while(cap.isOpened()):
   # Capture frame-by-frame
@@ -22,15 +30,23 @@ while(cap.isOpened()):
   if ret == True:
 
     # Display the resulting frame
-    #cv2.imshow('Frame',frame)
-    cv2.imwrite('./save/{:05d}.jpg'.format(frame_id), frame)
-    print(frame_id)
+    cv2.imshow('Frame',frame)
+
+    now = time()
+    if now - start > interval:
+      start = now
+      timme = strftime("%m-%d-%Y %H-%M-%S", gmtime())
+      filename = os.path.join(save_folder, f"{timme} {suffix}")
+      v_out.release()
+      v_out = cv2.VideoWriter(filename, codec, cap.get(cv2.CAP_PROP_FPS), 
+          (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+
+    v_out.write(frame)
 
     # Press Q on keyboard to  exit
-    #if cv2.waitKey(25) & 0xFF == ord('q'):
-    #  break
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+      break
 
-    frame_id += 1
   # Break the loop
   else:
     break
