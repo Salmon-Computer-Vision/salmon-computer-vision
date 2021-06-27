@@ -4,7 +4,7 @@ import numpy as np
 from time import time, gmtime, strftime
 import os
 
-suffix = 'Coquitlam Dam'
+suffix = 'Coquitlam Dam.mp4'
 interval = 3600 # In seconds
 fps = 25
 save_folder = 'save'
@@ -20,7 +20,7 @@ if (cap.isOpened()== False):
 
 start = time()
 timme = strftime("%m-%d-%Y %H-%M-%S", gmtime())
-filename = os.path.join(save_folder, f"{timme} {suffix}.mp4")
+filename = os.path.join(save_folder, f"{timme} {suffix}")
 v_out = cv2.VideoWriter(filename, codec, fps, 
     (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 print(f"Recording to {filename}")
@@ -38,7 +38,7 @@ while(cap.isOpened()):
     if now - start > interval:
       start = now
       timme = strftime("%m-%d-%Y %H-%M-%S", gmtime())
-      filename = os.path.join(save_folder, f"{timme} {suffix}.mp4")
+      filename = os.path.join(save_folder, f"{timme} {suffix}")
       v_out.release()
       v_out = cv2.VideoWriter(filename, codec, fps, 
           (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
