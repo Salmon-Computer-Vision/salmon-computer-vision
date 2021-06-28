@@ -32,7 +32,7 @@ while(cap.isOpened()):
   if ret == True:
 
     # Display the resulting frame
-    cv2.imshow('Frame',frame)
+    #cv2.imshow('Frame',frame)
 
     now = time()
     if now - start > interval:
