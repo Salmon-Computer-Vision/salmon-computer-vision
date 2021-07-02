@@ -52,7 +52,7 @@ After we have MOT Seq GT format annotations, we want to convert them to JDE form
 
 Please follow this [document](docs/run_convert_gt_jde.md) to run convert_gt_jde.py script.
 
-## At the end of running the above scripts
+## After We Have JDE Annotations
 
 After running the above scripts, we have created CVAT tasks and converted the annotations to JDE format.
 
@@ -112,8 +112,8 @@ python train.py --batch-size 6 --img-size 576 320
 
 After the training process is finished, we can find the trained weights at:
 
-```json
-Towards-Realtime-MOT\weights\{date folder}\latest.pt
+```
+Towards-Realtime-MOT\weights\{date_folder}\latest.pt
 ```
 
 ## Troubleshooting
@@ -126,7 +126,7 @@ RuntimeError: Found no NVIDIA driver on your system. Please check that you have 
 
 Make sure we have installed CUDA on our system. Please check this page to install CUDA on your system.
 
-[Running CUDA](https://docs.nvidia.com/cuda/wsl-user-guide/index.html#running-cuda)
+[Setting up CUDA Toolkit](https://docs.nvidia.com/cuda/wsl-user-guide/index.html#running-cuda)
 
 ### E: Unable to locate package cuda-toolkit-11-0
 
