@@ -100,7 +100,7 @@ Then, we need to modify ~/Towards-Realtime-MOT/cfg/ccmcpe.json to point to the t
 }
 ```
 
-## Run [train.py](http://train.py) script
+## Run train.py script
 
 Make sure you have installed CUDA on your system. If you did not install CUDA, you will likely encounter Found no NVIDIA driver error. Please check the troubleshooting section to install CUDA for your system.
 
