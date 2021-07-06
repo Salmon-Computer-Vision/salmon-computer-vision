@@ -1,0 +1,13 @@
+#Place in /etc/systemd/system
+[Unit]
+Description=Camera Detection service
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+ExecStart=/mnt/ssd/cam-service.sh
+
+[Install]
+WantedBy=multi-user.target
