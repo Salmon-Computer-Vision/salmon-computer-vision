@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 url="rtsp://11.0.0.106/av0_0"
 #url="rtsp://10.0.0.98:554/user=admin&password=&channel=1&stream=0.sdp?"
 #encode="h264_v4l2m2m"
