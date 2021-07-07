@@ -5,4 +5,4 @@ url="rtsp://11.0.0.106/av0_0"
 encode=h264_omx
 scale="1280:-1"
 
-ffmpeg -rtsp_transport tcp -i "$url" -c:v "$encode" -vf scale="$scale" -f segment -segment_time 3600 -strftime 1 "%m-%d-%Y %H-%M-%S Coquitlam Dam.mp4"
+ffmpeg -rtsp_transport tcp -i "$url" -c:v "$encode" -vf scale="$scale" -f segment -segment_time 3600 -strftime 1 "%m-%d-%Y_%H-%M-%S_Coquitlam_Dam.mp4"
