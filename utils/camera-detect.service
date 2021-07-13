@@ -8,6 +8,7 @@ Type=simple
 Restart=always
 RestartSec=10
 ExecStart=/mnt/ssd/cam-service.sh
+ExecStop=/usr/bin/docker stop jetson
 
 [Install]
 WantedBy=multi-user.target
