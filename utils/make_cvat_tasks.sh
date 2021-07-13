@@ -20,13 +20,19 @@ echo '' > "$new_tasks_list"
 salmon_list="${drive_folder}/salmon_list.txt"
 
 for anno in "${anno_folder}"/*.zip; do
-    tmp=`echo ${anno} | grep -oP '\d{2}-\d{2}-\d{4}.*(?=.zip)'`
+    tmp=`echo ${anno} | grep -oP '\d{2,4}-\d{2,4}-\d{2,4}.*(?=.zip)'`
     name=${tmp//_/ }
 
-    [ -z "$name" ] && continue # If empty, skip
+    if [ -z "$name" ]; then
+        echo "Skipping empty name"
+        continue # If empty, skip
+    fi
 
     drivepath=$(cat "${salmon_list}" | grep -m1 "${name}") # -m1 to get first video path if multiple
-    [ -z "$drivepath" ] && continue
+    if [ -z "$drivepath" ]; then
+        echo "Video not found on gdrive. Skipping..."
+        continue
+    fi
     drivepath="${drivepath/\//}" # Remove leading forward slash
 
     if echo "${task_list}" | grep -q "${name}"; then
@@ -35,7 +41,12 @@ for anno in "${anno_folder}"/*.zip; do
     fi
 
     # Download video
-    (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
+    if ! (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}"); then
+        echo "Failed drive pull, sleeping for a minute before trying again"
+        sleep 1m
+        (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
+    fi
+
 
     filepath="${drive_folder}/${drivepath}"
     #filepath=`find "${drive_folder}/Kitwanga Fish Video" "${drive_folder}/Training dataset" -name "${name}*" | head -n 1`
