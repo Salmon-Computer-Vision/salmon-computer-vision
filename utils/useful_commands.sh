@@ -9,7 +9,7 @@ sudo nvpmodel -m 0
 sudo jetson_clocks
 
 # /etc/fstab
-# sshfs#pi@raspberrypi.local:/mnt/ssd/ /mnt/pi fuse defaults,_netdev,allow_other,reconnect 0 0
+# sshfs#pi@raspberrypi.local:/media/usb0/ /mnt/pi-ssd fuse defaults,_netdev,allow_other,reconnect 0 0
 
 # usbmount -- requires changing systemd-udevd service to "PrivateMounts=no"
 # NTFS: https://raspberrypi.stackexchange.com/questions/41959/automount-various-usb-stick-file-systems-on-jessie-lite
