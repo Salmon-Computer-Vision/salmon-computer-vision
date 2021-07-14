@@ -1,0 +1,13 @@
+[Unit]
+Description=Camera Record service
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+User=pi
+Restart=always
+RestartSec=10
+ExecStart=/home/pi/salmon-computer-vision/utils/cam.sh
+
+[Install]
+WantedBy=multi-user.target
