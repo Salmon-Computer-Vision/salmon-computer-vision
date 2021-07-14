@@ -6,7 +6,7 @@ encode=h264_omx
 scale="1280:-1"
 dir=/media/usb0
 
-rec_dir = "${dir}/record"
+rec_dir="${dir}/record"
 
 if [ ! -d "${rec_dir}" ] && mkdir -p "$rec_dir"
 
