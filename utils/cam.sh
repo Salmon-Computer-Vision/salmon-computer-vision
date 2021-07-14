@@ -6,5 +6,8 @@ encode=h264_omx
 scale="1280:-1"
 dir=/media/usb0
 
-cd "$dir"
-ffmpeg -rtsp_transport tcp -i "$url" -c:v "$encode" -vf scale="$scale" -f segment -segment_time 3600 -strftime 1 "%m-%d-%Y_%H-%M-%S_Coquitlam_Dam.mp4"
+rec_dir = "${dir}/record"
+
+if [ ! -d "${rec_dir}" ] && mkdir -p "$rec_dir"
+
+ffmpeg -rtsp_transport tcp -i "$url" -c:v "$encode" -vf scale="$scale" -f segment -segment_time 3600 -strftime 1 "${rec_dir}/%m-%d-%Y_%H-%M-%S_Coquitlam_Dam.mp4"
