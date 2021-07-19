@@ -8,6 +8,8 @@ set -e
 filtered_dir=$1
 dest_dir=$2
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 # Update tracking ID(s) to be unique
 #track_id=0
 #for task in "${filtered_dir}"/*; do
@@ -31,5 +33,8 @@ dest_dir=$2
 
 datum merge "${filtered_dir}"/* -o "${dest_dir}"
 
+split_dir="${dest_dir}_split"
 # Split training, validation, and test sets
-datum transform -p "$dest_dir" -o "${dest_dir}_split" -t random_split --overwrite -- -s train_1:.175 -s train_2:.175 -s train_3:.175 -s train_4:.175 -s val:.15 -s test:.15
+datum transform -p "$dest_dir" -o "$split_dir" -t random_split --overwrite -- -s train_1:.175 -s train_2:.175 -s train_3:.175 -s train_4:.175 -s val:.15 -s test:.15
+
+"${SCRIPT_DIR}/sep_split.sh" "$split_dir"
