@@ -1,14 +1,17 @@
 #Place in /etc/systemd/system
 [Unit]
 Description=Camera Detection service
-After=network.target
-StartLimitIntervalSec=0
+After=docker.service
+Requires=docker.service
+
 [Service]
 Type=simple
 Restart=always
 RestartSec=10
-ExecStart=/mnt/ssd/cam-service.sh
-ExecStop=/usr/bin/docker stop jetson
+ExecStartPre=-/usr/bin/docker stop jetson
+ExecStartPre=-/usr/bin/docker rm -f jetson
+ExecStart=/home/salmonjetson/salmon-computer-vision/utils/cam-service.sh
+ExecStop=-/usr/bin/docker stop jetson
 
 [Install]
 WantedBy=multi-user.target
