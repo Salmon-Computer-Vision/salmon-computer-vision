@@ -14,3 +14,6 @@ sudo jetson_clocks
 
 # usbmount -- requires changing systemd-udevd service to "PrivateMounts=no"
 # NTFS: https://raspberrypi.stackexchange.com/questions/41959/automount-various-usb-stick-file-systems-on-jessie-lite
+
+# Convert TF2 model to ONNX
+# python -m tf2onnx.convert --saved-model exported-models/ssd_mobilenet_320x320/saved_model --opset 13 --output ssd_mobilenet_320x320.onnx
