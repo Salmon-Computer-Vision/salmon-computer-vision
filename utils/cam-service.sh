@@ -5,5 +5,5 @@ name=$1
 dir_name=$2 # homesecurity
 cd /home/salmonjetson/jetson-inference
 sed -i -r "s/ -it (--name $name )?/ -i --name $name /" docker/run.sh
-sed -i -r "s/ -i (--name $name )?/ -i --name $name /" docker/run.sh
+sed -i -r "s/ -i (--name .* )?(--rm)/ -i --name $name \2/" docker/run.sh
 docker/run.sh -v /home/salmonjetson/${dir_name}/:/${dir_name} -r /${dir_name}/cam.sh
