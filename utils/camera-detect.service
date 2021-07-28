@@ -10,7 +10,7 @@ Restart=always
 RestartSec=10
 ExecStartPre=-/usr/bin/docker stop jetson
 ExecStartPre=-/usr/bin/docker rm -f jetson
-ExecStart=/home/salmonjetson/salmon-computer-vision/utils/cam-service.sh
+ExecStart=/home/salmonjetson/salmon-computer-vision/utils/cam-service.sh jetson homesecurity
 ExecStop=-/usr/bin/docker stop jetson
 
 [Install]
