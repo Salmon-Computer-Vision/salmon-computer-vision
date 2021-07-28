@@ -2,3 +2,5 @@ FROM dustynv/jetson-inference:r32.5.0
 
 RUN pip3 install scikit-build
 RUN wget https://github.com/Qengineering/TensorFlow-Addons-Jetson-Nano/raw/main/tensorflow_addons-0.13.0.dev0-cp36-cp36m-linux_aarch64.whl && pip3 install tensorflow_addons-0.13.0.dev0-cp36-cp36m-linux_aarch64.whl
+RUN apt install -y libffi-dev protobuf-compiler python3-pil python3-lxml python3-tk cmake python3-matplotlib
+RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/models.git /models
