@@ -3,7 +3,9 @@
 # start the camera detection/recording script.
 name=$1
 dir_name=$2 # homesecurity
+tmp_sh=$(mktemp)
+
 cd /home/salmonjetson/jetson-inference
-sed -i -r "s/ -it (--name $name )?/ -i --name $name /" docker/run.sh
-sed -i -r "s/ -i (--name .* )?(--rm)/ -i --name $name \2/" docker/run.sh
-docker/run.sh -v /home/salmonjetson/${dir_name}/:/${dir_name} -r /${dir_name}/cam.sh
+sed -r "s/ -it (--name $name )?/ -i --name $name /" docker/run.sh > $tmp_sh
+sed -i -r "s/ -i (--name .* )?(--rm)/ -i --name $name \2/" $tmp_sh
+$tmp_sh -v /home/salmonjetson/${dir_name}/:/${dir_name} -r /${dir_name}/cam.sh

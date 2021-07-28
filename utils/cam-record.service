@@ -7,7 +7,7 @@ Type=simple
 User=pi
 Restart=always
 RestartSec=10
-ExecStart=/home/pi/salmon-computer-vision/utils/cam.sh
+ExecStart=/home/pi/salmon-computer-vision/utils/cam.sh Coquitlam_Dam
 
 [Install]
 WantedBy=multi-user.target
