@@ -5,7 +5,7 @@
 set -e
 
 show_help() {
-    echo "$0 [-hnc] [-f "format"] path/to/cli.py user:pass localhost num_init num_end path/to/dump/dest"
+    echo "$0 [-s path/to/share] path/to/cli.py user:pass localhost labels.json path/to/annotations path/to/gdrive"
 }
 
 OPTIND=1 # Reset in case getopts has been used previously in the shell.
@@ -14,7 +14,7 @@ format="Datumaro 1.0"
 unzip=true
 change_name_xml=false
 
-while getopts "h?s:nc" opt; do
+while getopts "h?s:" opt; do
    case "$opt" in
       h|\?) # display Help
          show_help
