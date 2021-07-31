@@ -4,6 +4,8 @@
 # This will NOT overwrite existing files
 
 # Ex. ./dump_cvat.sh ../../cvat/utils/cli/cli.py kami:${pass} localhost 160 460 dump
+# Dump annos to upload to github Ex. ./dump_cvat.sh -cf "CVAT for video 1.1" ../../cvat/utils/cli/cli.py kami:${pass} 10.0.0.146 1116 1117 dump_anno
+
 
 show_help() {
     echo './dump_cvat.sh [-hnc] [-f "format"] path/to/cli.py user:${pass} localhost num_init num_end path/to/dump/dest'
