@@ -4,6 +4,30 @@
 
 set -e
 
+show_help() {
+    echo "$0 [-hnc] [-f "format"] path/to/cli.py user:pass localhost num_init num_end path/to/dump/dest"
+}
+
+OPTIND=1 # Reset in case getopts has been used previously in the shell.
+
+format="Datumaro 1.0"
+unzip=true
+change_name_xml=false
+
+while getopts "h?s:nc" opt; do
+   case "$opt" in
+      h|\?) # display Help
+         show_help
+         exit 0
+         ;;
+     s) # Provide share folder (Will ignore drive_share)
+         share_folder=$OPTARG
+         ;;
+   esac
+done
+
+shift $((OPTIND-1))
+
 cli=$1
 auth=$2 # username:pass-env
 host=$3
