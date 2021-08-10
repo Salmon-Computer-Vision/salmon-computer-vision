@@ -52,23 +52,26 @@ for anno in "${anno_folder}"/*.zip; do
         continue # If empty, skip
     fi
 
-    drivepath=$(cat "${salmon_list}" | grep -m1 "${name}") # -m1 to get first video path if multiple
-    if [ -z "$drivepath" ]; then
-        echo "Video not found on gdrive. Skipping..."
-        continue
-    fi
-    drivepath="${drivepath/\//}" # Remove leading forward slash
-
     if echo "${task_list}" | grep -q "${name}"; then
-        echo "Skipping ${name}"
+        echo "Task already exists. Skipping ${name}"
         continue
     fi
 
-    # Download video
-    if ! (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}"); then
-        echo "Failed drive pull, sleeping for a minute before trying again"
-        sleep 1m
-        (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
+    if [ -z "$share_folder" ]; then
+        drivepath=$(cat "${salmon_list}" | grep -m1 "${name}") # -m1 to get first video path if multiple
+        if [ -z "$drivepath" ]; then
+            echo "Video not found gdrive. Skipping..."
+            continue
+        fi
+        drivepath="${drivepath/\//}" # Remove leading forward slash
+
+        # Download video
+        if ! (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}"); then
+            echo "Failed drive pull, sleeping for a minute before trying again"
+            sleep 1m
+            (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
+        fi
+    else
     fi
 
 
