@@ -5,7 +5,7 @@
 set -e
 
 show_help() {
-    echo "$0 [-s path/to/share] path/to/cli.py user:pass localhost labels.json path/to/annotations path/to/gdrive"
+    echo "$0 [-l] path/to/cli.py user:pass localhost labels.json path/to/annotations path/to/drive"
 }
 
 OPTIND=1 # Reset in case getopts has been used previously in the shell.
@@ -14,19 +14,25 @@ format="Datumaro 1.0"
 unzip=true
 change_name_xml=false
 
-while getopts "h?s:" opt; do
+while getopts "h?l" opt; do
    case "$opt" in
       h|\?) # display Help
          show_help
          exit 0
          ;;
-     s) # Provide share folder (Will ignore drive_share)
-         share_folder=$OPTARG
+     s) # Set local to true, treats drive folder as local share folder
+         local=true
          ;;
    esac
 done
 
 shift $((OPTIND-1))
+
+if [ "$#" -lt 6 ]; then
+    echo "Insufficient number of arguments"
+    show_help
+    exit 1
+fi
 
 cli=$1
 auth=$2 # username:pass-env
@@ -57,7 +63,7 @@ for anno in "${anno_folder}"/*.zip; do
         continue
     fi
 
-    if [ -z "$share_folder" ]; then
+    if [ "$local" = true ]; then
         drivepath=$(cat "${salmon_list}" | grep -m1 "${name}") # -m1 to get first video path if multiple
         if [ -z "$drivepath" ]; then
             echo "Video not found gdrive. Skipping..."
@@ -71,13 +77,14 @@ for anno in "${anno_folder}"/*.zip; do
             sleep 1m
             (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
         fi
+        filepath="${drive_folder}/${drivepath}"
+
+        share_folder="${drive_folder}"
     else
+        filepath=`find "${share_folder}" -name "${name}*" | head -n 1`
     fi
 
-
-    filepath="${drive_folder}/${drivepath}"
-    #filepath=`find "${drive_folder}/Kitwanga Fish Video" "${drive_folder}/Training dataset" -name "${name}*" | head -n 1`
-    share_path=${filepath#${drive_folder}}
+    share_path=${filepath#${share_folder}}
 
     filename=`basename "${filepath}"`
     filename=${filename%.*} # Remove extension
