@@ -10,10 +10,6 @@ show_help() {
 
 OPTIND=1 # Reset in case getopts has been used previously in the shell.
 
-format="Datumaro 1.0"
-unzip=true
-change_name_xml=false
-
 while getopts "h?l" opt; do
    case "$opt" in
       h|\?) # display Help
