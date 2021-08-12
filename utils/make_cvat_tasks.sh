@@ -4,6 +4,32 @@
 
 set -e
 
+show_help() {
+    echo "$0 [-l] path/to/cli.py user:pass localhost labels.json path/to/annotations path/to/drive"
+}
+
+OPTIND=1 # Reset in case getopts has been used previously in the shell.
+
+while getopts "h?l" opt; do
+   case "$opt" in
+      h|\?) # display Help
+         show_help
+         exit 0
+         ;;
+     s) # Set local to true, treats drive folder as local share folder
+         local=true
+         ;;
+   esac
+done
+
+shift $((OPTIND-1))
+
+if [ "$#" -lt 6 ]; then
+    echo "Insufficient number of arguments"
+    show_help
+    exit 1
+fi
+
 cli=$1
 auth=$2 # username:pass-env
 host=$3
@@ -28,29 +54,33 @@ for anno in "${anno_folder}"/*.zip; do
         continue # If empty, skip
     fi
 
-    drivepath=$(cat "${salmon_list}" | grep -m1 "${name}") # -m1 to get first video path if multiple
-    if [ -z "$drivepath" ]; then
-        echo "Video not found on gdrive. Skipping..."
-        continue
-    fi
-    drivepath="${drivepath/\//}" # Remove leading forward slash
-
     if echo "${task_list}" | grep -q "${name}"; then
-        echo "Skipping ${name}"
+        echo "Task already exists. Skipping ${name}"
         continue
     fi
 
-    # Download video
-    if ! (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}"); then
-        echo "Failed drive pull, sleeping for a minute before trying again"
-        sleep 1m
-        (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
+    if [ "$local" = true ]; then
+        drivepath=$(cat "${salmon_list}" | grep -m1 "${name}") # -m1 to get first video path if multiple
+        if [ -z "$drivepath" ]; then
+            echo "Video not found gdrive. Skipping..."
+            continue
+        fi
+        drivepath="${drivepath/\//}" # Remove leading forward slash
+
+        # Download video
+        if ! (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}"); then
+            echo "Failed drive pull, sleeping for a minute before trying again"
+            sleep 1m
+            (cd "${drive_folder}" && drive pull -no-prompt "${drivepath}")
+        fi
+        filepath="${drive_folder}/${drivepath}"
+
+        share_folder="${drive_folder}"
+    else
+        filepath=`find "${share_folder}" -name "${name}*" | head -n 1`
     fi
 
-
-    filepath="${drive_folder}/${drivepath}"
-    #filepath=`find "${drive_folder}/Kitwanga Fish Video" "${drive_folder}/Training dataset" -name "${name}*" | head -n 1`
-    share_path=${filepath#${drive_folder}}
+    share_path=${filepath#${share_folder}}
 
     filename=`basename "${filepath}"`
     filename=${filename%.*} # Remove extension
