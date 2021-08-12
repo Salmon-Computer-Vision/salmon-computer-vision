@@ -6,10 +6,31 @@ import subprocess
 import re
 
 def main(args):
-  result = subprocess.run([args.cli, '--auth', args.auth, '--server-host', args.host, 'ls'], stdout=subprocess.PIPE)
-  print(re.search(r'967', result.stdout))
-  #for vid in os.scandir(args.vid_folder):
-  #  print(vid.path)
+  main_command = [args.cli, '--auth', args.auth, '--server-host', args.host]
+  task_list = subprocess.run(main_command + ['ls'], stdout=subprocess.PIPE).stdout.decode('utf-8')
+  for vid in os.scandir(args.vid_folder):
+    filename = os.path.basename(vid.path)
+    name = os.path.splitext(filename)[0]
+
+    name_reg = re.compile(name)
+    if re.search(name_reg, task_list):
+      print(f"Task already exists. Skipping {name}")
+      continue
+
+    share_path = os.path.relpath(vid.path, args.share_folder)
+
+    output = subprocess.run(main_command + ['create', '--labels', args.labels_path, name, 'share', share_path],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    create_out = output.stdout.decode('utf-8')
+    create_err = output.stderr.decode('utf-8')
+    print(create_out)
+    if create_err:
+      print(create_err)
+
+    if re.search(r'Error', create_err):
+      task_id = re.search(r'ID: ([0-9]+)', create_out).group(1)
+      subprocess.run(main_command + ['delete', task_id])
+
   return
 
 if __name__ == '__main__':
