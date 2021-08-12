@@ -25,6 +25,10 @@ filtered_dir=$4
 
 # XPath to filter every other frame
 # /item[number(substring(/item/id, 7)) mod 2 = 0]
+
+# XPath to filter negatives of every 25th frame
+# not(/item/annotation) and number(substring(/item/id, 7)) mod 25 = 0
+
 xpath_filt='/item/annotation'
 if [ "$#" -eq 5 ]; then
     xpath_filt=$5
