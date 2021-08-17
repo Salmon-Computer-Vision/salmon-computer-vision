@@ -5,6 +5,28 @@ set -e
 
 # ./merge_filt.sh dump_filt merged
 
+show_help() {
+    echo "$0 [-hn] path/to/dump-filt path/to/dest_merged"
+}
+
+OPTIND=1 # Reset in case getopts has been used previously in the shell.
+
+split_train=true
+
+while getopts "h?n" opt; do
+   case "$opt" in
+      h|\?) # display Help
+         show_help
+         exit 0
+         ;;
+     n) # Do not split train set
+         split_train=false
+         ;;
+   esac
+done
+
+shift $((OPTIND-1))
+
 filtered_dir=$1
 dest_dir=$2
 
@@ -35,6 +57,10 @@ datum merge "${filtered_dir}"/* -o "${dest_dir}"
 
 split_dir="${dest_dir}_split"
 # Split training, validation, and test sets
-datum transform -p "$dest_dir" -o "$split_dir" -t random_split --overwrite -- -s train_1:.175 -s train_2:.175 -s train_3:.175 -s train_4:.175 -s val:.15 -s test:.15
+if [ "$split_train" = true ]; then
+    datum transform -p "$dest_dir" -o "$split_dir" -t random_split --overwrite -- -s train_1:.175 -s train_2:.175 -s train_3:.175 -s train_4:.175 -s valid:.15 -s test:.15
+else
+    datum transform -p "$dest_dir" -o "$split_dir" -t random_split --overwrite -- -s train:.7 -s valid:.15 -s test:.15
+fi
 
 "${SCRIPT_DIR}/sep_split.sh" "$split_dir"
