@@ -8,11 +8,11 @@ url="rtsp://10.0.0.98:554/user=admin&password=&channel=1&stream=0.sdp?"
 encode=h264_omx
 scale="1280:720"
 drive=/media/usb0
-dir=CoquitlamDamRecord
+dir="CoquitlamDamRecord"
 suffix=$1
 
 today=`date +'%m-%d-%Y'`
-rec_dir="${drive}/${dir}/${today}"
+rec_dir="${drive}/${dir}/${today}/${suffix}"
 
 if [ ! -d "${rec_dir}" ]; then 
     mkdir -p "$rec_dir"
