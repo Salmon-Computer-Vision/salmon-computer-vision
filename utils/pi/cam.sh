@@ -18,4 +18,4 @@ if [ ! -d "${rec_dir}" ]; then
     mkdir -p "$rec_dir"
 fi
 
-ffmpeg -rtsp_transport tcp -r 25 -i "$url" -c:v "$encode" -vf scale="$scale" -r 15 -b:v 800k -an -f segment -segment_time 3600 -reset_timestamps 1 -strftime 1 "${rec_dir}/%m-%d-%Y_%H-%M-%S_${suffix}.mp4"
+ffmpeg -rtsp_transport tcp -i "$url" -c:v "$encode" -vf scale="$scale",fps=15 -b:v 800k -an -f segment -segment_time 3600 -reset_timestamps 1 -strftime 1 "${rec_dir}/%m-%d-%Y_%H-%M-%S_${suffix}.mp4"
