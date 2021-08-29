@@ -8,3 +8,7 @@ RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/models.git /mo
 # Do `protoc` from `/models/research`
 # Install prereqs of tensorflow from NVIDIA jetson nano doc
 # Install `jp/v44 tensorflow==2.2.*` from NVIDIA jetson nano doc
+
+# Install everything with jkjung-avt/tensorrt_demos instead
+RUN apt install -y sudo
+RUN apt install -y protobuf-compiler libprotoc-dev
