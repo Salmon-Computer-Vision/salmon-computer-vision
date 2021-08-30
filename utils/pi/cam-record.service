@@ -3,11 +3,16 @@ Description=Camera Record service
 After=network.target
 StartLimitIntervalSec=0
 [Service]
+# Env Vars to pass
+Environment=url="rtsp://192.168.10.89/av0_0"
+Environment=suffix=CoquitlamDam
+Environment=subdir=side
+
 Type=simple
 User=pi
 Restart=always
 RestartSec=10
-ExecStart=/home/pi/salmon-computer-vision/utils/pi/cam.sh CoquitlamDam
+ExecStart=/home/pi/salmon-computer-vision/utils/pi/cam.sh ${url} ${suffix} ${subdir}
 
 [Install]
 WantedBy=multi-user.target
