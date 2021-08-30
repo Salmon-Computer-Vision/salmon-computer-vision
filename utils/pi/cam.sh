@@ -2,8 +2,8 @@
 # Add the following to `sudo crontab -e`
 # 0 0 * * * systemctl restart cam-record.service
 
-#url="rtsp://10.0.0.89/av0_0"
-#url="rtsp://10.0.0.98:554/user=admin&password=&channel=1&stream=0.sdp?"
+#url="rtsp://192.168.10.89/av0_0"
+#url="rtsp://192.168.10.98:554/user=admin&password=&channel=1&stream=0.sdp?"
 #encode="h264_v4l2m2m"
 url=$1
 suffix=$2
