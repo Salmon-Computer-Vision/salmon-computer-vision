@@ -5,13 +5,16 @@ After=docker.service
 Requires=docker.service
 
 [Service]
+Environment=container=jetson
+Environment=detect_repo=homesecurity
+
 Type=simple
 Restart=always
 RestartSec=10
-ExecStartPre=-/usr/bin/docker stop jetson
-ExecStartPre=-/usr/bin/docker rm -f jetson
-ExecStart=/home/salmonjetson/salmon-computer-vision/utils/jetson/cam-service.sh jetson homesecurity
-ExecStop=-/usr/bin/docker stop jetson
+ExecStartPre=-/usr/bin/docker stop $container
+ExecStartPre=-/usr/bin/docker rm -f $container
+ExecStart=/home/salmonjetson/salmon-computer-vision/utils/jetson/cam-service.sh $container $detect_repo
+ExecStop=-/usr/bin/docker stop $container
 
 [Install]
 WantedBy=multi-user.target
