@@ -2,6 +2,9 @@
 
 Clone jetson-inference and homesecurity.
 
+Be sure to edit `common/config.py` for any required changes such as
+changing the `mp4_folder` variable to point to a different destination.
+
 `sudoedit /etc/docker/daemon.json` and add
 ```
 "default-runtime": "nvidia"
