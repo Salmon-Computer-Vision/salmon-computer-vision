@@ -10,7 +10,7 @@ FROM dustynv/jetson-inference:r32.5.0
 # Install `jp/v44 tensorflow==2.2.*` from NVIDIA jetson nano doc
 
 # Install everything with jkjung-avt/tensorrt_demos instead
-RUN apt-get install -y sudo protobuf-compiler libprotoc-dev
+RUN apt-get update && apt-get install -y sudo protobuf-compiler libprotoc-dev
 
 RUN git clone https://github.com/jkjung-avt/tensorrt_demos.git /tensorrt_demos
 WORKDIR /tensorrt_demos/ssd
