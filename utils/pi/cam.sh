@@ -14,7 +14,7 @@ drive=/media/usb0
 dir="CoquitlamDamRecord"
 
 today=`date +'%m-%d-%Y'`
-rec_dir="${drive}/${dir}/${today}/${subdir}"
+rec_dir="${drive}/${dir}/${subdir}/${today}"
 
 if [ ! -d "${rec_dir}" ]; then 
     mkdir -p "$rec_dir"
