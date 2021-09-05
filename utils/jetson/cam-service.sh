@@ -8,4 +8,4 @@ tmp_sh=$(mktemp)
 cd /home/salmonjetson/jetson-inference
 sed -r "s/ -it (--name $name )?/ -i --name $name /" docker/run.sh > $tmp_sh
 sed -i -r "s/ -i (--name .* )?(--rm)/ -i --name $name \2/" $tmp_sh
-bash $tmp_sh -v /home/salmonjetson/${dir_name}/:/${dir_name} -r /${dir_name}/cam.sh
+bash $tmp_sh -c cam-detect -v /home/salmonjetson/${dir_name}/:/${dir_name} -r /${dir_name}/cam.sh
