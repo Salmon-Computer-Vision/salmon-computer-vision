@@ -11,5 +11,5 @@ cd /home/salmonjetson/jetson-inference
 sed -r "s/ -it (--name $name )?/ -i --name $name /" docker/run.sh > $tmp_sh
 sed -i -r "s/ -i (--name .* )?(--rm)/ -i --name $name \2/" $tmp_sh
 
-sudo ln -s /tensorrt_demos/plugins plugins
+sudo ln -s /tensorrt_demos/plugins ${dir}/plugins
 bash $tmp_sh -c cam-detect -v ${dir}:/${dir_name} -r /${dir_name}/cam.sh
