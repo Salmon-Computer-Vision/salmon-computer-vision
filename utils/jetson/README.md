@@ -13,3 +13,5 @@ python3 onnx_to_tensorrt.py -m <yolov4-custom>
 ```
 
 Both `*.weights` and `*.cfg` must have the same name.
+
+Then, copy `*.trt`, `*.cfg`, and `*.names` to the `homesecurity` folder.
