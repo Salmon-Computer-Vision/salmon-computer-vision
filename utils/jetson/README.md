@@ -1,6 +1,31 @@
 # Jetson-nano Setup
 
-Create docker image using provided Dockerfile.
+Clone jetson-inference.
+
+Edit `/etc/docker/daemon.json` and add
+```
+"default-runtime": "nvidia"
+```
+within the curly braces.
+
+For example your `daemon.json` could look like this:
+
+```
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "default-runtime": "nvidia"
+}
+```
+
+Create docker image using the provided Dockerfile:
+```
+sudo docker build -t cam-detect -f Dockerfile-jetson-tf .
+```
 
 To convert YOLOv4 weights to TensorRT, copy the `*.weights` and `*.cfg` files
 to the `homesecurity` folder, run the image, and run the following:
