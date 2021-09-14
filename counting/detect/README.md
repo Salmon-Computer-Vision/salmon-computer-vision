@@ -15,10 +15,11 @@ detectvideo.exe --weights checkpoints\yolov4-tiny-416 --tiny --size 416 --model 
 
 For example,
 ```
-detectvideo.exe --weights checkpoints\yolov4-tiny-416 --tiny --size 416 --model yolov4 --video "09-25-2019 21-31-51 M Right Bank Underwater.mp4" --output det.mp4 --dis_cv2_window
+detectvideo.exe --weights checkpoints\yolov4-tiny-416 --tiny --size 416 --model yolov4 --video "09-24-2019 17-10-19 M Right Bank Underwater.mp4" --output det.mp4 --dis_cv2_window
 ```
 
 This would run the salmon detection on the provided video and output another
-video with drawn bounding boxes and labeled species to the specified file.
+video named `det.mp4` (In this example) with drawn bounding boxes and labeled
+species to the specified file.
 
 You can remove `--dis_cv2_window` to see the detection while it is running.

@@ -15,7 +15,7 @@ count.exe --input "<path\to\video-file>" --weights weights\latest.pt --cfg weigh
 
 For example,
 ```
-count.exe --input "10-30-2019 18-15-41 M Right Bank Underwater.m4v" --weights weights\latest.pt --cfg weights\cfg\yolo3.cfg
+count.exe --input "09-24-2019 17-10-19 M Right Bank Underwater.mp4" --weights weights\latest.pt --cfg weights\cfg\yolo3.cfg
 ```
 
 This will run the MOT detection and counting software for fish and output the
