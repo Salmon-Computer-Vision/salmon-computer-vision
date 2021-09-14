@@ -2,10 +2,10 @@
 
 Detects the species of the salmon and draws a bounding box with the confidence.
 
-First, move the `checkpoints` folder provided to this folder.
+First, move the `checkpoints` folder provided to `detectvideos` directory.
 
-Open up a command line window at this directory by going to the Windows
-Explorer folder search bar and type in `cmd` and Enter.
+Open up a command line window at the `detectvideos` directory by going to the
+Windows Explorer folder search bar and type in `cmd` and Enter.
 
 Run the following command:
 

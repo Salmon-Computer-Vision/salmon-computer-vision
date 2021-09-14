@@ -2,15 +2,15 @@
 
 Currently, only a single class (fish) counting for videos or video streams.
 
-First, move the `weights` folder provided to this directory.
+First, move the `weights` folder provided to the `count` directory.
 
-Open up a command line window at this directory by going to the Windows
+Open up a command line window at `count` directory by going to the Windows
 Explorer folder search bar and type in `cmd` and Enter.
 
 Run the following command:
 
 ```
-count.exe --input "<path\to\video-file>" --weights weights\latest.pt --cfg weights\cfg\yolo4.cfg
+count.exe --input "<path\to\video-file>" --weights weights\latest.pt --cfg weights\cfg\yolo3.cfg
 ```
 
 For example,
