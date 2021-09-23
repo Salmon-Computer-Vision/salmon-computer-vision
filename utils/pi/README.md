@@ -3,6 +3,20 @@
 The service file and cam.sh script runs FFMPEG to record the RTSP
 videos from the IP Cameras that are deployed.
 
+## Raspberry Pi Recording Setup
+
+Add the following to `sudo crontab -e`
+```
+0 0 * * * systemctl restart cam-record.service
+```
+
+If you have more than one recording with the same setup just add more services
+to the end, eg.
+
+```
+0 0 * * * systemctl restart cam-record.service cam-record-up.service
+```
+
 ## Raspberry Pi DHCP
 
 Adapted from [this tutorial](https://www.itsfullofstars.de/2019/02/dhcp-server-on-linux-with-raspberry-pi/).
