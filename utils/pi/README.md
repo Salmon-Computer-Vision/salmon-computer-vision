@@ -66,3 +66,8 @@ static ip_address=192.168.10.0/24
 static routers=192.168.10.1
 static domain_name_servers=192.168.10.1
 ```
+
+Then, reboot:
+```
+sudo reboot
+```
