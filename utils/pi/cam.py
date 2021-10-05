@@ -18,6 +18,8 @@ def main(args):
 
   pipeline = Gst.parse_launch("rtspsrc 'location=rtsp://192.168.10.98:554/user=admin&password=&channel=1&stream=0.sdp?' ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! 'video/x-raw, format=(string)BGR, width=(int)1280, height=(int)720' ! videorate ! 'video/x-raw,framerate=10/1' ! v4l2h264enc extra-controls="encode,video_bitrate=500000" ! h264parse ! mp4mux ! filesink location=test.mp4")
 
+  pipeline.set_state(Gst.State.PLAYING)
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="Record RTSP camera")
   parser.add_argument('-u', '--url', help='URL of RTSP stream.')
