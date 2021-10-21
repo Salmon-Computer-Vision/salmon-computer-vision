@@ -60,7 +60,9 @@ for anno in "${anno_folder}"/*.zip; do
     fi
 
     if [ "$local" = true ]; then
-        drivepath=$(cat "${salmon_list}" | grep -m1 "${name}") # -m1 to get first video path if multiple
+        filepath=`find "${share_folder}" -name "${name}*" | head -n 1`
+    else
+        drivepath=$(cat "${salmon_list}" | grep -m1 "${name}" || true) # -m1 to get first video path if multiple
         if [ -z "$drivepath" ]; then
             echo "Video not found gdrive. Skipping..."
             continue
@@ -76,8 +78,6 @@ for anno in "${anno_folder}"/*.zip; do
         filepath="${drive_folder}/${drivepath}"
 
         share_folder="${drive_folder}"
-    else
-        filepath=`find "${share_folder}" -name "${name}*" | head -n 1`
     fi
 
     share_path=${filepath#${share_folder}}
