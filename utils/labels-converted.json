@@ -1,8 +1,48 @@
 [
   {
-    "name": "Coho",
-    "color": "#83e070",
+    "name": "Chinook",
+    "color": "#38794c",
     "attributes": [
+      {
+        "name": "Adipose Clipped",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Confidence Level",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "3",
+        "values": [
+          "3",
+          "2",
+          "1"
+        ]
+      },
+      {
+        "name": "Injury",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Notes",
+        "mutable": false,
+        "input_type": "text",
+        "default_value": [],
+        "values": []
+      },
       {
         "name": "Sex",
         "mutable": false,
@@ -15,111 +55,61 @@
         ]
       },
       {
-        "name": "Adipose Clipped",
+        "name": "View",
         "mutable": false,
         "input_type": "select",
-        "default_value": "No",
+        "default_value": "Top-down",
         "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Injury",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Confidence Level",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "3",
-        "values": [
-          "3",
-          "2",
-          "1"
-        ]
-      },
-      {
-        "name": "Notes",
-        "mutable": false,
-        "input_type": "text",
-        "default_value": "NA",
-        "values": [
-          "NA"
-        ]
-      }
-    ]
-  },
-  {
-    "name": "Chum",
-    "color": "#b83df5",
-    "attributes": [
-      {
-        "name": "Sex",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "Male",
-        "values": [
-          "Male",
-          "Female"
-        ]
-      },
-      {
-        "name": "Adipose Clipped",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Injury",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Confidence Level",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "3",
-        "values": [
-          "3",
-          "2",
-          "1"
-        ]
-      },
-      {
-        "name": "Notes",
-        "mutable": false,
-        "input_type": "text",
-        "default_value": "NA",
-        "values": [
-          "NA"
+          "Top-down",
+          "Side"
         ]
       }
     ]
   },
   {
     "name": "Steelhead",
-    "color": "#66ff66",
+    "color": "#888888",
     "attributes": [
+      {
+        "name": "Adipose Clipped",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Confidence Level",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "3",
+        "values": [
+          "3",
+          "2",
+          "1"
+        ]
+      },
+      {
+        "name": "Injury",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Notes",
+        "mutable": false,
+        "input_type": "text",
+        "default_value": [],
+        "values": []
+      },
       {
         "name": "Sex",
         "mutable": false,
@@ -131,167 +121,61 @@
         ]
       },
       {
-        "name": "Adipose Clipped",
+        "name": "View",
         "mutable": false,
         "input_type": "select",
-        "default_value": "No",
+        "default_value": "Top-down",
         "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Injury",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Confidence Level",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "3",
-        "values": [
-          "3",
-          "2",
-          "1"
-        ]
-      },
-      {
-        "name": "Notes",
-        "mutable": false,
-        "input_type": "text",
-        "default_value": "NA",
-        "values": [
-          "NA"
-        ]
-      }
-    ]
-  },
-  {
-    "name": "Bull",
-    "color": "#ff6037",
-    "attributes": [
-      {
-        "name": "Sex",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "NA",
-        "values": [
-          "NA",
-          "Juvenile"
-        ]
-      },
-      {
-        "name": "Adipose Clipped",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "NA"
-        ]
-      },
-      {
-        "name": "Injury",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Confidence Level",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "3",
-        "values": [
-          "3",
-          "2",
-          "1"
-        ]
-      },
-      {
-        "name": "Notes",
-        "mutable": false,
-        "input_type": "text",
-        "default_value": "NA",
-        "values": [
-          "NA"
-        ]
-      }
-    ]
-  },
-  {
-    "name": "Rainbow",
-    "color": "#ff00cc",
-    "attributes": [
-      {
-        "name": "Sex",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "NA",
-        "values": [
-          "NA",
-          "Juvenile"
-        ]
-      },
-      {
-        "name": "Adipose Clipped",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "NA"
-        ]
-      },
-      {
-        "name": "Injury",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Confidence Level",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "3",
-        "values": [
-          "3",
-          "2",
-          "1"
-        ]
-      },
-      {
-        "name": "Notes",
-        "mutable": false,
-        "input_type": "text",
-        "default_value": "NA",
-        "values": [
-          "NA"
+          "Top-down",
+          "Side"
         ]
       }
     ]
   },
   {
     "name": "Sockeye",
-    "color": "#fa3253",
+    "color": "#f00026",
     "attributes": [
+      {
+        "name": "Adipose Clipped",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Confidence Level",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "3",
+        "values": [
+          "3",
+          "2",
+          "1"
+        ]
+      },
+      {
+        "name": "Injury",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Notes",
+        "mutable": false,
+        "input_type": "text",
+        "default_value": [],
+        "values": []
+      },
       {
         "name": "Sex",
         "mutable": false,
@@ -299,50 +183,17 @@
         "default_value": "Male",
         "values": [
           "Male",
-          "Female",
-          "NA"
+          "Female"
         ]
       },
       {
-        "name": "Adipose Clipped",
+        "name": "View",
         "mutable": false,
         "input_type": "select",
-        "default_value": "No",
+        "default_value": "Top-down",
         "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Injury",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "Yes",
-          "NA"
-        ]
-      },
-      {
-        "name": "Confidence Level",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "3",
-        "values": [
-          "3",
-          "2",
-          "1"
-        ]
-      },
-      {
-        "name": "Notes",
-        "mutable": false,
-        "input_type": "text",
-        "default_value": "NA",
-        "values": [
-          "NA"
+          "Top-down",
+          "Side"
         ]
       }
     ]
@@ -352,29 +203,73 @@
     "color": "#fa7dbb",
     "attributes": [
       {
+        "name": "Adipose Clipped",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Confidence Level",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "3",
+        "values": [
+          "3",
+          "2",
+          "1"
+        ]
+      },
+      {
+        "name": "Injury",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Notes",
+        "mutable": false,
+        "input_type": "text",
+        "default_value": [],
+        "values": []
+      },
+      {
         "name": "Sex",
         "mutable": false,
         "input_type": "select",
         "default_value": "Male",
         "values": [
           "Male",
-          "Female",
-          "NA"
+          "Female"
         ]
       },
       {
-        "name": "Adipose Clipped",
+        "name": "View",
         "mutable": false,
         "input_type": "select",
-        "default_value": "No",
+        "default_value": "Top-down",
         "values": [
-          "No",
-          "Yes",
-          "NA"
+          "Top-down",
+          "Side"
         ]
-      },
+      }
+    ]
+  },
+  {
+    "name": "Whitefish",
+    "color": "#d8d8db",
+    "attributes": [
       {
-        "name": "Injury",
+        "name": "Adipose Clipped",
         "mutable": false,
         "input_type": "select",
         "default_value": "No",
@@ -396,20 +291,23 @@
         ]
       },
       {
+        "name": "Injury",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
         "name": "Notes",
         "mutable": false,
         "input_type": "text",
-        "default_value": "NA",
-        "values": [
-          "NA"
-        ]
-      }
-    ]
-  },
-  {
-    "name": "Whitefish",
-    "color": "#e9e9eb",
-    "attributes": [
+        "default_value": [],
+        "values": []
+      },
       {
         "name": "Sex",
         "mutable": false,
@@ -420,18 +318,23 @@
         ]
       },
       {
-        "name": "Adipose Clipped",
+        "name": "View",
         "mutable": false,
         "input_type": "select",
-        "default_value": "No",
+        "default_value": "Top-down",
         "values": [
-          "No",
-          "Yes",
-          "NA"
+          "Top-down",
+          "Side"
         ]
-      },
+      }
+    ]
+  },
+  {
+    "name": "Chum",
+    "color": "#ffcc33",
+    "attributes": [
       {
-        "name": "Injury",
+        "name": "Adipose Clipped",
         "mutable": false,
         "input_type": "select",
         "default_value": "No",
@@ -453,6 +356,82 @@
         ]
       },
       {
+        "name": "Injury",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Notes",
+        "mutable": false,
+        "input_type": "text",
+        "default_value": [],
+        "values": []
+      },
+      {
+        "name": "Sex",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "Male",
+        "values": [
+          "Male",
+          "Female"
+        ]
+      },
+      {
+        "name": "View",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "Top-down",
+        "values": [
+          "Top-down",
+          "Side"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Bull",
+    "color": "#3d3df5",
+    "attributes": [
+      {
+        "name": "Adipose Clipped",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "NA"
+        ]
+      },
+      {
+        "name": "Confidence Level",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "3",
+        "values": [
+          "3",
+          "2",
+          "1"
+        ]
+      },
+      {
+        "name": "Injury",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
         "name": "Notes",
         "mutable": false,
         "input_type": "text",
@@ -460,13 +439,82 @@
         "values": [
           "NA"
         ]
+      },
+      {
+        "name": "Sex",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "NA",
+        "values": [
+          "NA"
+        ]
+      },
+      {
+        "name": "View",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "Top-down",
+        "values": [
+          "Top-down",
+          "Side"
+        ]
       }
     ]
   },
   {
-    "name": "Chinook",
-    "color": "#cc3366",
+    "name": "Coho",
+    "color": "#32b7fa",
     "attributes": [
+      {
+        "name": "View",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "Top-down",
+        "values": [
+          "Top-down",
+          "Side"
+        ]
+      },
+      {
+        "name": "Adipose Clipped",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Confidence Level",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "3",
+        "values": [
+          "3",
+          "2",
+          "1"
+        ]
+      },
+      {
+        "name": "Injury",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "No",
+        "values": [
+          "No",
+          "Yes",
+          "NA"
+        ]
+      },
+      {
+        "name": "Notes",
+        "mutable": false,
+        "input_type": "text",
+        "default_value": [],
+        "values": []
+      },
       {
         "name": "Sex",
         "mutable": false,
@@ -477,19 +525,15 @@
           "Female",
           "Jack"
         ]
-      },
+      }
+    ]
+  },
+  {
+    "name": "Rainbow",
+    "color": "#ff914d",
+    "attributes": [
       {
         "name": "Adipose Clipped",
-        "mutable": false,
-        "input_type": "select",
-        "default_value": "No",
-        "values": [
-          "No",
-          "NA"
-        ]
-      },
-      {
-        "name": "Injury",
         "mutable": false,
         "input_type": "select",
         "default_value": "No",
@@ -511,45 +555,48 @@
         ]
       },
       {
-        "name": "Notes",
-        "mutable": false,
-        "input_type": "text",
-        "default_value": "NA",
-        "values": [
-          "NA"
-        ]
-      }
-    ]
-  },
-  {
-    "name": "Shiner",
-    "color": "#5986b3",
-    "attributes": [
-      {
-        "name": "Confidence Level",
+        "name": "Injury",
         "mutable": false,
         "input_type": "select",
-        "default_value": "3",
+        "default_value": "No",
         "values": [
-          "3",
-          "2",
-          "1"
+          "No",
+          "Yes",
+          "NA"
         ]
       },
       {
         "name": "Notes",
         "mutable": false,
         "input_type": "text",
+        "default_value": [],
+        "values": []
+      },
+      {
+        "name": "Sex",
+        "mutable": false,
+        "input_type": "select",
         "default_value": "NA",
         "values": [
-          "NA"
+          "NA",
+          "Juvenile"
+        ]
+      },
+      {
+        "name": "View",
+        "mutable": false,
+        "input_type": "select",
+        "default_value": "Top-down",
+        "values": [
+          "Top-down",
+          "Side"
         ]
       }
     ]
   },
   {
     "name": "Pikeminnow",
-    "color": "#cc9933",
+    "color": "#a16b00",
     "attributes": [
       {
         "name": "Confidence Level",
