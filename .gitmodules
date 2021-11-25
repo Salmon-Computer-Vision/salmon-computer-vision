@@ -1,3 +1,6 @@
 [submodule "extract_aris/pyARIS"]
 	path = extract_aris/pyARIS
 	url = https://github.com/KamiCreed/pyARIS.git
+[submodule "third_party/YOLOV4_MCMOT"]
+	path = third_party/YOLOV4_MCMOT
+	url = https://github.com/CaptainEven/YOLOV4_MCMOT.git
