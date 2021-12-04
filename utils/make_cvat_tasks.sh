@@ -64,7 +64,7 @@ for anno in "${anno_folder}"/*.zip; do
     else
         drivepath=$(cat "${salmon_list}" | grep -m1 "${name}" || true) # -m1 to get first video path if multiple
         if [ -z "$drivepath" ]; then
-            echo "Video not found gdrive. Skipping..."
+            echo "Video not found gdrive. Skipping ${name}"
             continue
         fi
         drivepath="${drivepath/\//}" # Remove leading forward slash

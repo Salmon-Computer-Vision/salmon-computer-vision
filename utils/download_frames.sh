@@ -46,12 +46,16 @@ export PYTHONPATH
 
 for task in "${source_dir}"/*; do
     t_name=$(basename "$task")
-    task_filt=$(realpath ${filtered_dir}/${t_name})
+    task_filt=$(realpath "${filtered_dir}/${t_name}")
+
+    if [ -d "${task_filt}" ]; then continue; fi
+
+    mkdir -p "${task_filt}"
 
    (cd "${task}"; "${exp_script}" "${user}" "${pass}" "${task_filt}" "${xpath_filt}")
 
     if [ ! -f "${task_filt}/annotations/default.json" ]; then
-        rm -rv "${task_filt}"
+        rm -rv "${task_filt}" # An error must have happened, remove the dir and continue
         continue
     fi
 
