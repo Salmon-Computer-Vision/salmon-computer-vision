@@ -6,7 +6,7 @@ set -e
 # ./merge_filt.sh dump_filt merged
 
 show_help() {
-    echo "$0 [-hn] [-s <seed>] path/to/dump-filt path/to/dest_merged"
+    echo "$0 [-hn] [-s <seed - default: 0>] path/to/dump-filt path/to/dest_merged"
 }
 
 OPTIND=1 # Reset in case getopts has been used previously in the shell.
