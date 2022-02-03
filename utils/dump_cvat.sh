@@ -70,7 +70,6 @@ for ((i=start_id; i<=last_id; i++)); do
         "${cli}" --auth "${auth}" --server-host "${host}" \
             dump --format "$format" $i "${task_dir}.zip"
         ret_code=$?
-        echo $ret_code
 
         if [[ $ret_code -ne 0 ]]; then
             if [[ "$count" -ge "$RETRY_LIMIT" ]]; then
