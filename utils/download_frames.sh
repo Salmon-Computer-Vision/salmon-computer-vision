@@ -15,7 +15,7 @@ set -e
 min_num_param=4
 if [ "$#" -lt $min_num_param ]; then
     echo "Must have at least ${min_num_param} parameters"
-    return
+    exit 1
 fi
 
 user=$1
