@@ -4,6 +4,7 @@ import glob, os
 import argparse
 import subprocess
 import re
+from time import sleep
 
 def main(args):
   main_command = [args.cli, '--auth', args.auth, '--server-host', args.host]
@@ -19,17 +20,27 @@ def main(args):
 
     share_path = os.path.relpath(vid.path, args.share_folder)
 
-    output = subprocess.run(main_command + ['create', '--labels', args.labels_path, name, 'share', share_path],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    create_out = output.stdout.decode('utf-8')
-    create_err = output.stderr.decode('utf-8')
-    print(create_out)
-    if create_err:
-      print(create_err)
+    RETRY_LIMIT = 3
+    count = 0
+    while True:
+      output = subprocess.run(main_command + ['create', '--labels', args.labels_path, name, 'share', share_path],
+          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      create_out = output.stdout.decode('utf-8')
+      create_err = output.stderr.decode('utf-8')
+      print(create_out)
+      if create_err:
+        print(create_err)
+      return create_out, create_err
 
-    if re.search(r'Error', create_err):
-      task_id = re.search(r'ID: ([0-9]+)', create_out).group(1)
-      subprocess.run(main_command + ['delete', task_id])
+      if count < RETRY_LIMIT and re.search(r'Error', create_err):
+        count = count + 1
+        task_id = re.search(r'ID: ([0-9]+)', create_out).group(1)
+        subprocess.run(main_command + ['delete', task_id])
+        sleep(3)
+      else:
+        break
+
+    sleep(0.2)
 
   return
 
