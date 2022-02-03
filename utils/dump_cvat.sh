@@ -16,6 +16,8 @@ OPTIND=1 # Reset in case getopts has been used previously in the shell.
 format="Datumaro 1.0"
 unzip=true
 change_name_xml=false
+error_list_file=dump_cvat_errored.txt
+echo '' > $error_list_file
 
 while getopts "h?f:nc" opt; do
    case "$opt" in
@@ -68,6 +70,7 @@ for ((i=start_id; i<=last_id; i++)); do
         "${cli}" --auth "${auth}" --server-host "${host}" \
             dump --format "$format" $i "${task_dir}.zip"
         ret_code=$?
+        echo $ret_code
 
         if [[ $ret_code -ne 0 ]]; then
             if [[ "$count" -ge "$RETRY_LIMIT" ]]; then
@@ -89,7 +92,9 @@ for ((i=start_id; i<=last_id; i++)); do
             name=$(xpath -q -e '//task/name/text()' ${task_dir}/annotations.xml) # Specifically CVAT for videos 1.1
             mv -v "${task_dir}.zip" "${dest_dir}/${name%.*}.zip"
         else
-            rm -v "${task_dir}.zip"
+            if ! rm -v "${task_dir}.zip"; then
+                echo $i >> $error_list_file
+            fi
         fi
     fi
 
