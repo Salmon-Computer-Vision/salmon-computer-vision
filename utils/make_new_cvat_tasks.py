@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
   parser.add_argument('--cli', default='../../cvat/utils/cli/cli.py', help='Path to cvat/utils/cli/cli.py')
   parser.add_argument('--host', default='localhost', help='Hostname of CVAT server. Default: localhost')
-  parser.add_argument('auth', help='Username and password of CVAT instance. Should be passed as such "user:pass" or "user:$pass"')
+  parser.add_argument('auth', help='Username and password of CVAT instance. Should be passed as such "user:pass" or "user:$pass" after `export pass=<pass>`')
   parser.add_argument('labels_path', help='Path to labels.json')
   parser.add_argument('share_folder', help='Path to CVAT share folder')
   parser.add_argument('vid_folder', help='Path to videos folder within the CVAT share folder')
