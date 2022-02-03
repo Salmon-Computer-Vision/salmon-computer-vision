@@ -36,7 +36,7 @@ def main(args):
         count = count + 1
         task_id = re.search(r'ID: ([0-9]+)', create_out).group(1)
         subprocess.run(main_command + ['delete', task_id])
-        sleep(3)
+        sleep(10)
       else:
         break
 

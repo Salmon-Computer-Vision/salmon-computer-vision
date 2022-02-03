@@ -77,7 +77,7 @@ for ((i=start_id; i<=last_id; i++)); do
                 break
             fi
             (( count++ ))
-            sleep 5
+            sleep 10
         else
             if [ "$unzip" = true ]; then mkdir -p "$task_dir"; fi
             break
