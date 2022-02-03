@@ -62,11 +62,27 @@ for ((i=start_id; i<=last_id; i++)); do
 
     task_dir="${dest_dir}/${i}"
 
-    "${cli}" --auth "${auth}" --server-host "${host}" \
-        dump --format "$format" $i "${task_dir}.zip"
+    RETRY_LIMIT=3
+    count=0
+    while [ true ]; do
+        "${cli}" --auth "${auth}" --server-host "${host}" \
+            dump --format "$format" $i "${task_dir}.zip"
+        ret_code=$?
+
+        if [[ $ret_code -ne 0 ]]; then
+            if [[ "$count" -ge "$RETRY_LIMIT" ]]; then
+                echo Skipping task due to excessive errors
+                break
+            fi
+            (( count++ ))
+            sleep 5
+        else
+            if [ "$unzip" = true ]; then mkdir -p "$task_dir"; fi
+            break
+        fi
+    done
 
     if [ "$unzip" = true ] || [ "$change_name_xml" = true ]; then
-        mkdir -p "$task_dir"
         unzip -qn "${task_dir}.zip" -d "$task_dir"
 
         if [ "$change_name_xml" = true ]; then
@@ -77,4 +93,5 @@ for ((i=start_id; i<=last_id; i++)); do
         fi
     fi
 
+    sleep 0.2
 done
