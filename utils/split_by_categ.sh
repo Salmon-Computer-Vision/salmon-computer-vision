@@ -18,6 +18,7 @@ fi
 echo "Species,Number" > "$cat_csv"
 cd "${dataset_dir}"
 while read label; do
+    echo "Filter $label"
     datum filter -e "/item[annotation/label=\"${label}\"]" -o "${label}" || true
     num=$(datum info -p "$label" | grep -oP -m1 '(?<=length: ).*' || true)
     if [ -z "$num" ]; then num=0; fi
