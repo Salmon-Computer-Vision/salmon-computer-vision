@@ -13,7 +13,6 @@ fi
 mkdir -p "$dest_dir"
 # Iterate subfolders only (Should only have video frames)
 for vid_frames in "${dataset_dir}/"*/ ; do
-    vid_frames="${dataset_dir}/08-01-2021_19-32-29_M_Salmon_Camera"
     echo "$vid_frames"
     # Find all images in folder
     find "$(cd $vid_frames; pwd)" -name '*.jpg' | sort > "${dataset_dir}/bear_creek_salmon.txt"
