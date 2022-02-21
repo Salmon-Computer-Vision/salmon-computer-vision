@@ -26,7 +26,7 @@ upload()
     basedir=$2
     region_name=$3
     dest=$4
-    sem -j+0 python3 plot_iperfcsv.py "${dir}"/*up.* -n "Starlink Upload (${region_name})" -f ${dest}/${basedir}_up
+    python3 plot_iperfcsv.py "${dir}"/*up.* -n "Starlink Upload (${region_name})" -f ${dest}/${basedir}_up
 }
 
 export -f download
@@ -44,3 +44,4 @@ for dir in "$src_dir"/*/; do
     # Plot uploads
     sem -j+0 upload "$dir" "$basedir" "$region_name" "$dest"
 done
+sem --wait
