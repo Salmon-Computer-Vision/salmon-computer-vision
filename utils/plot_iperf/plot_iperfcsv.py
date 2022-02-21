@@ -34,17 +34,19 @@ def main(args):
     x_dates = combined_df.index.strftime('%m-%d').sort_values().unique()
     ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
 
+    ax.set_xlabel("Day of Month (2021)")
     ax.set_ylabel("Bandwidth (Mb/s)")
     if args.name:
         ax.set_title(args.name)
 
-    plt.show()
+    plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot iperf CSV files of format [timestamp, bits_per_second].')
     parser.add_argument('src_filenames', nargs='*')
     parser.add_argument('-s', '--save', action='store_true', help='Will save the combined CSV')
     parser.add_argument('-n', '--name', help='The name of the plot')
+    parser.add_argument('-f', '--filename', help='The name of the output image file', default='combined_boxplot')
 
     args = parser.parse_args()
     main(args)
