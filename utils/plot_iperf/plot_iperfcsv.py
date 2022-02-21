@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+import os
+import argparse
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.dates as md
+import numpy as np
+import seaborn
+
+megab_to_b = 1e6
+
+def combine_csvs(src):
+    return pd.concat([pd.read_csv(f, index_col=0) for f in src])
+
+def main(args):
+    combined_df = combine_csvs(args.src_filenames)
+    combined_df.index = pd.to_datetime(combined_df.index, unit='s')
+
+
+    combined_df.bits_per_second /= megab_to_b
+    combined_df.rename(columns={'bits_per_second': 'bandwidth'}, inplace=True)
+
+    #combined_df = combined_df.resample('d').mean()
+    print(combined_df.head())
+
+    if args.save:
+        combined_df.to_csv("combined.csv", encoding='utf-8-sig')
+
+    fig, ax = plt.subplots(figsize=(12,5))
+    seaborn.boxplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
+
+    x_dates = combined_df.index.strftime('%m-%d').sort_values().unique()
+    ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
+
+    ax.set_ylabel("Bandwidth (Mb/s)")
+    if args.name:
+        ax.set_title(args.name)
+
+    plt.show()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Plot iperf CSV files of format [timestamp, bits_per_second].')
+    parser.add_argument('src_filenames', nargs='*')
+    parser.add_argument('-s', '--save', action='store_true', help='Will save the combined CSV')
+    parser.add_argument('-n', '--name', help='The name of the plot')
+
+    args = parser.parse_args()
+    main(args)
