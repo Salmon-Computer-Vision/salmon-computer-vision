@@ -28,8 +28,9 @@ def main(args):
     if args.save:
         combined_df.to_csv("combined.csv", encoding='utf-8-sig')
 
-    fig, ax = plt.subplots(figsize=(12,5))
+    fig, ax = plt.subplots(figsize=(5,7))
     seaborn.boxplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
+    #seaborn.lineplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
 
     x_dates = combined_df.index.strftime('%m-%d').sort_values().unique()
     ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
