@@ -4,3 +4,6 @@
 [submodule "third_party/YOLOV4_MCMOT"]
 	path = third_party/YOLOV4_MCMOT
 	url = https://github.com/CaptainEven/YOLOV4_MCMOT.git
+[submodule "utils/plot_iperf/iperf-data-plot"]
+	path = utils/plot_iperf/iperf-data-plot
+	url = https://github.com/Starlink-Measurement/iperf-data-plot.git
