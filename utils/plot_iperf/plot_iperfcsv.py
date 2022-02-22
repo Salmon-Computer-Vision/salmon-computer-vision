@@ -47,7 +47,7 @@ if __name__ == '__main__':
     parser.add_argument('src_filenames', nargs='*')
     parser.add_argument('-s', '--save', action='store_true', help='Will save the combined CSV')
     parser.add_argument('-n', '--name', help='The name of the plot')
-    parser.add_argument('-f', '--filename', help='The name of the output image file', default='combined_boxplot')
+    parser.add_argument('-f', '--filename', help='The name of the output image file', default='combined_plot')
 
     args = parser.parse_args()
     main(args)
