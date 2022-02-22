@@ -18,7 +18,7 @@ def main(args):
     combined_df = combine_csvs(args.src_filenames)
     combined_df.index = pd.to_datetime(combined_df.index, unit='s')
 
-
+    # Converts to Megabits per second
     combined_df.bits_per_second /= megab_to_b
     combined_df.rename(columns={'bits_per_second': 'bandwidth'}, inplace=True)
 
@@ -32,6 +32,7 @@ def main(args):
     seaborn.boxplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
     #seaborn.lineplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
 
+    # Converts timestamps to month-day labels and displays them
     x_dates = combined_df.index.strftime('%m-%d').sort_values().unique()
     ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
 
