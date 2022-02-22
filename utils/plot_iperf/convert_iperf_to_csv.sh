@@ -2,7 +2,7 @@
 
 # You must be in this folder to run this script
 
-if [ $# -ne 1 ]; then
+if [ $# -ne 2 ]; then
     echo "Usage: $0 <path/to/logs_dir> <path/to/dest_dir>"
     echo "Converts all your JSON iperf logs to csv."
     exit 0
