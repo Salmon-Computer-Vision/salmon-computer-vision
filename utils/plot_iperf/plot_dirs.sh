@@ -2,7 +2,7 @@
 set -e
 
 show_help() {
-    echo "Usage: $0 <path/to/src_dir>"
+    echo "Usage: $0 <path/to/src_dir_of_csv_files>"
     echo "Plots and saves iperf csv files to \"figures\""
 }
 
