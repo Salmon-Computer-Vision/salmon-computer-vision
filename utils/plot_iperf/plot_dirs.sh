@@ -53,7 +53,7 @@ plot_iperfcsv()
     ignore_pattern="$6"
     suffix="$7"
     name="$8"
-    python3 plot_iperfcsv.py $(find "${dir}" -type f \( -name "$pattern" ! -name "$ignore_pattern" \)) -n "$name (${region_name})" -f ${dest}/${basedir}_${suffix}
+    python3 plot_iperfcsv.py days $(find "${dir}" -type f \( -name "$pattern" ! -name "$ignore_pattern" \)) -n "$name (${region_name})" -f ${dest}/${basedir}_${suffix}
 }
 
 export -f plot_iperfcsv

@@ -19,7 +19,7 @@ def convert_to_mb(df):
     df.bits_per_second /= MEGAb_TO_b
     df.rename(columns={'bits_per_second': 'bandwidth'}, inplace=True)
 
-def main(args):
+def plot_days(args):
     combined_df = combine_csvs(args.src_filenames)
     combined_df.index = pd.to_datetime(combined_df.index, unit='s')
 
@@ -52,10 +52,14 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot iperf CSV files of format [timestamp, bits_per_second].')
-    parser.add_argument('src_filenames', nargs='*')
-    parser.add_argument('-s', '--save', action='store_true', help='Will save the combined CSV')
-    parser.add_argument('-n', '--name', help='The name of the plot')
-    parser.add_argument('-f', '--filename', help='The name of the output image file', default='combined_plot')
+    subp = parser.add_subparsers(help="Different visualizations")
+
+    days_parser = subp.add_parser("days")
+    days_parser.set_defaults(func=plot_days)
+    days_parser.add_argument('src_filenames', nargs='*')
+    days_parser.add_argument('-s', '--save', action='store_true', help='Will save the combined CSV')
+    days_parser.add_argument('-n', '--name', help='The name of the plot')
+    days_parser.add_argument('-f', '--filename', help='The name of the output image file', default='combined_plot')
 
     args = parser.parse_args()
-    main(args)
+    args.func(args)
