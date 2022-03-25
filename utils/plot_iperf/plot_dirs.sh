@@ -2,11 +2,13 @@
 set -e
 
 show_help() {
-    echo "Usage: $0 <path/to/src_dir_of_csv_files>"
+    echo "Usage: $0 [-hur] <path/to/src_dir_of_csv_files>"
     echo "Plots and saves iperf csv files to \"figures\""
 }
 
 udp=false
+region=false
+
 SUFFIX_DOWN=down
 SUFFIX_UP=up
 NAME_DOWN="Starlink\ Download"
@@ -22,6 +24,8 @@ while getopts "h?u" opt; do
      u) # UDP is true
          udp=true
          ;;
+     r) # Plot by region
+         region=true
    esac
 done
 
@@ -37,7 +41,7 @@ if [ $# -ne 1 ]; then
     exit 0
 fi
 
-plot_region()
+plot_iperfcsv()
 {
     set -e
 
@@ -52,28 +56,35 @@ plot_region()
     python3 plot_iperfcsv.py $(find "${dir}" -type f \( -name "$pattern" ! -name "$ignore_pattern" \)) -n "$name (${region_name})" -f ${dest}/${basedir}_${suffix}
 }
 
-export -f plot_region
+export -f plot_iperfcsv
 
 dest='figures'
 mkdir -p "$dest"
-for dir in "$src_dir"/*/; do
-    basedir=$(basename "$dir")
-    region_name=${basedir##*_}
 
-    if [ "$udp" == "true" ]; then
-        down_pattern="*down*udp.*" # From the client logs
-        up_pattern="*receive*udp.*" # From the server logs
-        ignore_pattern="-"
-    else
-        down_pattern="*down*" # From the client logs
-        up_pattern="*receive*" # From the server logs
-        ignore_pattern="*udp*"
-    fi
+if [ "$udp" == "true" ]; then
+    down_pattern="\*down\*udp.\*" # From the client logs
+    up_pattern="\*receive\*udp.\*" # From the server logs
+    ignore_pattern="-"
+else
+    down_pattern="\*down\*" # From the client logs
+    up_pattern="\*receive\*" # From the server logs
+    ignore_pattern="\*udp\*"
+fi
 
-    # Plot downloads
-    sem -j+0 plot_region "$dir" "$basedir" "$region_name" "$dest" "$down_pattern" "$ignore_pattern" "$SUFFIX_DOWN" "$NAME_DOWN"
+if [ "$region" == "true" ]; then
+    for dir in "$src_dir"/*/; do
+        basedir=$(basename "$dir")
+        region_name=${basedir##*_}
 
-    # Plot uploads
-    sem -j+0 plot_region "$dir" "$basedir" "$region_name" "$dest" "$up_pattern" "$ignore_pattern" "$SUFFIX_UP" "$NAME_UP"
-done
-sem --wait
+        # Plot downloads
+        sem -j+0 plot_iperfcsv "$dir" "$basedir" "$region_name" "$dest" "$down_pattern" "$ignore_pattern" "$SUFFIX_DOWN" "$NAME_DOWN"
+
+        # Plot uploads
+        sem -j+0 plot_iperfcsv "$dir" "$basedir" "$region_name" "$dest" "$up_pattern" "$ignore_pattern" "$SUFFIX_UP" "$NAME_UP"
+    done
+    sem --wait
+else
+    down_pattern=${down_pattern//\\/}
+    ignore_pattern=${ignore_pattern//\\/}
+    plot_iperfcsv "$src_dir" "Full_Avg" "TCP" "$dest" "$down_pattern" "$ignore_pattern" "$SUFFIX_DOWN" "Starlink Download"
+fi
