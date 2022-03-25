@@ -25,10 +25,13 @@ def main(args):
     #combined_df = combined_df.resample('d').mean()
     print(combined_df.head())
 
+    if 'jitter_ms' in combined_df.columns:  # Assume UDP
+        udp = True
+
     if args.save:
         combined_df.to_csv("combined.csv", encoding='utf-8-sig')
 
-    fig, ax = plt.subplots(figsize=(5,7))
+    fig, ax = plt.subplots(figsize=(12,7))
     seaborn.boxplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
     #seaborn.lineplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
 
@@ -36,7 +39,7 @@ def main(args):
     x_dates = combined_df.index.strftime('%m-%d').sort_values().unique()
     ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
 
-    ax.set_xlabel("Day of Month (2021)")
+    ax.set_xlabel("Day of Month (2022)")
     ax.set_ylabel("Bandwidth (Mb/s)")
     if args.name:
         ax.set_title(args.name)
