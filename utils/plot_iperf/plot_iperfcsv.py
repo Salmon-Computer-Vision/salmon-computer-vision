@@ -9,21 +9,25 @@ import matplotlib.dates as md
 import numpy as np
 import seaborn
 
-megab_to_b = 1e6
+MEGAb_TO_b = 1e6
 
 def combine_csvs(src):
     return pd.concat([pd.read_csv(f, index_col=0) for f in src])
+
+def convert_to_mb(df):
+    # Converts to Megabits per second
+    df.bits_per_second /= MEGAb_TO_b
+    df.rename(columns={'bits_per_second': 'bandwidth'}, inplace=True)
 
 def main(args):
     combined_df = combine_csvs(args.src_filenames)
     combined_df.index = pd.to_datetime(combined_df.index, unit='s')
 
-    # Converts to Megabits per second
-    combined_df.bits_per_second /= megab_to_b
-    combined_df.rename(columns={'bits_per_second': 'bandwidth'}, inplace=True)
+    convert_to_mb(combined_df)
 
     #combined_df = combined_df.resample('d').mean()
-    print(combined_df.head())
+    #print(combined_df.head())
+    print(combined_df.bandwidth.max())
 
     if 'jitter_ms' in combined_df.columns:  # Assume UDP
         udp = True
