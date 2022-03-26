@@ -11,6 +11,10 @@ import seaborn
 import glob
 
 MEGAb_TO_b = 1e6
+TCP_DOWN = "*down*[!udp]*.csv"
+UDP_DOWN = "*down*udp*.csv"
+TCP_UP = "*receive*[!udp]*.csv"
+UDP_UP = "*receive*udp*.csv"
 
 def combine_csvs(src):
     return pd.concat([pd.read_csv(f, index_col=0) for f in src])
@@ -64,31 +68,58 @@ def plot_tcp_udp(args):
 
 
 def plot_reg(args):
-    regions_df = pd.DataFrame()
-    first = True
-    for region in os.scandir(args.src_folder):
-        combined_df = combine_csvs(glob.glob(f"{region.path}/**/*down*udp*.csv", recursive=True))
-        
-        combined_df.index = pd.to_datetime(combined_df.index, unit='s')
-        convert_to_mb(combined_df)
-        combined_df.rename(columns={'bandwidth': region.name}, inplace=True)
-        combined_df.drop(columns=['jitter_ms', 'lost_packets', 'packets', 'lost_percent'], inplace=True)
+    def combine_reg(pattern):
+        regions_df = pd.DataFrame()
+        first = True
+        for region in os.scandir(args.src_folder):
+            combined_df = combine_csvs(glob.glob(f"{region.path}/**/{pattern}", recursive=True))
+            
+            combined_df.index = pd.to_datetime(combined_df.index, unit='s')
+            convert_to_mb(combined_df)
+            combined_df.rename(columns={'bandwidth': region.name}, inplace=True)
+            combined_df.drop(columns=['jitter_ms', 'lost_packets', 'packets', 'lost_percent'], inplace=True)
 
-        if first:
-            regions_df = combined_df
-            first = False
-        else:
-            regions_df = pd.merge(regions_df, combined_df, how='outer', left_index=True, right_index=True)
+            if first:
+                regions_df = combined_df
+                first = False
+            else:
+                regions_df = pd.merge(regions_df, combined_df, how='outer', left_index=True, right_index=True)
+        return regions_df
 
-    print(regions_df.head())
-    fig, ax = plt.subplots(figsize=(3.5,3))
-    seaborn.boxplot(x="variable", y="value", data=pd.melt(regions_df), ax=ax)
+    df_down_tcp = combine_reg(TCP_DOWN)
+    df_down_udp = combine_reg(UDP_DOWN)
+    df_up_tcp = combine_reg(TCP_UP)
+    df_up_udp = combine_reg(UDP_UP)
 
-    ax.set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain", "Tokyo",
-        "London", "Mumbai"], rotation=45, ha='right', fontsize=8)
+    fig, axs = plt.subplots(2, 2, sharey='row', sharex='col', figsize=(7.16,6))
+    ax_big = fig.add_subplot(111, frameon=False)
 
-    ax.set_xlabel("Regions", fontsize=9)
-    ax.set_ylabel("Bandwidth (Mb/s)", fontsize=9)
+    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_down_tcp), ax=axs[0, 0])
+    boxplt.set(xlabel=None, ylabel="Download")
+    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_down_udp), ax=axs[0, 1])
+    boxplt.set(xlabel=None, ylabel=None)
+    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_up_udp), ax=axs[1, 0])
+    boxplt.set(xlabel="TCP", ylabel="Upload")
+    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_up_udp), ax=axs[1, 1])
+    boxplt.set(xlabel="UDP", ylabel=None)
+                
+    axs[0,0].set_xticklabels([])
+    axs[0,1].set_xticklabels([])
+    for j in range(2):
+        axs[1,j].set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain",
+            "Tokyo", "London", "Mumbai"], rotation=45, ha='right', fontsize=9)
+
+    ax_big.set_xlabel("Regions", fontsize=10, labelpad=80, fontweight='bold')
+    ax_big.set_ylabel("Bandwidth (Mb/s)", fontsize=10, labelpad=50, fontweight='bold')
+    ax_big.set_yticklabels([])
+    ax_big.set_xticklabels([])
+    ax_big.tick_params(
+        which='both',
+        bottom=False,
+        left=False,
+        right=False,
+        top=False)
+    ax_big.grid(False)
     if args.name:
         ax.set_title(args.name, fontsize=10)
 
