@@ -16,13 +16,23 @@ UDP_DOWN = "*down*udp*.csv"
 TCP_UP = "*receive*[!udp]*.csv"
 UDP_UP = "*receive*udp*.csv"
 
-def combine_csvs(src):
-    return pd.concat([pd.read_csv(f, index_col=0) for f in src])
+def combine_csvs(src, ind_col=0):
+    return pd.concat([pd.read_csv(f, index_col=ind_col) for f in src])
+
 
 def convert_to_mb(df):
     # Converts to Megabits per second
     df.bits_per_second /= MEGAb_TO_b
     df.rename(columns={'bits_per_second': 'bandwidth'}, inplace=True)
+
+
+def concat_df_thr(src, pattern):
+    combined_df = combine_csvs(glob.glob(f"{src}/**/{pattern}", recursive=True))
+    
+    combined_df.index = pd.to_datetime(combined_df.index, unit='s')
+    convert_to_mb(combined_df)
+    combined_df.drop(columns=['jitter_ms', 'lost_packets', 'packets', 'lost_percent'], inplace=True)
+    return combined_df
 
 # TODO: Restrict plots to certain interesting days? (Rain, etc.)
 # TODO: Plot power to bandwidth lineplot
@@ -32,37 +42,45 @@ def convert_to_mb(df):
 # TODO: Compare different TCP methods
 
 
+def plot_thr_weather(args):
+    df_down_udp = concat_df_thr(args.src_folder, UDP_DOWN)
+    df_weather = combine_csvs(glob.glob(os.path.join(args.src_weather, '*.csv')))
+
+
+
+
 def plot_tcp_udp(args):
-    combined_df_udp = combine_csvs(glob.glob(f"{args.src_folder}/**/*down*udp*.csv", recursive=True))
-    
-    combined_df_udp.index = pd.to_datetime(combined_df_udp.index, unit='s')
-    convert_to_mb(combined_df_udp)
-    combined_df_udp.drop(columns=['jitter_ms', 'lost_packets', 'packets', 'lost_percent'], inplace=True)
-    combined_df_udp.rename(columns={'bandwidth': 'UDP'}, inplace=True)
+    df_down_tcp = concat_df_thr(args.src_folder, TCP_DOWN)
+    df_down_tcp.rename(columns={'bandwidth': 'TCP'}, inplace=True)
 
+    df_down_udp = concat_df_thr(args.src_folder, UDP_DOWN)
+    df_down_udp.rename(columns={'bandwidth': 'UDP'}, inplace=True)
 
-    combined_df_tcp = combine_csvs(glob.glob(f"{args.src_folder}/**/*down*[!udp]*.csv", recursive=True))
-    
-    combined_df_tcp.index = pd.to_datetime(combined_df_tcp.index, unit='s')
-    convert_to_mb(combined_df_tcp)
-    combined_df_tcp.drop(columns=['jitter_ms', 'lost_packets', 'packets', 'lost_percent'], inplace=True)
-    combined_df_tcp.rename(columns={'bandwidth': 'TCP'}, inplace=True)
+    df_up_tcp = concat_df_thr(args.src_folder, TCP_UP)
+    df_up_tcp.rename(columns={'bandwidth': 'TCP'}, inplace=True)
 
-    df_tcp_udp = pd.merge(combined_df_tcp, combined_df_udp, how='outer', left_index=True, right_index=True)
+    df_up_udp = concat_df_thr(args.src_folder, UDP_UP)
+    df_up_udp.rename(columns={'bandwidth': 'UDP'}, inplace=True)
 
-    print('TCP Avg:', df_tcp_udp.TCP.mean())
-    print('UDP Avg:', df_tcp_udp.UDP.mean())
-    print('Bandwidth ratio:', df_tcp_udp.TCP.mean() / df_tcp_udp.UDP.mean())
+    df_tcp_udp_down = pd.merge(df_down_tcp, df_down_udp, how='outer', left_index=True, right_index=True)
+    df_tcp_udp_up = pd.merge(df_up_tcp, df_up_udp, how='outer', left_index=True, right_index=True)
+
+    print('TCP Down Avg:', df_tcp_udp.TCP_down.mean())
+    print('UDP Down Avg:', df_tcp_udp.UDP_down.mean())
+    print('TCP Up Avg:', df_tcp_udp.TCP_up.mean())
+    print('UDP Up Avg:', df_tcp_udp.UDP_up.mean())
+    print('Bandwidth Down ratio:', df_tcp_udp.TCP_down.mean() / df_tcp_udp.UDP_down.mean())
+    print('Bandwidth Down ratio:', df_tcp_udp.TCP_up.mean() / df_tcp_udp.UDP_up.mean())
     print(df_tcp_udp.head())
 
-    fig, ax = plt.subplots(figsize=(5,7))
+    fig, ax = plt.subplots(figsize=(3.5,2))
     seaborn.boxplot(x="variable", y="value", data=pd.melt(df_tcp_udp), ax=ax)
 
-    ax.set_xlabel("Methods", fontsize=12)
-    ax.set_ylabel("Bandwidth (Mb/s)", fontsize=12)
-    ax.tick_params(labelsize=12)
+    ax.set_xlabel("Methods", fontsize=10)
+    ax.set_ylabel("Bandwidth (Mb/s)", fontsize=10)
+    ax.tick_params(labelsize=9)
     if args.name:
-        ax.set_title(args.name, fontsize=18)
+        ax.set_title(args.name, fontsize=10)
 
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
@@ -190,8 +208,13 @@ if __name__ == '__main__':
     days_parser.add_argument('-s', '--save', action='store_true', help='Will save the combined CSV')
 
     reg_parser = subp.add_parser("regions")
-    reg_parser.set_defaults(func=plot_reg)
+    reg_parser.set_defaults(func=plot_tcp_udp)
     reg_parser.add_argument('src_folder', help='Source folder with regions as direct subfolders')
+
+    weather_parser = subp.add_parser("weather")
+    weather_parser.set_defaults(func=plot_thr_weather)
+    weather_parser.add_argument('src_folder', help='Source bandwidth CSV folder')
+    weather_parser.add_argument('src_weather', help='Source climate CSV folder')
 
     args = parser.parse_args()
     args.func(args)
