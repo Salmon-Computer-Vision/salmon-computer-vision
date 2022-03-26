@@ -20,12 +20,54 @@ def convert_to_mb(df):
     df.bits_per_second /= MEGAb_TO_b
     df.rename(columns={'bits_per_second': 'bandwidth'}, inplace=True)
 
+# TODO: Restrict plots to certain interesting days? (Rain, etc.)
+# TODO: Plot power to bandwidth lineplot
+# TODO: Plot weather to bandwidth/jitter histogram
+# TODO: Plot bandwidth vs jitter/packet loss histogram or lineplot
+# TODO: Compare TCP retransmits
+# TODO: Compare different TCP methods
+
+
+def plot_tcp_udp(args):
+    combined_df_udp = combine_csvs(glob.glob(f"{args.src_folder}/**/*down*udp*.csv", recursive=True))
+    
+    combined_df_udp.index = pd.to_datetime(combined_df_udp.index, unit='s')
+    convert_to_mb(combined_df_udp)
+    combined_df_udp.drop(columns=['jitter_ms', 'lost_packets', 'packets', 'lost_percent'], inplace=True)
+    combined_df_udp.rename(columns={'bandwidth': 'UDP'}, inplace=True)
+
+
+    combined_df_tcp = combine_csvs(glob.glob(f"{args.src_folder}/**/*down*[!udp]*.csv", recursive=True))
+    
+    combined_df_tcp.index = pd.to_datetime(combined_df_tcp.index, unit='s')
+    convert_to_mb(combined_df_tcp)
+    combined_df_tcp.drop(columns=['jitter_ms', 'lost_packets', 'packets', 'lost_percent'], inplace=True)
+    combined_df_tcp.rename(columns={'bandwidth': 'TCP'}, inplace=True)
+
+    df_tcp_udp = pd.merge(combined_df_tcp, combined_df_udp, how='outer', left_index=True, right_index=True)
+
+    print('TCP Avg:', df_tcp_udp.TCP.mean())
+    print('UDP Avg:', df_tcp_udp.UDP.mean())
+    print('Bandwidth ratio:', df_tcp_udp.TCP.mean() / df_tcp_udp.UDP.mean())
+    print(df_tcp_udp.head())
+
+    fig, ax = plt.subplots(figsize=(5,7))
+    seaborn.boxplot(x="variable", y="value", data=pd.melt(df_tcp_udp), ax=ax)
+
+    ax.set_xlabel("Methods", fontsize=12)
+    ax.set_ylabel("Bandwidth (Mb/s)", fontsize=12)
+    ax.tick_params(labelsize=12)
+    if args.name:
+        ax.set_title(args.name, fontsize=18)
+
+    plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
+
 
 def plot_reg(args):
     regions_df = pd.DataFrame()
     first = True
     for region in os.scandir(args.src_folder):
-        combined_df = combine_csvs(glob.glob(f"{region.path}/**/*down*[!udp]*.csv", recursive=True))
+        combined_df = combine_csvs(glob.glob(f"{region.path}/**/*down*udp*.csv", recursive=True))
         
         combined_df.index = pd.to_datetime(combined_df.index, unit='s')
         convert_to_mb(combined_df)
@@ -39,15 +81,16 @@ def plot_reg(args):
             regions_df = pd.merge(regions_df, combined_df, how='outer', left_index=True, right_index=True)
 
     print(regions_df.head())
-    fig, ax = plt.subplots(figsize=(12,7))
+    fig, ax = plt.subplots(figsize=(3.5,3))
     seaborn.boxplot(x="variable", y="value", data=pd.melt(regions_df), ax=ax)
 
-    ax.set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain", "Tokyo", "London", "Mumbai"])
+    ax.set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain", "Tokyo",
+        "London", "Mumbai"], rotation=45, ha='right', fontsize=8)
 
-    ax.set_xlabel("Regions")
-    ax.set_ylabel("Bandwidth (Mb/s)")
+    ax.set_xlabel("Regions", fontsize=9)
+    ax.set_ylabel("Bandwidth (Mb/s)", fontsize=9)
     if args.name:
-        ax.set_title(args.name)
+        ax.set_title(args.name, fontsize=10)
 
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
