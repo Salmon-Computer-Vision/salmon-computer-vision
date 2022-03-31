@@ -3,6 +3,7 @@ from tqdm import tqdm
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+import skimage.measure
 import cv2
 
 
@@ -38,8 +39,8 @@ def read_echogram_img(filename):
     return np.array(im_frame.getdata()).reshape(im_frame.size[1], im_frame.size[0])
 
 
-def convolve_avg(frame):
-    pass
+def avg_pooling(frame, n, m):
+    return skimage.measure.block_reduce(frame, (n, m), np.mean)
 
 
 if __name__ == '__main__':
@@ -50,5 +51,6 @@ if __name__ == '__main__':
     # plt.show()
 
     echogram = read_echogram_img("my_echogram.png")
+    echogram = avg_pooling(echogram, 5, 5)
     plt.imshow(echogram, cmap='gray', vmin=0, vmax=255)
     plt.show()
