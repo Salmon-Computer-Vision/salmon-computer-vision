@@ -11,6 +11,10 @@ fi
 logs_dir="$1"
 dest_dir="$2"
 
-for dir in "${logs_dir}"/*/; do 
-    parallel python3 ./iperf-data-plot/main.py -o "${dest_dir}/$(basename $dir)" ::: "${dir}"/*.log
+IFS=$'\n'
+for dir in $(find "${logs_dir}" -type d); do 
+    if [ "$logs_dir" != "$dir" ]; then
+        new_path="${dir#"$logs_dir"}"
+        parallel python3 ./iperf-data-plot/main.py -o "${dest_dir}/${new_path}" ::: "${dir}"/*.log
+    fi 
 done
