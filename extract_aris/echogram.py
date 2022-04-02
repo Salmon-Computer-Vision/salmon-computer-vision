@@ -35,12 +35,26 @@ def save_echogram_as_img(echogram, filename="my_echogram.png"):
 
 
 def read_echogram_img(filename):
-    im_frame = Image.open(filename).convert('L')
-    return np.array(im_frame.getdata()).reshape(im_frame.size[1], im_frame.size[0])
+    return cv2.imread(filename)  # RGB
+    # Convert it to depth 1 matrix
+    # im_frame = Image.open(filename).convert('L')
+    # return np.array(im_frame.getdata()).reshape(im_frame.size[1], im_frame.size[0])
 
 
 def avg_pooling(frame, n, m):
     return skimage.measure.block_reduce(frame, (n, m), np.mean)
+
+
+def avg_convolve(frame, n, m):
+    kernel = np.ones((n, m), np.float32) / (n * m)
+    return cv2.filter2D(frame, -1, kernel)
+
+
+def edge_detection(frame):
+    kernel = np.array([[-1, -1, -1],
+                    [-1, 8, -1],
+                    [-1, -1, -1]])
+    return cv2.filter2D(frame, -1, kernel)
 
 
 if __name__ == '__main__':
@@ -51,6 +65,8 @@ if __name__ == '__main__':
     # plt.show()
 
     echogram = read_echogram_img("my_echogram.png")
-    echogram = avg_pooling(echogram, 5, 5)
+    # echogram = edge_detection(echogram)
+    echogram = avg_convolve(echogram, 5, 5)
+    # echogram = avg_pooling(echogram, 5, 5)
     plt.imshow(echogram, cmap='gray', vmin=0, vmax=255)
     plt.show()
