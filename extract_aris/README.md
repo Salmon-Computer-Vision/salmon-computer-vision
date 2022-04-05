@@ -13,6 +13,7 @@ git submodule update --init --recursive
 ```
 
 If using Anaconda to manage packages run the following:
+
 Create environment:
 ```
 conda create --name pyaris
