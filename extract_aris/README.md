@@ -7,6 +7,11 @@
 - Pytz
 - ffmpeg
 
+Please recurse the submodules to also clone pyARIS in the same folder:
+```
+git submodule update --init --recursive
+```
+
 If using Anaconda to manage packages run the following:
 Create environment:
 ```
