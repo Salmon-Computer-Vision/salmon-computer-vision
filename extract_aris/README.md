@@ -35,7 +35,7 @@ To fix as outlined [here](https://stackoverflow.com/questions/60789886/error-fai
 you need to set the `TMP` and `TEMP` environment variables
 to something like `C:\Temp` with no spaces in the filepath.
 
-If you do not permissions to change the environment variables,
+If you do not have permissions to change your USER environment variables,
 you can set them temporarily for that terminal session with
 ```
 set TMP=C:\Temp
