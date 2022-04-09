@@ -47,9 +47,31 @@ def concat_df(src, pattern, keep=['bandwidth']):
 # TODO: Compare TCP retransmits
 # TODO: Compare different TCP methods
 
+def plot_time(args):
+    df_down_udp = concat_df(args.src_folder, UDP_DOWN, [JITTER])
+    #df_down_udp = concat_df(args.src_folder, UDP_DOWN)
+    #df_down_udp = df_down_udp.loc['2022-03-01 04':'2022-03-01 04']
+    #df_down_udp = df_down_udp.loc['2022-03-01 04:07:30':'2022-03-01 04:08:40']
+    #df_down_udp = df_down_udp.loc['2022-03-01':'2022-03-02']
+
+    fig, ax = plt.subplots(figsize=(7.16,5))
+    ax.xaxis.update_units(df_down_udp.index)
+    seaborn.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.jitter_ms, ax=ax)
+    ax.set(yscale='log')
+    for label in ax.get_xticklabels():
+        label.set_rotation(45)
+        label.set_ha('right')
+
+    ax.set_ylabel("Jitter (ms)")
+    #ax.set_ylabel("Bandwidth (Mb/s)")
+    if args.name:
+        ax.set_title(args.name)
+
+    plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
+    plt.show()
 
 def plot_thr_weather(args):
-    df_down_udp = concat_df(args.src_folder, UDP_DOWN)
+    df_down_udp = concat_df(args.src_folder, UDP_DOWN, [JITTER])
     df_down_udp = df_down_udp.resample('H').mean()
     df_down_udp.index = df_down_udp.index.tz_localize('UTC')
     print(df_down_udp.head())
@@ -59,24 +81,37 @@ def plot_thr_weather(args):
     df_weather = df_weather[[PRECIP]]
     
     df_merged = df_down_udp.merge(df_weather, left_index=True, right_index=True, how='inner').drop_duplicates()
+    #print(df_merged.head())
+    #print(df_merged[df_merged.columns[1]].count())
 
     if args.save:
         df_merged.to_csv("combined.csv", encoding='utf-8-sig')
 
-    print(df_merged.head())
-
-    print(df_merged[df_merged.columns[1]].count())
     
-    fig, ax = plt.subplots(figsize=(3.5,2))
-    seaborn.scatterplot(x=df_merged.iloc[:, 1], y=df_merged.bandwidth, ax=ax)
+    #fig, ax = plt.subplots(figsize=(3.5,2))
+    fig, ax = plt.subplots(figsize=(7.16,5))
+    #seaborn.scatterplot(x=df_merged.iloc[:, 1], y=df_merged.jitter_ms, ax=ax)
+    seaborn.scatterplot(x=df_merged.index, y=df_merged.iloc[:, 1], ax=ax)
     seaborn.despine()
 
+    for label in ax.get_xticklabels():
+        label.set_rotation(45)
+        label.set_ha('right')
+
     #ax.set_xlabel("Day of Month (2022)")
-    ax.set_ylabel("Bandwidth (Mb/s)")
+    #ax.set_ylabel("Jitter (m)")
     if args.name:
         ax.set_title(args.name)
 
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
+
+
+def avg_jitter(args):
+    df_down = concat_df(args.src_folder, UDP_DOWN, [JITTER])
+    df_up = concat_df(args.src_folder, UDP_UP, [JITTER])
+
+    print('UDP Down Jitter:', df_down.jitter_ms.mean())
+    print('UDP Up Jitter:', df_up.jitter_ms.mean())
 
 
 def plot_tcp_udp(args):
@@ -128,10 +163,21 @@ def combine_reg(src, pattern, keep='bandwidth'):
             regions_df = pd.merge(regions_df, combined_df, how='outer', left_index=True, right_index=True)
     return regions_df
 
-def plot_reg_udp_only(args):
+
+def plot_jitter_100(args):
     df_down_udp = combine_reg(args.src_folder, UDP_DOWN, JITTER)
+    df_down_udp = df_down_udp[ df_down_udp.iloc[:,:] >= 100 ].dropna(how='all')
     print(df_down_udp.head())
-    df_up_udp = combine_reg(args.src_folder, UDP_UP, JITTER)
+    #df_up_udp = combine_reg(args.src_folder, UDP_UP, JITTER)
+
+    if args.save:
+        df_down_udp.to_csv("combined.csv", encoding='utf-8-sig')
+
+
+def plot_reg_udp_only(args):
+    df_down_udp = combine_reg(args.src_folder, UDP_DOWN, [JITTER])
+    print(df_down_udp.head())
+    df_up_udp = combine_reg(args.src_folder, UDP_UP, [JITTER])
 
     fig, axs = plt.subplots(1, 2, sharey='row', sharex='col', figsize=(7.16,3))
     ax_big = fig.add_subplot(111, frameon=False)
@@ -272,7 +318,7 @@ if __name__ == '__main__':
     days_parser.add_argument('src_filenames', nargs='*')
 
     reg_parser = subp.add_parser("regions")
-    reg_parser.set_defaults(func=plot_reg_udp_only)
+    reg_parser.set_defaults(func=plot_time)
     reg_parser.add_argument('src_folder', help='Source folder with regions as direct subfolders')
 
     weather_parser = subp.add_parser("weather")
