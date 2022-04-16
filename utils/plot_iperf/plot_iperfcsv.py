@@ -9,6 +9,7 @@ import matplotlib.dates as md
 import numpy as np
 import seaborn
 import glob
+from scipy import stats
 
 from dateutil import tz
 
@@ -48,15 +49,16 @@ def concat_df(src, pattern, keep=['bandwidth']):
 # TODO: Compare different TCP methods
 
 def plot_time(args):
-    df_down_udp = concat_df(args.src_folder, UDP_DOWN, [JITTER])
+    df_down_udp = concat_df(args.src_folder, UDP_UP, [JITTER])
     #df_down_udp = concat_df(args.src_folder, UDP_DOWN)
     #df_down_udp = df_down_udp.loc['2022-03-01 04':'2022-03-01 04']
     #df_down_udp = df_down_udp.loc['2022-03-01 04:07:30':'2022-03-01 04:08:40']
     #df_down_udp = df_down_udp.loc['2022-03-01':'2022-03-02']
 
-    fig, ax = plt.subplots(figsize=(7.16,5))
+    fig, ax = plt.subplots(figsize=(3.5,2))
     ax.xaxis.update_units(df_down_udp.index)
     seaborn.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.jitter_ms, ax=ax)
+    #seaborn.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.bandwidth, ax=ax)
     ax.set(yscale='log')
     for label in ax.get_xticklabels():
         label.set_rotation(45)
@@ -113,6 +115,36 @@ def avg_jitter(args):
     print('UDP Down Jitter:', df_down.jitter_ms.mean())
     print('UDP Up Jitter:', df_up.jitter_ms.mean())
 
+def plot_multi(args):
+    COL = JITTER
+    YLABEL = "Jitter (ms)"
+
+    df_all = pd.DataFrame()
+    for folder in args.src_dirs:
+        df = concat_df(folder, UDP_UP, [COL])
+        df.rename(columns={COL: folder}, inplace=True)
+        df_all = df_all.merge(df, how='outer', left_index=True, right_index=True)
+
+    #zsc = np.abs(stats.zscore(df_all, nan_policy='omit'))
+    #print(zsc)
+    #df_all = df_all[(np.less(zsc, 2., where=np.isfinite(zsc))).all(axis=1)]
+    df_all = df_all[df_all < 10]
+    print(df_all.head())
+    print(df_all.iloc[:,1].mean())
+
+    fig, ax = plt.subplots(figsize=(3.5,2))
+    ax.set(yscale='log')
+    seaborn.boxplot(x="variable", y="value", data=pd.melt(df_all), ax=ax)
+
+    ax.set_xticklabels(labels=["Shaw", "Starlink"], fontsize=9)
+
+    ax.set_xlabel("Network Provider", fontsize=10)
+    ax.set_ylabel(YLABEL, fontsize=10)
+    ax.tick_params(labelsize=9)
+    if args.name:
+        ax.set_title(args.name, fontsize=10)
+
+    plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
 def plot_tcp_udp(args):
     df_down_tcp = concat_df(args.src_folder, TCP_DOWN)
@@ -131,9 +163,9 @@ def plot_tcp_udp(args):
     df_tcp_udp_up = pd.merge(df_up_tcp, df_up_udp, how='outer', left_index=True, right_index=True)
 
     print('TCP Down Avg:', df_tcp_udp_down.TCP.mean())
-    print('UDP Down Avg:', df_tcp_udp_down.UDP.mean())
+    print('UDP Down Avg:', df_tcp_udp_down.UDP.max())
     print('TCP Up Avg:', df_tcp_udp_up.TCP.mean())
-    print('UDP Up Avg:', df_tcp_udp_up.UDP.mean())
+    print('UDP Up Avg:', df_tcp_udp_up.UDP.max())
     print('Bandwidth Down ratio:', df_tcp_udp_down.TCP.mean() / df_tcp_udp_down.UDP.mean())
     print('Bandwidth Down ratio:', df_tcp_udp_up.TCP.mean() / df_tcp_udp_up.UDP.mean())
     print(df_tcp_udp_down.head())
@@ -230,9 +262,16 @@ def plot_reg(args):
     axs[0,0].set_xticklabels([])
     axs[0,1].set_xticklabels([])
     for j in range(2):
-        axs[1,j].set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain",
-            "Tokyo", "London", "Mumbai"], rotation=45, ha='right', fontsize=9)
+        #axs[1,j].set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain",
+        #    "Tokyo", "London", "Mumbai"], rotation=45, ha='right', fontsize=9)
+        #axs[1,j].set_xticklabels(labels=["Sydney", "N. California"], rotation=45, ha='right', fontsize=9)
+        for label in axs[1,j].get_xticklabels():
+            label.set_rotation(45)
+            label.set_ha('right')
 
+
+    if args.save:
+        df_down_udp.to_csv("combined.csv", encoding='utf-8-sig')
     #for i in range(2):
     #    for j in range(2):
     #        axs[i,j].set(yscale='log')
@@ -305,6 +344,53 @@ def plot_days(args):
 
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
+def plot_ping(args):
+    df = pd.DataFrame()
+    for folder in args.src_dirs:
+        for region in os.scandir(folder):
+            pattern = f"{region.path}/*"
+            print(pattern)
+            df_temp = combine_csvs(glob.glob(pattern, recursive=True), 3)
+            df_temp.index = pd.to_datetime(df_temp.index, unit='s')
+            df_temp = df_temp.iloc[:,[2]]
+            df_temp.rename(columns={df_temp.columns[0]: f"{folder}_{region.name}"}, inplace=True)
+
+            df = df.merge(df_temp, how='outer', left_index=True, right_index=True)
+
+    cols = df.columns.tolist()
+    cols = [cols[0], cols[2], cols[1], cols[3]] # Hardcoded
+    df = df[cols]
+    print(df.head())
+
+    df_syd = df.iloc[:,:2]
+    df_calif = df.iloc[:,2:]
+
+    fig, axs = plt.subplots(1, 2, sharey='row', sharex='col', figsize=(3.5,3))
+    ax_big = fig.add_subplot(111, frameon=False)
+
+    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_syd), ax=axs[0])
+    boxplt.set(xlabel='Sydney', ylabel=None)
+    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_calif), ax=axs[1])
+    boxplt.set(xlabel='California', ylabel=None)
+
+    for i in range(2):
+        axs[i].set_xticklabels(labels=["Shaw", "Starlink"], fontsize=9)
+        axs[i].tick_params(labelsize=9)
+
+    ax_big.set_xlabel("Region", fontsize=10, labelpad=80, fontweight='bold')
+    ax_big.set_ylabel("Latency (ms)", fontsize=10, labelpad=40, fontweight='bold')
+    ax_big.set_yticklabels([])
+    ax_big.set_xticklabels([])
+    ax_big.tick_params(
+        which='both',
+        bottom=False,
+        left=False,
+        right=False,
+        top=False)
+    ax_big.grid(False)
+
+    plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Plot iperf CSV files of format [timestamp, bits_per_second].')
     subp = parser.add_subparsers(help="Different visualizations")
@@ -325,6 +411,14 @@ if __name__ == '__main__':
     weather_parser.set_defaults(func=plot_thr_weather)
     weather_parser.add_argument('src_folder', help='Source bandwidth CSV folder')
     weather_parser.add_argument('src_weather', help='Source climate CSV folder')
+
+    multi_parser = subp.add_parser("multi")
+    multi_parser.set_defaults(func=plot_multi)
+    multi_parser.add_argument('src_dirs', nargs='*')
+
+    ping_parser = subp.add_parser("ping")
+    ping_parser.set_defaults(func=plot_ping)
+    ping_parser.add_argument('src_dirs', nargs='*')
 
     args = parser.parse_args()
     args.func(args)
