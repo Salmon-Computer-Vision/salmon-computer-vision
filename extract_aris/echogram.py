@@ -29,7 +29,7 @@ def get_vertical_line(frame):
     return vline
 
 
-def save_echogram_as_img(echogram, filename="my_echogram.png"):
+def save_echogram_as_img(echogram, filename="./result/my_echogram.png"):
     im = Image.fromarray(echogram).convert('RGB')
     im.save(filename)
 
