@@ -57,16 +57,34 @@ def edge_detection(frame):
     return cv2.filter2D(frame, -1, kernel)
 
 
+def bg_sub(echogram):
+    sub = cv2.createBackgroundSubtractorMOG2(
+                history=100,
+                varThreshold=20,
+                detectShadows=False
+            )
+
+    # Iterate vertical lines on echogram
+    bgsub_eg = np.array([])
+    for col in range(echogram.shape[1]):
+        bgsub_vline = sub.apply(echogram[:,col])
+        bgsub_eg = np.append(bgsub_eg, bgsub_vline)
+    bgsub_eg = bgsub_eg.reshape(echogram.shape[1], echogram.shape[0])
+    bgsub_eg = np.rot90(bgsub_eg)
+    return bgsub_eg
+
+
 if __name__ == '__main__':
-    # aris_data, frame = pyARIS.DataImport(source_file)
-    # echogram = get_echogram(aris_data, frame)
-    # save_echogram_as_img(echogram)
+    aris_data, frame = pyARIS.DataImport(source_file)
+    echogram = get_echogram(aris_data, frame)
+    bgsub_eg = bg_sub(echogram)
+    save_echogram_as_img(bgsub_eg)
+    plt.imshow(bgsub_eg, cmap='gray', vmin=0, vmax=255)
+    plt.show()
+
+    # echogram = read_echogram_img("my_echogram.png")
+    # # echogram = edge_detection(echogram)
+    # echogram = avg_convolve(echogram, 5, 5)
+    # # echogram = avg_pooling(echogram, 5, 5)
     # plt.imshow(echogram, cmap='gray', vmin=0, vmax=255)
     # plt.show()
-
-    echogram = read_echogram_img("my_echogram.png")
-    # echogram = edge_detection(echogram)
-    echogram = avg_convolve(echogram, 5, 5)
-    # echogram = avg_pooling(echogram, 5, 5)
-    plt.imshow(echogram, cmap='gray', vmin=0, vmax=255)
-    plt.show()
