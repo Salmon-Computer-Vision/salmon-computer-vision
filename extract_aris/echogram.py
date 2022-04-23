@@ -60,7 +60,7 @@ def bg_sub(echogram):
     # Iterate vertical lines on echogram
     bgsub_eg = np.array([])
     for col in range(echogram.shape[1]):
-        bgsub_vline = sub.apply(echogram[:,col])
+        bgsub_vline = sub.apply(echogram[:, col])
         bgsub_eg = np.append(bgsub_eg, bgsub_vline)
     bgsub_eg = bgsub_eg.reshape(echogram.shape[1], echogram.shape[0])
     bgsub_eg = np.rot90(bgsub_eg)
