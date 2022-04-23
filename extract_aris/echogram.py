@@ -3,7 +3,6 @@ from tqdm import tqdm
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-import skimage.measure
 import cv2
 
 
@@ -39,10 +38,6 @@ def read_echogram_img(filename):
     # Convert it to depth 1 matrix
     # im_frame = Image.open(filename).convert('L')
     # return np.array(im_frame.getdata()).reshape(im_frame.size[1], im_frame.size[0])
-
-
-def avg_pooling(frame, n, m):
-    return skimage.measure.block_reduce(frame, (n, m), np.mean)
 
 
 def avg_convolve(frame, n, m):
