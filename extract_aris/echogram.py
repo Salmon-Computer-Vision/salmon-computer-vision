@@ -29,13 +29,18 @@ def get_vertical_line(frame):
     return vline
 
 
-def echogram_to_img(echogram, filename="{}my_echogram.png".format(result_path)):
+def echogram_to_img(echogram, filename="{}/echogram.png".format(result_path)):
     im = Image.fromarray(echogram).convert('RGB')
     im.save(filename)
 
 
 def echogram_to_csv(echogram):
-    pd.DataFrame(echogram).to_csv("{}/echogram.csv".format(result_path))
+    pd.DataFrame(echogram).to_csv("{}/echogram.csv".format(result_path), index=False, header=False)
+
+
+def csv_to_echogram(filename="{}/echogram.csv".format(result_path)):
+    data = pd.read_csv(filename, header=None)
+    return data.to_numpy()
 
 
 def edge_detection(frame):
@@ -70,3 +75,5 @@ if __name__ == '__main__':
     # Save echogram as image and as csv
     echogram_to_img(bgsub_eg)
     echogram_to_csv(bgsub_eg)
+
+    bgsub_eg = csv_to_echogram()
