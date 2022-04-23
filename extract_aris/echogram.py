@@ -2,11 +2,12 @@ from pyARIS import pyARIS
 from tqdm import tqdm
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
+import pandas as pd
 import cv2
 
 
 source_file = '2020-05-27_071000.aris'
+result_path = './result'
 
 
 def get_echogram(aris_data, frame):
@@ -28,21 +29,13 @@ def get_vertical_line(frame):
     return vline
 
 
-def save_echogram_as_img(echogram, filename="./result/my_echogram.png"):
+def echogram_to_img(echogram, filename="{}my_echogram.png".format(result_path)):
     im = Image.fromarray(echogram).convert('RGB')
     im.save(filename)
 
 
-def read_echogram_img(filename):
-    return cv2.imread(filename)  # RGB
-    # Convert it to depth 1 matrix
-    # im_frame = Image.open(filename).convert('L')
-    # return np.array(im_frame.getdata()).reshape(im_frame.size[1], im_frame.size[0])
-
-
-def avg_convolve(frame, n, m):
-    kernel = np.ones((n, m), np.float32) / (n * m)
-    return cv2.filter2D(frame, -1, kernel)
+def echogram_to_csv(echogram):
+    pd.DataFrame(echogram).to_csv("{}/echogram.csv".format(result_path))
 
 
 def edge_detection(frame):
@@ -73,13 +66,7 @@ if __name__ == '__main__':
     aris_data, frame = pyARIS.DataImport(source_file)
     echogram = get_echogram(aris_data, frame)
     bgsub_eg = bg_sub(echogram)
-    save_echogram_as_img(bgsub_eg)
-    plt.imshow(bgsub_eg, cmap='gray', vmin=0, vmax=255)
-    plt.show()
 
-    # echogram = read_echogram_img("my_echogram.png")
-    # # echogram = edge_detection(echogram)
-    # echogram = avg_convolve(echogram, 5, 5)
-    # # echogram = avg_pooling(echogram, 5, 5)
-    # plt.imshow(echogram, cmap='gray', vmin=0, vmax=255)
-    # plt.show()
+    # Save echogram as image and as csv
+    echogram_to_img(bgsub_eg)
+    echogram_to_csv(bgsub_eg)
