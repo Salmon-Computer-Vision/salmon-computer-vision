@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 import numpy as np
-import seaborn
+import seaborn as sns
 import glob
 from scipy import stats
 
@@ -22,6 +22,10 @@ TEMP='Temp (°C)'
 PRECIP='Precip. Amount (mm)'
 
 JITTER = 'jitter_ms'
+BANDWIDTH = 'bandwidth'
+
+def set_pubfig():
+    sns.set_context("paper", rc={"font.size":9,"axes.titlesize":9,"axes.labelsize":8, "xtick.labelsize":8})
 
 def combine_csvs(src, ind_col=0):
     return pd.concat([pd.read_csv(f, index_col=ind_col) for f in src])
@@ -49,23 +53,25 @@ def concat_df(src, pattern, keep=['bandwidth']):
 # TODO: Compare different TCP methods
 
 def plot_time(args):
-    df_down_udp = concat_df(args.src_folder, UDP_UP, [JITTER])
-    #df_down_udp = concat_df(args.src_folder, UDP_DOWN)
+    #df_down_udp = concat_df(args.src_folder, UDP_UP, [JITTER])
+    df_down_udp = concat_df(args.src_folder, UDP_DOWN)
     #df_down_udp = df_down_udp.loc['2022-03-01 04':'2022-03-01 04']
     #df_down_udp = df_down_udp.loc['2022-03-01 04:07:30':'2022-03-01 04:08:40']
     #df_down_udp = df_down_udp.loc['2022-03-01':'2022-03-02']
 
+    print(df_down_udp.shape[0])
+
     fig, ax = plt.subplots(figsize=(3.5,2))
     ax.xaxis.update_units(df_down_udp.index)
-    seaborn.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.jitter_ms, ax=ax)
-    #seaborn.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.bandwidth, ax=ax)
-    ax.set(yscale='log')
+    #sns.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.jitter_ms, ax=ax)
+    sns.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.bandwidth, ax=ax)
+    #ax.set(yscale='log')
     for label in ax.get_xticklabels():
         label.set_rotation(45)
         label.set_ha('right')
 
-    ax.set_ylabel("Jitter (ms)")
-    #ax.set_ylabel("Bandwidth (Mb/s)")
+    #ax.set_ylabel("Jitter (ms)")
+    ax.set_ylabel("Bandwidth (Mb/s)")
     if args.name:
         ax.set_title(args.name)
 
@@ -73,7 +79,7 @@ def plot_time(args):
     plt.show()
 
 def plot_thr_weather(args):
-    df_down_udp = concat_df(args.src_folder, UDP_DOWN, [JITTER])
+    df_down_udp = concat_df(args.src_folder, UDP_DOWN, [BANDWIDTH])
     df_down_udp = df_down_udp.resample('H').mean()
     df_down_udp.index = df_down_udp.index.tz_localize('UTC')
     print(df_down_udp.head())
@@ -92,9 +98,9 @@ def plot_thr_weather(args):
     
     #fig, ax = plt.subplots(figsize=(3.5,2))
     fig, ax = plt.subplots(figsize=(7.16,5))
-    #seaborn.scatterplot(x=df_merged.iloc[:, 1], y=df_merged.jitter_ms, ax=ax)
-    seaborn.scatterplot(x=df_merged.index, y=df_merged.iloc[:, 1], ax=ax)
-    seaborn.despine()
+    #sns.scatterplot(x=df_merged.iloc[:, 1], y=df_merged.jitter_ms, ax=ax)
+    sns.scatterplot(x=df_merged.index, y=df_merged.iloc[:, 1], ax=ax)
+    sns.despine()
 
     for label in ax.get_xticklabels():
         label.set_rotation(45)
@@ -133,8 +139,8 @@ def plot_multi(args):
     print(df_all.iloc[:,1].mean())
 
     fig, ax = plt.subplots(figsize=(3.5,2))
-    ax.set(yscale='log')
-    seaborn.boxplot(x="variable", y="value", data=pd.melt(df_all), ax=ax)
+    #ax.set(yscale='log')
+    sns.boxplot(x="variable", y="value", data=pd.melt(df_all), ax=ax, showfliers=False)
 
     ax.set_xticklabels(labels=["Shaw", "Starlink"], fontsize=9)
 
@@ -144,34 +150,40 @@ def plot_multi(args):
     if args.name:
         ax.set_title(args.name, fontsize=10)
 
+    fig.tight_layout()
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
 def plot_tcp_udp(args):
-    df_down_tcp = concat_df(args.src_folder, TCP_DOWN)
-    df_down_tcp.rename(columns={'bandwidth': 'TCP'}, inplace=True)
+    COL = JITTER
+    df_down_tcp = concat_df(args.src_folder, TCP_DOWN, [COL])
+    df_down_tcp.rename(columns={COL: 'TCP'}, inplace=True)
 
-    df_down_udp = concat_df(args.src_folder, UDP_DOWN)
-    df_down_udp.rename(columns={'bandwidth': 'UDP'}, inplace=True)
+    df_down_udp = concat_df(args.src_folder, UDP_DOWN, [COL])
+    df_down_udp.rename(columns={COL: 'UDP'}, inplace=True)
 
-    df_up_tcp = concat_df(args.src_folder, TCP_UP)
-    df_up_tcp.rename(columns={'bandwidth': 'TCP'}, inplace=True)
+    df_up_tcp = concat_df(args.src_folder, TCP_UP, [COL])
+    df_up_tcp.rename(columns={COL: 'TCP'}, inplace=True)
 
-    df_up_udp = concat_df(args.src_folder, UDP_UP)
-    df_up_udp.rename(columns={'bandwidth': 'UDP'}, inplace=True)
+    df_up_udp = concat_df(args.src_folder, UDP_UP, [COL])
+    df_up_udp.rename(columns={COL: 'UDP'}, inplace=True)
 
     df_tcp_udp_down = pd.merge(df_down_tcp, df_down_udp, how='outer', left_index=True, right_index=True)
     df_tcp_udp_up = pd.merge(df_up_tcp, df_up_udp, how='outer', left_index=True, right_index=True)
 
     print('TCP Down Avg:', df_tcp_udp_down.TCP.mean())
-    print('UDP Down Avg:', df_tcp_udp_down.UDP.max())
+    print('TCP Down Max:', df_tcp_udp_down.TCP.max())
+    print('UDP Down Avg:', df_tcp_udp_down.UDP.mean())
+    print('UDP Down Max:', df_tcp_udp_down.UDP.max())
     print('TCP Up Avg:', df_tcp_udp_up.TCP.mean())
-    print('UDP Up Avg:', df_tcp_udp_up.UDP.max())
+    print('TCP Up Max:', df_tcp_udp_up.TCP.max())
+    print('UDP Up Avg:', df_tcp_udp_up.UDP.mean())
+    print('UDP Up Max:', df_tcp_udp_up.UDP.max())
     print('Bandwidth Down ratio:', df_tcp_udp_down.TCP.mean() / df_tcp_udp_down.UDP.mean())
     print('Bandwidth Down ratio:', df_tcp_udp_up.TCP.mean() / df_tcp_udp_up.UDP.mean())
     print(df_tcp_udp_down.head())
 
     fig, ax = plt.subplots(figsize=(3.5,2))
-    seaborn.boxplot(x="variable", y="value", data=pd.melt(df_tcp_udp_down), ax=ax)
+    sns.boxplot(x="variable", y="value", data=pd.melt(df_tcp_udp_down), ax=ax)
 
     ax.set_xlabel("Methods", fontsize=10)
     ax.set_ylabel("Bandwidth (Mb/s)", fontsize=10)
@@ -207,20 +219,20 @@ def plot_jitter_100(args):
 
 
 def plot_reg_udp_only(args):
-    df_down_udp = combine_reg(args.src_folder, UDP_DOWN, [JITTER])
+    df_down_udp = combine_reg(args.src_folder, UDP_DOWN, JITTER)
     print(df_down_udp.head())
-    df_up_udp = combine_reg(args.src_folder, UDP_UP, [JITTER])
+    df_up_udp = combine_reg(args.src_folder, UDP_UP, JITTER)
 
-    fig, axs = plt.subplots(1, 2, sharey='row', sharex='col', figsize=(7.16,3))
+    fig, axs = plt.subplots(1, 2, figsize=(7.16,5))
     ax_big = fig.add_subplot(111, frameon=False)
 
-    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_down_udp), ax=axs[0])
+    boxplt = sns.boxplot(x="variable", y="value", data=pd.melt(df_down_udp), ax=axs[0], showfliers=False)
     boxplt.set(xlabel='Download', ylabel=None)
-    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_up_udp), ax=axs[1])
+    boxplt = sns.boxplot(x="variable", y="value", data=pd.melt(df_up_udp), ax=axs[1], showfliers=False)
     boxplt.set(xlabel='Upload', ylabel=None)
                 
     for j in range(2):
-        axs[j].set(yscale='log')
+        #axs[j].set(yscale='log')
         axs[j].set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain",
             "Tokyo", "London", "Mumbai"], rotation=45, ha='right', fontsize=9)
 
@@ -238,6 +250,7 @@ def plot_reg_udp_only(args):
     if args.name:
         ax.set_title(args.name, fontsize=10)
 
+    fig.tight_layout()
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
 def plot_reg(args):
@@ -250,13 +263,13 @@ def plot_reg(args):
     fig, axs = plt.subplots(2, 2, sharey='row', sharex='col', figsize=(7.16,6))
     ax_big = fig.add_subplot(111, frameon=False)
 
-    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_down_tcp), ax=axs[0, 0])
+    boxplt = sns.boxplot(x="variable", y="value", data=pd.melt(df_down_tcp), ax=axs[0, 0])
     boxplt.set(xlabel=None, ylabel="Download")
-    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_down_udp), ax=axs[0, 1])
+    boxplt = sns.boxplot(x="variable", y="value", data=pd.melt(df_down_udp), ax=axs[0, 1])
     boxplt.set(xlabel=None, ylabel=None)
-    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_up_tcp), ax=axs[1, 0])
+    boxplt = sns.boxplot(x="variable", y="value", data=pd.melt(df_up_tcp), ax=axs[1, 0])
     boxplt.set(xlabel="TCP", ylabel="Upload")
-    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_up_udp), ax=axs[1, 1])
+    boxplt = sns.boxplot(x="variable", y="value", data=pd.melt(df_up_udp), ax=axs[1, 1])
     boxplt.set(xlabel="UDP", ylabel=None)
                 
     axs[0,0].set_xticklabels([])
@@ -305,7 +318,7 @@ def plot_single_avg(args):
         combined_df.to_csv("combined.csv", encoding='utf-8-sig')
 
     fig, ax = plt.subplots(figsize=(5,7))
-    seaborn.boxplot(x=combined_df.index.year, y=combined_df.bandwidth, ax=ax)
+    sns.boxplot(x=combined_df.index.year, y=combined_df.bandwidth, ax=ax)
 
     ax.set_ylabel("Bandwidth (Mb/s)")
     if args.name:
@@ -330,8 +343,8 @@ def plot_days(args):
         combined_df.to_csv("combined.csv", encoding='utf-8-sig')
 
     fig, ax = plt.subplots(figsize=(12,7))
-    seaborn.boxplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
-    #seaborn.lineplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
+    sns.boxplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
+    #sns.lineplot(x=combined_df.index.dayofyear, y=combined_df.bandwidth, ax=ax)
 
     # Converts timestamps to month-day labels and displays them
     x_dates = combined_df.index.strftime('%m-%d').sort_values().unique()
@@ -345,6 +358,9 @@ def plot_days(args):
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
 def plot_ping(args):
+    N_STARLINK = 'Starlink'
+    N_SHAW = 'Shaw'
+
     df = pd.DataFrame()
     for folder in args.src_dirs:
         for region in os.scandir(folder):
@@ -357,37 +373,86 @@ def plot_ping(args):
 
             df = df.merge(df_temp, how='outer', left_index=True, right_index=True)
 
+    print(df.shape[0])
+    df = df.sample(10000)
+    num_regs = int(len(df.columns) / 2) # One for each of Shaw vs Starlink
     cols = df.columns.tolist()
-    cols = [cols[0], cols[2], cols[1], cols[3]] # Hardcoded
-    df = df[cols]
+
+    print(df.head())
+    new_cols = []
+    #for col in cols:
+    #    region = col.split('/')[1].replace('_',' ').strip()
+    #    new_cols.append(region)
+    new_cols = ['Mumbai', 'Sydney', 'Singapore', 
+            'N. California', 'London', 'Bahrain', 'Sao Paulo', 'Tokyo'] * 2
+    multi_cols = [
+            [N_SHAW] * num_regs + [N_STARLINK] * num_regs,
+            new_cols
+            ]
+    df.set_axis(multi_cols, axis=1, inplace=True)
     print(df.head())
 
-    df_syd = df.iloc[:,:2]
-    df_calif = df.iloc[:,2:]
+    N_REGIONS = 'Regions'
+    df = df.unstack().reset_index(name='latency').dropna()
+    df.rename(columns={'level_0': 'type', 'level_1': N_REGIONS, 'level_2': 'timestamp'},
+            inplace=True)
+    print(df.head())
 
-    fig, axs = plt.subplots(1, 2, sharey='row', sharex='col', figsize=(3.5,3))
-    ax_big = fig.add_subplot(111, frameon=False)
+    #df_pivot = df.pivot_table(index=[N_REGIONS, 'timestamp'], columns='type', values='latency')
+    #print(df_pivot.head())
 
-    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_syd), ax=axs[0])
-    boxplt.set(xlabel='Sydney', ylabel=None)
-    boxplt = seaborn.boxplot(x="variable", y="value", data=pd.melt(df_calif), ax=axs[1])
-    boxplt.set(xlabel='California', ylabel=None)
+    g = sns.catplot(data=df, x='type', y='latency', col=N_REGIONS, col_wrap=4, kind='box', height=2,
+            aspect=0.895, showfliers=True)
+    g.set(yscale='log')
+    g.tight_layout()
+    (g.set_axis_labels('Provider', 'Latency (ms)')
+            .set_titles("{col_name}"))
 
-    for i in range(2):
-        axs[i].set_xticklabels(labels=["Shaw", "Starlink"], fontsize=9)
-        axs[i].tick_params(labelsize=9)
 
-    ax_big.set_xlabel("Region", fontsize=10, labelpad=80, fontweight='bold')
-    ax_big.set_ylabel("Latency (ms)", fontsize=10, labelpad=40, fontweight='bold')
-    ax_big.set_yticklabels([])
-    ax_big.set_xticklabels([])
-    ax_big.tick_params(
-        which='both',
-        bottom=False,
-        left=False,
-        right=False,
-        top=False)
-    ax_big.grid(False)
+    ########
+    #df = df.loc['2022-04-14 04':'2022-04-15 04']
+
+    #fig, ax = plt.subplots(figsize=(3.5,2))
+    #ax.xaxis.update_units(df.index)
+    #sns.lineplot(x=ax.xaxis.convert_units(df.index), y=df.iloc[:,0], ax=ax)
+    #sns.lineplot(x=df.index, y=df.iloc[:,0], ax=ax)
+
+    #for label in ax.get_xticklabels():
+    #    label.set_rotation(45)
+    #    label.set_ha('right')
+    #ax.set_ylabel('Latency (ms)')
+    #########
+
+    ########
+    #fig, axs = plt.subplots(1, num_regs, figsize=(7.16,5))
+    #ax_big = fig.add_subplot(111, frameon=False)
+
+    #df_regions = []
+    #for i in range(num_regs):
+    #    df_region = df.iloc[:,[i,(num_regs+i)]]
+    #    boxplt = sns.boxplot(x="variable", y="value", data=pd.melt(df_region), ax=axs[i], showfliers=False)
+
+    #    raw_region = df_region.columns[0]
+    #    region = raw_region.split('/')[1].replace('_',' ').strip()
+    #    boxplt.set(xlabel=region, ylabel=None)
+
+    #    #axs[i].set(yscale='log')
+    #    axs[i].set_xticklabels(labels=["Shaw", "Starlink"], fontsize=9)
+    #    axs[i].tick_params(labelsize=9)
+
+
+    #ax_big.set_xlabel("Network Provider and Region", fontsize=10, labelpad=30, fontweight='bold')
+    #ax_big.set_ylabel("Latency (ms)", fontsize=10, labelpad=30, fontweight='bold')
+    #ax_big.set_yticklabels([])
+    #ax_big.set_xticklabels([])
+    #ax_big.tick_params(
+    #    which='both',
+    #    bottom=False,
+    #    left=False,
+    #    right=False,
+    #    top=False)
+    #ax_big.grid(False)
+    #############
 
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
@@ -419,6 +484,8 @@ if __name__ == '__main__':
     ping_parser = subp.add_parser("ping")
     ping_parser.set_defaults(func=plot_ping)
     ping_parser.add_argument('src_dirs', nargs='*')
+
+    set_pubfig()
 
     args = parser.parse_args()
     args.func(args)
