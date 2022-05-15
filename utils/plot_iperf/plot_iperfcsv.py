@@ -53,18 +53,31 @@ def concat_df(src, pattern, keep=['bandwidth']):
 # TODO: Compare different TCP methods
 
 def plot_time(args):
-    #df_down_udp = concat_df(args.src_folder, UDP_UP, [JITTER])
-    df_down_udp = concat_df(args.src_folder, UDP_DOWN)
-    #df_down_udp = df_down_udp.loc['2022-03-01 04':'2022-03-01 04']
-    #df_down_udp = df_down_udp.loc['2022-03-01 04:07:30':'2022-03-01 04:08:40']
-    #df_down_udp = df_down_udp.loc['2022-03-01':'2022-03-02']
+    #df = concat_df(args.src_folder, UDP_UP, [JITTER])
+    df = combine_reg(args.src_folder, TCP_DOWN)
+    df = df.unstack().dropna()
+    df = df.mask(df == -1).reset_index(name=BANDWIDTH)
+    print(df.head())
+    #df = concat_df(args.src_folder, UDP_DOWN).sort_values('timestamp')
+    #df = df.loc['2022-03-01 04':'2022-03-01 04']
+    #df = df.loc['2022-03-01 04:07:30':'2022-03-01 04:08:40']
+    #df = df.loc['2022-03-01':'2022-03-02']
 
-    print(df_down_udp.shape[0])
+    #print(df.shape[0])
+    #df.to_csv("before.csv", encoding='utf-8-sig')
+    #df = remove_first_measures(df)
+    #df.to_csv("after.csv", encoding='utf-8-sig')
 
-    fig, ax = plt.subplots(figsize=(3.5,2))
-    ax.xaxis.update_units(df_down_udp.index)
-    #sns.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.jitter_ms, ax=ax)
-    sns.scatterplot(x=ax.xaxis.convert_units(df_down_udp.index), y=df_down_udp.bandwidth, ax=ax)
+    print(df.shape[0])
+
+    #fig, ax = plt.subplots(figsize=(3.5,2))
+    fig, ax = plt.subplots(figsize=(20,10))
+    ax.xaxis.update_units(df.timestamp)
+    y_val = df.bandwidth
+    #sns.scatterplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax)
+    #sns.jointplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax)
+    sns.lineplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax, hue=y_val.isna().cumsum(),
+            markers=True)
     #ax.set(yscale='log')
     for label in ax.get_xticklabels():
         label.set_rotation(45)
@@ -75,6 +88,7 @@ def plot_time(args):
     if args.name:
         ax.set_title(args.name)
 
+    plt.tight_layout()
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
     plt.show()
 
@@ -193,18 +207,38 @@ def plot_tcp_udp(args):
 
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
+def remove_first_measures(df, first=3):
+    # Remove first {first} datapoints for each measurement
+    # Take into account of software tool overhead
+    diff_time = (df.index - df.reset_index().timestamp.shift())
+    # Choose entries where previous time is less than an hour
+    first_measure_map = diff_time < pd.Timedelta(5, unit='m')
+    # Propagate to first three datapoints
+    for i in range(1, first):
+        first_measure_map = first_measure_map.eq(first_measure_map.shift(i))
+
+    df_map = pd.DataFrame(columns=df.columns)
+    df_map.iloc[:,0] = first_measure_map
+    df_map['timestamp'] = df.index
+    df_map.set_index('timestamp', inplace=True)
+    filtered_df = df.where(df_map, -1) # Set to NaN
+
+    return filtered_df
+
 def combine_reg(src, pattern, keep='bandwidth'):
     regions_df = pd.DataFrame()
     first = True
     for region in os.scandir(src):
-        combined_df = concat_df(region.path, pattern, [keep])
+        combined_df = concat_df(region.path, pattern, [keep]).sort_values('timestamp')
         combined_df.rename(columns={keep: region.name}, inplace=True)
+        combined_df = remove_first_measures(combined_df)
 
         if first:
             regions_df = combined_df
             first = False
         else:
             regions_df = pd.merge(regions_df, combined_df, how='outer', left_index=True, right_index=True)
+
     return regions_df
 
 
@@ -275,8 +309,8 @@ def plot_reg(args):
     axs[0,0].set_xticklabels([])
     axs[0,1].set_xticklabels([])
     for j in range(2):
-        #axs[1,j].set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain",
-        #    "Tokyo", "London", "Mumbai"], rotation=45, ha='right', fontsize=9)
+        axs[1,j].set_xticklabels(labels=["Sao Paulo", "Singapore", "Sydney", "N. California", "Bahrain",
+            "Tokyo", "London", "Mumbai"], rotation=45, ha='right', fontsize=9)
         #axs[1,j].set_xticklabels(labels=["Sydney", "N. California"], rotation=45, ha='right', fontsize=9)
         for label in axs[1,j].get_xticklabels():
             label.set_rotation(45)
@@ -289,8 +323,8 @@ def plot_reg(args):
     #    for j in range(2):
     #        axs[i,j].set(yscale='log')
 
-    ax_big.set_xlabel("Regions", fontsize=10, labelpad=80, fontweight='bold')
-    ax_big.set_ylabel("Bandwidth (Mb/s)", fontsize=10, labelpad=50, fontweight='bold')
+    ax_big.set_xlabel("Regions", fontsize=9, labelpad=80, fontweight='bold')
+    ax_big.set_ylabel("Bandwidth (Mb/s)", fontsize=9, labelpad=50, fontweight='bold')
     ax_big.set_yticklabels([])
     ax_big.set_xticklabels([])
     ax_big.tick_params(
@@ -301,7 +335,7 @@ def plot_reg(args):
         top=False)
     ax_big.grid(False)
     if args.name:
-        ax.set_title(args.name, fontsize=10)
+        ax.set_title(args.name, fontsize=9)
 
     plt.savefig(f'{args.filename}.eps', format='eps', bbox_inches='tight')
 
