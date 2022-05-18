@@ -54,7 +54,7 @@ def concat_df(src, pattern, keep=['bandwidth']):
 
 def plot_time(args):
     #df = concat_df(args.src_folder, UDP_UP, [JITTER])
-    df = combine_reg(args.src_folder, TCP_DOWN)
+    df = combine_reg(args.src_folder, UDP_DOWN, 1)
     df = df.unstack().dropna()
     df = df.mask(df == -1).reset_index(name=BANDWIDTH)
     print(df.head())
@@ -63,10 +63,7 @@ def plot_time(args):
     #df = df.loc['2022-03-01 04:07:30':'2022-03-01 04:08:40']
     #df = df.loc['2022-03-01':'2022-03-02']
 
-    #print(df.shape[0])
-    #df.to_csv("before.csv", encoding='utf-8-sig')
-    #df = remove_first_measures(df)
-    #df.to_csv("after.csv", encoding='utf-8-sig')
+    df.to_csv("out.csv", encoding='utf-8-sig')
 
     print(df.shape[0])
 
@@ -77,7 +74,7 @@ def plot_time(args):
     #sns.scatterplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax)
     #sns.jointplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax)
     sns.lineplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax, hue=y_val.isna().cumsum(),
-            markers=True)
+            palette=["black"]*sum(y_val.isna()), markers=True, legend=False)
     #ax.set(yscale='log')
     for label in ax.get_xticklabels():
         label.set_rotation(45)
@@ -225,13 +222,13 @@ def remove_first_measures(df, first=3):
 
     return filtered_df
 
-def combine_reg(src, pattern, keep='bandwidth'):
+def combine_reg(src, pattern, keep='bandwidth', first=3):
     regions_df = pd.DataFrame()
     first = True
     for region in os.scandir(src):
         combined_df = concat_df(region.path, pattern, [keep]).sort_values('timestamp')
         combined_df.rename(columns={keep: region.name}, inplace=True)
-        combined_df = remove_first_measures(combined_df)
+        combined_df = remove_first_measures(combined_df, first)
 
         if first:
             regions_df = combined_df
