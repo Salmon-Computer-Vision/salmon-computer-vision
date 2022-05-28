@@ -14,10 +14,10 @@ from scipy import stats
 from dateutil import tz
 
 MEGAb_TO_b = 1e6
-TCP_DOWN = "*down*[!udp]*.csv"
+TCP_DOWN = "*down.*.csv"
 UDP_DOWN = "*down*udp*.csv"
-TCP_UP = "*receive*[!udp]*.csv"
-UDP_UP = "*receive*udp*.csv"
+TCP_UP = "*receive.*[!p].csv"
+UDP_UP = "*receive*.udp.csv"
 TEMP='Temp (°C)'
 PRECIP='Precip. Amount (mm)'
 
@@ -54,26 +54,26 @@ def concat_df(src, pattern, keep=['bandwidth']):
 
 def plot_time(args):
     #df = concat_df(args.src_folder, UDP_UP, [JITTER])
-    df = combine_reg(args.src_folder, UDP_DOWN, 1)
+    df = combine_reg(args.src_folder, TCP_DOWN, first=2)
     df = df.unstack().dropna()
-    df = df.mask(df == -1).reset_index(name=BANDWIDTH)
-    print(df.head())
+    df = df.mask(df == -1).reset_index(name=BANDWIDTH).set_index('timestamp')
     #df = concat_df(args.src_folder, UDP_DOWN).sort_values('timestamp')
-    #df = df.loc['2022-03-01 04':'2022-03-01 04']
+    #df = df.loc['2022-03-02 14:02:00':'2022-03-02 14:10:00']
     #df = df.loc['2022-03-01 04:07:30':'2022-03-01 04:08:40']
     #df = df.loc['2022-03-01':'2022-03-02']
+    print(df.head())
 
-    df.to_csv("out.csv", encoding='utf-8-sig')
+    #df.to_csv("out.csv", encoding='utf-8-sig')
 
     print(df.shape[0])
 
-    #fig, ax = plt.subplots(figsize=(3.5,2))
-    fig, ax = plt.subplots(figsize=(20,10))
-    ax.xaxis.update_units(df.timestamp)
+    fig, ax = plt.subplots(figsize=(3.5,3))
+    #fig, ax = plt.subplots(figsize=(20,10))
+    ax.xaxis.update_units(df.index)
     y_val = df.bandwidth
     #sns.scatterplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax)
     #sns.jointplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax)
-    sns.lineplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax, hue=y_val.isna().cumsum(),
+    sns.lineplot(x=ax.xaxis.convert_units(df.index), y=y_val, ax=ax, hue=y_val.isna().cumsum(),
             palette=["black"]*sum(y_val.isna()), markers=True, legend=False)
     #ax.set(yscale='log')
     for label in ax.get_xticklabels():
@@ -407,6 +407,7 @@ def plot_ping(args):
     print(df.shape[0])
     df = df.sample(10000)
     num_regs = int(len(df.columns) / 2) # One for each of Shaw vs Starlink
+    print(num_regs)
     cols = df.columns.tolist()
 
     print(df.head())
@@ -415,7 +416,7 @@ def plot_ping(args):
     #    region = col.split('/')[1].replace('_',' ').strip()
     #    new_cols.append(region)
     new_cols = ['Mumbai', 'Sydney', 'Singapore', 
-            'N. California', 'London', 'Bahrain', 'Sao Paulo', 'Tokyo'] * 2
+            'N. California', 'London', 'Bahrain', 'Sao Paulo', 'Tokyo', 'Africa'] * 2
     multi_cols = [
             [N_SHAW] * num_regs + [N_STARLINK] * num_regs,
             new_cols
