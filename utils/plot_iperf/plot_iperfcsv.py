@@ -55,26 +55,33 @@ def concat_df(src, pattern, keep=['bandwidth']):
 def plot_time(args):
     #df = concat_df(args.src_folder, UDP_UP, [JITTER])
     df = combine_reg(args.src_folder, TCP_DOWN, first=4)
-    df = df.unstack().dropna()
-    df = df.mask(df == -1).reset_index(name=BANDWIDTH).set_index('timestamp')
+    df_unstacked = df.unstack().dropna()
+    df_unstacked = df_unstacked.mask(df_unstacked == -1).reset_index(name=BANDWIDTH).set_index('timestamp')
+    df_regs = df.replace(-1, pd.NA).dropna(how='all')
     #df = concat_df(args.src_folder, UDP_DOWN).sort_values('timestamp')
     #df = df.loc['2022-03-02 14:02:00':'2022-03-02 14:10:00']
     #df = df.loc['2022-03-01 04:07:30':'2022-03-01 04:08:40']
     #df = df.loc['2022-03-01':'2022-03-02']
-    print(df.head())
+
+    # Aggreagation options
+    print(df_regs)
+    df_regs = df_regs.astype(float).resample('2T').mean()
+    print(df_regs.head())
 
     #df.to_csv("out.csv", encoding='utf-8-sig')
 
-    print(df.shape[0])
+    print(df_unstacked.shape[0])
 
-    fig, ax = plt.subplots(figsize=(3.5,3))
-    #fig, ax = plt.subplots(figsize=(20,10))
+    #fig, ax = plt.subplots(figsize=(3.5,3))
+    fig, ax = plt.subplots(figsize=(20,10))
     ax.xaxis.update_units(df.index)
-    y_val = df.bandwidth
+    y_val = df_unstacked.bandwidth
     #sns.scatterplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax)
     #sns.jointplot(x=ax.xaxis.convert_units(df.timestamp), y=y_val, ax=ax)
-    sns.lineplot(x=ax.xaxis.convert_units(df.index), y=y_val, ax=ax, hue=y_val.isna().cumsum(),
-            palette=["black"]*sum(y_val.isna()), markers=True, legend=False)
+
+    #sns.lineplot(x=ax.xaxis.convert_units(df.index), y=y_val, ax=ax, hue=y_val.isna().cumsum(),
+    #        palette=["black"]*sum(y_val.isna()), markers=True, legend=False)
+    sns.lineplot(data=df_regs)
     #ax.set(yscale='log')
     for label in ax.get_xticklabels():
         label.set_rotation(45)
