@@ -54,7 +54,7 @@ def concat_df(src, pattern, keep=['bandwidth']):
 
 def plot_time(args):
     #df = concat_df(args.src_folder, UDP_UP, [JITTER])
-    df = combine_reg(args.src_folder, TCP_DOWN, first=2)
+    df = combine_reg(args.src_folder, TCP_DOWN, first=4)
     df = df.unstack().dropna()
     df = df.mask(df == -1).reset_index(name=BANDWIDTH).set_index('timestamp')
     #df = concat_df(args.src_folder, UDP_DOWN).sort_values('timestamp')
@@ -218,21 +218,21 @@ def remove_first_measures(df, first=3):
     df_map.iloc[:,0] = first_measure_map
     df_map['timestamp'] = df.index
     df_map.set_index('timestamp', inplace=True)
-    filtered_df = df.where(df_map, -1) # Set to NaN
+    filtered_df = df.where(df_map, -1) # Set to -1
 
     return filtered_df
 
 def combine_reg(src, pattern, keep='bandwidth', first=3):
     regions_df = pd.DataFrame()
-    first = True
+    start = True
     for region in os.scandir(src):
         combined_df = concat_df(region.path, pattern, [keep]).sort_values('timestamp')
         combined_df.rename(columns={keep: region.name}, inplace=True)
         combined_df = remove_first_measures(combined_df, first)
 
-        if first:
+        if start:
             regions_df = combined_df
-            first = False
+            start = False
         else:
             regions_df = pd.merge(regions_df, combined_df, how='outer', left_index=True, right_index=True)
 
