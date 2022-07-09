@@ -20,8 +20,8 @@ download_data() {
 export -f download_data
 
 for year in `seq 2022 2022`; do
-    for month in `seq 3 3`; do
-        for day in `seq 1 23`; do
+    for month in `seq 1 7`; do
+        for day in `seq 1 1`; do # Hourly measures give entire month of data
             sem -j 4  download_data "$dest_dir" "$station_id" "$year" "$month" "$day"
         done
     done
