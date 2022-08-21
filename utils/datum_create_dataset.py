@@ -67,7 +67,7 @@ class VidDataset:
     def import_zipped_anno(self, name: str, anno_zip_path: str, overwrite=False):
         dest_path = osp.join(self.anno_folder, PREFIX_CVAT + name)
         if not overwrite and osp.exists(dest_path):
-            log.info(f"Exists. Skipping {dest_path}")
+            log.info(f"Exists. Skipping unzip {dest_path}")
             return
 
         log.info("Unzipping and importing CVAT...")
@@ -77,9 +77,13 @@ class VidDataset:
         os.rename(osp.join(dest_path, XML_ANNOTATIONS), osp.join(dest_path, XML_DEFAULT))
         self.cvat_dataset = dm.Dataset.import_from(dest_path, "cvat")
 
-    def _transform(self, name: str, src_path: str):
-        #dataset = dm.Dataset.import_from(dest_path, 'datumaro')
+    def _transform(self, name: str, src_path: str, overwrite=False):
         dest_path = osp.join(self.transform_path, name.lower()) # Must be lowercase due to datumaro restrictions
+        if not overwrite and osp.exists(dest_path):
+            log.info(f"Exists. Skipping transform {dest_path}")
+            self._transform(name, dest_path)
+            return
+
         log.info(f"Renaming video frames to {dest_path}")
         subprocess.run([DATUM, 'transform', '-t', 'rename', '-o', dest_path,
             f"{src_path}:datumaro", '--', '-e', f"|^frame_|{name}_|"])
@@ -87,7 +91,7 @@ class VidDataset:
     def export_datum(self, name: str, overwrite=False):
         dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
         if not overwrite and osp.exists(dest_path):
-            log.info(f"Exists. Skipping {dest_path}")
+            log.info(f"Exists. Skipping export {dest_path}")
             self._transform(name, dest_path)
             return
 
@@ -122,10 +126,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Combine videos and annotations and exports them into a Datumaro project.')
 
     parser.add_argument('csv_vids', help='CSV file of video and annotation .zip filepaths. Must have the columns "vid_path" and "anno_path"')
-    parser.add_argument('--anno-dir', default='annos', help='Annotations destination folder')
-    parser.add_argument('--proj-path', default='datum_proj', help='Datumaro project destination folder')
-    parser.add_argument('--transform-path', default='datum_proj_transform', help='Datumaro project transform destination folder')
-    parser.add_argument('-j', '--jobs', default='4', help='Number of jobs to run')
+    parser.add_argument('--anno-dir', default='annos', help='Annotations destination folder. Default: annos')
+    parser.add_argument('--proj-path', default='datum_proj', help='Datumaro project destination folder. Default: datum_proj')
+    parser.add_argument('--transform-path', default='datum_proj_transform', help='Datumaro project transform destination folder. Default: datum_proj_transform')
+    parser.add_argument('-j', '--jobs', default='4', help='Number of jobs to run. Default: 4')
     parser.set_defaults(func=main)
 
     args = parser.parse_args()
