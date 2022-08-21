@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import os.path as osp
 import subprocess
 import datumaro as dm
 import argparse
@@ -26,7 +27,7 @@ class VidDataset:
 
     def extract_frames(self, vid_path: str):
         # Extract frames to the project folder
-        #dest_path = os.path.join(self.proj_path, self.PREFIX_VID + name)
+        #dest_path = osp.join(self.proj_path, self.PREFIX_VID + name)
         log.info("Importing video...")
 
         self.dataset = dm.Dataset.import_from(
@@ -38,14 +39,15 @@ class VidDataset:
         #vid_data.export(format="image_dir", save_dir=dest_path, image_ext=args.image_ext)
 
     def import_zipped_anno(self, name: str, anno_zip_path: str):
-        dest_path = os.path.join(self.anno_folder, self.PREFIX_CVAT + name)
+        dest_path = osp.join(self.anno_folder, self.PREFIX_CVAT + name)
         log.info("Unzipping and importing CVAT...")
-        subprocess.run(['unzip', '-d', dest_path, anno_zip_path])
+        src_path = osp.abspath(anno_zip_path)
+        subprocess.run(['unzip', '-d', dest_path, src_path])
 
         self.dataset.import_from(dest_path, "cvat")
 
     def export_datum(self, name: str):
-        dest_path = os.path.join(self.proj_path, name)
+        dest_path = osp.join(self.proj_path, name)
         self.dataset.export(dest_path, 'datumaro')
 
 def main(args):
@@ -54,7 +56,7 @@ def main(args):
     os.makedirs(args.proj_path, exist_ok=True)
     for _, row in df.iterrows():
         vid_data = VidDataset(row.vid_path, args.proj_path, args.anno_dir)
-        name = os.path.splitext(os.path.basename(row.anno_path))[0]
+        name = osp.splitext(osp.basename(row.anno_path))[0]
         vid_data.import_zipped_anno(name, row.anno_path)
         vid_data.export_datum(name)
 
