@@ -78,7 +78,7 @@ class VidDataset:
         dest_path = osp.join(self.transform_path, name)
         log.info(f"Renaming video frames to {dest_path}")
         subprocess.run([DATUM, 'transform', '-t', 'rename', '-o', dest_path,
-            f"{src_path}:datumaro", '--', '-e', f"'|^frame_|{name}_|'"])
+            f"{src_path}:datumaro", '--', '-e', f"|^frame_|{name}_|"])
 
     def export_datum(self, name: str, overwrite=False):
         dest_path = osp.join(self.proj_path, name)
