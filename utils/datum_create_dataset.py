@@ -51,8 +51,8 @@ class VidDataset:
         self.dataset.import_from(dest_path, "cvat")
 
     def export_datum(self, name: str):
-        log.info("Exporting to datumaro...")
         dest_path = osp.join(self.proj_path, name)
+        log.info(f"Exporting as datumaro to {dest_path}")
         self.dataset.export(dest_path, 'datumaro', save_images=True)
 
 def main(args):
