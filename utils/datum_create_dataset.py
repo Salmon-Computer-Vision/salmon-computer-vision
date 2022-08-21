@@ -66,7 +66,7 @@ class VidDataset:
 
         # Rename to the default, so the annotations can be matched with the video frames
         os.rename(osp.join(dest_path, self.XML_ANNOTATIONS), osp.join(dest_path, self.XML_DEFAULT))
-        self.cvat_dataset.import_from(dest_path, "cvat")
+        self.cvat_dataset = dm.Dataset.import_from(dest_path, "cvat")
 
     def export_datum(self, name: str, overwrite=False):
         dest_path = osp.join(self.proj_path, name)
