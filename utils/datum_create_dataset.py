@@ -81,7 +81,6 @@ class VidDataset:
         dest_path = osp.join(self.transform_path, name.lower()) # Must be lowercase due to datumaro restrictions
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping transform {dest_path}")
-            self._transform(name, dest_path)
             return
 
         log.info(f"Renaming video frames to {dest_path}")
