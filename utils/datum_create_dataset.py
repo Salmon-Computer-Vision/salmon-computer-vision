@@ -50,7 +50,7 @@ class VidDataset:
 
         self.dataset.import_from(dest_path, "cvat")
 
-    def export_datum(self, dest_path: str, overwrite=False):
+    def export_datum(self, name: str, overwrite=False):
         dest_path = osp.join(self.proj_path, name)
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping {dest_path}")
