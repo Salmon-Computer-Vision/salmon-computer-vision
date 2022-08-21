@@ -75,7 +75,7 @@ class VidDataset:
 
     def _transform(self, name: str, src_path: str):
         #dataset = dm.Dataset.import_from(dest_path, 'datumaro')
-        dest_path = osp.join(self.transform_path, name)
+        dest_path = osp.join(self.transform_path, name.lower()) # Must be lowercase due to datumaro restrictions
         log.info(f"Renaming video frames to {dest_path}")
         subprocess.run([DATUM, 'transform', '-t', 'rename', '-o', dest_path,
             f"{src_path}:datumaro", '--', '-e', f"|^frame_|{name}_|"])
