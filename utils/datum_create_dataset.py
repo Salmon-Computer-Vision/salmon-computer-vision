@@ -80,7 +80,8 @@ class VidDataset:
         dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
         dataset.export(dest_path, 'datumaro', save_images=True)
 
-def export_vid(row):
+def export_vid(row_tuple):
+    row = row_tuple[1]
     name = osp.splitext(osp.basename(row.anno_path))[0]
     vid_data = VidDataset(name, row.vid_path, args.proj_path, args.anno_dir)
     vid_data.import_zipped_anno(name, row.anno_path)
@@ -92,9 +93,9 @@ def main(args):
     os.makedirs(args.proj_path, exist_ok=True)
 
     jobs_pool = Pool(int(args.jobs))
-    _, rows = df.iterrows()
+    row_tuples = df.iterrows()
 
-    jobs_pool.map(export_vid, rows)
+    jobs_pool.map(export_vid, row_tuples)
 
     jobs_pool.close()
     jobs_pool.join()
