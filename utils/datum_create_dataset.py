@@ -104,6 +104,7 @@ def main(args):
     df = pd.read_csv(args.csv_vids)
     os.makedirs(args.anno_dir, exist_ok=True)
     os.makedirs(args.proj_path, exist_ok=True)
+    os.makedirs(args.transform_path, exist_ok=True)
 
     jobs_pool = Pool(int(args.jobs))
     row_tuples = df.iterrows()
