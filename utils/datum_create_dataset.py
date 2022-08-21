@@ -64,8 +64,12 @@ class VidDataset:
                 "image_dir"
                 )
 
-    def import_zipped_anno(self, name: str, anno_zip_path: str):
+    def import_zipped_anno(self, name: str, anno_zip_path: str, overwrite=False):
         dest_path = osp.join(self.anno_folder, PREFIX_CVAT + name)
+        if not overwrite and osp.exists(dest_path):
+            log.info(f"Exists. Skipping {dest_path}")
+            return
+
         log.info("Unzipping and importing CVAT...")
         subprocess.run(['unzip', '-o', '-d', dest_path, anno_zip_path])
 
