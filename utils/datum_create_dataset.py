@@ -81,7 +81,7 @@ class VidDataset:
             f"{src_path}:datumaro", '--', '-e', f"|^frame_|{name}_|"])
 
     def export_datum(self, name: str, overwrite=False):
-        dest_path = osp.join(self.proj_path, name)
+        dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping {dest_path}")
             self._transform(name, dest_path)
