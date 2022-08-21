@@ -41,7 +41,7 @@ class VidDataset:
     def import_zipped_anno(self, name: str, anno_zip_path: str):
         dest_path = osp.join(self.anno_folder, self.PREFIX_CVAT + name)
         log.info("Unzipping and importing CVAT...")
-        subprocess.run(['unzip', '-d', dest_path, src_path])
+        subprocess.run(['unzip', '-d', dest_path, anno_zip_path])
 
         self.dataset.import_from(dest_path, "cvat")
 
