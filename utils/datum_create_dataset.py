@@ -3,11 +3,13 @@
 import os
 import os.path as osp
 import subprocess
-import datumaro as dm
 import argparse
 import logging as log
 
 import pandas as pd
+
+import datumaro as dm
+from datumaro.components.operations import IntersectMerge
 
 log.basicConfig(
         format='%(asctime)s %(levelname)-8s %(message)s',
@@ -75,7 +77,8 @@ class VidDataset:
             return
 
         log.info(f"Exporting as datumaro to {dest_path}")
-        dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
+        merger = IntersectMerge()
+        dataset = merger(self.vid_dataset, self.cvat_dataset)
         dataset.export(dest_path, 'datumaro', save_images=True)
 
 def main(args):
