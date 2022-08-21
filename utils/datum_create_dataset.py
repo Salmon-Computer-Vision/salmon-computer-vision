@@ -52,7 +52,7 @@ def main(args):
     df = pd.read_csv(args.csv_vids)
     os.makedirs(args.anno_dir, exist_ok=True)
     os.makedirs(args.proj_path, exist_ok=True)
-    for _, row in df.iterrows:
+    for _, row in df.iterrows():
         vid_data = VidDataset(row.vid_path, args.proj_path, args.anno_dir)
         name = os.path.splitext(os.path.basename(row.anno_path))[0]
         vid_data.import_zipped_anno(name, row.anno_path)
