@@ -30,6 +30,7 @@ XML_DEFAULT = 'default.xml'
 class VidDataset:
     vid_dataset = None
     cvat_dataset = None
+    dataset = None
 
     def __init__(self, name: str, vid_path: str, proj_path: str, anno_folder: str, transform_path: str):
         self.proj_path = proj_path
@@ -68,6 +69,7 @@ class VidDataset:
         dest_path = osp.join(self.anno_folder, PREFIX_CVAT + name)
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping unzip {dest_path}")
+            self.cvat_dataset = dm.Dataset.import_from(dest_path, "cvat")
             return
 
         log.info("Unzipping and importing CVAT...")
@@ -89,16 +91,19 @@ class VidDataset:
 
     def export_datum(self, name: str, overwrite=False):
         dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
+        self.dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping export {dest_path}")
             self._transform(name, dest_path)
             return
 
         log.info(f"Exporting as datumaro to {dest_path}")
-        dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
-        dataset.export(dest_path, 'datumaro', save_images=True)
+        self.dataset.export(dest_path, 'datumaro', save_images=True)
 
         self._transform(name, dest_path)
+
+    def export_mot(self, name: str, overwrite=False):
+        dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
 
 def export_vid(row_tuple):
     row = row_tuple[1]
