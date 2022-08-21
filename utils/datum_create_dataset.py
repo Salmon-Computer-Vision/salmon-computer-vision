@@ -32,9 +32,13 @@ class VidDataset:
         self.proj_path = proj_path
         self.anno_folder = anno_folder
 
-    def extract_frames(self, name: str, vid_path: str):
+    def extract_frames(self, name: str, vid_path: str, overwrite=False):
         # Extract frames to the project folder
         dest_path = osp.join(self.anno_folder, self.PREFIX_VID + name)
+        if not overwrite and osp.exists(dest_path):
+            log.info(f"Exists. Skipping {dest_path}")
+            return
+
         log.info(f"Extracting frames {vid_path}")
 
         vid_data = dm.Dataset.import_from(
