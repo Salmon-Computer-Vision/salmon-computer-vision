@@ -10,7 +10,7 @@ import logging as log
 import pandas as pd
 
 log.basicConfig()
-log.getLogger().setLevel(logging.INFO)
+log.getLogger().setLevel(log.INFO)
 
 ### Required:
 # Datumaro
