@@ -9,8 +9,8 @@ import logging as log
 
 import pandas as pd
 
-logging.basicConfig()
-logging.getLogger().setLevel(logging.INFO)
+log.basicConfig()
+log.getLogger().setLevel(logging.INFO)
 
 ### Required:
 # Datumaro
