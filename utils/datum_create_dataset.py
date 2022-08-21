@@ -24,7 +24,8 @@ class VidDataset:
     PREFIX_CVAT = 'cvat_'
     XML_ANNOTATIONS = 'annotations.xml'
     XML_DEFAULT = 'default.xml'
-    dataset = None
+    vid_dataset = None
+    cvat_dataset = None
 
     def __init__(self, name: str, vid_path: str, proj_path: str, anno_folder: str):
         self.proj_path = proj_path
@@ -53,7 +54,7 @@ class VidDataset:
         self._import_image_dir(dest_path)
 
     def _import_image_dir(self, dest_path: str):
-        self.dataset = dm.Dataset.import_from(
+        self.vid_dataset = dm.Dataset.import_from(
                 dest_path,
                 "image_dir"
                 )
@@ -65,15 +66,17 @@ class VidDataset:
 
         # Rename to the default, so the annotations can be matched with the video frames
         os.rename(osp.join(dest_path, self.XML_ANNOTATIONS), osp.join(dest_path, self.XML_DEFAULT))
-        self.dataset.import_from(dest_path, "cvat")
+        self.cvat_dataset.import_from(dest_path, "cvat")
 
     def export_datum(self, name: str, overwrite=False):
         dest_path = osp.join(self.proj_path, name)
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping {dest_path}")
             return
+
         log.info(f"Exporting as datumaro to {dest_path}")
-        self.dataset.export(dest_path, 'datumaro', save_images=True)
+        dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
+        dataset.export(dest_path, 'datumaro', save_images=True)
 
 def main(args):
     df = pd.read_csv(args.csv_vids)
