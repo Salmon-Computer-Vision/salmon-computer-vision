@@ -47,7 +47,7 @@ class VidDataset:
 
     def export_datum(self, name: str):
         dest_path = osp.join(self.proj_path, name)
-        self.dataset.export(dest_path, 'datumaro')
+        self.dataset.export(dest_path, 'datumaro', save_images=True)
 
 def main(args):
     df = pd.read_csv(args.csv_vids)
