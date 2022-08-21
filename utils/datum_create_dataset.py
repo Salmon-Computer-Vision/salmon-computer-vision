@@ -9,6 +9,9 @@ import logging as log
 
 import pandas as pd
 
+logging.basicConfig()
+logging.getLogger().setLevel(logging.INFO)
+
 ### Required:
 # Datumaro
 # unzip
@@ -46,6 +49,7 @@ class VidDataset:
         self.dataset.import_from(dest_path, "cvat")
 
     def export_datum(self, name: str):
+        log.info("Exporting to datumaro...")
         dest_path = osp.join(self.proj_path, name)
         self.dataset.export(dest_path, 'datumaro', save_images=True)
 
