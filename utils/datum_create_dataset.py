@@ -60,7 +60,7 @@ class VidDataset:
         subprocess.run(['unzip', '-o', '-d', dest_path, anno_zip_path])
 
         # Rename to the default, so the annotations can be matched with the video frames
-        os.rename(osp.join(anno_zip_path, self.XML_ANNOTATIONS), osp.join(anno_zip_path, self.XML_DEFAULT))
+        os.rename(osp.join(dest_path, self.XML_ANNOTATIONS), osp.join(dest_path, self.XML_DEFAULT))
         self.dataset.import_from(dest_path, "cvat")
 
     def export_datum(self, name: str, overwrite=False):
