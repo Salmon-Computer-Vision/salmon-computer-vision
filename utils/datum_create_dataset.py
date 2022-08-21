@@ -26,8 +26,8 @@ class VidDataset:
     XML_DEFAULT = 'default.xml'
     dataset = None
 
-    def __init__(self, vid_path: str, proj_path: str, anno_folder: str):
-        self.extract_frames(vid_path)
+    def __init__(self, name: str, vid_path: str, proj_path: str, anno_folder: str):
+        self.extract_frames(name, vid_path)
 
         self.proj_path = proj_path
         self.anno_folder = anno_folder
@@ -76,8 +76,8 @@ def main(args):
     os.makedirs(args.anno_dir, exist_ok=True)
     os.makedirs(args.proj_path, exist_ok=True)
     for _, row in df.iterrows():
-        vid_data = VidDataset(row.vid_path, args.proj_path, args.anno_dir)
         name = osp.splitext(osp.basename(row.anno_path))[0]
+        vid_data = VidDataset(name, row.vid_path, args.proj_path, args.anno_dir)
         vid_data.import_zipped_anno(name, row.anno_path)
         vid_data.export_datum(name)
 
