@@ -33,7 +33,7 @@ class VidDataset:
     def extract_frames(self, vid_path: str):
         # Extract frames to the project folder
         #dest_path = osp.join(self.proj_path, self.PREFIX_VID + name)
-        log.info("Importing video...")
+        log.info(f"Importing video {vid_path}")
 
         self.dataset = dm.Dataset.import_from(
             vid_path,
