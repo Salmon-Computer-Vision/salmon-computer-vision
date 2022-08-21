@@ -27,10 +27,10 @@ class VidDataset:
     dataset = None
 
     def __init__(self, name: str, vid_path: str, proj_path: str, anno_folder: str):
-        self.extract_frames(name, vid_path)
-
         self.proj_path = proj_path
         self.anno_folder = anno_folder
+
+        self.extract_frames(name, vid_path)
 
     def extract_frames(self, name: str, vid_path: str, overwrite=False):
         # Extract frames to the project folder
