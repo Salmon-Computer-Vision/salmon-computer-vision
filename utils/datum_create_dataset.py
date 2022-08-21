@@ -22,6 +22,8 @@ class VidDataset:
     DATUM = 'datum'
     PREFIX_VID = 'vid_'
     PREFIX_CVAT = 'cvat_'
+    XML_ANNOTATIONS = 'annotations.xml'
+    XML_DEFAULT = 'default.xml'
     dataset = None
 
     def __init__(self, vid_path: str, proj_path: str, anno_folder: str):
@@ -30,24 +32,31 @@ class VidDataset:
         self.proj_path = proj_path
         self.anno_folder = anno_folder
 
-    def extract_frames(self, vid_path: str):
+    def extract_frames(self, name: str, vid_path: str):
         # Extract frames to the project folder
-        #dest_path = osp.join(self.proj_path, self.PREFIX_VID + name)
-        log.info(f"Importing video {vid_path}")
+        dest_path = osp.join(self.anno_folder, self.PREFIX_VID + name)
+        log.info(f"Extracting frames {vid_path}")
 
-        self.dataset = dm.Dataset.import_from(
+        vid_data = dm.Dataset.import_from(
             vid_path,
             "video_frames",
             name_pattern='frame_%06d',
         )
 
-        #vid_data.export(format="image_dir", save_dir=dest_path, image_ext=args.image_ext)
+        vid_data.export(format="image_dir", save_dir=dest_path, image_ext='.jpg')
+
+        self.dataset = dm.Dataset.import_from(
+                dest_path,
+                "image_dir"
+                )
 
     def import_zipped_anno(self, name: str, anno_zip_path: str):
         dest_path = osp.join(self.anno_folder, self.PREFIX_CVAT + name)
         log.info("Unzipping and importing CVAT...")
         subprocess.run(['unzip', '-o', '-d', dest_path, anno_zip_path])
 
+        # Rename to the default, so the annotations can be matched with the video frames
+        os.rename(osp.join(anno_zip_path, XML_ANNOTATIONS), osp.join(anno_zip_path, XML_DEFAULT))
         self.dataset.import_from(dest_path, "cvat")
 
     def export_datum(self, name: str, overwrite=False):
