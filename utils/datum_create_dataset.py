@@ -5,6 +5,7 @@ import os.path as osp
 import subprocess
 import argparse
 import logging as log
+from multiprocessing import Pool
 
 import pandas as pd
 
@@ -79,15 +80,24 @@ class VidDataset:
         dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
         dataset.export(dest_path, 'datumaro', save_images=True)
 
+def export_vid(row):
+    name = osp.splitext(osp.basename(row.anno_path))[0]
+    vid_data = VidDataset(name, row.vid_path, args.proj_path, args.anno_dir)
+    vid_data.import_zipped_anno(name, row.anno_path)
+    vid_data.export_datum(name)
+
 def main(args):
     df = pd.read_csv(args.csv_vids)
     os.makedirs(args.anno_dir, exist_ok=True)
     os.makedirs(args.proj_path, exist_ok=True)
-    for _, row in df.iterrows():
-        name = osp.splitext(osp.basename(row.anno_path))[0]
-        vid_data = VidDataset(name, row.vid_path, args.proj_path, args.anno_dir)
-        vid_data.import_zipped_anno(name, row.anno_path)
-        vid_data.export_datum(name)
+
+    jobs_pool = Pool(int(args.jobs))
+    _, rows = df.iterrows()
+
+    jobs_pool.map(export_vid, rows)
+
+    jobs_pool.close()
+    jobs_pool.join()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Combine videos and annotations and exports them into a Datumaro project.')
@@ -95,6 +105,7 @@ if __name__ == '__main__':
     parser.add_argument('csv_vids', help='CSV file of video and annotation .zip filepaths. Must have the columns "vid_path" and "anno_path"')
     parser.add_argument('--anno-dir', default='annos', help='Annotations destination folder')
     parser.add_argument('--proj-path', default='datum_proj', help='Datumaro project destination folder')
+    parser.add_argument('-j', '--jobs', default='4', help='Number of jobs to run')
     parser.set_defaults(func=main)
 
     args = parser.parse_args()
