@@ -104,12 +104,14 @@ class VidDataset:
         self._transform(name, dest_path)
 
     def export_mot(self, name: str, overwrite=False):
+        exp_format = 'mot_seq_gt'
         dest_path = osp.join(self.mot_path, name)
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping export {dest_path}")
             return
 
-        self.dataset.export(dest_path, 'mot_seq_gt', save_images=True)
+        log.info(f"Exporting as {exp_format} to {dest_path}")
+        self.dataset.export(dest_path, exp_format, save_images=True)
 
 def export_vid(row_tuple):
     row = row_tuple[1]
