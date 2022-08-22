@@ -15,6 +15,7 @@ import pandas as pd
 
 import datumaro as dm
 from datumaro.plugins.transforms import Rename
+from datumaro.components.opreations import IntersectMerge
 
 log.basicConfig(
         format='%(asctime)s %(levelname)-8s %(message)s',
@@ -92,7 +93,8 @@ class VidDataset:
 
     def export_datum(self, name: str, overwrite=False):
         dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
-        self.dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
+        #self.dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
+        self.dataset = IntersectMerge()([self.vid_dataset, self.cvat_dataset])
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping datum export {dest_path}")
             self._transform(name, dest_path)
