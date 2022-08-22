@@ -34,7 +34,7 @@ class VidDataset:
 
     def __init__(self, name: str, vid_path: str, args):
         self.proj_path = args.proj_path
-        self.anno_folder = args.anno_folder
+        self.anno_path = args.anno_path
         self.transform_path = args.transform_path
         self.mot_path = args.mot_path
 
@@ -42,7 +42,7 @@ class VidDataset:
 
     def extract_frames(self, name: str, vid_path: str, overwrite=False):
         # Extract frames to the project folder
-        dest_path = osp.join(self.anno_folder, PREFIX_VID + name)
+        dest_path = osp.join(self.anno_path, PREFIX_VID + name)
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skip extracting {dest_path}")
             self._import_image_dir(dest_path)
@@ -67,7 +67,7 @@ class VidDataset:
                 )
 
     def import_zipped_anno(self, name: str, anno_zip_path: str, overwrite=False):
-        dest_path = osp.join(self.anno_folder, PREFIX_CVAT + name)
+        dest_path = osp.join(self.anno_path, PREFIX_CVAT + name)
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping unzip {dest_path}")
             self.cvat_dataset = dm.Dataset.import_from(dest_path, "cvat")
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Combine videos and annotations and exports them into a Datumaro project.')
 
     parser.add_argument('csv_vids', help='CSV file of video and annotation .zip filepaths. Must have the columns "vid_path" and "anno_path"')
-    parser.add_argument('--anno-dir', default='annos', help='Annotations destination folder. Default: annos')
+    parser.add_argument('--anno-path', default='annos', help='Annotations destination folder. Default: annos')
     parser.add_argument('--proj-path', default='datum_proj', help='Datumaro project destination folder. Default: datum_proj')
     parser.add_argument('--transform-path', default='datum_proj_transform', help='Datumaro project transform destination folder. Default: datum_proj_transform')
     parser.add_argument('--mot-path', default='export_mot', help='MOT path to export to. Default: export_mot')
