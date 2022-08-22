@@ -92,7 +92,7 @@ class VidDataset:
 
     def export_datum(self, name: str, overwrite=False):
         dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
-        self.dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
+        self.dataset = sorted(dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset))
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping datum export {dest_path}")
             self._transform(name, dest_path)
