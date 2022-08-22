@@ -32,10 +32,11 @@ class VidDataset:
     cvat_dataset = None
     dataset = None
 
-    def __init__(self, name: str, vid_path: str, proj_path: str, anno_folder: str, transform_path: str):
-        self.proj_path = proj_path
-        self.anno_folder = anno_folder
-        self.transform_path = transform_path
+    def __init__(self, name: str, vid_path: str, args):
+        self.proj_path = args.proj_path
+        self.anno_folder = args.anno_folder
+        self.transform_path = args.transform_path
+        self.mot_path = args.mot_path
 
         self.extract_frames(name, vid_path)
 
@@ -93,7 +94,7 @@ class VidDataset:
         dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
         self.dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
         if not overwrite and osp.exists(dest_path):
-            log.info(f"Exists. Skipping export {dest_path}")
+            log.info(f"Exists. Skipping datum export {dest_path}")
             self._transform(name, dest_path)
             return
 
@@ -103,20 +104,27 @@ class VidDataset:
         self._transform(name, dest_path)
 
     def export_mot(self, name: str, overwrite=False):
-        dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
+        dest_path = osp.join(self.mot_path, name)
+        if not overwrite and osp.exists(dest_path):
+            log.info(f"Exists. Skipping export {dest_path}")
+            return
+
+        self.dataset.export(dest_path, 'mot_seq_gt', save_images=True)
 
 def export_vid(row_tuple):
     row = row_tuple[1]
     name = osp.splitext(osp.basename(row.anno_path))[0]
-    vid_data = VidDataset(name, row.vid_path, args.proj_path, args.anno_dir, args.transform_path)
+    vid_data = VidDataset(name, row.vid_path, args)
     vid_data.import_zipped_anno(name, row.anno_path)
     vid_data.export_datum(name)
+    vid_data.export_mot(name)
 
 def main(args):
     df = pd.read_csv(args.csv_vids)
     os.makedirs(args.anno_dir, exist_ok=True)
     os.makedirs(args.proj_path, exist_ok=True)
     os.makedirs(args.transform_path, exist_ok=True)
+    os.makedirs(args.export_mot, exist_ok=True)
 
     jobs_pool = Pool(int(args.jobs))
     row_tuples = df.iterrows()
@@ -133,6 +141,7 @@ if __name__ == '__main__':
     parser.add_argument('--anno-dir', default='annos', help='Annotations destination folder. Default: annos')
     parser.add_argument('--proj-path', default='datum_proj', help='Datumaro project destination folder. Default: datum_proj')
     parser.add_argument('--transform-path', default='datum_proj_transform', help='Datumaro project transform destination folder. Default: datum_proj_transform')
+    parser.add_argument('--mot-path', default='export_mot', help='MOT path to export to. Default: export_mot')
     parser.add_argument('-j', '--jobs', default='4', help='Number of jobs to run. Default: 4')
     parser.set_defaults(func=main)
 
