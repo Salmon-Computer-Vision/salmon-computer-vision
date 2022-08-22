@@ -121,7 +121,7 @@ def export_vid(row_tuple):
 
 def main(args):
     df = pd.read_csv(args.csv_vids)
-    os.makedirs(args.anno_dir, exist_ok=True)
+    os.makedirs(args.anno_path, exist_ok=True)
     os.makedirs(args.proj_path, exist_ok=True)
     os.makedirs(args.transform_path, exist_ok=True)
     os.makedirs(args.mot_path, exist_ok=True)
