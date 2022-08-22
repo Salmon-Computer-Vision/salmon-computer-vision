@@ -15,7 +15,7 @@ import pandas as pd
 
 import datumaro as dm
 from datumaro.plugins.transforms import Rename
-from datumaro.components.opreations import IntersectMerge
+from datumaro.components.operations import IntersectMerge
 
 log.basicConfig(
         format='%(asctime)s %(levelname)-8s %(message)s',
