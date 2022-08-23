@@ -33,7 +33,8 @@ def main(args):
         gt_txt = osp.join(seq_root, seq, 'gt', 'gt.txt')
         gt = np.loadtxt(gt_txt, dtype=np.float64, delimiter=',')
 
-        seq_label_root = osp.join(label_root, seq, 'img1')
+        #seq_label_root = osp.join(label_root, seq, 'img1')
+        seq_label_root = osp.join(label_root, seq, 'labels_with_ids')
         mkdirs(seq_label_root)
 
         for fid, tid, x, y, w, h, mark, label, _ in gt:
@@ -47,7 +48,7 @@ def main(args):
             x += w / 2
             y += h / 2
             label_fpath = osp.join(seq_label_root, '{:06d}.txt'.format(fid))
-            label_str = '{} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(
+            label_str = '{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(
                     label, tid_curr, x / seq_width, y / seq_height, w / seq_width, h / seq_height)
             with open(label_fpath, 'a') as f:
                 f.write(label_str)
