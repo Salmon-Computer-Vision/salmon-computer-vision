@@ -182,7 +182,7 @@ def main(args):
     jobs_pool.join()
 
 if __name__ == '__main__':
-    configparser.ConfigParser.optionxform = lambda option: option
+    configparser.ConfigParser.optionxform = str
 
     parser = argparse.ArgumentParser(description='Combine videos and annotations and exports them into a Datumaro project.')
 
