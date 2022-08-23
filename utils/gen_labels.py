@@ -27,8 +27,8 @@ def main(args):
     for seq in seqs:
         seq_dict = benedict.from_ini(osp.join(seq_root, seq, 'seqinfo.ini'))['Sequence']
 
-        seq_width = int(seq_dict['imWidth'])
-        seq_height = int(seq_dict['imHeight'])
+        seq_width = int(seq_dict['imwidth'])
+        seq_height = int(seq_dict['imheight'])
 
         gt_txt = osp.join(seq_root, seq, 'gt', 'gt.txt')
         gt = np.loadtxt(gt_txt, dtype=np.float64, delimiter=',')
