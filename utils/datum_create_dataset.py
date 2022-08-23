@@ -10,8 +10,11 @@ import subprocess
 import argparse
 import logging as log
 from multiprocessing import Pool
+from benedict import benedict
 
 import pandas as pd
+
+import cv2
 
 import datumaro as dm
 from datumaro.plugins.transforms import Rename
@@ -29,9 +32,18 @@ XML_ANNOTATIONS = 'annotations.xml'
 XML_DEFAULT = 'default.xml'
 
 class VidDataset:
+    # Datumaro datasets
     vid_dataset = None
     cvat_dataset = None
     dataset = None
+
+    # seqinfo.ini
+    imDir = 'img1'
+    frameRate = -1
+    seqLength = -1
+    imWidth = -1
+    imHeight = -1
+    imExt = '.jpg'
 
     def __init__(self, name: str, vid_path: str, args):
         self.proj_path = args.proj_path
@@ -42,8 +54,15 @@ class VidDataset:
         self.extract_frames(name, vid_path)
 
     def extract_frames(self, name: str, vid_path: str, overwrite=False):
+        # Get data for the seqinfo.ini
+        video = cv2.VideoCapture(vid_path)
+        self.frameRate = video.get(cv2.CAP_PROP_FPS)
+        self.imWidth = video.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.imHeight = video.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
         # Extract frames to the project folder
         dest_path = osp.join(self.anno_path, PREFIX_VID + name)
+
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skip extracting {dest_path}")
             self._import_image_dir(dest_path)
@@ -57,11 +76,14 @@ class VidDataset:
             name_pattern='frame_%06d',
         )
 
-        vid_data.export(format="image_dir", save_dir=dest_path, image_ext='.jpg')
+        vid_data.export(format="image_dir", save_dir=dest_path, image_ext=self.imExt)
 
         self._import_image_dir(dest_path)
 
     def _import_image_dir(self, dest_path: str):
+        _, _, files = next(os.walk(dest_path))
+        self.seqLength = len(files)
+
         self.vid_dataset = dm.Dataset.import_from(
                 dest_path,
                 "image_dir"
@@ -114,6 +136,26 @@ class VidDataset:
 
         log.info(f"Exporting as {exp_format} to {dest_path}")
         self.dataset.export(dest_path, exp_format, save_images=True)
+        
+        self._gen_seqinfo(name, dest_path)
+
+    def _gen_seqinfo(self, name: str, dest_path: str):
+        # Generate seqinfo.ini file
+        seq_path = osp.join(dest_path, 'seqinfo.ini')
+
+        d = benedict()
+        d['Sequence'] = {}
+        seq = d['Sequence']
+
+        seq['name'] = name
+        seq['imDir'] = self.imDir
+        seq['frameRate'] = self.frameRate
+        seq['seqLength'] = self.seqLength
+        seq['imWidth'] = self.imWidth
+        seq['imHeight'] = self.imHeight
+        seq['imExt'] = self.imExt
+
+        d.to_ini(filepath=seq_path)
 
 def export_vid(row_tuple):
     row = row_tuple[1]
