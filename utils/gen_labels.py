@@ -58,7 +58,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate JDE labels from MOT Seq GT')
 
     parser.add_argument('seq_root', help='Source MOT Sequences')
-    parser.add_argument('--label_root', default='jde_labels', help='Destination JDE label folder')
+    parser.add_argument('--label-root', default='jde_labels', help='Destination JDE label folder')
     parser.set_defaults(func=main)
 
     args = parser.parse_args()
