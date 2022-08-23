@@ -182,6 +182,8 @@ def main(args):
     jobs_pool.join()
 
 if __name__ == '__main__':
+    configparser.ConfigParser.optionxform = str
+
     parser = argparse.ArgumentParser(description='Combine videos and annotations and exports them into a Datumaro project.')
 
     parser.add_argument('csv_vids', help='CSV file of video and annotation .zip filepaths. Must have the columns "vid_path" and "anno_path"')
