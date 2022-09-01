@@ -32,6 +32,11 @@ PREFIX_CVAT = 'cvat_'
 XML_ANNOTATIONS = 'annotations.xml'
 XML_DEFAULT = 'default.xml'
 
+DUP_LABELS_MAPPING = {
+        'White Fish': 'Whitefish',
+        'Bull Trout': 'Bull'
+        }
+
 class VidDataset:
     # Datumaro datasets
     vid_dataset = None
@@ -158,20 +163,33 @@ class VidDataset:
 
         d.to_ini(filepath=seq_path)
 
+def filename_to_name(filename):
+    return filename.replace(' ', '_')
+
 def export_vid(row_tuple):
     row = row_tuple[1]
-    name = osp.splitext(osp.basename(row.anno_path))[0]
+    name = filename_to_name(row.filename)
     vid_data = VidDataset(name, row.vid_path, args)
     vid_data.import_zipped_anno(name, row.anno_path)
     vid_data.export_datum(name)
     vid_data.export_mot(name)
 
-def merge_labels(row_tuples, transform_path):
+def merge_dataset(row_tuples, transform_path):
     """
-    Merge the inconsistent labels in the transformed dataset
+    Merge the separated video datasets into one to deal with inconsistent labels
     """
-    datasets = [row.filename for _, row in row_tuples]
-    dataset_merged = IntersectMerge()([self.vid_dataset, self.cvat_dataset])
+    datasets_paths = [
+            osp.join(transform_path, filename_to_name(row.filename).lower())
+            for _, row in row_tuples
+            ]
+    datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_path]
+    dataset_merged = IntersectMerge()(datasets)
+
+    # Fix duplicate labels
+    dataset_merged.transform(DUP_LABELS_MAPPING)
+
+    dataset_merged.export(format='datumaro', save_dir=f'{transform_path.strip("/")}_merged')
+
 
 """
 Split the merged dataset into individual videos again
