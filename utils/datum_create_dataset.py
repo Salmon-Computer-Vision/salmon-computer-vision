@@ -166,6 +166,17 @@ def export_vid(row_tuple):
     vid_data.export_datum(name)
     vid_data.export_mot(name)
 
+def merge_labels(row_tuples, transform_path):
+    """
+    Merge the inconsistent labels in the transformed dataset
+    """
+    datasets = [row.filename for _, row in row_tuples]
+    dataset_merged = IntersectMerge()([self.vid_dataset, self.cvat_dataset])
+
+"""
+Split the merged dataset into individual videos again
+"""
+
 def main(args):
     df = pd.read_csv(args.csv_vids)
     os.makedirs(args.anno_path, exist_ok=True)
@@ -186,7 +197,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Combine videos and annotations and exports them into a Datumaro project.')
 
-    parser.add_argument('csv_vids', help='CSV file of video and annotation .zip filepaths. Must have the columns "vid_path" and "anno_path"')
+    parser.add_argument('csv_vids', help='CSV file of video and annotation .zip filepaths. Must have the columns `filename`, `vid_path`, and `anno_path`. `filename` must be a unique index.')
     parser.add_argument('--anno-path', default='annos', help='Annotations destination folder. Default: annos')
     parser.add_argument('--proj-path', default='datum_proj', help='Datumaro project destination folder. Default: datum_proj')
     parser.add_argument('--transform-path', default='datum_proj_transform', help='Datumaro project transform destination folder. Default: datum_proj_transform')
