@@ -183,7 +183,6 @@ def merge_dataset(row_tuples, transform_path: str):
     dest_path = f'{temp_path}_merged'
 
     datasets_paths = [osp.join(transform_path, filename_to_name(row.filename).lower()) for _, row in row_tuples]
-    print(datasets_paths)
     datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
     dataset_merged = IntersectMerge()(datasets)
 
