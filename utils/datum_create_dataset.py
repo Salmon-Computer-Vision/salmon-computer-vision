@@ -178,14 +178,12 @@ def merge_dataset(row_tuples, transform_path: str):
     """
     Merge the separated video datasets into one to deal with inconsistent labels
     """
-    log.info('Merging dataset')
+    log.info('Merging transformed dataset...')
     temp_path = transform_path[:-1] if transform_path.endswith('/') else transform_path
     dest_path = f'{temp_path}_merged'
 
-    datasets_paths = [
-            osp.join(transform_path, filename_to_name(row.filename).lower())
-            for _, row in row_tuples
-            ]
+    datasets_paths = [osp.join(transform_path, filename_to_name(row.filename).lower()) for _, row in row_tuples]
+    print(datasets_paths)
     datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
     dataset_merged = IntersectMerge()(datasets)
 
@@ -214,7 +212,7 @@ def main(args):
     jobs_pool.close()
     jobs_pool.join()
 
-    merge_dataset(row_tuples, args.transform_path)
+    merge_dataset(df.iterrows(), args.transform_path)
 
 if __name__ == '__main__':
     configparser.ConfigParser.optionxform = str
