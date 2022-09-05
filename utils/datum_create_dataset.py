@@ -190,7 +190,7 @@ def merge_dataset(row_tuples, transform_path: str):
     dataset_merged = IntersectMerge()(datasets)
 
     # Fix duplicate labels
-    dataset_merged.transform('remap_labels', DUP_LABELS_MAPPING)
+    dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
 
     dataset_merged.export(format='datumaro', save_dir=dest_path)
 
