@@ -186,7 +186,7 @@ def merge_dataset(row_tuples, transform_path: str):
             osp.join(transform_path, filename_to_name(row.filename).lower())
             for _, row in row_tuples
             ]
-    datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_path]
+    datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
     dataset_merged = IntersectMerge()(datasets)
 
     # Fix duplicate labels
