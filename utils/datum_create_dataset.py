@@ -174,10 +174,14 @@ def export_vid(row_tuple):
     vid_data.export_datum(name)
     vid_data.export_mot(name)
 
-def merge_dataset(row_tuples, transform_path):
+def merge_dataset(row_tuples, transform_path: str):
     """
     Merge the separated video datasets into one to deal with inconsistent labels
     """
+    log.info('Merging dataset')
+    temp_path = transform_path[:-1] if transform_path.endswith('/') else transform_path
+    dest_path = f'{temp_path}_merged'
+
     datasets_paths = [
             osp.join(transform_path, filename_to_name(row.filename).lower())
             for _, row in row_tuples
@@ -188,7 +192,7 @@ def merge_dataset(row_tuples, transform_path):
     # Fix duplicate labels
     dataset_merged.transform(DUP_LABELS_MAPPING)
 
-    dataset_merged.export(format='datumaro', save_dir=f'{transform_path.strip("/")}_merged')
+    dataset_merged.export(format='datumaro', save_dir=dest_path)
 
 
 """
@@ -209,6 +213,8 @@ def main(args):
 
     jobs_pool.close()
     jobs_pool.join()
+
+    merge_dataset(row_tuples, args.transform_path)
 
 if __name__ == '__main__':
     configparser.ConfigParser.optionxform = str
