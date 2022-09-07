@@ -204,11 +204,11 @@ class MergeExport:
     def _split_vid_job(row_tuple):
         # Requires copying the merged dataset `jobs` number of times
         # TODO: If necessary to lower memory costs, do half of the jobs sequentially
-        _, row, dataset_merged, dest_folder = row_tuple
+        _, row, merged_path, dest_folder = row_tuple
         name = filename_to_name(row.filename)
         dest_path = osp.join(dest_folder, name.lower())
 
-        merged_copy = dm.Dataset.from_extractors(dataset_merged)
+        merged_copy = dm.Dataset.import_from(merged_path)
         merged_copy.select(lambda item: item.id.startswith(name))
 
         # Convert back to normal image frame filenames
@@ -231,7 +231,7 @@ class MergeExport:
         jobs_pool = Pool(self.jobs)
 
         # Read-only
-        row_merged_tuples = [tup + (self.dataset_merged, dest_folder) for tup in self.df.iterrows()]
+        row_merged_tuples = [tup + (merged_path, dest_folder) for tup in self.df.iterrows()]
         jobs_pool.map(self._split_vid_job, row_merged_tuples)
 
         jobs_pool.close()
