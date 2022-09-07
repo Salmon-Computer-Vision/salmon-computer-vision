@@ -12,6 +12,7 @@ import logging as log
 from multiprocessing import Pool
 import configparser
 from benedict import benedict
+import shutil
 
 import pandas as pd
 
@@ -31,6 +32,7 @@ PREFIX_VID = 'vid_'
 PREFIX_CVAT = 'cvat_'
 XML_ANNOTATIONS = 'annotations.xml'
 XML_DEFAULT = 'default.xml'
+SEQINFO = 'seqinfo.ini'
 
 DUP_LABELS_MAPPING = {
         'White Fish': 'Whitefish',
@@ -55,7 +57,7 @@ class VidDataset:
         self.proj_path = args.proj_path
         self.anno_path = args.anno_path
         self.transform_path = args.transform_path
-        self.mot_path = args.mot_path
+        self.ini_path = f'{remove_path_end(self.transform_path)}_inis'
 
         self.extract_frames(name, vid_path)
 
@@ -133,21 +135,10 @@ class VidDataset:
 
         self._transform(name, dest_path)
 
-    def export_mot(self, name: str, overwrite=False):
-        exp_format = 'mot_seq_gt'
-        dest_path = osp.join(self.mot_path, name)
-        if not overwrite and osp.exists(dest_path):
-            log.info(f"Exists. Skipping export {dest_path}")
-            return
-
-        log.info(f"Exporting as {exp_format} to {dest_path}")
-        self.dataset.export(dest_path, exp_format, save_images=True)
-        
-        self._gen_seqinfo(name, dest_path)
-
-    def _gen_seqinfo(self, name: str, dest_path: str):
+    def gen_seqinfo(self, name: str):
         # Generate seqinfo.ini file
-        seq_path = osp.join(dest_path, 'seqinfo.ini')
+        seq_path = osp.join(self.ini_path, name, SEQINFO)
+        log.info(f'Generating seqinfo.ini file to {seq_path}')
 
         d = benedict()
         d['Sequence'] = {}
@@ -166,63 +157,116 @@ class VidDataset:
 def filename_to_name(filename):
     return filename.replace(' ', '_')
 
+def remove_path_end(path: str):
+    return path[:-1] if path.endswith('/') else path
+
 def export_vid(row_tuple):
     row = row_tuple[1]
     name = filename_to_name(row.filename)
     vid_data = VidDataset(name, row.vid_path, args)
     vid_data.import_zipped_anno(name, row.anno_path)
     vid_data.export_datum(name)
-    vid_data.export_mot(name)
+    vid_data.gen_seqinfo(name)
+    #vid_data.export_mot(name)
 
-def merge_dataset(row_tuples, dest_path, transform_path: str):
-    """
-    Merge the separated video datasets into one to deal with inconsistent labels
-    """
-    log.info('Merging transformed dataset...')
+class MergeExport:
+    dataset_merged = None
 
-    datasets_paths = [osp.abspath(osp.join(transform_path, filename_to_name(row.filename).lower())) for _, row in row_tuples]
-    datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
-    dataset_merged = IntersectMerge()(datasets)
+    def __init__(self, name_df: pd.DataFrame, src_path: str, export_path: str, jobs: int):
+        self.df = name_df
+        self.src_path = src_path
+        self.ini_path = f'{remove_path_end(src_path)}_inis'
+        self.merge_path = f'{remove_path_end(src_path)}_merged'
+        self.vid_path = f'{self.merge_path}_vids'
+        self.export_path = export_path
+        self.jobs = jobs
 
-    # Fix duplicate labels
-    dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
+    def merge_dataset(self, overwrite=False):
+        """
+        Merge the separated video datasets into one to deal with inconsistent labels
+        """
+        if not overwrite and osp.exists(self.merge_path):
+            log.info(f"Exists. Skipping merge {self.merge_path}")
+            return
+        log.info('Merging transformed dataset...')
+        dest_path = osp.abspath(self.merge_path)
 
-    dataset_merged.export(format='datumaro', save_dir=dest_path)
+        datasets_paths = [osp.abspath(osp.join(self.src_path, filename_to_name(row.filename).lower())) for _, row in self.df.iterrows()]
+        datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
+        self.dataset_merged = IntersectMerge()(datasets)
 
-def split_vid_job(row_tuple):
-    # Requires loading the merged dataset `jobs` number of times
-    # TODO: If necessary, do half of the jobs sequentially to lower memory costs
-    _, row, merged_path, dest_folder = row_tuple
-    name = filename_to_name(row.filename)
-    dest_path = osp.join(dest_folder, name.lower())
+        # Fix duplicate labels
+        self.dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
 
-    merged_data = dm.Dataset.import_from(merged_path, "datumaro")
-    merged_data.select(lambda item: item.id.startswith(name))
-    merged_data.export(save_dir=dest_path, format='datumaro')
+        self.dataset_merged.export(format='datumaro', save_dir=dest_path)
 
-def split_merged_dataset(row_tuples, merged_path: str, jobs: int):
-    """
-    Split the merged dataset into individual video frame datasets
-    """
-    log.info('Splitting merged dataset into individual video frame datasets...')
+    @staticmethod
+    def _split_vid_job(row_tuple):
+        # Requires copying the merged dataset `jobs` number of times
+        # TODO: If necessary to lower memory costs, do half of the jobs sequentially
+        _, row, dataset_merged, dest_folder = row_tuple
+        name = filename_to_name(row.filename)
+        dest_path = osp.join(dest_folder, name.lower())
 
-    jobs_pool = Pool(jobs)
+        merged_copy = dm.Dataset.from_extractors(dataset_merged)
+        merged_copy.select(lambda item: item.id.startswith(name))
 
-    temp_path = merged_path[:-1] if merged_path.endswith('/') else merged_path
-    dest_folder = osp.abspath(f'{temp_path}_vids')
+        # Convert back to normal image frame filenames
+        merged_copy.transform('rename', regex=f'|^{name}_||')
+        merged_copy.export(save_dir=dest_path, format='datumaro')
 
-    row_merged_tuples = [tup + (merged_path, dest_folder) for tup in row_tuples]
-    jobs_pool.map(split_vid_job, row_merged_tuples)
+    def split_merged_dataset(self, overwrite=False):
+        """
+        Split the merged dataset into individual video frame datasets
+        """
+        if not overwrite and osp.exists(self.vid_path):
+            log.info(f"Exists. Skipping split to {self.vid_path}")
+            return
 
-    jobs_pool.close()
-    jobs_pool.join()
+        merged_path = osp.abspath(self.merge_path)
+        dest_folder = osp.abspath(self.vid_path)
+
+        log.info('Splitting merged dataset into individual video frame datasets...')
+
+        jobs_pool = Pool(self.jobs)
+
+        # Read-only
+        row_merged_tuples = [tup + (self.dataset_merged, dest_folder) for tup in self.df.iterrows()]
+        jobs_pool.map(self._split_vid_job, row_merged_tuples)
+
+        jobs_pool.close()
+        jobs_pool.join()
+
+    @staticmethod
+    def _export_job(row_src_dest_tuple):
+        _, row, src_folder, export_path, ini_path = row_src_dest_tuple
+        name = filename_to_name(row.filename)
+        exp_format = 'mot_seq_gt'
+        src_path = osp.join(src_folder, name.lower())
+        dest_path = osp.join(export_path, name)
+
+        log.info(f"Exporting as {exp_format} to {dest_path}")
+        dataset = dm.Dataset.import_from(src_path, format='datumaro')
+        dataset.export(dest_path, exp_format, save_images=True)
+
+        shutil.copyfile(osp.join(ini_path, name, SEQINFO), osp.join(dest_path, SEQINFO))
+
+    def export_mot(self, overwrite=False):
+        if not overwrite and osp.exists(self.export_path):
+            log.info(f"Exists. Skipping export to {self.export_path}")
+            return
+        export_pool = Pool(self.jobs)
+        row_src_dest_tuples = [tup + (self.vid_path, self.export_path, self.ini_path) for tup in self.df.iterrows()]
+        export_pool.map(self._export_job, row_src_dest_tuples)
+        export_pool.close()
+        export_pool.join()
+
 
 def main(args):
     df = pd.read_csv(args.csv_vids)
     os.makedirs(args.anno_path, exist_ok=True)
     os.makedirs(args.proj_path, exist_ok=True)
     os.makedirs(args.transform_path, exist_ok=True)
-    os.makedirs(args.mot_path, exist_ok=True)
 
     jobs_pool = Pool(int(args.jobs))
     row_tuples = df.iterrows()
@@ -232,10 +276,16 @@ def main(args):
     jobs_pool.close()
     jobs_pool.join()
 
-    temp_path = args.transform_path[:-1] if args.transform_path.endswith('/') else args.transform_path
-    merged_path = osp.abspath(f'{temp_path}_merged')
-    merge_dataset(df.iterrows(), merged_path, args.transform_path)
-    split_merged_dataset(df.iterrows(), merged_path, int(args.jobs))
+    merge_exp = MergeExport(df, args.transform_path, args.mot_path, int(args.jobs))
+
+    # Merge and split inconsistent annotations and labels
+    merge_exp.merge_dataset()
+    merge_exp.split_merged_dataset()
+    #merge_dataset(df.iterrows(), merged_path, args.transform_path)
+    #split_merged_dataset(df.iterrows(), merged_path, int(args.jobs))
+
+    # Export to final dataset
+    merge_exp.export_mot()
 
 if __name__ == '__main__':
     configparser.ConfigParser.optionxform = str
