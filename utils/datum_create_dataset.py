@@ -174,15 +174,13 @@ def export_vid(row_tuple):
     vid_data.export_datum(name)
     vid_data.export_mot(name)
 
-def merge_dataset(row_tuples, transform_path: str):
+def merge_dataset(row_tuples, dest_path, transform_path: str):
     """
     Merge the separated video datasets into one to deal with inconsistent labels
     """
     log.info('Merging transformed dataset...')
-    temp_path = transform_path[:-1] if transform_path.endswith('/') else transform_path
-    dest_path = f'{temp_path}_merged'
 
-    datasets_paths = [osp.join(transform_path, filename_to_name(row.filename).lower()) for _, row in row_tuples]
+    datasets_paths = [osp.abspath(osp.join(transform_path, filename_to_name(row.filename).lower())) for _, row in row_tuples]
     datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
     dataset_merged = IntersectMerge()(datasets)
 
@@ -191,10 +189,33 @@ def merge_dataset(row_tuples, transform_path: str):
 
     dataset_merged.export(format='datumaro', save_dir=dest_path)
 
+def split_vid_job(row_tuple):
+    # Requires loading the merged dataset `jobs` number of times
+    # TODO: If necessary, do half of the jobs sequentially to lower memory costs
+    _, row, merged_path, dest_folder = row_tuple
+    name = filename_to_name(row.filename)
+    dest_path = osp.join(dest_folder, name.lower())
 
-"""
-Split the merged dataset into individual videos again
-"""
+    merged_data = dm.Dataset.import_from(merged_path, "datumaro")
+    merged_data.select(lambda item: item.id.startswith(name))
+    merged_data.export(save_dir=dest_path, format='datumaro')
+
+def split_merged_dataset(row_tuples, merged_path: str, jobs: int):
+    """
+    Split the merged dataset into individual video frame datasets
+    """
+    log.info('Splitting merged dataset into individual video frame datasets...')
+
+    jobs_pool = Pool(jobs)
+
+    temp_path = merged_path[:-1] if merged_path.endswith('/') else merged_path
+    dest_folder = osp.abspath(f'{temp_path}_vids')
+
+    row_merged_tuples = [tup + (merged_path, dest_folder) for tup in row_tuples]
+    jobs_pool.map(split_vid_job, row_merged_tuples)
+
+    jobs_pool.close()
+    jobs_pool.join()
 
 def main(args):
     df = pd.read_csv(args.csv_vids)
@@ -211,7 +232,10 @@ def main(args):
     jobs_pool.close()
     jobs_pool.join()
 
-    merge_dataset(df.iterrows(), args.transform_path)
+    temp_path = args.transform_path[:-1] if args.transform_path.endswith('/') else args.transform_path
+    merged_path = osp.abspath(f'{temp_path}_merged')
+    merge_dataset(df.iterrows(), merged_path, args.transform_path)
+    split_merged_dataset(df.iterrows(), merged_path, int(args.jobs))
 
 if __name__ == '__main__':
     configparser.ConfigParser.optionxform = str
