@@ -208,6 +208,10 @@ class MergeExport:
         name = filename_to_name(row.filename)
         dest_path = osp.join(dest_folder, name.lower())
 
+        if osp.exists(dest_path):
+            log.info(f"Exists. Skipping split to {self.vid_path}")
+            return
+
         merged_copy = dm.Dataset.import_from(merged_path)
         merged_copy.select(lambda item: item.id.startswith(name))
 
@@ -219,10 +223,6 @@ class MergeExport:
         """
         Split the merged dataset into individual video frame datasets
         """
-        if not overwrite and osp.exists(self.vid_path):
-            log.info(f"Exists. Skipping split to {self.vid_path}")
-            return
-
         merged_path = osp.abspath(self.merge_path)
         dest_folder = osp.abspath(self.vid_path)
 
