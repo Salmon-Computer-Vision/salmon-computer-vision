@@ -209,7 +209,7 @@ class MergeExport:
         dest_path = osp.join(dest_folder, name.lower())
 
         if osp.exists(dest_path):
-            log.info(f"Exists. Skipping split to {self.vid_path}")
+            log.info(f"Exists. Skipping split to {name}")
             return
 
         merged_copy = dm.Dataset.import_from(merged_path)
