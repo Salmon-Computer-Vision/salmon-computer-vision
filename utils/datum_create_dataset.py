@@ -183,22 +183,24 @@ class MergeExport:
         self.vid_path = f'{self.merge_path}_vids'
         self.export_path = export_path
         self.jobs = jobs
-        self.dataset_empty = dm.Dataset.import_from(EMPTY_PROJ_PATH, "datumaro")
+        self.dataset_empty = EMPTY_PROJ_PATH
 
+    @staticmethod
     def _merge_vid_job(row_tuple):
-        _, row, merged_path, dest_folder = row_tuple
+        _, row, src_path, dest_folder, dataset_empty_path = row_tuple
 
         name = filename_to_name(row.filename).lower()
         dest_path = osp.join(dest_folder, name.lower())
 
-        seq_path = osp.abspath(osp.join(self.src_path, name))
+        seq_path = osp.abspath(osp.join(src_path, name))
         data = dm.Dataset.import_from(seq_path, "datumaro")
-        self.dataset_merged = IntersectMerge()([data, self.dataset_empty])
+        dataset_empty = dm.Dataset.import_from(dataset_empty_path, "datumaro")
+        dataset_merged = IntersectMerge()([data, dataset_empty])
 
         # Fix duplicate labels
-        self.dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
+        dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
 
-        self.dataset_merged.export(format='datumaro', save_dir=dest_path)
+        dataset_merged.export(format='datumaro', save_dir=dest_path)
 
     def merge_dataset(self, overwrite=False):
         """
@@ -209,10 +211,12 @@ class MergeExport:
             return
         log.info('Merging transformed dataset...')
         dest_path = osp.abspath(self.merge_path)
+        src_path = osp.abspath(self.src_path)
+        dataset_empty = osp.abspath(self.dataset_empty)
 
         jobs_pool = Pool(self.jobs)
 
-        row_merged_tuples = [row + dest_path for _, row in self.df.iterrows()]
+        row_merged_tuples = [tup + (src_path, dest_path, dataset_empty) for tup in self.df.iterrows()]
         jobs_pool.map(self._merge_vid_job, row_merged_tuples)
 
         jobs_pool.close()
