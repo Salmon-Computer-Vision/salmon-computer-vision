@@ -34,6 +34,8 @@ XML_ANNOTATIONS = 'annotations.xml'
 XML_DEFAULT = 'default.xml'
 SEQINFO = 'seqinfo.ini'
 
+EMPTY_PROJ_PATH = 'empty_proj' # Path to empty proj with only correct labels
+
 DUP_LABELS_MAPPING = {
         'White Fish': 'Whitefish',
         'Bull Trout': 'Bull'
@@ -171,6 +173,7 @@ def export_vid(row_tuple):
 
 class MergeExport:
     dataset_merged = None
+    dataset_empty = None
 
     def __init__(self, name_df: pd.DataFrame, src_path: str, export_path: str, jobs: int):
         self.df = name_df
@@ -180,6 +183,22 @@ class MergeExport:
         self.vid_path = f'{self.merge_path}_vids'
         self.export_path = export_path
         self.jobs = jobs
+        self.dataset_empty = dm.Dataset.import_from(EMPTY_PROJ_PATH, "datumaro")
+
+    def _merge_vid_job(row_tuple):
+        _, row, merged_path, dest_folder = row_tuple
+
+        name = filename_to_name(row.filename).lower()
+        dest_path = osp.join(dest_folder, name.lower())
+
+        seq_path = osp.abspath(osp.join(self.src_path, name))
+        data = dm.Dataset.import_from(seq_path, "datumaro")
+        self.dataset_merged = IntersectMerge()([data, self.dataset_empty])
+
+        # Fix duplicate labels
+        self.dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
+
+        self.dataset_merged.export(format='datumaro', save_dir=dest_path)
 
     def merge_dataset(self, overwrite=False):
         """
@@ -191,14 +210,20 @@ class MergeExport:
         log.info('Merging transformed dataset...')
         dest_path = osp.abspath(self.merge_path)
 
-        datasets_paths = [osp.abspath(osp.join(self.src_path, filename_to_name(row.filename).lower())) for _, row in self.df.iterrows()]
-        datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
-        self.dataset_merged = IntersectMerge()(datasets)
+        jobs_pool = Pool(self.jobs)
 
-        # Fix duplicate labels
-        self.dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
+        row_merged_tuples = [row + dest_path for _, row in self.df.iterrows()]
+        jobs_pool.map(self._merge_vid_job, row_merged_tuples)
 
-        self.dataset_merged.export(format='datumaro', save_dir=dest_path)
+        jobs_pool.close()
+        jobs_pool.join()
+        #datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
+        #self.dataset_merged = IntersectMerge()(datasets)
+
+        ## Fix duplicate labels
+        #self.dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
+
+        #self.dataset_merged.export(format='datumaro', save_dir=dest_path)
 
     @staticmethod
     def _split_vid_job(row_tuple):
@@ -256,7 +281,7 @@ class MergeExport:
             log.info(f"Exists. Skipping export to {self.export_path}")
             return
         export_pool = Pool(self.jobs)
-        row_src_dest_tuples = [tup + (self.vid_path, self.export_path, self.ini_path) for tup in self.df.iterrows()]
+        row_src_dest_tuples = [tup + (self.merge_path, self.export_path, self.ini_path) for tup in self.df.iterrows()]
         export_pool.map(self._export_job, row_src_dest_tuples)
         export_pool.close()
         export_pool.join()
@@ -280,7 +305,7 @@ def main(args):
 
     # Merge and split inconsistent annotations and labels
     merge_exp.merge_dataset()
-    merge_exp.split_merged_dataset()
+    #merge_exp.split_merged_dataset()
     #merge_dataset(df.iterrows(), merged_path, args.transform_path)
     #split_merged_dataset(df.iterrows(), merged_path, int(args.jobs))
 

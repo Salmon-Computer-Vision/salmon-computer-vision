@@ -22,6 +22,9 @@ Creates tasks on CVAT instance and uploads/matches annotations to their respecti
 ```
 
 ### datum\_create\_dataset.py
+
+***Create an empty project with the correct labels as `empty_proj` in the current directory.***
+
 Exports dataset based on CSV file:
 ```bash
 ./datum_create_dataset.py -j 4 --anno-path annos --proj-path datum_proj --transform-path datum_proj_transform --mot-path export_mot /mnt/disk5tb/salmon_anno_bear_creek_123.csv
