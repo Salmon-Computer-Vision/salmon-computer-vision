@@ -20,3 +20,16 @@ Creates tasks on CVAT instance and uploads/matches annotations to their respecti
 ./merge_datum.sh user "${pass-env}" source/dump/annotations filter/dir dest/dir
 ./convert_tf.sh source/datumaro dest/dir
 ```
+
+### datum\_create\_dataset.py
+Exports dataset based on CSV file:
+```bash
+./datum_create_dataset.py /mnt/disk5tb/salmon_anno_bear_creek_123.csv
+```
+
+The CSV file must be of format:
+```
+filename,vid_path,anno_path
+07-15-2020 15-51-08 M Left Bank Underwater,/path/to/vids/07-15-2020 15-51-08 M Left Bank Underwater.m4v,/path/to/annos/07-15-2020_15-51-08_M_Left_Bank_Underwater.zip
+...
+```
