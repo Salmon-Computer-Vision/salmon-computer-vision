@@ -9,7 +9,7 @@ import os.path as osp
 import subprocess
 import argparse
 import logging as log
-from multiprocessing import Pool
+from multiprocessing import Pool, Manager
 import configparser
 from benedict import benedict
 import shutil
@@ -19,6 +19,7 @@ import pandas as pd
 import cv2
 
 import datumaro as dm
+import datumaro.components.operations as dmop
 from datumaro.plugins.transforms import Rename
 from datumaro.components.operations import IntersectMerge
 
@@ -40,6 +41,10 @@ DUP_LABELS_MAPPING = {
         'White Fish': 'Whitefish',
         'Bull Trout': 'Bull'
         }
+
+KEY_ANNO = 'annotations'
+KEY_LABELS = 'labels'
+KEY_DISTRIB = 'distribution'
 
 class VidDataset:
     # Datumaro datasets
@@ -175,6 +180,9 @@ class MergeExport:
     dataset_merged = None
     dataset_empty = None
 
+    seq_stats = {}
+    species_counter = {}
+
     def __init__(self, name_df: pd.DataFrame, src_path: str, export_path: str, jobs: int):
         self.df = name_df
         self.src_path = src_path
@@ -187,7 +195,8 @@ class MergeExport:
 
     @staticmethod
     def _merge_vid_job(row_tuple):
-        _, row, src_path, dest_folder, dataset_empty_path = row_tuple
+        _, row, src_path, dest_folder, dataset_empty_path, \
+                seq_stats, species_counter, count_lock = row_tuple
 
         name = filename_to_name(row.filename).lower()
         dest_path = osp.join(dest_folder, name.lower())
@@ -199,6 +208,21 @@ class MergeExport:
 
         # Fix duplicate labels
         dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
+        stats = dmop.compute_ann_statistics(dataset_merged)
+        cat_distribs = stats[KEY_ANNO][KEY_LABELS][KEY_DISTRIB]
+        
+        for categ, count in cat_distribs.items():
+            if count[0] == 0:
+                continue
+
+            count_lock.acquire()
+            if not categ in species_counter.keys():
+                species_counter[categ] = 0
+            if not categ in seq_stats.keys():
+                seq_stats[categ] = {}
+            seq_stats[categ][name] = cat_distribs
+            species_counter[categ] += count[0]
+            count_lock.release()
 
         dataset_merged.export(format='datumaro', save_dir=dest_path)
 
@@ -215,19 +239,42 @@ class MergeExport:
         dataset_empty = osp.abspath(self.dataset_empty)
 
         jobs_pool = Pool(self.jobs)
+        manager = Manager()
+        self.seq_stats = manager.dict()
+        self.species_counter = manager.dict()
+        count_lock = manager.Lock()
 
-        row_merged_tuples = [tup + (src_path, dest_path, dataset_empty) for tup in self.df.iterrows()]
+        row_merged_tuples = [tup + (src_path, dest_path, dataset_empty, 
+                self.seq_stats, self.species_counter, count_lock) for tup in self.df.iterrows()]
         jobs_pool.map(self._merge_vid_job, row_merged_tuples)
 
         jobs_pool.close()
         jobs_pool.join()
-        #datasets = [dm.Dataset.import_from(data_path, "datumaro") for data_path in datasets_paths]
-        #self.dataset_merged = IntersectMerge()(datasets)
 
-        ## Fix duplicate labels
-        #self.dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
+        self._stratified_split()
 
-        #self.dataset_merged.export(format='datumaro', save_dir=dest_path)
+    def _stratified_split(self):
+        dest_path = osp.abspath(f"{self.merge_path}_train_split")
+        train_path = osp.join(dest_path, 'train')
+        valid_path = osp.join(dest_path, 'valid')
+        test_path = osp.join(dest_path, 'test')
+
+        # Find distrib of categories
+
+        # Get specific max counts
+
+        # Shuffle seq category stats dict
+
+        # For validation set
+        # Keep track of inputted sequence
+
+        # for each category loop through stats
+        # Fill capacity with each sequence until all categories are full
+        # Remove entry from dict
+
+        # Repeat for test set
+
+        # Export the rest as train set
 
     @staticmethod
     def _split_vid_job(row_tuple):
