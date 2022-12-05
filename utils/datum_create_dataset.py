@@ -150,7 +150,7 @@ class VidDataset:
 
     def gen_seqinfo(self, name: str):
         # Generate seqinfo.ini file
-        seq_path = osp.join(self.ini_path, name, SEQINFO)
+        seq_path = osp.join(self.ini_path, name.lower(), SEQINFO)
         log.info(f'Generating seqinfo.ini file to {seq_path}')
 
         d = benedict()
@@ -203,6 +203,7 @@ class MergeExport:
         self.src_path = src_path
         self.ini_path = f'{remove_path_end(src_path)}_inis'
         self.merge_path = f'{remove_path_end(src_path)}_merged'
+        self.split_path = f'{self.merge_path}_train_split'
         self.vid_path = f'{self.merge_path}_vids'
         self.export_path = export_path
         self.jobs = jobs
@@ -308,7 +309,7 @@ class MergeExport:
         Split the dataset into train, valid, and test sets using random stratified splitting
         """
         src_path = osp.abspath(self.merge_path)
-        dest_path = osp.abspath(f"{self.merge_path}_train_split")
+        dest_path = osp.abspath(self.split_path)
         train_path = osp.join(dest_path, 'train')
         valid_path = osp.join(dest_path, 'valid')
         test_path = osp.join(dest_path, 'test')
@@ -356,10 +357,8 @@ class MergeExport:
 
         # Accumulate sequences until max capacity
         test_seqs += self._get_seq_set(test_max_counts, test_counts)
-        print(test_counts)
 
         valid_seqs += self._get_seq_set(valid_max_counts, valid_counts)
-        print(valid_counts)
 
 
         # Export the rest as train set
@@ -368,17 +367,16 @@ class MergeExport:
                 if seq.name not in train_seqs:
                     self._count_categs(seq, train_counts)
                     train_seqs.append(seq.name)  
-        print(train_counts)
 
-        print('Test')
-        print(len(test_seqs))
-        print(test_seqs)
-        print('Valid')
-        print(len(valid_seqs))
-        print(valid_seqs)
-        print('Train')
-        print(len(train_seqs))
-        print(train_seqs)
+        log.info('Test')
+        log.info(len(test_seqs))
+        log.info(test_counts)
+        log.info('Valid')
+        log.info(len(valid_seqs))
+        log.info(valid_counts)
+        log.info('Train')
+        log.info(len(train_seqs))
+        log.info(train_counts)
 
         def copy_seq(seqs, set_path):
             # Copy seqs to respective folders
@@ -431,24 +429,30 @@ class MergeExport:
 
     @staticmethod
     def _export_job(row_src_dest_tuple):
-        _, row, src_folder, export_path, ini_path = row_src_dest_tuple
-        name = filename_to_name(row.filename)
-        exp_format = 'mot_seq_gt'
-        src_path = osp.join(src_folder, name.lower())
-        dest_path = osp.join(export_path, name)
+        src_path, dest_path, ini_path, exp_format = row_src_dest_tuple
+        name = osp.basename(src_path)
 
         log.info(f"Exporting as {exp_format} to {dest_path}")
         dataset = dm.Dataset.import_from(src_path, format='datumaro')
         dataset.export(dest_path, exp_format, save_images=True)
 
-        shutil.copyfile(osp.join(ini_path, name, SEQINFO), osp.join(dest_path, SEQINFO))
+        if exp_format == 'mot_seq_gt':
+            shutil.copyfile(osp.join(ini_path, name, SEQINFO), osp.join(dest_path, SEQINFO))
 
-    def export_mot(self, overwrite=False):
-        if not overwrite and osp.exists(self.export_path):
-            log.info(f"Exists. Skipping export to {self.export_path}")
+    def export(self, suffix, exp_format, overwrite=False):
+        src_path = osp.abspath(self.split_path)
+        export_path = f"{self.export_path}_{suffix}"
+        if not overwrite and osp.exists(export_path):
+            log.info(f"Exists. Skipping export to {export_path}")
             return
+
+        set_paths = ['train', 'valid',  'test']
+        # Create a tuple of export path and src path with correct set
+        seq_paths = [(osp.join(src_path, set_path, i), osp.join(export_path, set_path, i))
+                for set_path in set_paths for i in os.listdir(osp.join(src_path, set_path))]
+
         export_pool = Pool(self.jobs)
-        row_src_dest_tuples = [tup + (self.merge_path, self.export_path, self.ini_path) for tup in self.df.iterrows()]
+        row_src_dest_tuples = [seq_path + (self.ini_path, exp_format) for seq_path in seq_paths]
         export_pool.map(self._export_job, row_src_dest_tuples)
         export_pool.close()
         export_pool.join()
@@ -468,7 +472,7 @@ def main(args):
     jobs_pool.close()
     jobs_pool.join()
 
-    merge_exp = MergeExport(df, args.transform_path, args.mot_path, int(args.jobs))
+    merge_exp = MergeExport(df, args.transform_path, args.export_path, int(args.jobs))
 
     # Merge and split inconsistent annotations and labels
     merge_exp.merge_dataset()
@@ -477,7 +481,8 @@ def main(args):
     #split_merged_dataset(df.iterrows(), merged_path, int(args.jobs))
 
     # Export to final dataset
-    merge_exp.export_mot()
+    merge_exp.export('yolo', 'yolo')
+    merge_exp.export('mot', 'mot_seq_gt')
 
 if __name__ == '__main__':
     configparser.ConfigParser.optionxform = str
@@ -488,7 +493,7 @@ if __name__ == '__main__':
     parser.add_argument('--anno-path', default='annos', help='Annotations destination folder. Default: annos')
     parser.add_argument('--proj-path', default='datum_proj', help='Datumaro project destination folder. Default: datum_proj')
     parser.add_argument('--transform-path', default='datum_proj_transform', help='Datumaro project transform destination folder. Default: datum_proj_transform')
-    parser.add_argument('--mot-path', default='export_mot', help='MOT path to export to. Default: export_mot')
+    parser.add_argument('--export-path', default='export', help='Export path. Will create YOLO and MOT exports. Default: export')
     parser.add_argument('-j', '--jobs', default='4', help='Number of jobs to run. Default: 4')
     parser.set_defaults(func=main)
 
