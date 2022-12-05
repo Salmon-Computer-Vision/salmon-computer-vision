@@ -18,7 +18,7 @@ PREFIX = 'data/'
 
 def main(args):
     src_path = osp.abspath(args.src_folder)
-    os.makedirs(osp.join(src_path, KEY_BACKUP))
+    os.makedirs(osp.join(src_path, KEY_BACKUP), exist_ok=True)
     set_keys = [KEY_TEST, KEY_VALID, KEY_TRAIN]
 
     for set_key in set_keys:
