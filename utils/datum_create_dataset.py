@@ -270,14 +270,15 @@ class MergeExport:
 
         self._stratified_split()
 
-    def _get_seq_set(self, max_counts):
+    def _get_seq_set(self, max_counts, counts):
         out_seqs = []
-        counts = {}
+
         # Fill capacity with each sequence until each category is full
         for categ, seqs in self.seq_stats.items():
             if not categ in counts:
                 counts[categ] = 0
-            for seq in seqs:
+            for i in range(len(seqs)):
+                seq = seqs.pop()
                 if seq.name in out_seqs:
                     break
                 if counts[categ] < max_counts[categ]:
@@ -290,6 +291,10 @@ class MergeExport:
                 else:
                     break
                 out_seqs.append(seq.name)
+
+        # Remove sequences taken out
+        for categ in self.seq_stats.keys():
+            self.seq_stats[categ] = [seq for seq in self.seq_stats[categ] if seq.name not in out_seqs]
 
         print(counts)
         return out_seqs
@@ -315,19 +320,39 @@ class MergeExport:
         for categ in self.seq_stats.keys():
             self.rand.shuffle(self.seq_stats[categ])
 
+        # Every set should have at least one seq of every category
+        def add_one_categ():
+            dataset_seqs = []
+            counts = {}
+            for seqs in self.seq_stats.values():
+                try:
+                    seq = seqs.pop()
+                except:
+                    continue
+                for in_categ, count in seq.stats.items():
+                    if count[0] <= 0:
+                        continue
+                    if not in_categ in counts:
+                        counts[in_categ] = 0
+                    counts[in_categ] += count[0]
+                dataset_seqs.append(seq.name)
+            for categ in self.seq_stats.keys():
+                self.seq_stats[categ] = [seq for seq in self.seq_stats[categ] if seq.name not in dataset_seqs]
+            return dataset_seqs, counts
+
+        valid_seqs, valid_counts = add_one_categ()
+        test_seqs, test_counts = add_one_categ()
+        train_seqs, train_counts = add_one_categ()
+
         # For validation set
         # Keep track of inputted sequence
-        valid_seqs = self._get_seq_set(valid_max_counts)
-        # Remove sequences in the validation set
-        for categ in self.seq_stats.keys():
-            self.seq_stats[categ] = [seq for seq in self.seq_stats[categ] if seq.name not in valid_seqs]
+        valid_seqs += self._get_seq_set(valid_max_counts, valid_counts)
 
-        test_seqs = self._get_seq_set(test_max_counts)
+        test_seqs += self._get_seq_set(test_max_counts, test_counts)
 
         # Export the rest as train set
-        train_seqs = []
         for categ, seqs in self.seq_stats.items():
-            train_seqs = [seq.name for seq in seqs if seq.name not in test_seqs and seq.name not in train_seqs]
+            train_seqs += [seq.name for seq in seqs if seq.name not in test_seqs and seq.name not in train_seqs]
 
         print('Valid')
         print(len(valid_seqs))
