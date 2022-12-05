@@ -13,6 +13,7 @@ log.basicConfig(
 KEY_TEST = 'test'
 KEY_VALID = 'valid'
 KEY_TRAIN = 'train'
+PREFIX = 'data/'
 
 def main(args):
     src_path = osp.abspath(args.src_folder)
@@ -29,7 +30,7 @@ def main(args):
                 seq_text_path = osp.join(seq_path, f"{KEY_TRAIN}.txt")
                 sd = open(seq_text_path, 'r')
                 rel_paths = sd.readlines()
-                [d.write(osp.join(seq_path, rel_path)) for rel_path in rel_paths]
+                [d.write(osp.join(seq_path, rel_path[len(PREFIX):])) for rel_path in rel_paths]
                 
 
 
