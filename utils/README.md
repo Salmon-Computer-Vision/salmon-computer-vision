@@ -25,9 +25,9 @@ Creates tasks on CVAT instance and uploads/matches annotations to their respecti
 
 ***Create an empty project with the correct labels as `empty_proj` in the current directory.***
 
-Exports dataset based on CSV file:
+Exports MOT and YOLO datasets based on CSV file:
 ```bash
-./datum_create_dataset.py -j 4 --anno-path annos --proj-path datum_proj --transform-path datum_proj_transform --mot-path export_mot /mnt/disk5tb/salmon_anno_bear_creek_123.csv
+./datum_create_dataset.py -j 4 --anno-path annos --proj-path datum_proj --transform-path datum_proj_transform --export-path export /mnt/disk5tb/salmon_anno_bear_creek_123.csv
 ```
 
 The CSV file must be of format:
