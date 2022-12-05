@@ -6,6 +6,7 @@
 
 import os
 import os.path as osp
+import random
 import subprocess
 import argparse
 import logging as log
@@ -45,6 +46,10 @@ DUP_LABELS_MAPPING = {
 KEY_ANNO = 'annotations'
 KEY_LABELS = 'labels'
 KEY_DISTRIB = 'distribution'
+
+VALID_SPLIT_RATIO = 0.15
+TEST_SPLIT_RATIO = 0.15
+RANDOM_SEED = 198
 
 class VidDataset:
     # Datumaro datasets
@@ -176,9 +181,18 @@ def export_vid(row_tuple):
     vid_data.gen_seqinfo(name)
     #vid_data.export_mot(name)
 
+class SeqDistrib:
+    name = ""
+    stats = {}
+
+    def __init__(self, name, stats):
+        self.name = name
+        self.stats = stats
+
 class MergeExport:
     dataset_merged = None
     dataset_empty = None
+    rand = random.Random(RANDOM_SEED)
 
     seq_stats = {}
     species_counter = {}
@@ -211,16 +225,19 @@ class MergeExport:
         stats = dmop.compute_ann_statistics(dataset_merged)
         cat_distribs = stats[KEY_ANNO][KEY_LABELS][KEY_DISTRIB]
         
+        seq_ds = SeqDistrib(name, cat_distribs)
         for categ, count in cat_distribs.items():
             if count[0] == 0:
                 continue
 
             count_lock.acquire()
-            if not categ in species_counter.keys():
+            if categ not in species_counter.keys():
                 species_counter[categ] = 0
-            if not categ in seq_stats.keys():
-                seq_stats[categ] = {}
-            seq_stats[categ][name] = cat_distribs
+            if categ not in seq_stats.keys():
+                seq_stats[categ] = []
+            temp_stats = seq_stats[categ]
+            temp_stats.append(seq_ds)
+            seq_stats[categ] = temp_stats
             species_counter[categ] += count[0]
             count_lock.release()
 
@@ -253,28 +270,86 @@ class MergeExport:
 
         self._stratified_split()
 
+    def _get_seq_set(self, max_counts):
+        out_seqs = []
+        counts = {}
+        # Fill capacity with each sequence until each category is full
+        for categ, seqs in self.seq_stats.items():
+            if not categ in counts:
+                counts[categ] = 0
+            for seq in seqs:
+                if seq.name in out_seqs:
+                    break
+                if counts[categ] < max_counts[categ]:
+                    for in_categ, count in seq.stats.items():
+                        if count[0] <= 0:
+                            continue
+                        if not in_categ in counts:
+                            counts[in_categ] = 0
+                        counts[in_categ] += count[0]
+                else:
+                    break
+                out_seqs.append(seq.name)
+
+        print(counts)
+        return out_seqs
+
     def _stratified_split(self):
+        src_path = osp.abspath(self.merge_path)
         dest_path = osp.abspath(f"{self.merge_path}_train_split")
         train_path = osp.join(dest_path, 'train')
         valid_path = osp.join(dest_path, 'valid')
         test_path = osp.join(dest_path, 'test')
 
         # Find distrib of categories
-
-        # Get specific max counts
+        sum_counts = sum(self.species_counter.values())
+        valid_max_counts = {}
+        test_max_counts = {}
+        for categ, count in self.species_counter.items():
+            # Get specific max counts for each set
+            valid_max_counts[categ] = count * VALID_SPLIT_RATIO
+            test_max_counts[categ] = count * TEST_SPLIT_RATIO
+        
 
         # Shuffle seq category stats dict
+        for categ in self.seq_stats.keys():
+            self.rand.shuffle(self.seq_stats[categ])
 
         # For validation set
         # Keep track of inputted sequence
+        valid_seqs = self._get_seq_set(valid_max_counts)
+        # Remove sequences in the validation set
+        for categ in self.seq_stats.keys():
+            self.seq_stats[categ] = [seq for seq in self.seq_stats[categ] if seq.name not in valid_seqs]
 
-        # for each category loop through stats
-        # Fill capacity with each sequence until all categories are full
-        # Remove entry from dict
-
-        # Repeat for test set
+        test_seqs = self._get_seq_set(test_max_counts)
 
         # Export the rest as train set
+        train_seqs = []
+        for categ, seqs in self.seq_stats.items():
+            train_seqs = [seq.name for seq in seqs if seq.name not in test_seqs and seq.name not in train_seqs]
+
+        print('Valid')
+        print(len(valid_seqs))
+        print(valid_seqs)
+        print('Test')
+        print(len(test_seqs))
+        print(test_seqs)
+        print('Train')
+        print(len(train_seqs))
+        print(train_seqs)
+
+        def copy_seq(seqs, set_path):
+            # Copy seqs to respective folders
+            for name in seqs:
+                shutil.copytree(osp.join(src_path, name), osp.join(set_path, name))
+
+        copy_seq(valid_seqs, valid_path)
+        copy_seq(test_seqs, test_path)
+        copy_seq(train_seqs, train_path)
+
+        d = benedict(self.species_counter)
+        d.to_json(filepath=osp.join(dest_path, 'distribution.json'))
 
     @staticmethod
     def _split_vid_job(row_tuple):
