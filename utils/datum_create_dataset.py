@@ -279,13 +279,12 @@ class MergeExport:
             if not categ in counts:
                 counts[categ] = 0
             for i in range(len(seqs)):
+                if counts[categ] < max_counts[categ]:
+                    break
                 seq = seqs.pop()
                 if seq.name in out_seqs:
                     break
-                if counts[categ] < max_counts[categ]:
-                    self._count_categs(seq, counts)
-                else:
-                    break
+                self._count_categs(seq, counts)
                 out_seqs.append(seq.name)
 
         # Remove sequences taken out
