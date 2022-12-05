@@ -258,17 +258,18 @@ class MergeExport:
         jobs_pool = Pool(self.jobs)
         manager = Manager()
         seq_stats = manager.dict()
-        self.species_counter = manager.dict()
+        species_counter = manager.dict()
         count_lock = manager.Lock()
 
         row_merged_tuples = [tup + (src_path, dest_path, dataset_empty, 
-                seq_stats, self.species_counter, count_lock) for tup in self.df.iterrows()]
+                seq_stats, species_counter, count_lock) for tup in self.df.iterrows()]
         jobs_pool.map(self._merge_vid_job, row_merged_tuples)
 
         jobs_pool.close()
         jobs_pool.join()
 
         self.seq_stats.update(seq_stats)
+        self.species_counter.update(species_counter)
         self._stratified_split()
 
     def _get_seq_set(self, max_counts, counts):
@@ -302,6 +303,9 @@ class MergeExport:
             counts[in_categ] += count[0]
 
     def _stratified_split(self):
+        """
+        Split the dataset into train, valid, and test sets using random stratified splitting
+        """
         src_path = osp.abspath(self.merge_path)
         dest_path = osp.abspath(f"{self.merge_path}_train_split")
         train_path = osp.join(dest_path, 'train')
@@ -320,6 +324,7 @@ class MergeExport:
 
         # Shuffle seq category stats dict
         for categ in self.seq_stats.keys():
+            self.seq_stats[categ].sort(key=lambda x: x.name)
             self.rand.shuffle(self.seq_stats[categ])
 
         # Every set should have at least one seq of every category
