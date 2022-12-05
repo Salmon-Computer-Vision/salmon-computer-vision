@@ -14,6 +14,7 @@ from multiprocessing import Pool, Manager
 import configparser
 from benedict import benedict
 import shutil
+from collections import OrderedDict
 
 import pandas as pd
 
@@ -268,7 +269,7 @@ class MergeExport:
         jobs_pool.close()
         jobs_pool.join()
 
-        self.seq_stats.update(seq_stats)
+        self.seq_stats = OrderedDict(sorted(seq_stats.items()))
         self.species_counter.update(species_counter)
         self._stratified_split()
 
@@ -324,6 +325,7 @@ class MergeExport:
 
         # Shuffle seq category stats dict
         for categ in self.seq_stats.keys():
+            # Sort first to elicit reproducibility
             self.seq_stats[categ].sort(key=lambda x: x.name)
             self.rand.shuffle(self.seq_stats[categ])
 
