@@ -340,17 +340,18 @@ class MergeExport:
                 self.seq_stats[categ] = [seq for seq in self.seq_stats[categ] if seq.name not in dataset_seqs]
             return dataset_seqs, counts
 
-        valid_seqs, valid_counts = add_one_categ()
+        # Add one each to account for very small datasets
         test_seqs, test_counts = add_one_categ()
+        valid_seqs, valid_counts = add_one_categ()
         train_seqs, train_counts = add_one_categ()
 
-        # For validation set
-        # Keep track of inputted sequence
+        # Accumulate sequences until max capacity
+        test_seqs += self._get_seq_set(test_max_counts, test_counts)
+        print(test_counts)
+
         valid_seqs += self._get_seq_set(valid_max_counts, valid_counts)
         print(valid_counts)
 
-        test_seqs += self._get_seq_set(test_max_counts, test_counts)
-        print(test_counts)
 
         # Export the rest as train set
         for categ, seqs in self.seq_stats.items():
@@ -360,12 +361,12 @@ class MergeExport:
                     train_seqs.append(seq.name)  
         print(train_counts)
 
-        print('Valid')
-        print(len(valid_seqs))
-        print(valid_seqs)
         print('Test')
         print(len(test_seqs))
         print(test_seqs)
+        print('Valid')
+        print(len(valid_seqs))
+        print(valid_seqs)
         print('Train')
         print(len(train_seqs))
         print(train_seqs)
