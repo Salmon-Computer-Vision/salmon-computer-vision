@@ -13,10 +13,12 @@ log.basicConfig(
 KEY_TEST = 'test'
 KEY_VALID = 'valid'
 KEY_TRAIN = 'train'
+KEY_BACKUP = 'backup'
 PREFIX = 'data/'
 
 def main(args):
     src_path = osp.abspath(args.src_folder)
+    os.makedirs(osp.join(src_path, KEY_BACKUP))
     set_keys = [KEY_TEST, KEY_VALID, KEY_TRAIN]
 
     for set_key in set_keys:
