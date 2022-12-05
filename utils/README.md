@@ -36,3 +36,8 @@ filename,vid_path,anno_path
 07-15-2020 15-51-08 M Left Bank Underwater,/path/to/vids/07-15-2020 15-51-08 M Left Bank Underwater.m4v,/path/to/annos/07-15-2020_15-51-08_M_Left_Bank_Underwater.zip
 ...
 ```
+
+Use the following script to consolidate the YOLO dataset:
+```
+./yolo_combine.py path/to/export_yolo
+```
