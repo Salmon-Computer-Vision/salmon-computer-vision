@@ -257,17 +257,18 @@ class MergeExport:
 
         jobs_pool = Pool(self.jobs)
         manager = Manager()
-        self.seq_stats = manager.dict()
+        seq_stats = manager.dict()
         self.species_counter = manager.dict()
         count_lock = manager.Lock()
 
         row_merged_tuples = [tup + (src_path, dest_path, dataset_empty, 
-                self.seq_stats, self.species_counter, count_lock) for tup in self.df.iterrows()]
+                seq_stats, self.species_counter, count_lock) for tup in self.df.iterrows()]
         jobs_pool.map(self._merge_vid_job, row_merged_tuples)
 
         jobs_pool.close()
         jobs_pool.join()
 
+        self.seq_stats.update(seq_stats)
         self._stratified_split()
 
     def _get_seq_set(self, max_counts, counts):
@@ -282,12 +283,7 @@ class MergeExport:
                 if seq.name in out_seqs:
                     break
                 if counts[categ] < max_counts[categ]:
-                    for in_categ, count in seq.stats.items():
-                        if count[0] <= 0:
-                            continue
-                        if not in_categ in counts:
-                            counts[in_categ] = 0
-                        counts[in_categ] += count[0]
+                    self._count_categs(seq, counts)
                 else:
                     break
                 out_seqs.append(seq.name)
@@ -296,8 +292,15 @@ class MergeExport:
         for categ in self.seq_stats.keys():
             self.seq_stats[categ] = [seq for seq in self.seq_stats[categ] if seq.name not in out_seqs]
 
-        print(counts)
         return out_seqs
+
+    def _count_categs(self, seq, counts):
+        for in_categ, count in seq.stats.items():
+            if count[0] <= 0:
+                continue
+            if not in_categ in counts:
+                counts[in_categ] = 0
+            counts[in_categ] += count[0]
 
     def _stratified_split(self):
         src_path = osp.abspath(self.merge_path)
@@ -329,13 +332,10 @@ class MergeExport:
                     seq = seqs.pop()
                 except:
                     continue
-                for in_categ, count in seq.stats.items():
-                    if count[0] <= 0:
-                        continue
-                    if not in_categ in counts:
-                        counts[in_categ] = 0
-                    counts[in_categ] += count[0]
+                self._count_categs(seq, counts)
                 dataset_seqs.append(seq.name)
+
+            # Remove
             for categ in self.seq_stats.keys():
                 self.seq_stats[categ] = [seq for seq in self.seq_stats[categ] if seq.name not in dataset_seqs]
             return dataset_seqs, counts
@@ -347,12 +347,18 @@ class MergeExport:
         # For validation set
         # Keep track of inputted sequence
         valid_seqs += self._get_seq_set(valid_max_counts, valid_counts)
+        print(valid_counts)
 
         test_seqs += self._get_seq_set(test_max_counts, test_counts)
+        print(test_counts)
 
         # Export the rest as train set
         for categ, seqs in self.seq_stats.items():
-            train_seqs += [seq.name for seq in seqs if seq.name not in test_seqs and seq.name not in train_seqs]
+            for seq in seqs:
+                if seq.name not in train_seqs:
+                    self._count_categs(seq, train_counts)
+                    train_seqs.append(seq.name)  
+        print(train_counts)
 
         print('Valid')
         print(len(valid_seqs))
