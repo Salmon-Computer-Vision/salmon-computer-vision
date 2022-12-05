@@ -328,12 +328,15 @@ class MergeExport:
             dataset_seqs = []
             counts = {}
             for seqs in self.seq_stats.values():
-                try:
-                    seq = seqs.pop()
-                except:
-                    continue
-                self._count_categs(seq, counts)
-                dataset_seqs.append(seq.name)
+                for i in range(len(seqs)):
+                    try:
+                        seq = seqs.pop()
+                    except:
+                        continue
+                    if seq.name not in dataset_seqs:
+                        dataset_seqs.append(seq.name)
+                        self._count_categs(seq, counts)
+                        break
 
             # Remove
             for categ in self.seq_stats.keys():
