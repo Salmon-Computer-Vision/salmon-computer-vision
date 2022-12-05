@@ -387,8 +387,14 @@ class MergeExport:
         copy_seq(test_seqs, test_path)
         copy_seq(train_seqs, train_path)
 
-        d = benedict(self.species_counter)
-        d.to_json(filepath=osp.join(dest_path, 'distribution.json'))
+        def to_json(_d, target_path):
+            d = benedict(_d)
+            d.to_json(filepath=target_path)
+
+        to_json(self.species_counter, osp.join(dest_path, 'distribution.json'))
+        to_json(test_counts, osp.join(dest_path, 'test_distribution.json'))
+        to_json(valid_counts, osp.join(dest_path, 'valid_distribution.json'))
+        to_json(train_counts, osp.join(dest_path, 'train_distribution.json'))
 
     @staticmethod
     def _split_vid_job(row_tuple):
