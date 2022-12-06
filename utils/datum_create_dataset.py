@@ -447,7 +447,11 @@ class MergeExport:
 
         log.info(f"Exporting as {exp_format} to {dest_path}")
         dataset = dm.Dataset.import_from(src_path, format='datumaro')
-        dataset.export(dest_path, exp_format, save_images=True)
+        try:
+            dataset.export(dest_path, exp_format, save_images=True)
+        except Exception e:
+            log.info(f"Export failed for {dest_path}")
+            raise e
 
         if exp_format == 'mot_seq_gt':
             shutil.copyfile(osp.join(ini_path, name, SEQINFO), osp.join(dest_path, SEQINFO))
@@ -482,7 +486,7 @@ def main(args):
     jobs_pool.close()
     jobs_pool.join()
 
-    merge_exp = MergeExport(df, args.proj_path, args.export_path, int(args.jobs))
+    merge_exp = MergeExport(df, args.transform_path, args.export_path, int(args.jobs))
 
     # Merge and split inconsistent annotations and labels
     merge_exp.merge_dataset()
