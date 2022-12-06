@@ -439,8 +439,11 @@ class MergeExport:
 
     @staticmethod
     def _export_job(row_src_dest_tuple):
-        src_path, dest_path, ini_path, exp_format = row_src_dest_tuple
+        src_path, dest_path, ini_path, exp_format, overwrite = row_src_dest_tuple
         name = osp.basename(src_path)
+        if not overwrite and osp.exists(dest_path):
+            log.info(f"Exists. Skipping export to {dest_path}")
+            return
 
         log.info(f"Exporting as {exp_format} to {dest_path}")
         dataset = dm.Dataset.import_from(src_path, format='datumaro')
@@ -452,9 +455,6 @@ class MergeExport:
     def export(self, suffix, exp_format, overwrite=False):
         src_path = osp.abspath(self.split_path)
         export_path = f"{self.export_path}_{suffix}"
-        if not overwrite and osp.exists(export_path):
-            log.info(f"Exists. Skipping export to {export_path}")
-            return
 
         set_paths = ['train', 'valid',  'test']
         # Create a tuple of export path and src path with correct set
@@ -462,7 +462,7 @@ class MergeExport:
                 for set_path in set_paths for i in os.listdir(osp.join(src_path, set_path))]
 
         export_pool = Pool(self.jobs)
-        row_src_dest_tuples = [seq_path + (self.ini_path, exp_format) for seq_path in seq_paths]
+        row_src_dest_tuples = [seq_path + (self.ini_path, exp_format, overwrite) for seq_path in seq_paths]
         export_pool.map(self._export_job, row_src_dest_tuples)
         export_pool.close()
         export_pool.join()
