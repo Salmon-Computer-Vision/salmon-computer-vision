@@ -82,7 +82,7 @@ class VidDataset:
         self.imHeight = video.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         # Extract frames to the project folder
-        dest_path = osp.join(self.anno_path, PREFIX_VID + name)
+        dest_path = osp.abspath(osp.join(self.anno_path, PREFIX_VID + name))
 
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skip extracting {dest_path}")
@@ -111,7 +111,7 @@ class VidDataset:
                 )
 
     def import_zipped_anno(self, name: str, anno_zip_path: str, overwrite=False):
-        dest_path = osp.join(self.anno_path, PREFIX_CVAT + name)
+        dest_path = osp.abspath(osp.join(self.anno_path, PREFIX_CVAT + name))
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping unzip {dest_path}")
             self.cvat_dataset = dm.Dataset.import_from(dest_path, "cvat")
@@ -135,7 +135,7 @@ class VidDataset:
             f"{src_path}:datumaro", '--', '-e', f"|^frame_|{name}_|"])
 
     def export_datum(self, name: str, overwrite=False):
-        dest_path = osp.join(self.proj_path, name.lower()) # Must be lowercase due to datumaro restrictions
+        dest_path = osp.abspath(osp.join(self.proj_path, name.lower())) # Must be lowercase due to datumaro restrictions
         #self.dataset = dm.Dataset.from_extractors(self.vid_dataset, self.cvat_dataset)
         self.dataset = IntersectMerge()([self.vid_dataset, self.cvat_dataset])
         if not overwrite and osp.exists(dest_path):
@@ -150,7 +150,7 @@ class VidDataset:
 
     def gen_seqinfo(self, name: str, overwrite=False):
         # Generate seqinfo.ini file
-        seq_path = osp.join(self.ini_path, name.lower(), SEQINFO)
+        seq_path = osp.abspath(osp.join(self.ini_path, name.lower(), SEQINFO))
         if not overwrite and osp.exists(seq_path):
             log.info(f"Exists. Skip generating {seq_path}")
             return
@@ -204,14 +204,14 @@ class MergeExport:
 
     def __init__(self, name_df: pd.DataFrame, src_path: str, export_path: str, jobs: int):
         self.df = name_df
-        self.src_path = src_path
-        self.ini_path = f'{remove_path_end(src_path)}_inis'
-        self.merge_path = f'{remove_path_end(src_path)}_merged'
-        self.split_path = f'{self.merge_path}_train_split'
-        self.vid_path = f'{self.merge_path}_vids'
-        self.export_path = export_path
+        self.src_path = osp.abspath(src_path)
+        self.ini_path = osp.abspath(f'{remove_path_end(src_path)}_inis')
+        self.merge_path = osp.abspath(f'{remove_path_end(src_path)}_merged')
+        self.split_path = osp.abspath(f'{self.merge_path}_train_split')
+        self.vid_path = osp.abspath(f'{self.merge_path}_vids')
+        self.export_path = osp.abspath(export_path)
         self.jobs = jobs
-        self.dataset_empty = EMPTY_PROJ_PATH
+        self.dataset_empty = osp.abspath(EMPTY_PROJ_PATH)
 
     @staticmethod
     def _merge_vid_job(row_tuple):
@@ -221,7 +221,7 @@ class MergeExport:
         name = filename_to_name(row.filename).lower()
         dest_path = osp.join(dest_folder, name.lower())
 
-        seq_path = osp.abspath(osp.join(src_path, name))
+        seq_path = osp.join(src_path, name)
         data = dm.Dataset.import_from(seq_path, "datumaro")
         dataset_empty = dm.Dataset.import_from(dataset_empty_path, "datumaro")
         dataset_merged = IntersectMerge()([data, dataset_empty])
@@ -257,9 +257,6 @@ class MergeExport:
             log.info(f"Exists. Skipping merge {self.merge_path}")
             return
         log.info('Merging transformed dataset...')
-        dest_path = osp.abspath(self.merge_path)
-        src_path = osp.abspath(self.src_path)
-        dataset_empty = osp.abspath(self.dataset_empty)
 
         jobs_pool = Pool(self.jobs)
         manager = Manager()
@@ -267,7 +264,7 @@ class MergeExport:
         species_counter = manager.dict()
         count_lock = manager.Lock()
 
-        row_merged_tuples = [tup + (src_path, dest_path, dataset_empty, 
+        row_merged_tuples = [tup + (self.src_path, self.merge_path, self.dataset_empty, 
                 seq_stats, species_counter, count_lock) for tup in self.df.iterrows()]
         jobs_pool.map(self._merge_vid_job, row_merged_tuples)
 
@@ -312,11 +309,9 @@ class MergeExport:
         """
         Split the dataset into train, valid, and test sets using random stratified splitting
         """
-        src_path = osp.abspath(self.merge_path)
-        dest_path = osp.abspath(self.split_path)
-        train_path = osp.join(dest_path, 'train')
-        valid_path = osp.join(dest_path, 'valid')
-        test_path = osp.join(dest_path, 'test')
+        train_path = osp.join(self.split_path, 'train')
+        valid_path = osp.join(self.split_path, 'valid')
+        test_path = osp.join(self.split_path, 'test')
 
         # Find distrib of categories
         sum_counts = sum(self.species_counter.values())
@@ -385,7 +380,7 @@ class MergeExport:
         def copy_seq(seqs, set_path):
             # Copy seqs to respective folders
             for name in seqs:
-                shutil.copytree(osp.join(src_path, name), osp.join(set_path, name))
+                shutil.copytree(osp.join(self.merge_path, name), osp.join(set_path, name))
 
         copy_seq(valid_seqs, valid_path)
         copy_seq(test_seqs, test_path)
@@ -395,10 +390,10 @@ class MergeExport:
             d = benedict(_d)
             d.to_json(filepath=target_path)
 
-        to_json(self.species_counter, osp.join(dest_path, 'distribution.json'))
-        to_json(test_counts, osp.join(dest_path, 'test_distribution.json'))
-        to_json(valid_counts, osp.join(dest_path, 'valid_distribution.json'))
-        to_json(train_counts, osp.join(dest_path, 'train_distribution.json'))
+        to_json(self.species_counter, osp.join(self.split_path, 'distribution.json'))
+        to_json(test_counts, osp.join(self.split_path, 'test_distribution.json'))
+        to_json(valid_counts, osp.join(self.split_path, 'valid_distribution.json'))
+        to_json(train_counts, osp.join(self.split_path, 'train_distribution.json'))
 
     @staticmethod
     def _split_vid_job(row_tuple):
@@ -456,13 +451,12 @@ class MergeExport:
             shutil.copyfile(osp.join(ini_path, name, SEQINFO), osp.join(dest_path, SEQINFO))
 
     def export(self, suffix, exp_format, overwrite=False):
-        src_path = osp.abspath(self.split_path)
         export_path = f"{self.export_path}_{suffix}"
 
         set_paths = ['train', 'valid',  'test']
         # Create a tuple of export path and src path with correct set
-        seq_paths = [(osp.join(src_path, set_path, i), osp.join(export_path, set_path, i))
-                for set_path in set_paths for i in os.listdir(osp.join(src_path, set_path))]
+        seq_paths = [(osp.join(self.split_path, set_path, i), osp.join(export_path, set_path, i))
+                for set_path in set_paths for i in os.listdir(osp.join(self.split_path, set_path))]
 
         export_pool = Pool(self.jobs)
         row_src_dest_tuples = [seq_path + (self.ini_path, exp_format, overwrite) for seq_path in seq_paths]
