@@ -144,7 +144,7 @@ class VidDataset:
             return
 
         log.info(f"Exporting as datumaro to {dest_path}")
-        self.dataset.export(dest_path, 'datumaro', save_images=True)
+        self.dataset.export(dest_path, 'datumaro')
 
         #self._transform(name, dest_path)
 
@@ -482,7 +482,7 @@ def main(args):
     jobs_pool.close()
     jobs_pool.join()
 
-    merge_exp = MergeExport(df, args.transform_path, args.export_path, int(args.jobs))
+    merge_exp = MergeExport(df, args.proj_path, args.export_path, int(args.jobs))
 
     # Merge and split inconsistent annotations and labels
     merge_exp.merge_dataset()
