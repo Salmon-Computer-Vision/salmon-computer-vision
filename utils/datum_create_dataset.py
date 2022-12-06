@@ -493,7 +493,7 @@ def main(args):
     #merge_dataset(df.iterrows(), merged_path, args.transform_path)
     #split_merged_dataset(df.iterrows(), merged_path, int(args.jobs))
 
-    if (!args.export_off):
+    if (not args.export_off):
         # Export to final dataset
         merge_exp.export(args.format, args.format)
 
