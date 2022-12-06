@@ -70,7 +70,7 @@ class VidDataset:
         self.proj_path = args.proj_path
         self.anno_path = args.anno_path
         self.transform_path = args.transform_path
-        self.ini_path = f'{remove_path_end(self.transform_path)}_inis'
+        self.ini_path = f'{remove_path_end(self.proj_path)}_inis'
 
         self.extract_frames(name, vid_path)
 
