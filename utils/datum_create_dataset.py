@@ -288,14 +288,14 @@ class MergeExport:
                 seq = seqs.pop()
                 if seq.name in out_seqs:
                     break
-                self._count_categs(seq, counts)
+                counts = self._count_categs(seq, counts)
                 out_seqs.append(seq.name)
 
         # Remove sequences taken out
         for categ in self.seq_stats.keys():
             self.seq_stats[categ] = [seq for seq in self.seq_stats[categ] if seq.name not in out_seqs]
 
-        return out_seqs
+        return (out_seqs, counts)
 
     def _count_categs(self, seq, counts):
         for in_categ, count in seq.stats.items():
@@ -304,6 +304,7 @@ class MergeExport:
             if not in_categ in counts:
                 counts[in_categ] = 0
             counts[in_categ] += count[0]
+        return counts
 
     def _stratified_split(self):
         """
@@ -341,7 +342,7 @@ class MergeExport:
                         continue
                     if seq.name not in dataset_seqs:
                         dataset_seqs.append(seq.name)
-                        self._count_categs(seq, counts)
+                        counts = self._count_categs(seq, counts)
                         break
 
             # Remove
@@ -355,9 +356,11 @@ class MergeExport:
         train_seqs, train_counts = add_one_categ()
 
         # Accumulate sequences until max capacity
-        test_seqs += self._get_seq_set(test_max_counts, test_counts)
+        test_chosen_seqs, test_counts = self._get_seq_set(test_max_counts, test_counts)
+        test_seqs += test_chosen_seqs
 
-        valid_seqs += self._get_seq_set(valid_max_counts, valid_counts)
+        valid_chosen_seqs, valid_counts = self._get_seq_set(valid_max_counts, valid_counts)
+        valid_seqs += valid_chosen_seqs
 
 
         # Export the rest as train set
