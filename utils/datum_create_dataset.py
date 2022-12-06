@@ -233,14 +233,14 @@ class MergeExport:
         
         seq_ds = SeqDistrib(name, cat_distribs)
         for categ, count in cat_distribs.items():
-            if count[0] == 0:
-                continue
-
-            count_lock.acquire()
             if categ not in species_counter.keys():
                 species_counter[categ] = 0
             if categ not in seq_stats.keys():
                 seq_stats[categ] = []
+            if count[0] == 0:
+                continue
+
+            count_lock.acquire()
             temp_stats = seq_stats[categ]
             temp_stats.append(seq_ds)
             seq_stats[categ] = temp_stats
@@ -320,8 +320,8 @@ class MergeExport:
         test_max_counts = {}
         for categ, count in self.species_counter.items():
             # Get specific max counts for each set
-            valid_max_counts[categ] = count * VALID_SPLIT_RATIO
-            test_max_counts[categ] = count * TEST_SPLIT_RATIO
+            valid_max_counts[categ] = int(count * VALID_SPLIT_RATIO)
+            test_max_counts[categ] = int(count * TEST_SPLIT_RATIO)
         
 
         # Shuffle seq category stats dict
