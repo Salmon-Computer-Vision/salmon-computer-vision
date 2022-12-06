@@ -148,9 +148,13 @@ class VidDataset:
 
         self._transform(name, dest_path)
 
-    def gen_seqinfo(self, name: str):
+    def gen_seqinfo(self, name: str, overwrite=False):
         # Generate seqinfo.ini file
         seq_path = osp.join(self.ini_path, name.lower(), SEQINFO)
+        if not overwrite and osp.exists(seq_path):
+            log.info(f"Exists. Skip generating {seq_path}")
+            return
+
         log.info(f'Generating seqinfo.ini file to {seq_path}')
 
         d = benedict()
