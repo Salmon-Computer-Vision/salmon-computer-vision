@@ -449,7 +449,7 @@ class MergeExport:
         dataset = dm.Dataset.import_from(src_path, format='datumaro')
         try:
             dataset.export(dest_path, exp_format, save_images=True)
-        except Exception e:
+        except Exception as e:
             log.info(f"Export failed for {dest_path}")
             raise e
 
