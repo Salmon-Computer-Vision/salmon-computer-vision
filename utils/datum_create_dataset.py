@@ -493,8 +493,9 @@ def main(args):
     #merge_dataset(df.iterrows(), merged_path, args.transform_path)
     #split_merged_dataset(df.iterrows(), merged_path, int(args.jobs))
 
-    # Export to final dataset
-    merge_exp.export(args.format, args.format)
+    if (!args.export_off):
+        # Export to final dataset
+        merge_exp.export(args.format, args.format)
 
 if __name__ == '__main__':
     configparser.ConfigParser.optionxform = str
@@ -505,6 +506,7 @@ if __name__ == '__main__':
     parser.add_argument('--anno-path', default='annos', help='Annotations destination folder. Default: annos')
     parser.add_argument('--proj-path', default='datum_proj', help='Datumaro project destination folder. Default: datum_proj')
     #parser.add_argument('--transform-path', default='datum_proj_transform', help='Datumaro project transform destination folder. Default: datum_proj_transform')
+    parser.add_argument('--export-off', action='store_true', help='Turn off exporting')
     parser.add_argument('--export-path', default='export', help='Export path. Will create an export of the supplied format eg. `export_yolo` if `-f yolo`. Default: export')
     parser.add_argument('-f', '--format', default='yolo', help='Export format. Check `datum export -h` for supported types. Default: yolo')
     parser.add_argument('-j', '--jobs', default='4', help='Number of jobs to run. Default: 4')
