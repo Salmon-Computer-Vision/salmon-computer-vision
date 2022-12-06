@@ -140,13 +140,13 @@ class VidDataset:
         self.dataset = IntersectMerge()([self.vid_dataset, self.cvat_dataset])
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping datum export {dest_path}")
-            self._transform(name, dest_path)
+            #self._transform(name, dest_path)
             return
 
         log.info(f"Exporting as datumaro to {dest_path}")
         self.dataset.export(dest_path, 'datumaro', save_images=True)
 
-        self._transform(name, dest_path)
+        #self._transform(name, dest_path)
 
     def gen_seqinfo(self, name: str, overwrite=False):
         # Generate seqinfo.ini file
