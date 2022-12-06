@@ -450,8 +450,7 @@ class MergeExport:
         try:
             dataset.export(dest_path, exp_format, save_images=True)
         except Exception as e:
-            log.info(f"Export failed for {dest_path}")
-            raise e
+            raise Exception(f"Export failed for {dest_path}") from e
 
         if exp_format == 'mot_seq_gt':
             shutil.copyfile(osp.join(ini_path, name, SEQINFO), osp.join(dest_path, SEQINFO))
