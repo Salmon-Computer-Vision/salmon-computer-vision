@@ -207,7 +207,9 @@ class MergeExport:
         self.src_path = osp.abspath(src_path)
         self.ini_path = osp.abspath(f'{remove_path_end(src_path)}_inis')
         self.merge_path = osp.abspath(f'{remove_path_end(src_path)}_merged')
+        self.preprocess_path = osp.abspath(f'{self.merge_path}_preprocess')
         self.split_path = osp.abspath(f'{self.merge_path}_train_split')
+
         self.vid_path = osp.abspath(f'{self.merge_path}_vids')
         self.export_path = osp.abspath(export_path)
         self.jobs = jobs
@@ -271,9 +273,64 @@ class MergeExport:
         jobs_pool.close()
         jobs_pool.join()
 
+        self.merge_seq_stats = OrderedDict(sorted(seq_stats.items()))
+        self.merge_species_counter.update(species_counter)
+
+    @staticmethod
+    def _preprocess_job(row_tuple):
+        _, row, src_path, dest_folder, seq_stats, species_counter, count_lock = row_tuple
+
+        name = filename_to_name(row.filename).lower()
+        dest_path = osp.join(dest_folder, name.lower())
+
+        seq_path = osp.join(src_path, name)
+        data = dm.Dataset.import_from(seq_path, "datumaro")
+        dataset_filtered_wide = dm.Dataset.filter(data, '/item[annotation/w > annotation/h] | /item/*[not(self::annotation)]')
+
+        stats = dmop.compute_ann_statistics(dataset_filtered_wide)
+        cat_distribs = stats[KEY_ANNO][KEY_LABELS][KEY_DISTRIB]
+        
+        seq_ds = SeqDistrib(name, cat_distribs)
+        for categ, count in cat_distribs.items():
+            if categ not in species_counter.keys():
+                species_counter[categ] = 0
+            if categ not in seq_stats.keys():
+                seq_stats[categ] = []
+            if count[0] == 0:
+                continue
+
+            count_lock.acquire()
+            temp_stats = seq_stats[categ]
+            temp_stats.append(seq_ds)
+            seq_stats[categ] = temp_stats
+            species_counter[categ] += count[0]
+            count_lock.release()
+
+        dataset_filtered_wide.export(format='datumaro', save_dir=dest_path)
+
+    def preprocess(self, overwrite=False):
+        """
+        Preprocess dataset (Removing tiny/incorrect boxes, etc.)
+        """
+        if not overwrite and osp.exists(self.preprocess_path):
+            log.info(f"Exists. Skip preprocessing {self.preprocess_path}")
+            return
+        log.info('Preprocessing dataset...')
+        jobs_pool = Pool(self.jobs)
+        manager = Manager()
+        seq_stats = manager.dict()
+        species_counter = manager.dict()
+        count_lock = manager.Lock()
+
+        row_merged_tuples = [tup + (self.merge_path, self.preprocess_path, \
+                seq_stats, species_counter, count_lock) for tup in self.df.iterrows()]
+        jobs_pool.map(self._preprocess_job, row_merged_tuples)
+
+        jobs_pool.close()
+        jobs_pool.join()
+
         self.seq_stats = OrderedDict(sorted(seq_stats.items()))
         self.species_counter.update(species_counter)
-        self._stratified_split()
 
     def _get_seq_set(self, max_counts, counts):
         out_seqs = []
@@ -306,10 +363,14 @@ class MergeExport:
             counts[in_categ] += count[0]
         return counts
 
-    def _stratified_split(self):
+    def stratified_split(self, src_path, overwrite=False):
         """
         Split the dataset into train, valid, and test sets using random stratified splitting
         """
+        if not overwrite and osp.exists(self.split_path):
+            log.info(f"Exists. Skipping stratified split {self.split_path}")
+            return
+        log.info('Performing stratified split...')
         train_path = osp.join(self.split_path, 'train')
         valid_path = osp.join(self.split_path, 'valid')
         test_path = osp.join(self.split_path, 'test')
@@ -386,7 +447,7 @@ class MergeExport:
         def copy_seq(seqs, set_path):
             # Copy seqs to respective folders
             for name in seqs:
-                shutil.copytree(osp.join(self.merge_path, name), osp.join(set_path, name))
+                shutil.copytree(osp.join(src_path, name), osp.join(set_path, name))
 
         copy_seq(valid_seqs, valid_path)
         copy_seq(test_seqs, test_path)
@@ -440,7 +501,7 @@ class MergeExport:
 
     @staticmethod
     def _export_job(row_src_dest_tuple):
-        src_path, dest_path, ini_path, exp_format, overwrite = row_src_dest_tuple
+        src_path, dest_path, ini_path, exp_format, overwrite, save_images = row_src_dest_tuple
         name = osp.basename(src_path)
         if not overwrite and osp.exists(dest_path):
             log.info(f"Exists. Skipping export to {dest_path}")
@@ -449,14 +510,14 @@ class MergeExport:
         log.info(f"Exporting as {exp_format} to {dest_path}")
         dataset = dm.Dataset.import_from(src_path, format='datumaro')
         try:
-            dataset.export(dest_path, exp_format, save_images=True)
+            dataset.export(dest_path, exp_format, save_images=save_images)
         except Exception as e:
             log.info(f"Export failed for {dest_path}")
 
         if exp_format == 'mot_seq_gt':
             shutil.copyfile(osp.join(ini_path, name, SEQINFO), osp.join(dest_path, SEQINFO))
 
-    def export(self, suffix, exp_format, overwrite=False):
+    def export(self, suffix, exp_format, overwrite=False, save_images=True):
         export_path = f"{self.export_path}_{suffix}"
 
         set_paths = ['train', 'valid',  'test']
@@ -465,7 +526,7 @@ class MergeExport:
                 for set_path in set_paths for i in os.listdir(osp.join(self.split_path, set_path))]
 
         export_pool = Pool(self.jobs)
-        row_src_dest_tuples = [seq_path + (self.ini_path, exp_format, overwrite) for seq_path in seq_paths]
+        row_src_dest_tuples = [seq_path + (self.ini_path, exp_format, overwrite, save_images) for seq_path in seq_paths]
         export_pool.map(self._export_job, row_src_dest_tuples)
         export_pool.close()
         export_pool.join()
@@ -489,13 +550,15 @@ def main(args):
 
     # Merge and split inconsistent annotations and labels
     merge_exp.merge_dataset()
+    merge_exp.preprocess()
+    merge_exp.stratified_split(merge_exp.preprocess_path)
     #merge_exp.split_merged_dataset()
     #merge_dataset(df.iterrows(), merged_path, args.transform_path)
     #split_merged_dataset(df.iterrows(), merged_path, int(args.jobs))
 
     if (not args.export_off):
         # Export to final dataset
-        merge_exp.export(args.format, args.format)
+        merge_exp.export(args.format, args.format, args.exp_overwrite, not args.no_save_images)
 
 if __name__ == '__main__':
     configparser.ConfigParser.optionxform = str
@@ -508,6 +571,8 @@ if __name__ == '__main__':
     #parser.add_argument('--transform-path', default='datum_proj_transform', help='Datumaro project transform destination folder. Default: datum_proj_transform')
     parser.add_argument('--export-off', action='store_true', help='Turn off exporting')
     parser.add_argument('--export-path', default='export', help='Export path. Will create an export of the supplied format eg. `export_yolo` if `-f yolo`. Default: export')
+    parser.add_argument('--exp-overwrite', action='store_true', help='Overwrite export.')
+    parser.add_argument('--no-save-images', action='store_true', help='Toggle on to not save images on export.')
     parser.add_argument('-f', '--format', default='yolo', help='Export format. Check `datum export -h` for supported types. Default: yolo')
     parser.add_argument('-j', '--jobs', default='4', help='Number of jobs to run. Default: 4')
     parser.set_defaults(func=main)
