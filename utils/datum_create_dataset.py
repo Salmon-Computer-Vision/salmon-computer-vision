@@ -201,6 +201,8 @@ class MergeExport:
 
     seq_stats = {}
     species_counter = {}
+    merge_seq_stats = {}
+    merge_species_counter = {}
 
     def __init__(self, name_df: pd.DataFrame, src_path: str, export_path: str, jobs: int):
         self.df = name_df
