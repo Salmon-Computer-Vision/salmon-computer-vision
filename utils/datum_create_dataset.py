@@ -288,6 +288,7 @@ class MergeExport:
             log.info(f"Exists. Skip preprocessing {dest_path}")
             return
 
+        log.info(f'Preprocessing {dest_path}')
         seq_path = osp.join(src_path, name)
         data = dm.Dataset.import_from(seq_path, "datumaro")
         dataset_filtered_wide = dm.Dataset.filter(data, '/item[annotation/w > annotation/h] | /item/*[not(self::annotation)]')
