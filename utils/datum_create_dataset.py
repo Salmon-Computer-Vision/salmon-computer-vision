@@ -280,10 +280,13 @@ class MergeExport:
 
     @staticmethod
     def _preprocess_job(row_tuple):
-        _, row, src_path, dest_folder, seq_stats, species_counter, count_lock = row_tuple
+        _, row, src_path, dest_folder, seq_stats, species_counter, count_lock, overwrite = row_tuple
 
         name = filename_to_name(row.filename).lower()
         dest_path = osp.join(dest_folder, name.lower())
+        if not overwrite and osp.exists(dest_path):
+            log.info(f"Exists. Skip preprocessing {dest_path}")
+            return
 
         seq_path = osp.join(src_path, name)
         data = dm.Dataset.import_from(seq_path, "datumaro")
@@ -314,9 +317,6 @@ class MergeExport:
         """
         Preprocess dataset (Removing tiny/incorrect boxes, etc.)
         """
-        if not overwrite and osp.exists(self.preprocess_path):
-            log.info(f"Exists. Skip preprocessing {self.preprocess_path}")
-            return
         log.info('Preprocessing dataset...')
         jobs_pool = Pool(self.jobs)
         manager = Manager()
@@ -325,7 +325,7 @@ class MergeExport:
         count_lock = manager.Lock()
 
         row_merged_tuples = [tup + (self.merge_path, self.preprocess_path, \
-                seq_stats, species_counter, count_lock) for tup in self.df.iterrows()]
+                seq_stats, species_counter, count_lock, overwrite) for tup in self.df.iterrows()]
         jobs_pool.map(self._preprocess_job, row_merged_tuples)
 
         jobs_pool.close()
