@@ -297,6 +297,7 @@ class MergeExport:
 
         name = filename_to_name(row.filename).lower()
         seq_path = osp.join(src_path, name)
+        log.info(f"Get stats from {seq_path}")
         data = dm.Dataset.import_from(seq_path, "datumaro")
 
         stats = dmop.compute_ann_statistics(data)
