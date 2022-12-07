@@ -273,7 +273,7 @@ class MergeExport:
         log.info(f'Preprocessing {dest_path}')
         seq_path = osp.join(src_path, name)
         data = dm.Dataset.import_from(seq_path, "datumaro")
-        dataset_filtered_wide = dm.Dataset.filter(data, '/item[annotation/w > annotation/h] | /item/*[not(self::annotation)]')
+        dataset_filtered_wide = dm.Dataset.filter(data, '/item[annotation/w > annotation/h] | /item[not(annotation)]')
 
         dataset_filtered_wide.export(format='datumaro', save_dir=dest_path)
 
