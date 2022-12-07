@@ -216,7 +216,6 @@ class MergeExport:
         self.ini_path = osp.abspath(f'{remove_path_end(src_path)}_inis')
         self.merge_path = osp.abspath(f'{remove_path_end(src_path)}_merged')
         self.preprocess_path = osp.abspath(f'{self.merge_path}_preprocess')
-        self.split_path = osp.abspath(f'{self.merge_path}_train_split')
 
         self.vid_path = osp.abspath(f'{self.merge_path}_vids')
         self.export_path = osp.abspath(export_path)
@@ -360,6 +359,7 @@ class MergeExport:
         """
         Split the dataset into train, valid, and test sets using random stratified splitting
         """
+        self.split_path = osp.abspath(f'{src_path}_train_split')
         if not overwrite and osp.exists(self.split_path):
             log.info(f"Exists. Skipping stratified split {self.split_path}")
             return
