@@ -169,10 +169,10 @@ class VidDataset:
 
         seq['name'] = name
         seq['imDir'] = self.imDir
-        seq['frameRate'] = self.frameRate
-        seq['seqLength'] = self.seqLength
-        seq['imWidth'] = self.imWidth
-        seq['imHeight'] = self.imHeight
+        seq['frameRate'] = int(self.frameRate)
+        seq['seqLength'] = int(self.seqLength)
+        seq['imWidth'] = int(self.imWidth)
+        seq['imHeight'] = int(self.imHeight)
         seq['imExt'] = self.imExt
 
         d.to_ini(filepath=seq_path)
@@ -540,6 +540,9 @@ class MergeExport:
 
     def export(self, suffix, exp_format, overwrite=False, save_images=True):
         export_path = f"{self.export_path}_{suffix}"
+
+        if exp_format == 'mot_seq_gt':
+            export_path = osp.join(export_path, 'images')
 
         set_paths = ['train', 'valid',  'test']
         # Create a tuple of export path and src path with correct set
