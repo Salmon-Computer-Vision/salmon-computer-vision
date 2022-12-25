@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +16,15 @@
 import os.path as osp
 import os
 import numpy as np
+import sys
 
-MOT_data = './export_mot_seq_gt'
+if len(sys.argv) < 3:
+    print("Requires args MOT_data and subset")
+    exit(1)
+
+#MOT_data = './export_mot_seq_gt'
+MOT_data = sys.argv[1]
+subset = sys.argv[2]
 
 # choose a data in ['MOT15', 'MOT16', 'MOT17', 'MOT20']
 # or your custom data (prepare it following the 'docs/tutorials/PrepareMOTDataSet.md')
@@ -26,9 +34,8 @@ def mkdirs(d):
     if not osp.exists(d):
         os.makedirs(d)
 
-
-seq_root = './{}/images/train'.format(MOT_data)
-label_root = './{}/labels_with_ids/train'.format(MOT_data)
+seq_root = './{}/images/{}'.format(MOT_data, subset)
+label_root = './{}/labels_with_ids/{}'.format(MOT_data, subset)
 mkdirs(label_root)
 seqs = [s for s in os.listdir(seq_root)]
 
