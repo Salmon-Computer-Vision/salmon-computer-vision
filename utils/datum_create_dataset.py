@@ -224,10 +224,14 @@ class MergeExport:
 
     @staticmethod
     def _merge_vid_job(row_tuple):
-        _, row, src_path, dest_folder, dataset_empty_path = row_tuple
+        _, row, src_path, dest_folder, dataset_empty_path, overwrite = row_tuple
 
         name = filename_to_name(row.filename).lower()
         dest_path = osp.join(dest_folder, name.lower())
+
+        if not overwrite and osp.exists(dest_path):
+            log.info(f"Exists. Skipping merge {dest_path}")
+            return
 
         seq_path = osp.join(src_path, name)
         data = dm.Dataset.import_from(seq_path, "datumaro")
@@ -243,9 +247,6 @@ class MergeExport:
         """
         Merge the separated video datasets into one to deal with inconsistent labels
         """
-        if not overwrite and osp.exists(self.merge_path):
-            log.info(f"Exists. Skipping merge {self.merge_path}")
-            return
         log.info('Merging transformed dataset...')
 
         jobs_pool = Pool(self.jobs)
@@ -254,7 +255,7 @@ class MergeExport:
         species_counter = manager.dict()
         count_lock = manager.Lock()
 
-        row_merged_tuples = [tup + (self.src_path, self.merge_path, self.dataset_empty) for tup in self.df.iterrows()]
+        row_merged_tuples = [tup + (self.src_path, self.merge_path, self.dataset_empty, overwrite) for tup in self.df.iterrows()]
         jobs_pool.map(self._merge_vid_job, row_merged_tuples)
 
         jobs_pool.close()
