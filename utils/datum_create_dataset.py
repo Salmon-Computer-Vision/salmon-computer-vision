@@ -41,7 +41,9 @@ EMPTY_PROJ_PATH = 'empty_proj' # Path to empty proj with only correct labels
 
 DUP_LABELS_MAPPING = {
         'White Fish': 'Whitefish',
-        'Bull Trout': 'Bull'
+        'Bull Trout': 'Bull',
+        'Lan prey': 'Lamprey',
+        'Lampray': 'Lamprey'
         }
 
 KEY_ANNO = 'annotations'
