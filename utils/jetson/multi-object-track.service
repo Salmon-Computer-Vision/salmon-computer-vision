@@ -1,6 +1,6 @@
 # /etc/systemd/system/multi-object-track.service
 [Unit]
-Description=Camera Detection service
+Description=Multi-object tracking service
 After=docker.service
 Requires=docker.service
 
