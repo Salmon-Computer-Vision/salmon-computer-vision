@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-RestartSec=30
+RestartSec=5
 ExecStart=/usr/bin/ssh -nN \
     -o ServerAliveInterval=30 \
     -o ServerAliveCountMax=3 \
