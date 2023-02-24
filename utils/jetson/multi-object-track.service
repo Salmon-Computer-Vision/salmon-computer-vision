@@ -1,0 +1,20 @@
+# /etc/systemd/system/multi-object-track.service
+[Unit]
+Description=Camera Detection service
+After=docker.service
+Requires=docker.service
+
+[Service]
+Environment=container=jetson
+Environment=input='rtsp://<url>:554'
+
+Type=simple
+Restart=always
+RestartSec=10
+ExecStartPre=-/usr/bin/docker exec -it $container /bin/sh -c "pkill -INT -f 'bytetrack'
+ExecStartPre=-/usr/bin/docker rm -f $container
+ExecStart=/home/salmonjetson/ByteTrack/docker-run.sh $container "$input"
+ExecStop=-/usr/bin/docker exec -it $container /bin/sh -c "pkill -INT -f 'bytetrack'
+
+[Install]
+WantedBy=multi-user.target
