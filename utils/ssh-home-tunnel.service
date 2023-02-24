@@ -1,0 +1,18 @@
+[Unit]
+Description=Reverse SSH Tunnel to access Starlink network
+After=network.target
+
+[Service]
+Type=simple
+RestartSec=30
+ExecStart=/usr/bin/ssh -nN \
+    -o ServerAliveInterval=30 \
+    -o ServerAliveCountMax=3 \
+    -o ExitOnForwardFailure=yes \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -R 36000:localhost:22 TPL_USER@TPL_HOSTNAME -p 5830 -i /home/pi/.ssh/id_rsa_remote
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
