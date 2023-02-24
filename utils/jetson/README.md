@@ -1,5 +1,34 @@
 # Jetson-nano Setup
 
+# Multi-Object Tracking only
+
+Create a user named `salmonjetson` and make sure it has a homefolder `/home/salmonjetson`.
+
+Login to that user.
+```bash
+sudo su salmonjetson
+```
+
+Place SSH deploy keys (`comp_vis_id_rsa`) for the computer-salmon-vision repo in `~/.ssh/`.
+
+Run `./setup.sh`.
+
+Create yolox model and ouputs directory:
+```bash
+mkdir -p ~/ByteTrack/YOLOX_outputs/yolox_nano_salmon
+```
+
+Put the converted model `model_trt.engine` in `yolox_nano_salmon`.
+
+Pass the `bytetrack` docker image created for the Jetson Nano and load it on the Jetson.
+
+Run the docker.
+```bash
+~/ByeteTrack/docker-run.sh
+```
+
+# Old Setup with homesecurity
+
 Clone jetson-inference and homesecurity.
 
 Be sure to edit `common/config.py` for any required changes such as

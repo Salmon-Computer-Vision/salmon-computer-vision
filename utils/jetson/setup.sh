@@ -12,9 +12,10 @@ sudo nvpmodel -m 0
 sudo jetson_clocks
 
 sudo apt-get install git
+
 eval `ssh-agent -s`
 ssh-add ~/.ssh/comp_vis_id_rsa
-git clone --depth 1 git@github.com:Salmon-Computer-Vision/salmon-computer-vision.git
-git clone --depth 1 https://github.com/Salmon-Computer-Vision/ByteTrack.git
+git clone --depth 1 git@github.com:Salmon-Computer-Vision/salmon-computer-vision.git ~/salmon-computer-vision
+git clone --depth 1 https://github.com/Salmon-Computer-Vision/ByteTrack.git ~/ByteTrack
 
 # Reboot to finish setup
