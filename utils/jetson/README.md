@@ -22,9 +22,11 @@ Put the converted model `model_trt.engine` in `yolox_nano_salmon`.
 
 Pass the `bytetrack` docker image created for the Jetson Nano and load it on the Jetson.
 
+Set static variables in `~/ByteTrack/docker-run.sh` such as the `prefix` and `fps`.
+
 Run the docker.
 ```bash
-~/ByeteTrack/docker-run.sh
+~/ByteTrack/docker-run.sh
 ```
 
 # Old Setup with homesecurity
