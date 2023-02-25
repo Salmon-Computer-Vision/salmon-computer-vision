@@ -24,10 +24,13 @@ Pass the `bytetrack` docker image created for the Jetson Nano and load it on the
 
 Set static variables in `~/ByteTrack/docker-run.sh` such as the `prefix` and `fps`.
 
-Run the docker.
+Run the docker to test:
 ```bash
 ~/ByteTrack/docker-run.sh
 ```
+
+Then, setup `systemctl` service with `multi-object-track.service`. Place this in `/etc/systemd/system/`
+and edit the URL to point to the desired RTSP camera source.
 
 # Old Setup with homesecurity
 
