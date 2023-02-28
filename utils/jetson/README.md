@@ -32,6 +32,40 @@ Run the docker to test:
 Then, setup `systemctl` service with `multi-object-track.service`. Place this in `/etc/systemd/system/`
 and edit the URL to point to the desired RTSP camera source.
 
+Enable upon startup and start the service:
+```bash
+sudo systemctl enable multi-object-track
+sudo systemctl start multi-object-track
+```
+
+Check the logs with
+```bash
+journalctl -u multi-object-track -f
+```
+
+## SSH Reverse Tunnel
+
+Create a new user solely for SSH tunnels/proxying.
+```bash
+sudo useradd tunnel
+```
+
+Create a group and add the new user:
+```bash
+sudo groupadd sshtunnel
+sudo usermod -aG revtunnel tunnel
+```
+
+Login to tunnel user and generate a new SSH key with no passphrase:
+```bash
+sudo su tunnel
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/revtunnel_id_rsa
+```
+
+Add the `revtunnel_id_rsa.pub` public key to `~/.ssh/authorized_keys`.
+
+
+
 # Old Setup with homesecurity
 
 Clone jetson-inference and homesecurity.
