@@ -1,5 +1,53 @@
 # Utility Tools
 
+## Setup SSH Reverse Tunnel
+
+### Server
+
+Create a new user solely for SSH tunnels/proxying.
+```bash
+sudo useradd tunnel
+```
+
+Create a group and add the new user:
+```bash
+sudo groupadd revtunnel
+sudo usermod -aG revtunnel tunnel
+```
+
+Login to tunnel user and generate a new SSH key with no passphrase:
+```bash
+sudo su tunnel
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/revtunnel_id_rsa
+```
+
+Add the `revtunnel_id_rsa.pub` public key to `~/.ssh/authorized_keys`.
+
+Put the contents of `reverse_tunnel.conf` to the bottom of `/etc/ssh/sshd_config`.
+This prevents the usage of that unsecure SSH key to login to the shell or local tunneling.
+
+### Client
+
+Copy the SSH key `/home/tunnel/.ssh/revtunnel_id_rsa` to the client's `~/.ssh/`.
+
+Copy `../ssh-home-tunnel.service` to the client's `/etc/systemd/system/`.
+
+Edit the service file as appropriate, changing the user to `tunnel` and the address + port. Change
+the local port default `36000` to an open port on your server.
+
+Enable and run the service:
+```bash
+sudo systemctl enable ssh-home-tunnel
+sudo systemctl start ssh-home-tunnel
+```
+
+Then, you should be able to SSH to the client from the server as follows:
+```bash
+ssh client@localhost -p 36000
+```
+
+## Labels
+
 If there are new labels, first, manually convert the XML \<labels\> in the `annotation.xml` file to JSON. Copy
 it to `labels.json` Then, run
 
@@ -21,7 +69,7 @@ Creates tasks on CVAT instance and uploads/matches annotations to their respecti
 ./convert_tf.sh source/datumaro dest/dir
 ```
 
-### datum\_create\_dataset.py
+## Dataset Creation Script
 
 ***Create an empty project with the correct labels as `empty_proj` in the current directory.***
 

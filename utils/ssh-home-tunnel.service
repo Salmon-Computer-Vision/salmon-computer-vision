@@ -11,7 +11,7 @@ ExecStart=/usr/bin/ssh -nN \
     -o ExitOnForwardFailure=yes \
     -o StrictHostKeyChecking=no \
     -o UserKnownHostsFile=/dev/null \
-    -R 36000:localhost:22 TPL_USER@TPL_HOSTNAME -p 5830 -i /home/pi/.ssh/id_rsa_remote
+    -R 36000:localhost:22 tunnel@TPL_HOSTNAME -p 5830 -i /home/pi/.ssh/revtunnel_id_rsa
 Restart=always
 
 [Install]

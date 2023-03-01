@@ -43,30 +43,6 @@ Check the logs with
 journalctl -u multi-object-track -f
 ```
 
-## SSH Reverse Tunnel
-
-Create a new user solely for SSH tunnels/proxying.
-```bash
-sudo useradd tunnel
-```
-
-Create a group and add the new user:
-```bash
-sudo groupadd sshtunnel
-sudo usermod -aG revtunnel tunnel
-```
-
-Login to tunnel user and generate a new SSH key with no passphrase:
-```bash
-sudo su tunnel
-ssh-keygen -t rsa -b 4096 -f ~/.ssh/revtunnel_id_rsa
-```
-
-Add the `revtunnel_id_rsa.pub` public key to `~/.ssh/authorized_keys`.
-
-Put the contents of `reverse_tunnel.conf` to the bottom of `/etc/ssh/sshd_config`.
-This prevents the usage of that unsecure SSH key to login to the shell or local tunneling.
-
 # Old Setup with homesecurity
 
 Clone jetson-inference and homesecurity.
