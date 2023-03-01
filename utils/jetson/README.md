@@ -1,8 +1,37 @@
 # Jetson-nano Setup
 
-# Multi-Object Tracking only
+## Setup Jetson Nano
 
-Create a user named `salmonjetson` and make sure it has a homefolder `/home/salmonjetson`.
+Format SD card with SD card formatter with Quick format.
+
+Flash SD card with Jetpack SDK using balenaEtcher.
+
+To do headless mode, set the jumper to use the barrel power jack. Connect USB micro to Jetson Nano and
+connect it to a computer. Connect an ethernet cable and then the power jack.
+
+Follow instructions to install.
+
+Run the following once you get to the terminal:
+
+```bash
+sudo apt update && sudo apt install apt-utils
+sudo apt install ssh
+```
+
+Then, check if you can ssh into the Jetson:
+```bash
+ssh <username>@<hostname>.local
+```
+
+If success, you can safely exit the serial connection and unplug the micro USB.
+
+## Multi-Object Tracking only
+
+Create a user named `salmonjetson` if not already and make sure it has a homefolder `/home/salmonjetson`:
+```bash
+sudo useradd salmonjetson
+ls /home
+```
 
 Login to that user.
 ```bash
@@ -11,7 +40,18 @@ sudo su salmonjetson
 
 Place SSH deploy keys (`comp_vis_id_rsa`) for the computer-salmon-vision repo in `~/.ssh/`.
 
-Run `./setup.sh`.
+Pass over this entire folder:
+```bash
+scp -r jetson/ <username>@<hostname>.local:
+```
+
+SSH into the Jetson and run the setup:
+```bash
+cd jetson
+./setup.sh
+```
+
+Reboot: `sudo reboot`
 
 Create yolox model and ouputs directory:
 ```bash
@@ -43,7 +83,7 @@ Check the logs with
 journalctl -u multi-object-track -f
 ```
 
-# Old Setup with homesecurity
+## Old Setup with homesecurity
 
 Clone jetson-inference and homesecurity.
 
