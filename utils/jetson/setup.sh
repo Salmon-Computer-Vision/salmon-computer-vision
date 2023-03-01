@@ -2,7 +2,7 @@
 
 # Pass SSH deploy keys first!
 
-sudo apt update && sudo apt upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y
 
 # Set text-only GUI for lower memory usage
 echo "/usr/sbin/lightdm" > /etc/X11/default-display-manager
@@ -13,7 +13,7 @@ echo set shared/default-x-display-manager lightdm | debconf-communicate
 sudo nvpmodel -m 0
 sudo jetson_clocks
 
-sudo apt-get install -y git
+sudo apt-get install -y git tmux
 
 eval `ssh-agent -s`
 ssh-add ~/.ssh/comp_vis_id_rsa
