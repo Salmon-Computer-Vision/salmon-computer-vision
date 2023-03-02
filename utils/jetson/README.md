@@ -38,8 +38,6 @@ Login to that user.
 sudo su salmonjetson
 ```
 
-Place SSH deploy keys (`comp_vis_id_rsa`) for the computer-salmon-vision repo in `~/.ssh/`.
-
 Pass over this entire folder:
 ```bash
 scp -r jetson/ <username>@<hostname>.local:
