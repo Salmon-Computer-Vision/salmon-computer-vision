@@ -51,11 +51,6 @@ sudo ./setup.sh
 
 Reboot: `sudo reboot`
 
-Create yolox model and ouputs directory:
-```bash
-mkdir -p ~/ByteTrack/YOLOX_outputs/yolox_nano_salmon
-```
-
 Put the converted model `model_trt.engine` in `yolox_nano_salmon`:
 ```bash
 scp model_trt.engine salmonjetson@<jetson_hostname>:/home/salmonjetson/ByteTrack/YOLOX_outputs/yolox_nano_salmon
@@ -66,8 +61,10 @@ Pass the `bytetrack` docker image created for the Jetson Nano and load it on the
 sudo apt install pv # Install progress monitor if not already
 # Un-compressed network transfer - recommended if LAN
 cat bytetrack_manual.tar | pv | ssh salmonjetson@<jetson_hostname> docker load
+```
 
-# OR
+OR
+```bash
 # Compressed network transfer - works only if CPU of target machine is powerful
 # On Jetson Nano, this is only ~2 MB/s for a compressed 2 GB file
 cat bytetrack_manual.tar.bz2 | pv | ssh salmonjetson@<jetson_hostname> docker load
