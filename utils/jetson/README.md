@@ -56,18 +56,35 @@ Create yolox model and ouputs directory:
 mkdir -p ~/ByteTrack/YOLOX_outputs/yolox_nano_salmon
 ```
 
-Put the converted model `model_trt.engine` in `yolox_nano_salmon`.
+Put the converted model `model_trt.engine` in `yolox_nano_salmon`:
+```bash
+scp model_trt.engine salmonjetson@<jetson_hostname>:/home/salmonjetson/ByteTrack/YOLOX_outputs/yolox_nano_salmon
+```
 
 Pass the `bytetrack` docker image created for the Jetson Nano and load it on the Jetson.
+```bash
+sudo apt install pv # Install progress monitor if not already
+# Un-compressed network transfer - recommended if LAN
+cat bytetrack_manual.tar | pv | ssh salmonjetson@<jetson_hostname> docker load
+
+# OR
+# Compressed network transfer - works only if CPU of target machine is powerful
+# On Jetson Nano, this is only ~2 MB/s for a compressed 2 GB file
+cat bytetrack_manual.tar.bz2 | pv | ssh salmonjetson@<jetson_hostname> docker load
+```
 
 Change the variables in `~/ByteTrack/docker-run.sh` such as the `prefix` and `fps` as needed.
 
-Run the docker to test:
+Test the docker to see if it is working:
 ```bash
-~/ByteTrack/docker-run.sh
+~/ByteTrack/docker-run.sh bytetrack rtsp://<url>
 ```
 
-Then, setup `systemctl` service with `multi-object-track.service`. Place this in `/etc/systemd/system/`
+The output of the videos and CSV tracks go in the `YOLOX_outputs` folder. You can symlink this
+folder to an external harddrive if needed.
+
+If it works, setup a `systemctl` service to automatically run this with
+`multi-object-track.service`. Place this service file in `/etc/systemd/system/`
 and edit the URL to point to the desired RTSP camera source.
 
 Enable upon startup and start the service:
