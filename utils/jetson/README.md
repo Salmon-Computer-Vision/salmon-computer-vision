@@ -46,7 +46,7 @@ scp -r jetson/ <username>@<hostname>.local:
 SSH into the Jetson and run the setup:
 ```bash
 cd jetson
-./setup.sh
+sudo ./setup.sh
 ```
 
 Reboot: `sudo reboot`
