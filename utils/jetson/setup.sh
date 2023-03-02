@@ -18,4 +18,7 @@ sudo apt-get install -y git tmux
 
 git clone --depth 1 https://github.com/Salmon-Computer-Vision/ByteTrack.git ~/ByteTrack
 
+sudo groupadd docker
+sudo usermod -aG docker $USER
+
 # Reboot to finish setup
