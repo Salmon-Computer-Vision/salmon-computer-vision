@@ -3,7 +3,7 @@
 export DEBIAN_FRONTEND=noninteractive
 export DEBCONF_NONINTERACTIVE_SEEN=true 
 
-sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y --force-yes Dpkg::Options::="--force-confnew"
 
 # Set text-only GUI for lower memory usage
 echo "/usr/sbin/lightdm" > /etc/X11/default-display-manager
