@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-# Pass SSH deploy keys first!
+export DEBIAN_FRONTEND=noninteractive
+export DEBCONF_NONINTERACTIVE_SEEN=true 
 
-sudo apt-get update && sudo apt-get upgrade -y
+sudo apt-get update #&& sudo apt-get upgrade -y
 
 # Set text-only GUI for lower memory usage
 echo "/usr/sbin/lightdm" > /etc/X11/default-display-manager
-DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true dpkg-reconfigure lightdm
+dpkg-reconfigure lightdm
 echo set shared/default-x-display-manager lightdm | debconf-communicate
 
 # Maximize device performance
