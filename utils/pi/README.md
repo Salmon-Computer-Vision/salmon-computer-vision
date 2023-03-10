@@ -3,6 +3,13 @@
 The service file and cam.sh script runs FFMPEG to record the RTSP
 videos from the IP Cameras that are deployed.
 
+Install `usbmount` to auto mount any USB devices that are plugged in:
+```bash
+sudo apt install usbmount
+```
+
+USB devices should be automatically mounted to `/media/usb[0-7]`.
+
 ## Raspberry Pi Recording Setup
 
 Add the following to `sudo crontab -e`
