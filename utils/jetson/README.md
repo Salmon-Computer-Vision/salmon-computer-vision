@@ -70,6 +70,13 @@ OR
 cat bytetrack_manual.tar.bz2 | pv | ssh salmonjetson@<jetson_hostname> docker load
 ```
 
+For saving to a shared harddrive, set an sshfs from the outputs folder to the external hard disk on the raspi:
+
+```bash
+mkdir ~/ByteTrack/YOLOX_outputs/track_outputs/
+sshfs lockedsaphen@raspberrypi.local:/media/usb0/ ~/ByteTrack/YOLOX_outputs/track_outputs/ -o IdentityFile=~/.ssh/revtunnel_id_rsa
+```
+
 Change the variables in `~/ByteTrack/docker-run.sh` such as the `prefix` and `fps` as needed.
 
 Test the docker to see if it is working:

@@ -10,6 +10,10 @@ sudo apt install usbmount
 
 USB devices should be automatically mounted to `/media/usb[0-7]`.
 
+- Setup a new user
+- Create and give new user the `sshfs` group
+- Put the contents of `sshfs.conf` into the bottom of `/etc/ssh/sshd_config`
+
 ## Raspberry Pi Recording Setup
 
 Add the following to `sudo crontab -e`
