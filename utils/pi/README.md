@@ -10,6 +10,9 @@ sudo apt install usbmount
 
 USB devices should be automatically mounted to `/media/usb[0-7]`.
 
+If auto mounting NTFS filesystems is desired [this link should
+help](https://raspberrypi.stackexchange.com/questions/41959/automount-various-usb-stick-file-systems-on-jessie-lite).
+
 - Setup a new user
 - Create and give new user the `sshfs` group
 - Put the contents of `sshfs.conf` into the bottom of `/etc/ssh/sshd_config`
