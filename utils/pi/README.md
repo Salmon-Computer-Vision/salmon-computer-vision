@@ -16,6 +16,7 @@ help](https://raspberrypi.stackexchange.com/questions/41959/automount-various-us
 - Setup a new user
 - Create and give new user the `sshfs` group
 - Put the contents of `sshfs.conf` into the bottom of `/etc/ssh/sshd_config`
+- Add the contents of `revtunnel_id_rsa.pub` to the new user's `~/.ssh/authorized_keys`
 
 ## Raspberry Pi Recording Setup
 
