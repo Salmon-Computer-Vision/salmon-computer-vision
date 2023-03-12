@@ -102,6 +102,13 @@ Check the logs with
 journalctl -u multi-object-track -f
 ```
 
+## Barlus Camera Caveats
+
+PTZ usage works by inputting the numeric value in the box and pressing the "Call" button to incur the
+described function.
+
+For example, set the value as 250 and click "Call" to save the lighting configuration.
+
 ## Old Setup with homesecurity
 
 Clone jetson-inference and homesecurity.
