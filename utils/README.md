@@ -28,12 +28,12 @@ This prevents the usage of that unsecure SSH key to login to the shell or local 
 
 ### Client
 
-Copy the SSH key `/home/tunnel/.ssh/revtunnel_id_rsa` to the client's `~/.ssh/`.
+Copy the SSH key `/home/tunnel/.ssh/revtunnel_id_rsa*` to the client's `~/.ssh/`.
 
-Copy `../ssh-home-tunnel.service` to the client's `/etc/systemd/system/`.
+Copy `ssh-home-tunnel.service` to the client's `/etc/systemd/system/`.
 
 Edit the service file as appropriate, changing the user to `tunnel` and the address + port. Change
-the local port default `36000` to an open port on your server.
+the local port default `36000` to an open port on your ***server***.
 
 Enable and run the service:
 ```bash
