@@ -59,6 +59,37 @@ Create a new user to restrict ssh key usage:
 - Put the contents of `sshfs.conf` into the bottom of `/etc/ssh/sshd_config`
 - Add the contents of `revtunnel_id_rsa.pub` to the new user's `~/.ssh/authorized_keys`
 
+## Set Static IP
+
+Get the gateway and DNS IP addresses of the current network:
+```bash
+ip r # Can find gateway
+grep "nameserver" /etc/resolv.conf # Get DNS IP address (Likely the gateway)
+```
+
+Edit the following to setup static IP:
+```bash
+sudoedit /etc/dhcpcd.conf
+```
+
+Add the following at the bottom:
+```
+interface [INTERFACE]
+static_routers=[ROUTER IP]
+static domain_name_servers=[DNS IP]
+inform ip_address=[DESIRED STATIC IP ADDRESS]/24
+```
+We use `inform` instead of `static`, so an IP address can still be obtained
+if it is in use already.
+
+The defaults for a Starlink router is the following:
+```
+interface eth0
+static_routers=192.168.1.1
+static domain_name_servers=192.168.1.1
+inform ip_address=[STATIC IP ADDRESS YOU WANT]/24
+```
+
 ## Raspberry Pi Recording Setup
 
 Add the following to `sudo crontab -e`
