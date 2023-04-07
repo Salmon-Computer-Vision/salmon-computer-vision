@@ -102,6 +102,17 @@ Check the logs with
 journalctl -u multi-object-track -f
 ```
 
+## Setup Static IP
+
+Jetson Nano by default uses Network Manager to provision its networking.
+
+Use `nm-connection-editor` or the CLI to edit the IPv4 static IP.
+
+By default Starlink uses the following:
+* Gateway: 192.168.1.1
+* DNS: 192.168.1.1
+* Netmask: 255.255.255.0 OR 24
+
 ## Barlus Camera Caveats
 
 PTZ usage works by inputting the numeric value in the box and pressing the "Call" button to incur the
