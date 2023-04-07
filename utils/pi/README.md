@@ -77,17 +77,15 @@ Add the following at the bottom:
 interface [INTERFACE]
 static_routers=[ROUTER IP]
 static domain_name_servers=[DNS IP]
-inform ip_address=[DESIRED STATIC IP ADDRESS]/24
+static ip_address=[DESIRED STATIC IP ADDRESS]/24
 ```
-We use `inform` instead of `static`, so an IP address can still be obtained
-if it is in use already.
 
 The defaults for a Starlink router is the following:
 ```
 interface eth0
 static_routers=192.168.1.1
 static domain_name_servers=192.168.1.1
-inform ip_address=[STATIC IP ADDRESS YOU WANT]/24
+static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 ```
 
 ## Raspberry Pi Recording Setup
