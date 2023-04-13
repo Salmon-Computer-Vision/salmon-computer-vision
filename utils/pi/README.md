@@ -88,6 +88,49 @@ static domain_name_servers=192.168.1.1
 static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 ```
 
+## Streaming from RTSP to Amazon Kinesis Video Streams
+
+### [Run from Docker](https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/examples-gstreamer-plugin.html#examples-gstreamer-plugin-docker)
+
+Authenticate to grab the docker image:
+```bash
+aws ecr get-login-password --region us-west-2 | docker login -u AWS --password-stdin https://546150905175.dkr.ecr.us-west-2.amazonaws.com
+```
+
+Pull the raspi docker image on a host machine:
+```bash
+docker pull 546150905175.dkr.ecr.us-west-2.amazonaws.com/kinesis-video-producer-sdk-cpp-raspberry-pi:latest
+```
+
+Save the image:
+```bash
+docker save 546150905175.dkr.ecr.us-west-2.amazonaws.com/kinesis-video-producer-sdk-cpp-raspberry-pi -o kvs-sdk-raspi.tar
+```
+
+Load to respective Raspberry Pis:
+```bash
+cat kvs-sdk-raspi.tar | pv | ssh pi@<pi_ip_address> docker load
+```
+
+**Create an IAM user on AWS with only the KVS stream permissions and generate credentials.**
+
+Edit `rtsp_stream_kvs.sh` with the proper credentials and RTSP URL for the substream and place
+this file in `/opt/vc/`
+
+Setup a `systemctl` service to automatically run it with
+`rtsp-stream-kvs.service`. Place this service file in `/etc/systemd/system/`.
+
+Enable upon startup and start the service:
+```bash
+sudo systemctl enable rtsp-stream-kvs
+sudo systemctl start rtsp-stream-kvs
+```
+
+Check the logs with
+```bash
+journalctl -u rtsp-stream-kvs -f
+```
+
 ## Raspberry Pi Recording Setup
 
 Add the following to `sudo crontab -e`
