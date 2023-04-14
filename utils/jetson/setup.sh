@@ -17,7 +17,7 @@ echo set shared/default-x-display-manager lightdm | debconf-communicate
 sudo nvpmodel -m 0
 sudo jetson_clocks
 
-sudo apt-get install -y git tmux
+sudo apt-get install -y git tmux sshfs
 
 git clone --depth 1 https://github.com/Salmon-Computer-Vision/ByteTrack.git ~/ByteTrack
 mkdir -p ~/ByteTrack/YOLOX_outputs/yolox_nano_salmon
