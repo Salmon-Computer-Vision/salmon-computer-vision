@@ -54,10 +54,10 @@ PrivateMounts=no
 Then, reboot.
 
 Create a new user to restrict ssh key usage:
-- Setup a new user
+- Setup a new user (eg. `lockeduser`)
 - Create and give new user the `sshfs` group
 - Put the contents of `sshfs.conf` into the bottom of `/etc/ssh/sshd_config`
-- Add the contents of `revtunnel_id_rsa.pub` to the new user's `~/.ssh/authorized_keys`
+- Add the contents of `revtunnel_id_rsa.pub` to the new user's `/home/lockeduser/.ssh/authorized_keys`
 
 ## Set Static IP
 
