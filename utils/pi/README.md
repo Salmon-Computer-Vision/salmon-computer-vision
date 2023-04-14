@@ -131,7 +131,58 @@ Check the logs with
 journalctl -u rtsp-stream-kvs -f
 ```
 
-## Raspberry Pi Recording Setup
+## \[Test setup\] WiFi to Ethernet Bridging
+
+```bash
+sudo apt-get install iptables-persistent
+```
+
+Setup dhcpcd:
+```bash
+sudoedit /etc/dhcpcd.conf`
+```
+
+Add the following at the bottom:
+```
+interface eth0
+static_routers=192.168.1.1
+static ip_address=192.168.1.1/24
+nohook wpa_supplicant
+```
+
+Restart static IP:
+```bash
+sudo systemctl restart dhcpcd
+```
+
+Setup ip forwarding:
+```bash
+sudoedit /etc/sysctl.conf
+```
+Uncomment the respective part:
+```
+net.ipv4.ip_forward=1
+```
+Run immediately:
+```bash
+sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+```
+
+Run iptable rules:
+```bash
+sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+sudo iptables -A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT  
+sudo iptables -A FORWARD -i eth0 -o wlan0 -j ACCEPT
+sudo netfilter-persistent save
+```
+
+Once done, reboot.
+
+When finished testing, make sure to delete the rules in
+`/etc/iptables/rules.v4` and not use the `192.168.1.1` gateway.
+
+
+## \[Deprecated\] Raspberry Pi Recording Setup
 
 Add the following to `sudo crontab -e`
 ```
