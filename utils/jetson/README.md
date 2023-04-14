@@ -108,6 +108,10 @@ Jetson Nano by default uses Network Manager to provision its networking.
 
 Use `nm-connection-editor` or the CLI to edit the IPv4 static IP.
 
+```bash
+sudo nm-connection-editor
+```
+
 By default Starlink uses the following:
 * Gateway: 192.168.1.1
 * DNS: 192.168.1.1
