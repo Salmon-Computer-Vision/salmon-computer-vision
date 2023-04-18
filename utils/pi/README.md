@@ -84,7 +84,7 @@ The defaults for a Starlink router is the following:
 ```
 interface eth0
 static_routers=192.168.1.1
-static domain_name_servers=192.168.1.1
+static domain_name_servers=192.168.1.1 1.1.1.1
 static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 ```
 
