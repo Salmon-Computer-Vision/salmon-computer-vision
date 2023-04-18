@@ -131,6 +131,14 @@ Check the logs with
 journalctl -u rtsp-stream-kvs -f
 ```
 
+**Note:** If you get the error `Failed to load plugin... libmmal_core.so:...`, install 
+`libraspberrypi0` and symlink it into the `/opt/vc/lib` directory:
+
+```bash
+sudo mkdir -p /opt/vc/lib
+sudo ln -s /usr/lib/arm-linux-gnueabihf/libmmal_core.so.0 /opt/vc/lib/
+```
+
 ## \[Test setup\] WiFi to Ethernet Bridging
 
 ```bash
