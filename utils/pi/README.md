@@ -90,29 +90,48 @@ static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 
 ## Streaming from RTSP to Amazon Kinesis Video Streams
 
+First update the Raspberry Pi software and firmware to install the necessary packages:
+```bash
+sudo rpi-update
+sudo apt update && sudo apt upgrade
+```
+
+Install AWS-CLI and docker:
+```bash
+sudo apt update && sudo apt install awscli docker.io
+```
+
+Add user to docker group and log out and log back in:
+```bash
+sudo usermod -aG docker $USER
+```
+
+Configure AWS-CLI:
+```bash
+aws configure
+```
+Make sure to configure with the correct region name where
+the KVSs are.
+
 ### [Run from Docker](https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/examples-gstreamer-plugin.html#examples-gstreamer-plugin-docker)
+
+**Create an IAM user on AWS with the KVS stream permissions and ECR access. Then, generate access credentials.**
+
+The following are default policies that can be used:
+```
+AmazonKinesisVideoStreamsFullAccess
+AWSAppRunnerServicePolicyForECRAccess
+```
 
 Authenticate to grab the docker image:
 ```bash
 aws ecr get-login-password --region us-west-2 | docker login -u AWS --password-stdin https://546150905175.dkr.ecr.us-west-2.amazonaws.com
 ```
 
-Pull the raspi docker image on a host machine:
+Pull the raspi docker image:
 ```bash
 docker pull 546150905175.dkr.ecr.us-west-2.amazonaws.com/kinesis-video-producer-sdk-cpp-raspberry-pi:latest
 ```
-
-Save the image:
-```bash
-docker save 546150905175.dkr.ecr.us-west-2.amazonaws.com/kinesis-video-producer-sdk-cpp-raspberry-pi -o kvs-sdk-raspi.tar
-```
-
-Load to respective Raspberry Pis:
-```bash
-cat kvs-sdk-raspi.tar | pv | ssh pi@<pi_ip_address> docker load
-```
-
-**Create an IAM user on AWS with only the KVS stream permissions and generate credentials.**
 
 Edit `rtsp_stream_kvs.sh` with the proper credentials and RTSP URL for the substream and place
 this file in `/opt/vc/`
