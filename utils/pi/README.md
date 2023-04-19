@@ -90,15 +90,9 @@ static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 
 ## Streaming from RTSP to Amazon Kinesis Video Streams
 
-First update the Raspberry Pi software and firmware to install the necessary packages:
-```bash
-sudo rpi-update
-sudo apt update && sudo apt upgrade
-```
-
 Install dependecies:
 ```bash
-sudo apt update && sudo apt install docker.io cmake
+sudo apt update && sudo apt upgrade && sudo apt install docker.io cmake
 ```
 
 Add user to docker group and log out and log back in:
