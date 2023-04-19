@@ -96,14 +96,22 @@ sudo rpi-update
 sudo apt update && sudo apt upgrade
 ```
 
-Install AWS-CLI and docker:
+Install dependecies:
 ```bash
-sudo apt update && sudo apt install awscli docker.io
+sudo apt update && sudo apt install docker.io cmake
 ```
 
 Add user to docker group and log out and log back in:
 ```bash
 sudo usermod -aG docker $USER
+```
+
+For raspi 32-bit, AWS-CLIv2 is not officially supported,
+so we will build it using Python:
+```bash
+git clone https://github.com/aws/aws-cli.git
+cd aws-cli && git checkout v2
+pip3 install -r requirements.txt
 ```
 
 Configure AWS-CLI:
