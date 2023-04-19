@@ -6,13 +6,15 @@ Requires=docker.service
 
 [Service]
 Environment=container=rtspkvs
+Environment=cam_ip=192.168.1.191
+Environment=stream_name=YourStreamName
 
 Type=simple
 Restart=always
 RestartSec=10
 ExecStartPre=-/usr/bin/docker stop $container /bin/sh -c "pkill -INT -f 'gst-launch-1.0'"
 ExecStartPre=-/usr/bin/docker rm -f $container
-ExecStart=/home/pi/salmon-computer-vision/utils/pi/docker-kvs-run.sh $container
+ExecStart=/home/pi/salmon-computer-vision/utils/pi/docker-kvs-run.sh $container $cam_ip $stream_name
 ExecStop=-/usr/bin/docker exec -i $container /bin/sh -c "pkill -INT -f 'gst-launch-1.0'"
 
 [Install]

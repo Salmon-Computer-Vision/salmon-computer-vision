@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-cam_ip=192.168.1.191
-stream_name=YourStreamName
+cam_ip=$1
+stream_name=$2
 access_key=youraccesskey
 secret_key=yoursecretkey
 rtsp_url="rtsp://${cam_ip}/user=admin&password=&channel=0&stream=1.sdp?"

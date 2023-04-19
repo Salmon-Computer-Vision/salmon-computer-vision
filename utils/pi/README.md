@@ -1,5 +1,7 @@
 # Raspberry Pi utils
 
+***This has been tested on Raspberry Pi Buster.***
+
 The service file and cam.sh script runs FFMPEG to record the RTSP
 videos from the IP Cameras that are deployed.
 
@@ -103,6 +105,9 @@ sudo usermod -aG docker $USER
 For raspi 32-bit, AWS-CLIv2 is not officially supported,
 so we will build it using Python. [First install Python 3.8](https://itheo.tech/install-python-38-on-a-raspberry-pi). Then, build aws-cli:
 ```bash
+# Install Rust as a dependency
+curl https://sh.rustup.rs -sSf | sh
+
 git clone https://github.com/aws/aws-cli.git
 cd aws-cli && git checkout v2
 pip3.8 install -r requirements.txt
