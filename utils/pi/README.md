@@ -143,11 +143,12 @@ Pull the raspi docker image:
 docker pull 546150905175.dkr.ecr.us-west-2.amazonaws.com/kinesis-video-producer-sdk-cpp-raspberry-pi:latest
 ```
 
-Edit `rtsp_stream_kvs.sh` with the proper credentials and RTSP URL for the substream and place
+Edit `rtsp_stream_kvs.sh` with the proper credentials and place
 this file in `/opt/vc/`
 
 Setup a `systemctl` service to automatically run it with
-`rtsp-stream-kvs.service`. Place this service file in `/etc/systemd/system/`.
+`rtsp-stream-kvs.service`. Edit the RTSP URL and stream name and place this
+service file in `/etc/systemd/system/`.
 
 Enable upon startup and start the service:
 ```bash
