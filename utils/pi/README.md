@@ -107,11 +107,14 @@ sudo usermod -aG docker $USER
 ```
 
 For raspi 32-bit, AWS-CLIv2 is not officially supported,
-so we will build it using Python:
+so we will build it using Python. [First install Python 3.8](https://itheo.tech/install-python-38-on-a-raspberry-pi). Then, build aws-cli:
 ```bash
 git clone https://github.com/aws/aws-cli.git
 cd aws-cli && git checkout v2
-pip3 install -r requirements.txt
+pip3.8 install -r requirements.txt
+pip3.8 install .
+
+aws --version
 ```
 
 Configure AWS-CLI:
