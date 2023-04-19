@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-cam_ip=$1
+rtsp_url="$1"
 stream_name=$2
 access_key=youraccesskey
 secret_key=yoursecretkey
-rtsp_url="rtsp://${cam_ip}/user=admin&password=&channel=0&stream=1.sdp?"
 
 export LD_LIBRARY_PATH=/opt/awssdk/amazon-kinesis-video-streams-producer-sdk-cpp/kinesis-video-native-build/downloads/local/lib:$LD_LIBRARY_PATH
 export PATH=/opt/awssdk/amazon-kinesis-video-streams-producer-sdk-cpp/kinesis-video-native-build/downloads/local/bin:$PATH
