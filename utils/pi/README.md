@@ -85,8 +85,8 @@ static ip_address=[DESIRED STATIC IP ADDRESS]/24
 The defaults for a Starlink router is the following:
 ```
 interface eth0
-static_routers=192.168.1.1
-static domain_name_servers=192.168.1.1 1.1.1.1
+static routers=192.168.1.1
+static domain_name_servers=192.168.1.1 1.1.1.1 1.0.0.1 8.8.8.8
 static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 ```
 
@@ -183,7 +183,7 @@ sudoedit /etc/dhcpcd.conf`
 Add the following at the bottom:
 ```
 interface eth0
-static_routers=192.168.1.1
+static routers=192.168.1.1
 static ip_address=192.168.1.1/24
 nohook wpa_supplicant
 ```
