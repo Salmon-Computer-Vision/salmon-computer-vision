@@ -169,6 +169,37 @@ sudo mkdir -p /opt/vc/lib
 sudo ln -s /usr/lib/arm-linux-gnueabihf/libmmal_core.so.0 /opt/vc/lib/
 ```
 
+## [Setup local docker registry](https://www.allisonthackston.com/articles/local-docker-registry.html)
+
+Speeds up pulling docker images onto the Jetsons and prevents double space usage trying
+to move compressed images to their destinations.
+
+```
+docker run -d -p 5000:5000 --restart always --name registry registry:2
+```
+
+Add the following to `/etc/docker/daemon.json` for both the server and client:
+
+```
+{ 
+    "insecure-registries": ["your_hostname.local:5000"] 
+}
+```
+
+`your_hostname.local` can also be a static IP address.
+
+Push a local docker image:
+
+```
+docker tag your_docker_image your_hostname.local:5000/your_docker_image
+docker push your_hostname.local:5000/your_docker_image
+```
+
+Then, you can pull as such:
+```
+docker pull your_hostname.local:5000/your_docker_image
+```
+
 ## \[Test setup\] WiFi to Ethernet Bridging
 
 ```bash
