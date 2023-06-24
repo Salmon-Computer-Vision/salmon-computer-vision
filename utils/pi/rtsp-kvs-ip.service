@@ -1,0 +1,20 @@
+# /etc/systemd/system/multi-object-track.service
+[Unit]
+Description=RTSP Veezoompro IP Stream to KVS
+After=docker.service
+Requires=docker.service
+
+[Service]
+Environment=container=rtspkvs
+Environment=stream_name=YourStreamName
+
+Type=simple
+Restart=always
+RestartSec=10
+ExecStartPre=-/usr/bin/docker stop $container
+ExecStartPre=-/usr/bin/docker rm -f $container
+ExecStart=/home/pi/salmon-computer-vision/utils/pi/veezoompro-kvs-run.sh $container $stream_name
+ExecStop=-/usr/bin/docker stop $container
+
+[Install]
+WantedBy=multi-user.target
