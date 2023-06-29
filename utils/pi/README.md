@@ -15,6 +15,22 @@ USB devices should be automatically mounted to `/media/usb[0-7]`.
 If auto mounting NTFS filesystems is desired [this link should
 help](https://raspberrypi.stackexchange.com/questions/41959/automount-various-usb-stick-file-systems-on-jessie-lite).
 ```bash
+sudoedit /etc/usbmount/usbmount.conf
+```
+
+Search for `FILESYSTEMS` and add `ntfs`, `fuseblk`, and `exfat`:
+```
+FILESYSTEMS="ntfs fuseblk ext2 ext3 ext4 hfsplus exfat"
+```
+If needed, you can add `vfat`, though, likely only small USB thumb drives will use that file system.
+
+Add options required to access the mounted folders:
+```
+FS_MOUNTOPTIONS="-fstype=ntfs-3g,nls=utf8,umask=007,gid=46 -fstype=fuseblk,nls=utf8,umask=007,gid=46 -fstype=exfat,uid=1000,gid=1000,umask=000"
+```
+Check the UID of your desired user through the `/etc/group` file.
+
+```bash
 sudoedit /etc/udev/rules.d/usbmount.rules
 ```
 Add the following rules:
