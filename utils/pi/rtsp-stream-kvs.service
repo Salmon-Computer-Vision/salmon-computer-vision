@@ -12,6 +12,7 @@ Environment=stream_name=YourStreamName
 Type=simple
 Restart=always
 RestartSec=10
+RuntimeMaxSec=1d
 ExecStartPre=-/usr/bin/docker stop $container /bin/sh -c "pkill -INT -f 'gst-launch-1.0'"
 ExecStartPre=-/usr/bin/docker rm -f $container
 ExecStart=/home/pi/salmon-computer-vision/utils/pi/docker-kvs-run.sh $container "$rtsp_url" $stream_name
