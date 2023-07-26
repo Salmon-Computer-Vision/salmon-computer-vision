@@ -1,5 +1,39 @@
 # Utility Tools
 
+## Dataset Creation Script
+
+***Create an empty project with the correct labels as `empty_proj` in the current directory.***
+
+Exports MOT and YOLO datasets based on CSV file:
+```bash
+./datum_create_dataset.py -j 4 [--export-off] [--format yolo] --anno-path annos --proj-path datum_proj --transform-path datum_proj_transform --export-path export /mnt/disk5tb/salmon_anno_bear_creek_123.csv
+```
+
+The CSV file must be of format:
+```
+filename,vid_path,anno_path
+07-15-2020 15-51-08 M Left Bank Underwater,/path/to/vids/07-15-2020 15-51-08 M Left Bank Underwater.m4v,/path/to/annos/07-15-2020_15-51-08_M_Left_Bank_Underwater.zip
+...
+```
+
+Use the following script to consolidate the YOLO dataset:
+```
+./yolo_combine.py path/to/export_yolo
+```
+
+Conforms split to export if split has changed
+```bash
+./conform_seqs_to_splits.sh datum_proj_merged_train_split/ export_yolo/
+```
+
+Converts a YOLOv5 dataset to YOLOv6 through symlinks, meaning do not delete the YOLOv5 dataset.
+```bash
+./symlink_yolov5_to_yolov6.sh export_yolo/ export_yolov6
+```
+
+For MOT (mot\_seq\_gt), you must put the `train`, `valid`, and `test` folders into a new `images` folder,
+update the folder in the script `gen_labels_MOT.py`, and then run `python3 gen_labels_MOT.py`.
+
 ## Setup SSH Reverse Tunnel
 
 ### Server
@@ -68,37 +102,3 @@ Creates tasks on CVAT instance and uploads/matches annotations to their respecti
 ./merge_datum.sh user "${pass-env}" source/dump/annotations filter/dir dest/dir
 ./convert_tf.sh source/datumaro dest/dir
 ```
-
-## Dataset Creation Script
-
-***Create an empty project with the correct labels as `empty_proj` in the current directory.***
-
-Exports MOT and YOLO datasets based on CSV file:
-```bash
-./datum_create_dataset.py -j 4 [--export-off] [--format yolo] --anno-path annos --proj-path datum_proj --transform-path datum_proj_transform --export-path export /mnt/disk5tb/salmon_anno_bear_creek_123.csv
-```
-
-The CSV file must be of format:
-```
-filename,vid_path,anno_path
-07-15-2020 15-51-08 M Left Bank Underwater,/path/to/vids/07-15-2020 15-51-08 M Left Bank Underwater.m4v,/path/to/annos/07-15-2020_15-51-08_M_Left_Bank_Underwater.zip
-...
-```
-
-Use the following script to consolidate the YOLO dataset:
-```
-./yolo_combine.py path/to/export_yolo
-```
-
-Conforms split to export if split has changed
-```bash
-./conform_seqs_to_splits.sh datum_proj_merged_train_split/ export_yolo/
-```
-
-Converts a YOLOv5 dataset to YOLOv6 through symlinks, meaning do not delete the YOLOv5 dataset.
-```bash
-./symlink_yolov5_to_yolov6.sh export_yolo/ export_yolov6
-```
-
-For MOT (mot\_seq\_gt), you must put the `train`, `valid`, and `test` folders into a new `images` folder,
-update the folder in the script `gen_labels_MOT.py`, and then run `python3 gen_labels_MOT.py`.
