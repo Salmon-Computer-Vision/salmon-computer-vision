@@ -25,10 +25,10 @@ either manually or with
 * Labels only ([GitHub
   repo](https://github.com/KamiCreed/salmon-count-labels.git)).
 
-The annotations are in "CVAT for Video 1.1" format. It includes only the
-Kitwanga River and Bear Creek River bounding box annotations with no images.
-The conversion script is in the `utils` folder
-(`utils/datum_create_dataset.py`), requiring
+These annotations are in "CVAT for Video 1.1" format and include tags that
+specify male/female, injuries, etc. It includes the Kitwanga River and Bear
+Creek River bounding box annotations with no images. The conversion script is
+in the `utils` folder (`utils/datum_create_dataset.py`), requiring
 [Datumaro](https://github.com/openvinotoolkit/datumaro) to run.
 
 
