@@ -1,8 +1,8 @@
 # Salmon Computer Vision Project
 
 This repository contains several tools and utilities to assist in training
-salmon counting automation tools. Two major categories include video-based
-enumeration and sonar-based enumeration.
+salmon counting automation tools. Two major categories include [video-based](#video-based)
+enumeration and [sonar-based](sonar-based) enumeration.
 
 ## Video-based
 
