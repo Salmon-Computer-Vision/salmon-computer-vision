@@ -53,7 +53,9 @@ Follow either the docker install or host machine install in the [ByteTrack
 documentation](https://github.com/Salmon-Computer-Vision/ByteTrack/blob/main/README.md)
 to install all the requirements to run ByteTrack.
 
-Download the `bytetrack_salmon.tar.gz` dataset from the above Dropbox link.
+Download the `bytetrack_salmon.tar.gz` dataset from the [Dataset](#dataset)
+section or convert the dataset to the MOT sequences format and use the script
+in the `ByteTrack` repo to convert them to the COCO format.
 
 Extract it and put the `salmon` folder in the `datasets` folder.
 ```bash
@@ -69,14 +71,16 @@ Place the pretrained model in the `pretrained` folder. The path should be
 
 Run the training either inside the docker container or on the host machine:
 ```bash
-python3 tools/train.py -f exps/example/mot/yolox_nano_salmon.py -d 4 -b 48 --fp16 -o -c pretrained/yolox_nano.pth
+python3 tools/train.py -f exps/example/mot/yolox_nano_salmon.py -d 4 -b 256 --fp16 -o -c pretrained/yolox_nano.pth
 ```
 
 If you canceled the training in the middle, you can resume from a checkpoint
 with the following command:
 ```bash
-python3 tools/train.py -f exps/example/mot/yolox_nano_salmon.py -d 4 -b 48 --fp16 -o --resume
+python3 tools/train.py -f exps/example/mot/yolox_nano_salmon.py -d 4 -b 256 --fp16 -o --resume
 ```
+
+Lower `-b` (batch size) if running on a GPU with less memory.
 
 Once finished, the final outputs will be in `YOLOX_outputs/yolox_nano_salmon/`
 where `best_ckpt.pth.tar` would be the checkpoint with the highest validation
@@ -84,9 +88,36 @@ mAP score.
 
 #### Object Detector
 
+This will describe YOLOv6, however, the steps are and format are similar for the other versions.
+
+Clone the YOLOv6 repo:
+```bash
+git clone https://github.com/meituan/YOLOv6.git
+```
+
+Install Python3 requirements:
+```bash
+cd YOLOv6
+pip3 install -r requirements.txt
+```
+
+Download the `yolov6_salmon.tar.gz` dataset from the [Dataset](#dataset)
+section or convert the dataset to the YOLO format following the instructions in
+the YOLOv6 repo.
+
+Create a `combined_bear-kitwanga.yaml` file in the `data` folder describing the
+location of the dataset and the class labels.
+
+Run the training using multi-GPUs:
+
 ```bash
 python -m torch.distributed.launch --nproc_per_node 4 tools/train.py --epoch 100 --batch 512 --conf configs/yolov6n_finetune.py --eval-interval 2 --data data/combined_bear-kitwanga.yaml --device 0,1,2,3
 ```
+
+Lower `--batch` size appropriately if running on GPUs with less memory.
+
+The final outputs will be in `runs/train/exp<X>`, where `<X>` is the number of
+the run.
 
 ## Sonar-based
 
