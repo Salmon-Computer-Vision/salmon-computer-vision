@@ -2,7 +2,7 @@
 
 This repository contains several tools and utilities to assist in training
 salmon counting automation tools. Two major categories include [video-based](#video-based)
-enumeration and [sonar-based](sonar-based) enumeration.
+enumeration and [sonar-based](#sonar-based) enumeration.
 
 ## Video-based
 
