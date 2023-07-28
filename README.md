@@ -107,8 +107,15 @@ Download the `yolov6_salmon.tar.gz` dataset from the [Dataset](#dataset)
 section or convert the dataset to the YOLO format following the instructions in
 the YOLOv6 repo.
 
-Create a `combined_bear-kitwanga.yaml` file in the `data` folder describing the
-location of the dataset and the class labels.
+Extract the dataset:
+```bash
+tar xzvf yolov6_salmon.tar.gz
+```
+
+Download the `combined_bear-kitwanga.yaml` file from the [Dataset](#dataset)
+section and place it in the `data` folder which describes the location of the
+dataset and the class labels. Please edit the yaml to point to where you
+extract the dataset.
 
 Run the training using multi-GPUs:
 
