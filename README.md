@@ -47,6 +47,7 @@ The following steps are for Ubuntu 20.04:
 Clone our version of the ByteTrack repo:
 ```bash
 git clone https://github.com/Salmon-Computer-Vision/ByteTrack.git
+cd ByteTrack
 ```
 
 Follow either the docker install or host machine install in the [ByteTrack
@@ -57,10 +58,11 @@ Download the `bytetrack_salmon.tar.gz` dataset from the [Dataset](#dataset)
 section or convert the dataset to the MOT sequences format and use the script
 in the `ByteTrack` repo to convert them to the COCO format.
 
-Extract it and put the `salmon` folder in the `datasets` folder.
+Extract it and put the `salmon` folder in the `datasets` folder in `ByteTrack`
+if not already.
+
 ```bash
 tar xzvf bytetrack_salmon.tar.gz
-mv salmon datasets
 ```
 
 Download the pretrained model YOLOX nano at their [model
