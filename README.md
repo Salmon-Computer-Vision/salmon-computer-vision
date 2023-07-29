@@ -33,7 +33,7 @@ in the `utils` folder (`utils/datum_create_dataset.py`), requiring
 [this documentation](utils/README.md) for more details.
 
 
-### Training Steps
+### Models
 
 Trained on a Ubuntu 20.04 [Lambda
 Scalar](https://lambdalabs.com/products/scalar) system with 4 A5000 GPUs.
@@ -88,6 +88,19 @@ Once finished, the final outputs will be in `YOLOX_outputs/yolox_nano_salmon/`
 where `best_ckpt.pth.tar` would be the checkpoint with the highest validation
 mAP score.
 
+To inference with the model on a video:
+
+```bash
+python3 tools/demo_track.py video -f exps/example/mot/yolox_nano_salmon.py -c pretrained/bytetrack_x_mot17.pth.tar --path path/to/video.mp4 --fp16 --fuse --save_result
+```
+
+Other options can be done with `demo_track.py` such as camera, and images. Run
+the following to check them all:
+
+```bash
+python3 tools/demo_track.py -h
+```
+
 #### Object Detector
 
 This will describe YOLOv6, however, the steps are and format are similar for the other versions.
@@ -127,6 +140,23 @@ Lower `--batch` size appropriately if running on GPUs with less memory.
 
 The final outputs will be in `runs/train/exp<X>`, where `<X>` is the number of
 the run.
+
+To run inferencing with YOLOv6:
+
+```bash
+python3 tools/infer.py \
+    --yaml data/combined_bear-kitwanga.yaml \
+    --weights runs/train/exp${X}/weights/best_ckpt.pt \
+    --source "$vid" \
+    --save-txt \
+    --device $device
+```
+
+`$device` describes the number of the GPU device. If you only have one, `$device = 0`.
+
+The resulting output will be in the `runs/inference` folder.
+
+Check the YOLOv6 README for further inference commands or check `python3 tools/infer.py -h`.
 
 ## Sonar-based
 
