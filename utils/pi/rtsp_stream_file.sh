@@ -9,4 +9,4 @@ export GST_PLUGIN_PATH=/opt/awssdk/amazon-kinesis-video-streams-producer-sdk-cpp
 
 gst-launch-1.0 -v rtspsrc location="${rtsp_url}" \
     short-header=TRUE ! rtph264depay ! h264parse ! \
-    splitmuxsink location=/opt/vc/buffer/koeye%05d.mkv max-size-time=1200000000000 muxer=matroskamux
+    splitmuxsink location=/media/usb0/jet${stream_name}_buffer/jet${stream_name}%05d.mkv max-size-time=1200000000000 muxer=matroskamux
