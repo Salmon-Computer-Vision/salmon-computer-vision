@@ -103,7 +103,7 @@ python3 tools/demo_track.py -h
 
 #### Object Detector
 
-This will describe YOLOv6, however, the steps are and format are similar for the other versions.
+This will describe YOLOv6, however, the steps and format are similar for the other versions.
 
 Clone the YOLOv6 repo:
 ```bash
