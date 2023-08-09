@@ -152,7 +152,7 @@ python3 tools/infer.py \
     --device $device
 ```
 
-`$device` describes the number of the GPU device. If you only have one, `$device = 0`.
+`$device` describes the GPU device number. If you only have one, `$device = 0`.
 
 The resulting output will be in the `runs/inference` folder.
 
