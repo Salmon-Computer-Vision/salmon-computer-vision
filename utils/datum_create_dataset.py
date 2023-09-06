@@ -364,6 +364,7 @@ class MergeExport:
         Split the dataset into train, valid, and test sets using random stratified splitting
         """
         self.split_path = osp.abspath(f'{src_path}_train_split')
+        self.tiny_path = f'{self.split_path}_tiny'
         if not overwrite and osp.exists(self.split_path):
             log.info(f"Exists. Skipping stratified split {self.split_path}")
             return
@@ -444,6 +445,16 @@ class MergeExport:
         valid_seqs, valid_counts = add_one_categ()
         train_seqs, train_counts = add_one_categ()
 
+        def copy_seq(seqs, set_path):
+            # Copy seqs to respective folders
+            for name in seqs:
+                shutil.copytree(osp.join(src_path, name), osp.join(set_path, name))
+
+        # Create a tiny dataset with all categories
+        tiny_train_path = osp.join(self.tiny_path, 'train')
+        copy_seq(test_seqs, tiny_train_path)
+        self._to_json(test_counts, osp.join(self.tiny_path, 'distribution.json'))
+
         # Accumulate sequences until max capacity
         test_chosen_seqs, test_counts = self._get_seq_set(test_max_counts, test_counts)
         test_seqs += test_chosen_seqs
@@ -471,11 +482,6 @@ class MergeExport:
         log.info(len(train_seqs))
         log.info(train_counts)
         #log.info(f"Max: {train_max_counts}")
-
-        def copy_seq(seqs, set_path):
-            # Copy seqs to respective folders
-            for name in seqs:
-                shutil.copytree(osp.join(src_path, name), osp.join(set_path, name))
 
         copy_seq(valid_seqs, valid_path)
         copy_seq(test_seqs, test_path)
@@ -543,14 +549,18 @@ class MergeExport:
 
     def export(self, suffix, exp_format, overwrite=False, save_images=True):
         export_path = f"{self.export_path}_{suffix}"
+        tiny_export_path = f"{self.export_path}_{suffix}_tiny"
 
         if exp_format == 'mot_seq_gt':
             export_path = osp.join(export_path, 'images')
+            tiny_export_path = osp.join(tiny_export_path, 'images')
 
         set_paths = ['train', 'valid',  'test']
         # Create a tuple of export path and src path with correct set
         seq_paths = [(osp.join(self.split_path, set_path, i), osp.join(export_path, set_path, i))
                 for set_path in set_paths for i in os.listdir(osp.join(self.split_path, set_path))]
+        seq_paths += [(osp.join(self.tiny_path, 'train', i), osp.join(tiny_export_path, 'train', i))
+                for i in os.listdir(osp.join(self.tiny_path, 'train'))]
 
         export_pool = Pool(self.jobs)
         row_src_dest_tuples = [seq_path + (self.ini_path, exp_format, overwrite, save_images) for seq_path in seq_paths]
