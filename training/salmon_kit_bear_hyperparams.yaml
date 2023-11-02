@@ -1,0 +1,32 @@
+# 97/300 iterations complete ✅ (58935.28s)
+# Results saved to /usr/src/ultralytics/runs/detect/tune9
+# Best fitness=0.84933 observed at iteration 83
+# Best fitness metrics are {'metrics/precision(B)': 0.95332, 'metrics/recall(B)': 0.92911, 'metrics/mAP50(B)': 0.96825, 'metrics/mAP50-95(B)': 0.83611, 'val/box_loss': 0.41015, 'val/cls_loss': 0.30978, 'val/dfl_loss': 0.75059, 'fitness': 0.84933}
+# Best fitness model is /usr/src/ultralytics/runs/detect/train91
+# Best fitness hyperparameters are printed below.
+
+data: /training/export_combined_bear_kitwanga_preprocess_yolo/combined_bear_kitwanga_preprocess.yaml
+epochs: 100
+
+lr0: 0.01322
+lrf: 0.00811
+momentum: 0.7
+weight_decay: 0.00098
+warmup_epochs: 3.46907
+warmup_momentum: 0.72411
+box: 5.98877
+cls: 0.49266
+dfl: 0.98168
+hsv_h: 0.00388
+hsv_s: 0.87294
+hsv_v: 0.1004
+degrees: 0.0
+translate: 0.04725
+scale: 0.14363
+shear: 0.0
+perspective: 0.0
+flipud: 0.0
+fliplr: 0.25407
+mosaic: 1.0
+mixup: 0.0
+copy_paste: 0.0
