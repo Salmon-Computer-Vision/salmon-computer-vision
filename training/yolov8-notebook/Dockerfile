@@ -3,6 +3,7 @@
 FROM ultralytics/ultralytics:latest
 
 RUN pip3 install jupyterlab jupyterlab-vim
+RUN pip3 install -U datumaro[default] jupyter ipywidgets
 
 ENV JUPYTER_PORT=8888
 EXPOSE $JUPYTER_PORT
