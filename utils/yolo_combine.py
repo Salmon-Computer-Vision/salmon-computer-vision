@@ -19,7 +19,10 @@ PREFIX = 'data/'
 def main(args):
     src_path = osp.abspath(args.src_folder)
     os.makedirs(osp.join(src_path, KEY_BACKUP), exist_ok=True)
-    set_keys = [KEY_TEST, KEY_VALID, KEY_TRAIN]
+    if args.subset:
+        set_keys = [args.subset]
+    else:
+        set_keys = [KEY_TEST, KEY_VALID, KEY_TRAIN]
 
     for set_key in set_keys:
         log.info(f'Consolidating {set_key} set...')
@@ -40,6 +43,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Consolidate train, valid, test folders from the create dataset script into one text file each.')
 
     parser.add_argument('src_folder', help='YOLO datasets folder')
+    parser.add_argument('-s', '--subset', default=None, help='Specific subset only')
     parser.set_defaults(func=main)
 
     args = parser.parse_args()
