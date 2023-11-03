@@ -238,7 +238,7 @@ class MergeExport:
         seq_path = osp.join(src_path, name)
         data = dm.Dataset.import_from(seq_path, "datumaro")
         dataset_empty = dm.Dataset.import_from(dataset_empty_path, "datumaro")
-        dataset_merged = IntersectMerge()([data, dataset_empty])
+        dataset_merged = IntersectMerge()([dataset_empty, data])
 
         # Fix duplicate labels
         dataset_merged.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
