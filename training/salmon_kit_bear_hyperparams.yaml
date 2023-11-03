@@ -5,8 +5,6 @@
 # Best fitness model is /usr/src/ultralytics/runs/detect/train91
 # Best fitness hyperparameters are printed below.
 
-# Copy these to /usr/src/ultralytics/ultralytics/cfg/default.yaml
-
 lr0: 0.01322
 lrf: 0.00811
 momentum: 0.7
