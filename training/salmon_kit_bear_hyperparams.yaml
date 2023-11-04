@@ -1,29 +1,29 @@
-# 97/300 iterations complete ✅ (58935.28s)
-# Results saved to /usr/src/ultralytics/runs/detect/tune9
-# Best fitness=0.84933 observed at iteration 83
-# Best fitness metrics are {'metrics/precision(B)': 0.95332, 'metrics/recall(B)': 0.92911, 'metrics/mAP50(B)': 0.96825, 'metrics/mAP50-95(B)': 0.83611, 'val/box_loss': 0.41015, 'val/cls_loss': 0.30978, 'val/dfl_loss': 0.75059, 'fitness': 0.84933}
-# Best fitness model is /usr/src/ultralytics/runs/detect/train91
+# 45/300 iterations complete ✅ (75097.84s)
+# Results saved to /training/runs/detect/tune
+# Best fitness=0.35844 observed at iteration 15
+# Best fitness metrics are {'metrics/precision(B)': 0.55165, 'metrics/recall(B)': 0.48172, 'metrics/mAP50(B)': 0.51889, 'metrics/mAP50-95(B)': 0.34061, 'val/box_loss': 0.64285, 'val/cls_loss': 6.5236, 'val/dfl_loss': 0.70891, 'fitness': 0.35844}
+# Best fitness model is /training/runs/detect/train15
 # Best fitness hyperparameters are printed below.
 
-lr0: 0.01322
-lrf: 0.00811
-momentum: 0.7
-weight_decay: 0.00098
-warmup_epochs: 3.46907
-warmup_momentum: 0.72411
-box: 5.98877
-cls: 0.49266
+lr0: 0.01513
+lrf: 0.00787
+momentum: 0.72627
+weight_decay: 0.001
+warmup_epochs: 3.53624
+warmup_momentum: 0.69906
+box: 6.08652
+cls: 0.47637
 dfl: 0.98168
-hsv_h: 0.00388
-hsv_s: 0.87294
-hsv_v: 0.1004
+hsv_h: 0.00375
+hsv_s: 0.88226
+hsv_v: 0.09755
 degrees: 0.0
-translate: 0.04725
-scale: 0.14363
+translate: 0.0385
+scale: 0.14076
 shear: 0.0
 perspective: 0.0
 flipud: 0.0
-fliplr: 0.25407
-mosaic: 1.0
+fliplr: 0.28201
+mosaic: 0.95922
 mixup: 0.0
 copy_paste: 0.0
