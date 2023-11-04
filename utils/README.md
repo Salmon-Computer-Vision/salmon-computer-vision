@@ -43,6 +43,11 @@ For example, with a YOLO format dataset, use the following command to grab a ran
 shuf -n 1000 path/to/train.txt
 ```
 
+Afterwards, check for duplicates to make sure the random sample did not grab duplicate samples:
+```bash
+sort path/to/train.txt | uniq -cd
+```
+
 ## Setup SSH Reverse Tunnel
 
 ### Server
