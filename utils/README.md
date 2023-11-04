@@ -34,6 +34,15 @@ Converts a YOLOv5 dataset to YOLOv6 through symlinks, meaning do not delete the 
 For MOT (mot\_seq\_gt), you must put the `train`, `valid`, and `test` folders into a new `images` folder,
 update the folder in the script `gen_labels_MOT.py`, and then run `python3 gen_labels_MOT.py`.
 
+**Note:** A "tiny" version of the dataset will also be exported for hyperparameter tuning purposes. It
+aims to have every class that is in at least one sequence. Further addition of data may be necessary
+from random sampling to make the dataset more diverse.
+
+For example, with a YOLO format dataset, use the following command to grab a random sample of data:
+```bash
+shuf -n 1000 path/to/train.txt
+```
+
 ## Setup SSH Reverse Tunnel
 
 ### Server
