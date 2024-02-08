@@ -5,7 +5,7 @@ class DataLoader(ABC):
     @abstractmethod
     def next_clip(self):
         pass
-    
+
     @abstractmethod
     def items(self):
         pass
@@ -16,7 +16,8 @@ class DataLoader(ABC):
         pass
 
 class Item():
-    def __init__(self, frame, boxes: list[Boxes]=None, attributes: list[dict]=None):
+    def __init__(self, frame, num_items: int, boxes: list[Boxes]=None,  attrs: list[dict]=None):
         self.frame = frame # Can be image or path to file
         self.boxes = boxes
-        self.attrs = attributes # Extra attributes if needed
+        self.num_items = num_items
+        self.attrs = attrs # Extra attributes if needed
