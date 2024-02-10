@@ -7,6 +7,10 @@ class DataLoader(ABC):
         pass
 
     @abstractmethod
+    def clips_len(self):
+        pass
+
+    @abstractmethod
     def items(self):
         pass
 
@@ -16,7 +20,7 @@ class DataLoader(ABC):
         pass
 
 class Item():
-    def __init__(self, frame, num_items: int, boxes: list[Boxes]=None,  attrs: list[dict]=None):
+    def __init__(self, frame, num_items: int, boxes: Boxes=None,  attrs: list[dict]=None):
         self.frame = frame # Can be image or path to file
         self.boxes = boxes
         self.num_items = num_items

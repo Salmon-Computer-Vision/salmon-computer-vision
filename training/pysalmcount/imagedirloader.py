@@ -12,8 +12,11 @@ class ImageDirLoader(DataLoader):
         self.img_folder_name = img_folder_name
         self.custom_classes = custom_classes
         self.clip_gen = self.root_dir.iterdir()
-        self.clips_len = len(list(self.root_dir.iterdir()))
+        self.num_clips = len(list(self.root_dir.iterdir()))
         self.cur_clip = False
+
+    def clips_len(self):
+        return self.num_clips
 
     def next_clip(self):
         self.cur_clip = next(self.clip_gen)
@@ -25,7 +28,7 @@ class ImageDirLoader(DataLoader):
         frec = lambda p, g: sorted(p.glob(g))
         num_frames = len(list(frec(self.cur_clip / self.img_folder_name, self.IMG_PATTERN)))
         for f in frec(self.cur_clip / self.img_folder_name, self.IMG_PATTERN):
-            item = Item(f, num_times=num_frames)
+            item = Item(f, num_items=num_frames)
             yield item
 
     def classes(self) -> dict:

@@ -5,10 +5,14 @@ import os
 from pathlib import Path
 import cv2
 from ultralytics import YOLO
+from ultralytics.engine.results import Results
 
 from collections import defaultdict
 import numpy as np
 import pandas as pd
+
+VOTE_METHOD_IGN = 'ignore_thin'
+VOTE_METHOD_CONF = 'confidence'
 
 class SalmonCounter:
     LEFT_PRE = 'l_'
@@ -32,7 +36,10 @@ class SalmonCounter:
         self.tracking_thresh = tracking_thresh
         
 
-    def count(self, use_gt=False, save_vid=False):
+    def count(self, use_gt=False, save_vid=False, vote_method='ignore_thin'):
+        if vote_method not in [VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
+            raise ValueError(f'{vote_method} is not a valid method')
+            
         cur_clip = self.dataloader.next_clip()
         self.salm_count.loc[cur_clip.name] = 0
 
@@ -47,23 +54,43 @@ class SalmonCounter:
 
         frame_count = 0
         for item in self.dataloader.items():
-            # Run YOLOv8 tracking on the frame, persisting tracks between frames
-            results = self.model.track(item.frame, persist=True)
-    
-            # Get the boxes and track IDs
-            boxes = results[0].boxes.xywh.cpu()
-            id_items = results[0].boxes.id
-            
+            boxes = []
             track_ids = []
             cls_ids = []
-            if id_items is not None:
-                track_ids = id_items.int().cpu().tolist()
-                cls_ids = results[0].boxes.cls.int().cpu().tolist()
+            confs = []
+            if not use_gt:
+                # Run YOLOv8 tracking on the frame, persisting tracks between frames
+                results = self.model.track(item.frame, persist=True, verbose=False)
+
+                orig_shape = results[0].orig_shape
+                # Get the boxes and track IDs
+                boxes = results[0].boxes.xywh.cpu()
+                id_items = results[0].boxes.id
+                
+                if id_items is not None:
+                    track_ids = id_items.int().cpu().tolist()
+                    cls_ids = results[0].boxes.cls.int().cpu().tolist()
+                    confs = results[0].boxes.conf.cpu().tolist()
+            else:
+                print(item.frame)
+                img = cv2.imread(item.frame)
+                h, w, _ = img.shape
+                orig_shape = (h, w)
+                input_boxes = None
+                if item.boxes:
+                    boxes = item.boxes.xywh
+                    input_boxes = item.boxes.data
+                    track_ids = item.boxes.id.tolist()
+                    cls_ids = item.boxes.cls.tolist()
+                    confs = item.boxes.conf.tolist()
+                results = [Results(img, item.frame, self.dataloader.classes(), boxes=input_boxes)]
 
     
             # When any tracking ID is lost
             # Set difference prev track IDs - current track IDs
             not_tracking = set(self.prev_track_ids.keys()).difference(track_ids)
+            if frame_count >= item.num_items - 1:
+                not_tracking = set(self.prev_track_ids.keys()) # Finish up leftover tracks
             for track_id in not_tracking:
                 if self.prev_track_ids[track_id][self.TRACK_COUNT] > 0 and item.num_items - frame_count > self.tracking_thresh:
                     # Each tracking ID has a counter
@@ -73,10 +100,11 @@ class SalmonCounter:
                     # After a track disappears for tracking_thresh frames
                     # Find max voted class
                     class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
+                    print(class_vote)
                     if class_vote:
                         main_class_id = max(class_vote, key=class_vote.get)
                         # Run LOI on no longer tracking IDs
-                        self._line_of_interest(results[0].orig_shape[1], cur_clip, track_id, self.track_history[track_id], main_class_id)
+                        self._line_of_interest(orig_shape[1], cur_clip, track_id, self.track_history[track_id], main_class_id)
                         
                     del self.prev_track_ids[track_id]
                     del self.track_history[track_id]
@@ -87,29 +115,36 @@ class SalmonCounter:
                 annotated_frame = results[0].plot()
                 # Draw counter
                 text = f'Count - Right: {self.vis_salm_count[self.RIGHT_PRE]}, Left: {self.vis_salm_count[self.LEFT_PRE]}'
-                img_shape = results[0].orig_shape
                 textsize = cv2.getTextSize(text, self.FONT, 1, 2)[0]
                 # get coords based on boundary
-                textX = int((img_shape[1] - textsize[0]) / 2)
+                textX = int((orig_shape[1] - textsize[0]) / 2)
                 # add text centered on image
                 cv2.putText(annotated_frame, text, (textX, textsize[1] + 5), self.FONT, 1, (255, 255, 255), 2)
             
             # Plot the tracks
-            for box, track_id, cls_id in zip(boxes, track_ids, cls_ids):
+            for box, track_id, cls_id, conf in zip(boxes, track_ids, cls_ids, confs):
                 x, y, w, h = box
                 track = self.track_history[track_id]
                 track.append((float(x), float(y)))  # x, y center point
-                
+
                 if track_id not in self.prev_track_ids:
                     self.prev_track_ids[track_id] = {
                         self.TRACK_COUNT: self.tracking_thresh,
                         self.CLASS_VOTE: {}
                     }
-                else:
-                    class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
-                    if cls_id not in class_vote:
-                        class_vote[cls_id] = 0
-                    class_vote[cls_id] += 1
+
+                if vote_method == VOTE_METHOD_CONF:
+                    if track_id in self.prev_track_ids:
+                        class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
+                        if cls_id not in class_vote:
+                            class_vote[cls_id] = 0
+                        class_vote[cls_id] += conf # Add confidence value
+                elif vote_method == VOTE_METHOD_IGN:
+                    if track_id in self.prev_track_ids and w > h: # No thin boxes in the votes
+                        class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
+                        if cls_id not in class_vote:
+                            class_vote[cls_id] = 0
+                        class_vote[cls_id] += 1
 
                 if save_vid:
                     # Draw the tracking lines
