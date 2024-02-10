@@ -36,7 +36,7 @@ class SalmonCounter:
         self.tracking_thresh = tracking_thresh
         
 
-    def count(self, use_gt=False, save_vid=False, vote_method='ignore_thin'):
+    def count(self, use_gt=False, save_vid=False, vote_method='ignore_thin', device=0):
         if vote_method not in [VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
             raise ValueError(f'{vote_method} is not a valid method')
             
@@ -60,7 +60,7 @@ class SalmonCounter:
             confs = []
             if not use_gt:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
-                results = self.model.track(item.frame, persist=True, verbose=False)
+                results = self.model.track(item.frame, persist=True, verbose=False, device=device)
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
