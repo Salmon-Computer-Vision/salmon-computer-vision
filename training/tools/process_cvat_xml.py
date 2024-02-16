@@ -25,6 +25,7 @@ def process_xml_file(file_path, output_base_dir):
 
         # Convert to Datumaro format and export
         dataset = Dataset.import_from(new_file_path, format="cvat")
+        dataset = dataset.filter('/items/annotations', filter_annotations=True, remove_empty=True)
         output_dir = os.path.join(os.path.dirname(new_file_path), 'datumaro_format')
         os.makedirs(output_dir, exist_ok=True)
         dataset.export(output_dir, format='datumaro')

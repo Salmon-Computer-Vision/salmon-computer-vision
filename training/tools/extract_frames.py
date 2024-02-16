@@ -14,6 +14,7 @@ def extract_frames(input_base_dir, video_path, output_base_dir, frame_rate):
     """
     try:
         # Open the video file
+        video_path = os.path.join(input_base_dir, video_path.replace("\\", "/")[1:])
         vidcap = cv2.VideoCapture(video_path)
         success, image = vidcap.read()
         count = 0
@@ -47,7 +48,7 @@ def get_video_file_paths(csv_path):
         completed_videos = df[df["Annotate Status"] == "Completed"]
 
         # Combine "File Path" and "File Name" to form the full video file path
-        completed_videos['Video Path'] = completed_videos['File Path'].str.cat(completed_videos['File Name'], sep='')
+        completed_videos['Video Path'] = completed_videos['File Path'].str.cat(completed_videos['File Name'], sep='/')
 
         # Return the filtered list of video file paths
         return completed_videos['Video Path'].tolist()
@@ -83,7 +84,7 @@ def main(input_base_dir, csv_path, output_base_dir, frame_rate, max_workers):
 
 # Command-line interface setup
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Extract frames from videos in parallel using Datumaro.')
+    parser = argparse.ArgumentParser(description='Extract frames from videos in parallel.')
     parser.add_argument('input_directory', help='Input directory containing the video files')
     parser.add_argument('csv_path', help='Input CSV file describing the video file paths')
     parser.add_argument('output_directory', help='Output directory to store the extracted frames')
