@@ -8,7 +8,7 @@ import os
 from threading import Thread, Event, Lock
 
 class VideoSaver(Thread):
-    def __init__(self, buffer, folder, stop_event, lock, fps=20.0, resolution=(640, 480)):
+    def __init__(self, buffer, folder, stop_event, lock, fps=10.0, resolution=(640, 480)):
         Thread.__init__(self)
         self.buffer = buffer  # This will be a shared queue
         self.folder = folder
@@ -25,6 +25,7 @@ class VideoSaver(Thread):
         # Write the pre-motion frames
         while self.buffer:
             with self.lock:
+                print('saving pre')
                 frame = self.buffer.popleft()  # Safely pop from the left of the deque
             out.write(frame)
 
@@ -32,6 +33,7 @@ class VideoSaver(Thread):
         while not self.stop_event.is_set():
             with self.lock:
                 if self.buffer:
+                    print('saving')
                     frame = self.buffer.popleft()
                     out.write(frame)
 
@@ -76,11 +78,11 @@ def main(rtsp_file_path, save_folder, fps=10.0):
         print("Error: Could not open video stream.")
         exit()
 
-    bgsub = cv2.bgsegm.createBackgroundSubtractorCNT()
+    warm_up = fps
+    bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=fps, maxPixelStability=fps*60)
     buffer_length = 100  # Adjust based on the fps to cover desired seconds before and after motion
     buffer = deque(maxlen=buffer_length)
     motion_detected = False
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     stop_event = Event()
     lock = Lock()
 
@@ -91,15 +93,20 @@ def main(rtsp_file_path, save_folder, fps=10.0):
 
         # Apply MOG2 algorithm to get the foreground mask
         fg_mask = bgsub.apply(frame)
-        # Apply a threshold to the foreground mask to get rid of noise
-        _, fg_mask = cv2.threshold(fg_mask, 25, 255, cv2.THRESH_BINARY)
 
-        # Apply morphological operations to clean up the mask
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
-        fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
+        has_motion = False
+        if warm_up <= 0:
+            # Apply a threshold to the foreground mask to get rid of noise
+            _, fg_mask = cv2.threshold(fg_mask, 25, 255, cv2.THRESH_BINARY)
 
-        # Now detect motion
-        has_motion = detect_motion(fg_mask, min_area=2000)
+            # Apply morphological operations to clean up the mask
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
+            fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
+
+            # Now detect motion
+            has_motion = detect_motion(fg_mask, min_area=2000)
+        else:
+            warm_up -= 1
 
         # Check for motion
         if has_motion:
@@ -108,13 +115,15 @@ def main(rtsp_file_path, save_folder, fps=10.0):
                 motion_detected = True
                 # Signal that we need to start saving the clip
                 stop_event.clear()
-                video_saver = VideoSaver(buffer, save_folder, stop_event, lock)
+                video_saver = VideoSaver(buffer, save_folder, stop_event, lock, fps=fps, resolution=frame.shape[:2])
                 video_saver.start()
             else:
                 # Keep adding frames to the buffer; the video saver thread will pick them up
                 with lock:
                     buffer.append(frame)
         else:
+            with lock:
+                buffer.append(frame)
             # If motion has stopped and we have a video saver running, set the stop event
             if motion_detected and not stop_event.is_set():
                 print("Stopping recording.")
