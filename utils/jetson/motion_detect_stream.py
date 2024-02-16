@@ -11,11 +11,11 @@ def read_rtsp_url(file_path):
     with open(file_path, 'r') as file:
         return file.readline().strip()
 
-def save_clip(buffer, folder, fps=20.0, resolution=(640, 480)):
+def save_clip(buffer, folder, fps=10.0, resolution=(1920, 1080)):
     """Save the buffered frames as a video clip."""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(folder, f"motion_{timestamp}.avi")
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    filename = os.path.join(folder, f"motion_{timestamp}.mp4")
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(filename, fourcc, fps, resolution)
     for frame in buffer:
         out.write(frame)
@@ -28,7 +28,7 @@ def main(rtsp_file_path, save_folder):
         print("Error: Could not open video stream.")
         exit()
 
-    mog2 = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
+    bgsub = cv2.bgsegm.createBackgroundSubtractorCNT()
     buffer_length = 100  # Adjust based on the fps to cover desired seconds before and after motion
     buffer = deque(maxlen=buffer_length)
     motion_detected = False
@@ -39,7 +39,7 @@ def main(rtsp_file_path, save_folder):
             break
 
         # Apply MOG2 algorithm to get the foreground mask
-        fg_mask = mog2.apply(frame)
+        fg_mask = bgsub.apply(frame)
         # Check for motion
         if np.any(fg_mask > 0):  # Change this threshold as needed
             if not motion_detected:
