@@ -1,6 +1,6 @@
 # Jetson-nano Setup
 
-> ⚠️ A Jetson already setup previously may be difficult to access due to [static IP address](setup-static-ip) 
+> ⚠️ A Jetson already setup previously may be difficult to access due to [static IP address](#setup-static-ip) 
 used to make sure the IP does not change when connected to the Starlink router. Either change your computer
 IP address to the same domain, look into [serial connection with a micro-USB](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-2gb-devkit#setup-headless),
 or connect with an HDMI cable.
