@@ -5,37 +5,51 @@ from collections import deque
 import argparse
 import datetime
 import os
-from threading import Thread, Event, Lock
+from threading import Thread, Event, Lock, Condition
 
 class VideoSaver(Thread):
-    def __init__(self, buffer, folder, stop_event, lock, fps=10.0, resolution=(640, 480)):
+    def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480)):
         Thread.__init__(self)
         self.buffer = buffer  # This will be a shared queue
         self.folder = folder
         self.stop_event = stop_event  # This will signal when to stop recording
         self.lock = lock  # This will ensure thread-safe access to the buffer
+        self.condition = condition
         self.fps = fps
         self.resolution = resolution
         self.daemon = True
+        self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
+        self.gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
 
     def run(self):
         filename = get_output_filename(self.folder)
-        out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), self.fps, self.resolution)
+        out = cv2.VideoWriter(self.gst_writer_str + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
+        c = 0
         # Write the pre-motion frames
         while self.buffer:
+            if c % 20 == 0:
+                print('Saving pre...')
             with self.lock:
-                print('saving pre')
                 frame = self.buffer.popleft()  # Safely pop from the left of the deque
             out.write(frame)
+            c += 1
 
+        c = 0
         # Continue recording until stop_event is set
         while not self.stop_event.is_set():
-            with self.lock:
+            with self.condition:
+                while not self.buffer and not self.stop_event.is_set():
+                    self.condition.wait()  # Wait for a signal that a new frame is available or stop_event is set
+
                 if self.buffer:
-                    print('saving')
-                    frame = self.buffer.popleft()
+                    with self.lock:
+                        frame = self.buffer.popleft()
+                    if c % 20 == 0:
+                        print('Saving...')
                     out.write(frame)
+
+            c += 1
 
         out.release()
 
@@ -62,36 +76,35 @@ def get_output_filename(folder):
     filename = os.path.join(folder, f"motion_{timestamp}.mp4")
     return filename
 
-def save_clip(buffer, folder, fps=10.0, resolution=(1920, 1080)):
-    """Save the buffered frames as a video clip."""
-    filename = get_output_filename(folder)
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(filename, fourcc, fps, resolution)
-    for frame in buffer:
-        out.write(frame)
-    out.release()
-
-def main(rtsp_file_path, save_folder, fps=10.0):
+def main(rtsp_file_path, save_folder):
     rtsp_url = read_rtsp_url(rtsp_file_path)
     cap = cv2.VideoCapture(rtsp_url)
     if not cap.isOpened():
         print("Error: Could not open video stream.")
         exit()
 
+    # Retrieve the FPS of the video stream
+    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    print(f"FPS: {fps}")
+
     warm_up = fps
-    bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=fps, maxPixelStability=fps*60)
-    buffer_length = 100  # Adjust based on the fps to cover desired seconds before and after motion
+    bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=int(fps), maxPixelStability=int(fps*60))
+    buffer_length = int(fps * 5)  # Buffer to save before motion
     buffer = deque(maxlen=buffer_length)
     motion_detected = False
     stop_event = Event()
     lock = Lock()
+    condition = Condition()
 
+    delay = int(fps * 5) # Number of seconds to delay after motion
+    count_delay = 0
     while True:
         ret, frame = cap.read()
         if not ret:
             break
 
-        # Apply MOG2 algorithm to get the foreground mask
+        # Apply background subtraction algorithm to get the foreground mask
         fg_mask = bgsub.apply(frame)
 
         has_motion = False
@@ -108,27 +121,32 @@ def main(rtsp_file_path, save_folder, fps=10.0):
         else:
             warm_up -= 1
 
+        with lock:
+            buffer.append(frame)
+        with condition:
+            condition.notify() # Signal the VideoSaver thread that a new frame is available
+
         # Check for motion
         if has_motion:
+            count_delay = 0
             if not motion_detected:
                 print("Motion detected.")
                 motion_detected = True
                 # Signal that we need to start saving the clip
                 stop_event.clear()
-                video_saver = VideoSaver(buffer, save_folder, stop_event, lock, fps=fps, resolution=frame.shape[:2])
+                video_saver = VideoSaver(buffer, save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
                 video_saver.start()
-            else:
-                # Keep adding frames to the buffer; the video saver thread will pick them up
-                with lock:
-                    buffer.append(frame)
         else:
-            with lock:
-                buffer.append(frame)
-            # If motion has stopped and we have a video saver running, set the stop event
-            if motion_detected and not stop_event.is_set():
-                print("Stopping recording.")
-                stop_event.set()
-                motion_detected = False
+            if count_delay < delay:
+                count_delay += 1
+            else:
+                # If motion has stopped and we have a video saver running, set the stop event
+                if motion_detected and not stop_event.is_set():
+                    print("Stopping recording.")
+                    stop_event.set()
+                    with condition:
+                        condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
+                    motion_detected = False
 
     cap.release()
 
