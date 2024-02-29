@@ -6,6 +6,7 @@ from pathlib import Path
 import cv2
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
+from ultralytics.engine.results import Boxes
 
 from collections import defaultdict
 import numpy as np
@@ -79,12 +80,13 @@ class SalmonCounter:
                 h, w, _ = img.shape
                 orig_shape = (h, w)
                 input_boxes = None
-                if item.boxes:
-                    boxes = item.boxes.xywh
-                    input_boxes = item.boxes.data
-                    track_ids = item.boxes.id.tolist()
-                    cls_ids = item.boxes.cls.tolist()
-                    confs = item.boxes.conf.tolist()
+                if item.boxes.any():
+                    boxes_obj = Boxes(item.boxes, item.orig_shape)
+                    boxes = boxes_obj.xywh
+                    input_boxes = boxes_obj.data
+                    track_ids = boxes_obj.id.tolist()
+                    cls_ids = boxes_obj.cls.tolist()
+                    confs = boxes_obj.conf.tolist()
                 results = [Results(img, item.frame, self.dataloader.classes(), boxes=input_boxes)]
 
     

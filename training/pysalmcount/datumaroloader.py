@@ -1,5 +1,4 @@
 from .dataloader import DataLoader, Item
-from ultralytics.engine.results import Boxes
 from ultralytics.utils.instance import Instances
 
 import numpy as np
@@ -59,10 +58,7 @@ class DatumaroLoader(DataLoader):
                 boxes = np.append(boxes, [box], axis=0) # Boxes() take in xyxy
                 attrs.append(anno_attrs)
             # Populate each Item object
-            input_boxes = None
-            if boxes.any():
-                input_boxes = Boxes(boxes, shape)
-            item = Item(datum_item[self.KEY_IMAGE][self.KEY_PATH], num_items, input_boxes, attrs)
+            item = Item(datum_item[self.KEY_IMAGE][self.KEY_PATH], num_items, boxes, shape, attrs)
             yield item
 
     def _json_loader(self, json_file):
