@@ -5,6 +5,16 @@ used to make sure the IP does not change when connected to the Starlink router. 
 IP address to the same domain, look into [serial connection with a micro-USB](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-2gb-devkit#setup-headless),
 or connect with an HDMI cable.
 
+## ultralytics docker setup
+
+Try pulling and running ultralytics from main docker first:
+```
+t=ultralytics/ultralytics:latest-jetson && sudo docker pull $t && sudo docker run -it --ipc=host --runtime=nvidia $t
+```
+
+Otherwise, follow [ultralytics steps](https://github.com/ultralytics/ultralytics.git) to build your own docker image for Jetson:
+
+
 ## Setup Jetson Nano
 
 Format SD card with SD card formatter with Quick format.
