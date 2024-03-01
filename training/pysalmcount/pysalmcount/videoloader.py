@@ -1,5 +1,7 @@
 from .dataloader import DataLoader, Item
 
+import cv2
+
 class VideoCaptureError(Exception):
     """Exception raised when video capture fails to open."""
     pass
@@ -20,28 +22,29 @@ class VideoLoader(DataLoader):
 
     def next_clip(self):
         self.cur_clip = next(self.clip_gen)
+
+        self.cap = cv2.VideoCapture(self.cur_clip)
+        if not self.cap.isOpened():
+            raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
+
+        self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
+        self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
         return self.cur_clip
 
     def items(self):
         if not self.cur_clip:
             raise ValueError('Error: No current clip')
 
-        cap = cv2.VideoCapture(self.cur_clip)
-        if not cap.isOpened():
-            raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
-
-        self.fps = cap.get(cv2.CAP_PROP_FPS)
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
         while True:
-            ret, frame = cap.read()
+            ret, frame = self.cap.read()
             if not ret:
                 break
 
-            yield Item(frame, num_items=total_frames)
+            yield Item(frame, num_items=self.total_frames)
 
     def fps(self):
-        return self.fps
+        return self.vid_fps
 
     def classes(self) -> dict:
         """

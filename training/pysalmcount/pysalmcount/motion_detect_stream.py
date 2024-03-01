@@ -37,7 +37,7 @@ class VideoSaver(Thread):
         # Write the pre-motion frames
         while self.buffer:
             if c % 20 == 0:
-                print('Saving pre...')
+                print(f'Saving pre... {c}')
             with self.lock:
                 frame = self.buffer.popleft()  # Safely pop from the left of the deque
             out.write(frame)
@@ -54,7 +54,7 @@ class VideoSaver(Thread):
                     with self.lock:
                         frame = self.buffer.popleft()
                     if c % 20 == 0:
-                        print('Saving...')
+                        print(f'Saving... {c}')
                     out.write(frame)
 
             c += 1
@@ -80,16 +80,28 @@ class MotionDetector:
         return False
 
     def run(self):
+        # Motion Detection Params
+        threshold_value = 50 # Increase threshold value to minimize noise
+        kernel_size = (7, 7) # Increase kernel size to ignore smaller motions
+        morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
+        min_contour_area = 5000 # Ignore contour objects smaller than this area
+
+
+        self.dataloader.next_clip()
+
         # Retrieve the FPS of the video stream
         fps = self.dataloader.fps()
 
         print(f"FPS: {fps}")
 
-        warm_up = fps
         bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=int(fps), maxPixelStability=int(fps*60))
+
+        warm_up = fps
         buffer_length = int(fps * 5)  # Buffer to save before motion
         buffer = deque(maxlen=buffer_length)
         motion_detected = False
+
+        # Concurrency-safe constructs
         stop_event = Event()
         lock = Lock()
         condition = Condition()
@@ -105,14 +117,15 @@ class MotionDetector:
             has_motion = False
             if warm_up <= 0:
                 # Apply a threshold to the foreground mask to get rid of noise
-                _, fg_mask = cv2.threshold(fg_mask, 25, 255, cv2.THRESH_BINARY)
+                _, fg_mask = cv2.threshold(fg_mask, threshold_value, 255, cv2.THRESH_BINARY)
 
                 # Apply morphological operations to clean up the mask
-                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
-                fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
+                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
+                for _ in range(morph_iterations):
+                    fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel) 
 
                 # Now detect motion
-                has_motion = self.detect_motion(fg_mask, min_area=2000)
+                has_motion = self.detect_motion(fg_mask, min_area=min_contour_area)
             else:
                 warm_up -= 1
 
@@ -129,7 +142,7 @@ class MotionDetector:
                     motion_detected = True
                     # Signal that we need to start saving the clip
                     stop_event.clear()
-                    video_saver = VideoSaver(buffer, save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
+                    video_saver = VideoSaver(buffer, self.save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
                     video_saver.start()
             else:
                 if count_delay < delay:

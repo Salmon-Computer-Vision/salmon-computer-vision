@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 from pysalmcount import videoloader as vl
 from pysalmcount import motion_detect_stream as md
-import argparse
 
-def read_rtsp_url(self, file_path):
+import argparse
+import os
+
+def read_rtsp_url(file_path):
     """Read RTSP URL from the specified file."""
     with open(file_path, 'r') as file:
         return file.readline().strip()
 
 def main(rtsp_file_path, save_folder):
-    rtsp_url = self.read_rtsp_url(rtsp_file_path)
+    rtsp_url = read_rtsp_url(rtsp_file_path)
 
     vidloader = vl.VideoLoader([rtsp_url])
     det = md.MotionDetector(vidloader, save_folder)
