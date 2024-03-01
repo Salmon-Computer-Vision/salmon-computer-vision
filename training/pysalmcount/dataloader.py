@@ -20,8 +20,15 @@ class DataLoader(ABC):
         pass
 
 class Item():
-    def __init__(self, frame, num_items: int, boxes: np.array=None, orig_shape=None,  attrs: list[dict]=None):
-        self.frame = frame # Can be image or path to file
+    def __init__(self, frame, num_items, boxes=None, orig_shape=None,  attrs=None):
+        """
+        frame: Image frame or path to file
+        num_items: int Number of items/frames
+        boxes: numpy array with format (num_boxes, 7) with each row as [xyxy, track_id, conf, cls]
+        orig_shape: The shape of the image frame
+        attrs: Dictionary of extra attributes if needed
+        """
+        self.frame = frame
         self.num_items = num_items
         self.boxes = boxes # Per row: xyxy, track_id, conf, cls
         self.orig_shape = orig_shape
