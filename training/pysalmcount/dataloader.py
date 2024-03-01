@@ -13,6 +13,10 @@ class DataLoader(ABC):
     @abstractmethod
     def items(self):
         pass
+    
+    @abstractmethod
+    def fps(self):
+        pass
 
     @abstractmethod
     def classes(self) -> dict:

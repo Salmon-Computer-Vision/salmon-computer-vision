@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from .dataloader import DataLoader
+
 import cv2
 import numpy as np
 from collections import deque
@@ -21,8 +23,14 @@ class VideoSaver(Thread):
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
         self.gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
 
+    def get_output_filename(self, folder):
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = os.path.join(folder, f"motion_{timestamp}.mp4")
+        return filename
+
+
     def run(self):
-        filename = get_output_filename(self.folder)
+        filename = self.get_output_filename(self.folder)
         out = cv2.VideoWriter(self.gst_writer_str + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
@@ -53,111 +61,84 @@ class VideoSaver(Thread):
 
         out.release()
 
-def detect_motion(fg_mask, min_area=500):
-    """
-    Detect motion in the foreground mask by looking for contours with an area larger than min_area.
-    """
-    # Find contours in the fg_mask
-    contours, _ = cv2.findContours(fg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+class MotionDetector:
+    def __init__(self, dataloader: DataLoader, save_folder):
+        self.dataloader = dataloader
+        self.save_folder = save_folder
 
-    # Filter out small contours
-    for contour in contours:
-        if cv2.contourArea(contour) > min_area:
-            return True
-    return False
+    def detect_motion(self, fg_mask, min_area=500):
+        """
+        Detect motion in the foreground mask by looking for contours with an area larger than min_area.
+        """
+        # Find contours in the fg_mask
+        contours, _ = cv2.findContours(fg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-def read_rtsp_url(file_path):
-    """Read RTSP URL from the specified file."""
-    with open(file_path, 'r') as file:
-        return file.readline().strip()
+        # Filter out small contours
+        for contour in contours:
+            if cv2.contourArea(contour) > min_area:
+                return True
+        return False
 
-def get_output_filename(folder):
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(folder, f"motion_{timestamp}.mp4")
-    return filename
+    def run(self):
+        # Retrieve the FPS of the video stream
+        fps = self.dataloader.fps()
 
-def main(rtsp_file_path, save_folder):
-    rtsp_url = read_rtsp_url(rtsp_file_path)
-    cap = cv2.VideoCapture(rtsp_url)
-    if not cap.isOpened():
-        print("Error: Could not open video stream.")
-        exit()
+        print(f"FPS: {fps}")
 
-    # Retrieve the FPS of the video stream
-    fps = cap.get(cv2.CAP_PROP_FPS)
+        warm_up = fps
+        bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=int(fps), maxPixelStability=int(fps*60))
+        buffer_length = int(fps * 5)  # Buffer to save before motion
+        buffer = deque(maxlen=buffer_length)
+        motion_detected = False
+        stop_event = Event()
+        lock = Lock()
+        condition = Condition()
 
-    print(f"FPS: {fps}")
+        delay = int(fps * 5) # Number of seconds to delay after motion
+        count_delay = 0
+        for item in self.dataloader.items():
+            frame = item.frame
 
-    warm_up = fps
-    bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=int(fps), maxPixelStability=int(fps*60))
-    buffer_length = int(fps * 5)  # Buffer to save before motion
-    buffer = deque(maxlen=buffer_length)
-    motion_detected = False
-    stop_event = Event()
-    lock = Lock()
-    condition = Condition()
+            # Apply background subtraction algorithm to get the foreground mask
+            fg_mask = bgsub.apply(frame)
 
-    delay = int(fps * 5) # Number of seconds to delay after motion
-    count_delay = 0
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
+            has_motion = False
+            if warm_up <= 0:
+                # Apply a threshold to the foreground mask to get rid of noise
+                _, fg_mask = cv2.threshold(fg_mask, 25, 255, cv2.THRESH_BINARY)
 
-        # Apply background subtraction algorithm to get the foreground mask
-        fg_mask = bgsub.apply(frame)
+                # Apply morphological operations to clean up the mask
+                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
+                fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
 
-        has_motion = False
-        if warm_up <= 0:
-            # Apply a threshold to the foreground mask to get rid of noise
-            _, fg_mask = cv2.threshold(fg_mask, 25, 255, cv2.THRESH_BINARY)
-
-            # Apply morphological operations to clean up the mask
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
-            fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
-
-            # Now detect motion
-            has_motion = detect_motion(fg_mask, min_area=2000)
-        else:
-            warm_up -= 1
-
-        with lock:
-            buffer.append(frame)
-        with condition:
-            condition.notify() # Signal the VideoSaver thread that a new frame is available
-
-        # Check for motion
-        if has_motion:
-            count_delay = 0
-            if not motion_detected:
-                print("Motion detected.")
-                motion_detected = True
-                # Signal that we need to start saving the clip
-                stop_event.clear()
-                video_saver = VideoSaver(buffer, save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
-                video_saver.start()
-        else:
-            if count_delay < delay:
-                count_delay += 1
+                # Now detect motion
+                has_motion = self.detect_motion(fg_mask, min_area=2000)
             else:
-                # If motion has stopped and we have a video saver running, set the stop event
-                if motion_detected and not stop_event.is_set():
-                    print("Stopping recording.")
-                    stop_event.set()
-                    with condition:
-                        condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
-                    motion_detected = False
+                warm_up -= 1
 
-    cap.release()
+            with lock:
+                buffer.append(frame)
+            with condition:
+                condition.notify() # Signal the VideoSaver thread that a new frame is available
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
-    parser.add_argument("rtsp_file_path", help="Path to the file containing the RTSP URL")
-    parser.add_argument("save_folder", help="Folder where video clips will be saved")
-    args = parser.parse_args()
-
-    if not os.path.exists(args.save_folder):
-        os.makedirs(args.save_folder)
-
-    main(args.rtsp_file_path, args.save_folder)
-
+            # Check for motion
+            if has_motion:
+                count_delay = 0
+                if not motion_detected:
+                    print("Motion detected.")
+                    motion_detected = True
+                    # Signal that we need to start saving the clip
+                    stop_event.clear()
+                    video_saver = VideoSaver(buffer, save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
+                    video_saver.start()
+            else:
+                if count_delay < delay:
+                    count_delay += 1
+                else:
+                    # If motion has stopped and we have a video saver running, set the stop event
+                    if motion_detected and not stop_event.is_set():
+                        print("Stopping recording.")
+                        stop_event.set()
+                        with condition:
+                            condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
+                        motion_detected = False
