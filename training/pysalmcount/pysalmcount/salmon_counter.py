@@ -1,6 +1,5 @@
 from .dataloader import DataLoader
 
-import datumaro as dm
 import os
 from pathlib import Path
 import cv2
