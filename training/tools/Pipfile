@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-datumaro = "*"
+datumaro = {extras = ["default"], version = "*"}
 
 [dev-packages]
 
