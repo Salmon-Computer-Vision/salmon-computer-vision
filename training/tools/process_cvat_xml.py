@@ -24,6 +24,13 @@ DUP_LABELS_MAPPING = {
 
 def process_xml_file(file_path, output_base_dir):
     # Process a single XML file: rename '__instance_id' to 'track_id', convert to Datumaro format and export.
+    relative_path = os.path.relpath(file_path, start=original_root_dir)
+    new_file_path = os.path.join(output_base_dir, relative_path)
+    os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
+    output_dir = os.path.join(os.path.dirname(new_file_path), 'datumaro_format')
+    if os.path.exists(output_dir):
+        print(f"Exists skipping... {output_dir}")
+        return
     try:
         # Load and Transform CVAT XML
         tree = ET.parse(file_path)
@@ -35,9 +42,6 @@ def process_xml_file(file_path, output_base_dir):
                 elem.set('name', 'track_id')
             
         # Save the modified XML to a new file in the new output directory
-        relative_path = os.path.relpath(file_path, start=original_root_dir)
-        new_file_path = os.path.join(output_base_dir, relative_path)
-        os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
         tree.write(new_file_path)
 
         # Convert to Datumaro format and export
@@ -45,10 +49,6 @@ def process_xml_file(file_path, output_base_dir):
         #breakpoint()
         dataset = dataset.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
         dataset = dataset.filter('/item/annotation') # Must filter after remapping due to removed annotations
-        output_dir = os.path.join(os.path.dirname(new_file_path), 'datumaro_format')
-        if os.path.exists(output_dir):
-            print(f"Exists skipping... {output_dir}")
-            return
         os.makedirs(output_dir, exist_ok=True)
         dataset.export(output_dir, format='datumaro', save_media=True)
         
