@@ -14,27 +14,32 @@ def extract_frames(input_base_dir, video_path, output_base_dir, frame_rate):
     :param frame_rate: Rate at which frames should be extracted (every 'frame_rate' frames).
     """
     try:
-        # Open the video file
-        video_path = os.path.join(input_base_dir, video_path)
-        vidcap = cv2.VideoCapture(video_path)
-        success, image = vidcap.read()
-        count = 0
-        frame_id = 0
-
         # Create output directory for the current video
         relative_path = os.path.relpath(video_path, start=input_base_dir)
         output_dir = os.path.join(output_base_dir, os.path.splitext(relative_path)[0])
-        os.makedirs(output_dir, exist_ok=True)
-        print(video_path, 'to', output_dir)
-
-        while success:
-            if count % frame_rate == 0:
-                # Save frame as JPEG file
-                frame_file = os.path.join(output_dir, f"{frame_id:07d}.png")
-                cv2.imwrite(frame_file, image)
-                frame_id += 1
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+            print(video_path, 'to', output_dir)
+            
+            # Open the video file
+            video_path = os.path.join(input_base_dir, video_path)
+            vidcap = cv2.VideoCapture(video_path)
             success, image = vidcap.read()
-            count += 1
+            count = 0
+            frame_id = 0
+    
+            while success:
+                if count % frame_rate == 0:
+                    # Save frame as JPEG file
+                    frame_file = os.path.join(output_dir, f"{frame_id:07d}.png")
+                    cv2.imwrite(frame_file, image)
+                    frame_id += 1
+                success, image = vidcap.read()
+                count += 1
+
+        symlink_dir = f'{output_base_dir}_symlink'
+        os.makedirs(symlink_dir, exist_ok=True)
+        os.symlink(os.path.abspath(output_dir), os.path.join(symlink_dir, os.path.basename(relative_path)))
 
     except Exception as e:
         print(f"Error extracting frames from video {video_path}: {e}")
