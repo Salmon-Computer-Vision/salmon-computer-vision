@@ -39,11 +39,37 @@ def extract_frames(input_base_dir, video_path, output_base_dir, frame_rate):
 
         symlink_dir = f'{output_base_dir}_symlink'
         os.makedirs(symlink_dir, exist_ok=True)
-        os.symlink(os.path.abspath(output_dir), os.path.join(symlink_dir, os.path.basename(relative_path)))
+        os.symlink(os.path.abspath(output_dir), os.path.join(symlink_dir, os.path.basename(os.path.splitext(relative_path)[0])))
 
     except Exception as e:
         print(f"Error extracting frames from video {video_path}: {e}")
 
+def process_filepaths(input_file):
+    # Dictionary to hold filename without extension as key, and list of full filepaths as values
+    filepath_dict = {}
+
+    with open(input_file, 'r') as file:
+        for line in file:
+            # Strip newline and whitespace
+            path = line.strip()
+            # Extract filename without extension
+            filename_without_ext = os.path.splitext(os.path.basename(path))[0]
+            if filename_without_ext in filepath_dict:
+                filepath_dict[filename_without_ext].append(path)
+            else:
+                filepath_dict[filename_without_ext] = [path]
+
+    # Filter duplicates by preferring 'MotionDet' in the filepath
+    filtered_filepaths = []
+    for paths in filepath_dict.values():
+        if len(paths) > 1:
+            # Sort paths to prioritize one with 'MotionDet'
+            paths.sort(key=lambda x: 'MotionDet' not in x)
+        # Only add the most preferred path (handles single and multiple paths)
+        filtered_filepaths.append(paths[0])
+
+    return filtered_filepaths
+    
 def intersect_filepaths_with_filenames(filepaths, filenames):
     # Convert the list of filenames into a set for O(1) lookup
     filenames_set = set(filenames)
@@ -58,8 +84,7 @@ def intersect_filepaths_with_filenames(filepaths, filenames):
 def get_video_file_paths(csv_path, text_file, filter_file):
     try:
         if text_file:
-            with open(csv_path, 'r') as f:
-                vid_paths = [line.strip() for line in f if line.strip()]
+            vid_paths = process_filepaths(csv_path)
         else:
             # Read the CSV file into a DataFrame
             df = pd.read_csv(csv_path)
@@ -71,11 +96,15 @@ def get_video_file_paths(csv_path, text_file, filter_file):
             completed_videos.loc[:, 'Video Path'] = completed_videos['File Path'].str.cat(completed_videos['File Name'], sep='/')
 
             vid_paths = completed_videos['Video Path'].tolist()
+            
         if filter_file:
             with open(filter_file, 'r') as file:
-                filter_filenames = [str(Path(line.strip()).parent.stem) for line in file if line.strip()]
+                filter_filenames = [
+                    str(Path(line.strip()).parent.stem) if str(Path(line.strip()).parent).endswith('.json') else str(Path(line.strip()).parent.name)
+                    for line in file if line.strip()
+                ]
 
-            #breakpoint()
+            breakpoint()
             
             # Filter the original list to keep only file paths with remaining base names
             vid_paths = intersect_filepaths_with_filenames(vid_paths, filter_filenames)

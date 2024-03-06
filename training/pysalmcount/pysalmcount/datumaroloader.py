@@ -11,36 +11,86 @@ class DatumaroLoader(DataLoader):
     KEY_ITEMS = 'items'
     KEY_PATH = 'path'
     KEY_IMAGE = 'image'
+    KEY_ID = 'id'
 
-    def __init__(self, root_folder, custom_classes: dict):
+    def __init__(self, root_folder, custom_classes: dict, file_list=None):
         path = Path(root_folder).resolve()
         if not path.is_dir():
             raise ValueError(f"'{path}' is not a directory.")
         self.root_dir = path
         self.custom_classes = custom_classes
-        self.clip_gen = self.root_dir.iterdir()
-        self.num_clips = len(list(self.root_dir.iterdir()))
-        self.cur_clip = False
+        
+        if file_list:
+            self.clip_gen = iter(file_list)
+            self.num_clips = len(file_list)
+        else:
+            self.clip_gen = self.root_dir.iterdir()
+            self.num_clips = len(list(self.root_dir.iterdir()))
+            
+        self.cur_clip = None
+        self.cur_sub_clip_start_id = None
 
     def clips_len(self):
         return self.num_clips
+
+    def _get_sub_clip_name(self, id=None):
+        if id:
+            inp_id = id
+        else:
+            inp_id = self.cur_sub_clip_start_id
+        clip_name = Path(self.datum_items[self.KEY_ITEMS][inp_id][self.KEY_ID]).parent
+        return clip_name
         
     def next_clip(self):
-        self.cur_clip = next(self.clip_gen)
-        return self.cur_clip
-        
+        if self.cur_sub_clip_start_id:
+            self.cur_sub_clip_start_id += 1
+            try:
+                clip_name = self._get_sub_clip_name()
+            except IndexError:
+                self.cur_sub_clip_start_id = None
+                return self.next_clip()
+        else:
+            self.cur_clip = next(self.clip_gen)
+            clip_name = self.cur_clip
+            while not clip_name.stem in [Path("annotations"), Path("datumaro_format")]:
+                clip_name = clip_name.parent
+    
+            # Read datumaro file
+            if file_list:
+                datum_file = self.cur_clip
+            else:
+                datum_file = self.cur_clip / self.DATUM_PATH
+            self.datum_items = self._json_loader(datum_file)
+
+            # Check if there are multiple clips in one datumaro file
+            if len(list(clip_name / 'images' / 'default').iterdir()) > 1:
+                self.cur_sub_clip_start_id = 0
+                clip_name = self._get_sub_clip_name()
+        return clip_name
+
+    def _item_gen(self):
+        if self.cur_sub_clip_start_id:
+            clip_name = self._get_sub_clip_name()
+            i = 0
+            while clip_name == self._get_sub_clip_name(i):
+                yield self.datum_items[self.KEY_ITEMS][i]
+                i += 1
+        else:
+            for datum_item in self.datum_items[self.KEY_ITEMS]:
+                yield datum_item
+    
     def items(self):
         if not self.cur_clip:
             raise ValueError('No current clip')
-        # Read datumaro file
-        datum_items = self._json_loader(self.cur_clip / self.DATUM_PATH)
-        num_items = len(datum_items[self.KEY_ITEMS])
+            
+        num_items = len(list(self._item_gen()))
         if num_items > 0:
-            img = cv2.imread(datum_items[self.KEY_ITEMS][0][self.KEY_IMAGE][self.KEY_PATH])
+            img = cv2.imread(self.datum_items[self.KEY_ITEMS][0][self.KEY_IMAGE][self.KEY_PATH])
             h, w, _ = img.shape
             shape = (h, w)
+            
         # Iterate through items
-        for datum_item in datum_items[self.KEY_ITEMS]:
+        for datum_item in self._item_gen():
             boxes = np.array([[]]).reshape((0,7)) # Box coords, track id, conf, and class id
             attrs = []
             for anno in datum_item['annotations']:

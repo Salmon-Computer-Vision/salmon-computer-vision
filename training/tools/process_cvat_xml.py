@@ -45,11 +45,10 @@ def process_xml_file(file_path, output_base_dir):
         tree.write(new_file_path)
 
         # Convert to Datumaro format and export
-        dataset = Dataset.import_from(new_file_path, format="cvat")
         #breakpoint()
+        dataset = Dataset.import_from(new_file_path, format="cvat")
         dataset = dataset.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
         dataset = dataset.filter('/item/annotation') # Must filter after remapping due to removed annotations
-        os.makedirs(output_dir, exist_ok=True)
         dataset.export(output_dir, format='datumaro', save_media=True)
         
     except ET.ParseError as e:

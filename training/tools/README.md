@@ -18,3 +18,6 @@ including empty frames, `process_cvat_xml.py` automatically removes
 empty frames and outputs an `error*.txt` file showing all of the
 filepaths that were not processed correctly. This can be fed into
 `extract_frames.py` to filter the video paths.
+
+If the filtered annotation comes out empty, the resulting Datumaro
+conversion will not output any annotation file.
