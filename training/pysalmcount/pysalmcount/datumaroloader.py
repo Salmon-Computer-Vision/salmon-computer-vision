@@ -118,7 +118,12 @@ class DatumaroLoader(DataLoader):
                 bbox[1] = bbox[1] + (bbox[3] / 2)
                 tmp_inst = Instances(np.asarray(bbox)) # Boxes are in xywh
                 tmp_inst.convert_bbox('xyxy')
-                track_class = np.asarray([int(anno_attrs['track_id']), 1.0, anno['label_id']])
+                try:
+                    track_class = np.asarray([int(anno_attrs['track_id']), 1.0, anno['label_id']])
+                except KeyError as e:
+                    print(f"Error getting IDs from {self.cur_clip} | {self.datum_item['id']}:", e)
+                    continue
+                    
                 box = np.concatenate((tmp_inst.bboxes[0], track_class))
 
                 boxes = np.append(boxes, [box], axis=0) # Boxes() take in xyxy
