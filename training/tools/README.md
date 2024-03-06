@@ -10,7 +10,8 @@ Then, can run the following scripts *in this order*:
 ```bash
 extract_frames.py
 
-process_cvat_xml.py
+cd output_symlink
+../process_cvat_xml.py
 ```
 
 If the disk doesn't have enough space to extract all of the frames
