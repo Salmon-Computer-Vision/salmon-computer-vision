@@ -74,7 +74,6 @@ class SalmonCounter:
                     cls_ids = results[0].boxes.cls.int().cpu().tolist()
                     confs = results[0].boxes.conf.cpu().tolist()
             else:
-                print(item.frame)
                 img = cv2.imread(item.frame)
                 h, w, _ = img.shape
                 orig_shape = (h, w)

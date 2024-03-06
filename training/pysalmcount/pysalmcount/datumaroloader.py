@@ -12,6 +12,7 @@ class DatumaroLoader(DataLoader):
     KEY_PATH = 'path'
     KEY_IMAGE = 'image'
     KEY_ID = 'id'
+    standard_names = ["datumaro_format", "annotations", "default"]
 
     def __init__(self, root_folder, custom_classes: dict, file_list=None):
         path = Path(root_folder).resolve()
@@ -19,19 +20,24 @@ class DatumaroLoader(DataLoader):
             raise ValueError(f"'{path}' is not a directory.")
         self.root_dir = path
         self.custom_classes = custom_classes
-        
+
         if file_list:
-            self.clip_gen = iter(file_list)
+            self.clip_gen = self._gen_paths(file_list)
             self.num_clips = len(file_list)
         else:
             self.clip_gen = self.root_dir.iterdir()
             self.num_clips = len(list(self.root_dir.iterdir()))
+        self.file_list = file_list
             
         self.cur_clip = None
         self.cur_sub_clip_start_id = None
 
     def clips_len(self):
         return self.num_clips
+
+    def _gen_paths(self, file_list):
+        for path in file_list:
+            yield Path(path)
 
     def _get_sub_clip_name(self, id=None):
         if id:
@@ -40,7 +46,16 @@ class DatumaroLoader(DataLoader):
             inp_id = self.cur_sub_clip_start_id
         clip_name = Path(self.datum_items[self.KEY_ITEMS][inp_id][self.KEY_ID]).parent
         return clip_name
-        
+
+    def _get_images_path(self):
+        return self._get_base_path() / self.standard_names[0] / 'images' / self.standard_names[2]
+
+    def _get_base_path(self):
+        cur_clip = self.cur_clip
+        while cur_clip.stem in self.standard_names:
+            cur_clip = cur_clip.parent
+        return cur_clip
+    
     def next_clip(self):
         if self.cur_sub_clip_start_id:
             self.cur_sub_clip_start_id += 1
@@ -51,19 +66,17 @@ class DatumaroLoader(DataLoader):
                 return self.next_clip()
         else:
             self.cur_clip = next(self.clip_gen)
-            clip_name = self.cur_clip
-            while not clip_name.stem in [Path("annotations"), Path("datumaro_format")]:
-                clip_name = clip_name.parent
+            clip_name = self._get_base_path()
     
             # Read datumaro file
-            if file_list:
+            if self.file_list:
                 datum_file = self.cur_clip
             else:
                 datum_file = self.cur_clip / self.DATUM_PATH
             self.datum_items = self._json_loader(datum_file)
 
             # Check if there are multiple clips in one datumaro file
-            if len(list(clip_name / 'images' / 'default').iterdir()) > 1:
+            if len(list(self._get_images_path().iterdir())) > 1:
                 self.cur_sub_clip_start_id = 0
                 clip_name = self._get_sub_clip_name()
         return clip_name
@@ -85,7 +98,10 @@ class DatumaroLoader(DataLoader):
             
         num_items = len(list(self._item_gen()))
         if num_items > 0:
-            img = cv2.imread(self.datum_items[self.KEY_ITEMS][0][self.KEY_IMAGE][self.KEY_PATH])
+            test_img = self.datum_items[self.KEY_ITEMS][0][self.KEY_IMAGE][self.KEY_PATH]
+            if self.file_list:
+                test_img = str(self._get_images_path() / test_img)
+            img = cv2.imread(test_img)
             h, w, _ = img.shape
             shape = (h, w)
             
@@ -102,15 +118,21 @@ class DatumaroLoader(DataLoader):
                 bbox[1] = bbox[1] + (bbox[3] / 2)
                 tmp_inst = Instances(np.asarray(bbox)) # Boxes are in xywh
                 tmp_inst.convert_bbox('xyxy')
-                track_class = np.asarray([anno_attrs['track_id'], 1.0, anno['label_id']])
+                track_class = np.asarray([int(anno_attrs['track_id']), 1.0, anno['label_id']])
                 box = np.concatenate((tmp_inst.bboxes[0], track_class))
 
                 boxes = np.append(boxes, [box], axis=0) # Boxes() take in xyxy
                 attrs.append(anno_attrs)
             # Populate each Item object
-            item = Item(datum_item[self.KEY_IMAGE][self.KEY_PATH], num_items, boxes, shape, attrs)
+            path = datum_item[self.KEY_IMAGE][self.KEY_PATH]
+            if self.file_list:
+                path = str(self._get_images_path() / path)
+            item = Item(path, num_items, boxes, shape, attrs)
             yield item
 
+    def fps(self):
+        return 1
+        
     def _json_loader(self, json_file):
         with open(json_file, 'r') as f:
             data = json.load(f)
