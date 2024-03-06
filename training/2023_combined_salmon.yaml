@@ -1,0 +1,24 @@
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: /training/export_combined_bear_kitwanga_yolo  # dataset root dir
+train: train.txt
+val: valid.txt
+test: test.txt
+
+# Classes
+names:
+  0: Coho
+  1: Bull
+  2: Rainbow
+  3: Sockeye
+  4: Pink
+  5: Whitefish
+  6: Chinook
+  7: Shiner
+  8: Pikeminnow
+  9: Chum
+  10: Steelhead
+  11: Lamprey
+  12: Cutthroat
+  13: Stickleback
+  14: Sculpin
+  15: Dolly Varden
