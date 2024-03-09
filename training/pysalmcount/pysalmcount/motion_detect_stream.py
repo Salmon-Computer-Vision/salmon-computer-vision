@@ -84,7 +84,7 @@ class MotionDetector:
         threshold_value = 50 # Increase threshold value to minimize noise
         kernel_size = (7, 7) # Increase kernel size to ignore smaller motions
         morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
-        min_contour_area = 5000 # Ignore contour objects smaller than this area
+        min_contour_area = 2000 # Ignore contour objects smaller than this area
 
 
         self.dataloader.next_clip()
