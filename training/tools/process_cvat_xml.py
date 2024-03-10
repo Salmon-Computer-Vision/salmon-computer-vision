@@ -19,8 +19,7 @@ DUP_LABELS_MAPPING = {
         'Chinook Salmon': 'Chinook',
         'Chum Salmon': 'Chum',
         'Cutthroat Trout': 'Cutthroat',
-        'Juvenile Salmonoid': None,
-        'Juvenile coho salmon': None,
+        'Dolly Varden': 'Bull',
         }
 
 def write_error(file_path):
@@ -35,11 +34,11 @@ def process_xml_file(file_path, output_base_dir):
     os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
     output_dir = os.path.join(os.path.dirname(new_file_path), 'datumaro_format')
 
-    """
-    if os.path.exists(output_dir):
-        print(f"Exists skipping... {output_dir}")
+    output_anno = os.path.join(output_dir, 'annotations', 'default.json')
+    output_empty = os.path.join(output_dir, 'annotations', 'empty')
+    if os.path.exists(output_anno) or os.path.exists(output_empty):
+        print(f"Exists skipping... {output_anno}")
         return
-    """
         
     try:
         # Load and Transform CVAT XML
@@ -61,6 +60,9 @@ def process_xml_file(file_path, output_base_dir):
         dataset = dataset.filter('/item/annotation') # Must filter after remapping due to removed annotations
         dataset = dataset.transform('map_subsets', mapping={'output': 'default'})
         dataset.export(output_dir, format='datumaro', save_media=False)
+        if not os.path.exists(output_anno):
+            with open(output_empty, 'w') as f:
+                f.write('empty\n')
         
     except ET.ParseError as e:
         print(f"Parse error processing file {file_path}: {e}")

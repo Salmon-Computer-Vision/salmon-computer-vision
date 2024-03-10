@@ -21,26 +21,22 @@ class DatumaroLoader(DataLoader):
         self.root_dir = path
         self.custom_classes = custom_classes
 
-        if file_list:
+        if file_list is not None:
             self.clip_gen = self._gen_paths(file_list)
-            self.num_clips = len(file_list)
         else:
             self.clip_gen = self.root_dir.iterdir()
-            self.num_clips = len(list(self.root_dir.iterdir()))
         self.file_list = file_list
             
         self.cur_clip = None
         self.cur_sub_clip_start_id = None
-
-    def clips_len(self):
-        return self.num_clips
+        self.num_items = None
 
     def _gen_paths(self, file_list):
         for path in file_list:
             yield Path(path)
 
     def _get_sub_clip_name(self, id=None):
-        if id:
+        if id is not None:
             inp_id = id
         else:
             inp_id = self.cur_sub_clip_start_id
@@ -57,8 +53,8 @@ class DatumaroLoader(DataLoader):
         return cur_clip
     
     def next_clip(self):
-        if self.cur_sub_clip_start_id:
-            self.cur_sub_clip_start_id += 1
+        if self.cur_sub_clip_start_id is not None:
+            self.cur_sub_clip_start_id += self.num_items + 1
             try:
                 clip_name = self._get_sub_clip_name()
             except IndexError:
@@ -69,7 +65,7 @@ class DatumaroLoader(DataLoader):
             clip_name = self._get_base_path()
     
             # Read datumaro file
-            if self.file_list:
+            if self.file_list is not None:
                 datum_file = self.cur_clip
             else:
                 datum_file = self.cur_clip / self.DATUM_PATH
@@ -79,32 +75,33 @@ class DatumaroLoader(DataLoader):
             if len(list(self._get_images_path().iterdir())) > 1:
                 self.cur_sub_clip_start_id = 0
                 clip_name = self._get_sub_clip_name()
+                
+        self.num_items = len(list(self._item_gen()))
         return clip_name
 
     def _item_gen(self):
-        if self.cur_sub_clip_start_id:
+        if self.cur_sub_clip_start_id is not None:
             clip_name = self._get_sub_clip_name()
             i = 0
-            while clip_name == self._get_sub_clip_name(i):
-                yield self.datum_items[self.KEY_ITEMS][i]
+            while clip_name == self._get_sub_clip_name(self.cur_sub_clip_start_id + i):
+                yield self.datum_items[self.KEY_ITEMS][self.cur_sub_clip_start_id + i]
                 i += 1
         else:
             for datum_item in self.datum_items[self.KEY_ITEMS]:
                 yield datum_item
     
     def items(self):
-        if not self.cur_clip:
+        if self.cur_clip is None:
             raise ValueError('No current clip')
             
-        num_items = len(list(self._item_gen()))
-        if num_items > 0:
+        if self.num_items > 0:
             test_img = self.datum_items[self.KEY_ITEMS][0][self.KEY_IMAGE][self.KEY_PATH]
-            if self.file_list:
+            if self.file_list is not None:
                 test_img = str(self._get_images_path() / test_img)
             img = cv2.imread(test_img)
             h, w, _ = img.shape
             shape = (h, w)
-            
+
         # Iterate through items
         for datum_item in self._item_gen():
             boxes = np.array([[]]).reshape((0,7)) # Box coords, track id, conf, and class id
@@ -130,9 +127,9 @@ class DatumaroLoader(DataLoader):
                 attrs.append(anno_attrs)
             # Populate each Item object
             path = datum_item[self.KEY_IMAGE][self.KEY_PATH]
-            if self.file_list:
+            if self.file_list is not None:
                 path = str(self._get_images_path() / path)
-            item = Item(path, num_items, boxes, shape, attrs)
+            item = Item(path, self.num_items, boxes, shape, attrs)
             yield item
 
     def fps(self):

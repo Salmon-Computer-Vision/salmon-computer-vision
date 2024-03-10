@@ -22,3 +22,8 @@ filepaths that were not processed correctly. This can be fed into
 
 If the filtered annotation comes out empty, the resulting Datumaro
 conversion will not output any annotation file.
+
+`process_cvat_xml.py` may fail if one of the XML files are large
+and takes a long time to process as this can cause errors processing
+the other data in parallel. One fix is to set `--workers 1` in the
+flags to turn it to only a single thread/process.

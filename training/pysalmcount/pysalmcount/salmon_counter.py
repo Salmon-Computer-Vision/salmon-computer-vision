@@ -44,6 +44,7 @@ class SalmonCounter:
             
         cur_clip = self.dataloader.next_clip()
         self.salm_count.loc[cur_clip.name] = 0
+        print(cur_clip.name)
 
         if save_vid:
             OUTPUT_PATH = Path('output_vids')

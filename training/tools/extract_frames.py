@@ -104,8 +104,6 @@ def get_video_file_paths(csv_path, text_file, filter_file):
                     for line in file if line.strip()
                 ]
 
-            breakpoint()
-            
             # Filter the original list to keep only file paths with remaining base names
             vid_paths = intersect_filepaths_with_filenames(vid_paths, filter_filenames)
         # Return the filtered list of video file paths

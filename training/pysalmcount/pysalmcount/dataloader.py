@@ -7,10 +7,6 @@ class DataLoader(ABC):
         pass
 
     @abstractmethod
-    def clips_len(self):
-        pass
-
-    @abstractmethod
     def items(self):
         pass
     
