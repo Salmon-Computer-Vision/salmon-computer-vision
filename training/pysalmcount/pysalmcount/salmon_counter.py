@@ -11,6 +11,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
+VOTE_METHOD_ALL = 'all'
 VOTE_METHOD_IGN = 'ignore_thin'
 VOTE_METHOD_CONF = 'confidence'
 
@@ -37,9 +38,24 @@ class SalmonCounter:
         self.prev_track_ids = {}
         self.tracking_thresh = tracking_thresh
         
+    def _vote_cond(self, vote_method='all', w, h):
+        if vote_method == VOTE_METHOD_ALL:
+            return True
+        elif vote_method == VOTE_METHOD_CONF:
+            return True
+        elif vote_method == VOTE_METHOD_IGN:
+            return w > h # No thin boxes in the votes
 
-    def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, vote_method='ignore_thin', device=0):
-        if vote_method not in [VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
+    def _vote_weight(self, vote_method='all', conf):
+        if vote_method == VOTE_METHOD_ALL:
+            return 1
+        elif vote_method == VOTE_METHOD_CONF:
+            return conf
+        elif vote_method == VOTE_METHOD_IGN:
+            return 1
+
+    def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, vote_method='all', device=0):
+        if vote_method not in [VOTE_METHOD_ALL, VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
             raise ValueError(f'{vote_method} is not a valid method')
             
         cur_clip = self.dataloader.next_clip()
@@ -136,18 +152,11 @@ class SalmonCounter:
                         self.CLASS_VOTE: {}
                     }
 
-                if vote_method == VOTE_METHOD_CONF:
-                    if track_id in self.prev_track_ids:
-                        class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
-                        if cls_id not in class_vote:
-                            class_vote[cls_id] = 0
-                        class_vote[cls_id] += conf # Add confidence value
-                elif vote_method == VOTE_METHOD_IGN:
-                    if track_id in self.prev_track_ids and w > h: # No thin boxes in the votes
-                        class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
-                        if cls_id not in class_vote:
-                            class_vote[cls_id] = 0
-                        class_vote[cls_id] += 1
+                if track_id in self.prev_track_ids and self._vote_cond(vote_method, w=w, h=h):
+                    class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
+                    if cls_id not in class_vote:
+                        class_vote[cls_id] = 0
+                    class_vote[cls_id] += self._vote_weight(vote_method, conf)
 
                 if save_vid:
                     # Draw the tracking lines
