@@ -38,7 +38,7 @@ class SalmonCounter:
         self.prev_track_ids = {}
         self.tracking_thresh = tracking_thresh
         
-    def _vote_cond(self, vote_method='all', w, h):
+    def _vote_cond(self, w, h, vote_method='all'):
         if vote_method == VOTE_METHOD_ALL:
             return True
         elif vote_method == VOTE_METHOD_CONF:
@@ -46,7 +46,7 @@ class SalmonCounter:
         elif vote_method == VOTE_METHOD_IGN:
             return w > h # No thin boxes in the votes
 
-    def _vote_weight(self, vote_method='all', conf):
+    def _vote_weight(self, conf, vote_method='all'):
         if vote_method == VOTE_METHOD_ALL:
             return 1
         elif vote_method == VOTE_METHOD_CONF:
@@ -152,11 +152,11 @@ class SalmonCounter:
                         self.CLASS_VOTE: {}
                     }
 
-                if track_id in self.prev_track_ids and self._vote_cond(vote_method, w=w, h=h):
+                if track_id in self.prev_track_ids and self._vote_cond(w=w, h=h, vote_method=vote_method):
                     class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
                     if cls_id not in class_vote:
                         class_vote[cls_id] = 0
-                    class_vote[cls_id] += self._vote_weight(vote_method, conf)
+                    class_vote[cls_id] += self._vote_weight(conf, vote_method=vote_method)
 
                 if save_vid:
                     # Draw the tracking lines

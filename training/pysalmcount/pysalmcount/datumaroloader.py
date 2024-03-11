@@ -55,11 +55,7 @@ class DatumaroLoader(DataLoader):
     def next_clip(self):
         if self.cur_sub_clip_start_id is not None:
             self.cur_sub_clip_start_id += self.num_items + 1
-            try:
-                clip_name = self._get_sub_clip_name()
-            except IndexError:
-                self.cur_sub_clip_start_id = None
-                return self.next_clip()
+            clip_name = self._get_sub_clip_name()
         else:
             self.cur_clip = next(self.clip_gen)
             clip_name = self._get_base_path()
@@ -83,7 +79,14 @@ class DatumaroLoader(DataLoader):
         if self.cur_sub_clip_start_id is not None:
             clip_name = self._get_sub_clip_name()
             i = 0
-            while clip_name == self._get_sub_clip_name(self.cur_sub_clip_start_id + i):
+            it_clip_name = clip_name
+            while clip_name == it_clip_name:
+                try:
+                    it_clip_name = self._get_sub_clip_name(self.cur_sub_clip_start_id + i)
+                except IndexError:
+                    self.cur_sub_clip_start_id = None
+                    break
+                    
                 yield self.datum_items[self.KEY_ITEMS][self.cur_sub_clip_start_id + i]
                 i += 1
         else:
