@@ -67,10 +67,13 @@ class DatumaroLoader(DataLoader):
                 datum_file = self.cur_clip / self.DATUM_PATH
             self.datum_items = self._json_loader(datum_file)
 
-            # Check if there are multiple clips in one datumaro file
-            if len(list(self._get_images_path().iterdir())) > 1:
-                self.cur_sub_clip_start_id = 0
-                clip_name = self._get_sub_clip_name()
+            try:
+                # Check if there are multiple clips in one datumaro file
+                if len(list(self._get_images_path().iterdir())) > 1:
+                    self.cur_sub_clip_start_id = 0
+                    clip_name = self._get_sub_clip_name()
+            except FileNotFoundError:
+                pass
                 
         self.num_items = len(list(self._item_gen()))
         return clip_name
@@ -81,14 +84,14 @@ class DatumaroLoader(DataLoader):
             i = 0
             it_clip_name = clip_name
             while clip_name == it_clip_name:
+                yield self.datum_items[self.KEY_ITEMS][self.cur_sub_clip_start_id + i]
+                
+                i += 1
                 try:
                     it_clip_name = self._get_sub_clip_name(self.cur_sub_clip_start_id + i)
                 except IndexError:
                     self.cur_sub_clip_start_id = None
                     break
-                    
-                yield self.datum_items[self.KEY_ITEMS][self.cur_sub_clip_start_id + i]
-                i += 1
         else:
             for datum_item in self.datum_items[self.KEY_ITEMS]:
                 yield datum_item
@@ -121,7 +124,7 @@ class DatumaroLoader(DataLoader):
                 try:
                     track_class = np.asarray([int(anno_attrs['track_id']), 1.0, anno['label_id']])
                 except KeyError as e:
-                    print(f"Error getting IDs from {self.cur_clip} | {self.datum_item['id']}:", e)
+                    print(f"Error getting IDs from {self.cur_clip} | {datum_item['id']}:", e)
                     continue
                     
                 box = np.concatenate((tmp_inst.bboxes[0], track_class))

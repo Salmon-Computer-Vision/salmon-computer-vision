@@ -27,3 +27,12 @@ conversion will not output any annotation file.
 and takes a long time to process as this can cause errors processing
 the other data in parallel. One fix is to set `--workers 1` in the
 flags to turn it to only a single thread/process.
+
+## Examples
+
+Update old datumaro annotations to conform to new labels:
+```bash
+python3 ./process_cvat_xml.py --workers 1 --no-filter -f datumaro --save-media ~/salmon-computer-vision/utils/datum_proj_kitwanga/ /mnt/ayumissd4tb/masamim/salm_dataset_kitwanga_2019-2020/ ../2023_combined_salmon.yaml
+```
+
+
