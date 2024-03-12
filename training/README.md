@@ -19,3 +19,15 @@ Tuned hyperparameters are in `salmon_*_hyperparams.yaml`.
 
 Copy the individual hyperparameters to `/usr/src/ultralytics/ultralytics/cfg/default.yaml` inside the
 YOLOv8 docker container. Be careful to check each parameter, because you cannot directly copy them.
+
+## Mounting Google Drive with rclone
+
+Follow config for Google Drive
+```bash
+rclone config
+```
+
+Mount drive with cache to speed up operations:
+```bash
+rclone mount --vfs-cache-mode full --vfs-cache-max-size 100G "wiatlasdrive:Salmon Videos" Salmon_Videos
+```
