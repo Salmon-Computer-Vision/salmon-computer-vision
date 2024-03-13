@@ -7,12 +7,14 @@ import json
 from pathlib import Path
 
 class DatumaroLoader(DataLoader):
-    DATUM_PATH = Path('annotations') / 'default.json'
+    DATUM_DIR = "datumaro_format"
+    ANNO_DIR = "annotations"
+    DATUM_PATH = Path(DATUM_DIR) / ANNO_DIR / 'default.json'
     KEY_ITEMS = 'items'
     KEY_PATH = 'path'
     KEY_IMAGE = 'image'
     KEY_ID = 'id'
-    standard_names = ["datumaro_format", "annotations", "default"]
+    standard_names = [DATUM_DIR, ANNO_DIR, "default"]
 
     def __init__(self, root_folder, custom_classes: dict, file_list=None):
         path = Path(root_folder).resolve()
@@ -51,6 +53,11 @@ class DatumaroLoader(DataLoader):
         while cur_clip.stem in self.standard_names:
             cur_clip = cur_clip.parent
         return cur_clip
+
+    def _get_dirs(self, dir):
+        for item in dir.iterdir():
+            if item.is_dir():
+                yield item
     
     def next_clip(self):
         if self.cur_sub_clip_start_id is not None:
@@ -69,7 +76,7 @@ class DatumaroLoader(DataLoader):
 
             try:
                 # Check if there are multiple clips in one datumaro file
-                if len(list(self._get_images_path().iterdir())) > 1:
+                if len(list(self._get_dirs(self._get_images_path()))) > 1:
                     self.cur_sub_clip_start_id = 0
                     clip_name = self._get_sub_clip_name()
             except FileNotFoundError:
@@ -102,7 +109,7 @@ class DatumaroLoader(DataLoader):
             
         if self.num_items > 0:
             test_img = self.datum_items[self.KEY_ITEMS][0][self.KEY_IMAGE][self.KEY_PATH]
-            if self.file_list is not None:
+            if not Path(test_img).exists():
                 test_img = str(self._get_images_path() / test_img)
             img = cv2.imread(test_img)
             h, w, _ = img.shape
@@ -133,7 +140,7 @@ class DatumaroLoader(DataLoader):
                 attrs.append(anno_attrs)
             # Populate each Item object
             path = datum_item[self.KEY_IMAGE][self.KEY_PATH]
-            if self.file_list is not None:
+            if not Path(path).exists():
                 path = str(self._get_images_path() / path)
             item = Item(path, self.num_items, boxes, shape, attrs)
             yield item

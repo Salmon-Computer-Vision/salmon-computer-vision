@@ -54,7 +54,7 @@ class SalmonCounter:
         elif vote_method == VOTE_METHOD_IGN:
             return 1
 
-    def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, vote_method='all', device=0):
+    def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, vote_method='all', device=0, stream_write=True, output_csv='output_count.csv'):
         if vote_method not in [VOTE_METHOD_ALL, VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
             raise ValueError(f'{vote_method} is not a valid method')
             
@@ -168,6 +168,12 @@ class SalmonCounter:
 
             frame_count += 1
 
+        if stream_write:
+            if len(output_csv) <= 0:
+                self.salm_count.to_csv(output_csv, mode='w')
+            else:
+                self.salm_count.to_csv(output_csv, mode='a', header=False)
+                
         if save_vid:
             out_vid.release()
         return self.salm_count
