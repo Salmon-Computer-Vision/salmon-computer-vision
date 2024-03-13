@@ -30,9 +30,15 @@ flags to turn it to only a single thread/process.
 
 ## Examples
 
+By default, process CVAT annotations converting `__instance_id` to `track_id` and outputting as Datumaro, filtering items with annotations.
+```bash
+cd output_symlink
+python3 ../process_cvat_xml.py --save-media ../../DDD_annos/DDD\ UPLOAD/ /mnt/ayumissd4tb/masamim/salm_dataset_koeye_kwakwa_2024-03-01/ ../../2023_combined_salmon.yaml
+```
+
 Update old datumaro annotations to conform to new labels:
 ```bash
-python3 ./process_cvat_xml.py --workers 1 --no-filter -f datumaro --save-media ~/salmon-computer-vision/utils/datum_proj_kitwanga/ /mnt/ayumissd4tb/masamim/salm_dataset_kitwanga_2019-2020/ ../2023_combined_salmon.yaml
+python3 ./process_cvat_xml.py --no-filter -f datumaro --save-media ~/salmon-computer-vision/utils/datum_proj_kitwanga/ /mnt/ayumissd4tb/masamim/salm_dataset_kitwanga_2019-2020/ ../2023_combined_salmon.yaml
 ```
 
 Convert to YOLO format while filtering to a specified test set.
