@@ -35,4 +35,7 @@ Update old datumaro annotations to conform to new labels:
 python3 ./process_cvat_xml.py --workers 1 --no-filter -f datumaro --save-media ~/salmon-computer-vision/utils/datum_proj_kitwanga/ /mnt/ayumissd4tb/masamim/salm_dataset_kitwanga_2019-2020/ ../2023_combined_salmon.yaml
 ```
 
-
+Convert to YOLO format while filtering to a specified test set.
+```bash
+python3 ./process_cvat_xml.py --no-filter -f datumaro -o yolo --save-media --set-file ../train_splits/test_koeye_2023.csv /mnt/ayumissd4tb/masamim/salm_dataset_koeye_kwakwa_2024-03-01/ /mnt/ayumissd4tb/masamim/salm_dataset_yolo_koeye_2023/test ../2023_combined_salmon.yaml
+```

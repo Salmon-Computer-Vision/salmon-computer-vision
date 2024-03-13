@@ -9,7 +9,7 @@ from pathlib import Path
 class DatumaroLoader(DataLoader):
     DATUM_DIR = "datumaro_format"
     ANNO_DIR = "annotations"
-    DATUM_PATH = Path(DATUM_DIR) / ANNO_DIR / 'default.json'
+    DEFAULT_JSON = 'default.json'
     KEY_ITEMS = 'items'
     KEY_PATH = 'path'
     KEY_IMAGE = 'image'
@@ -45,8 +45,14 @@ class DatumaroLoader(DataLoader):
         clip_name = Path(self.datum_items[self.KEY_ITEMS][inp_id][self.KEY_ID]).parent
         return clip_name
 
+    def _get_datum_dir(self):
+        if (self.cur_clip / self.DATUM_DIR).exists():
+            return self.DATUM_DIR
+        else:
+            return ""
+    
     def _get_images_path(self):
-        return self._get_base_path() / self.standard_names[0] / 'images' / self.standard_names[2]
+        return self._get_base_path() / self._get_datum_dir() / 'images' / self.standard_names[2]
 
     def _get_base_path(self):
         cur_clip = self.cur_clip
@@ -71,7 +77,7 @@ class DatumaroLoader(DataLoader):
             if self.file_list is not None:
                 datum_file = self.cur_clip
             else:
-                datum_file = self.cur_clip / self.DATUM_PATH
+                datum_file = self.cur_clip / self._get_datum_dir() / self.ANNO_DIR / self.DEFAULT_JSON
             self.datum_items = self._json_loader(datum_file)
 
             try:
