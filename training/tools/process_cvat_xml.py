@@ -8,6 +8,7 @@ import argparse
 import yaml
 from pathlib import Path
 import pandas as pd
+import time
 
 DUP_LABELS_MAPPING = {
         'White Fish': 'Whitefish',
@@ -29,7 +30,7 @@ DATUM_FORMAT = 'datumaro'
 standard_names = ['datumaro_format', 'annotations', "default", "output"]
 
 def write_error(file_path):
-    with write_lock: # Safely write to error output files
+    with write_datum_lock: # Safely write to error output files
         with open(error_output_file_path, 'a') as f:
             f.write(file_path + '\n')
             
@@ -76,7 +77,8 @@ def process_dataset(dataset_path, output_base_dir, no_filter=False, format=CVAT_
             tree.write(os.path.join(new_path, 'output.xml'))
 
         # Convert to Datumaro format and export
-        dataset = Dataset.import_from(import_path, format=format)
+        with write_datum_lock:
+            dataset = Dataset.import_from(import_path, format=format)
         dataset = dataset.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
         dataset = dataset.transform('project_labels', dst_labels=LABELS_ORDER)
         if not no_filter and not empty_only:
@@ -132,9 +134,9 @@ def main(args):
     # Main function to process all 'output.xml' files found in the given directory.
     global original_root_dir
     global error_output_file_path
-    global write_lock
+    global write_datum_lock
     global LABELS_ORDER
-    write_lock = Lock()
+    write_datum_lock = Lock()
     original_root_dir = args.input_directory
     error_output_file_path = os.path.join(args.output_directory, 'error_files.txt')
     
@@ -155,9 +157,11 @@ def main(args):
         difference = set(set_names) - set(extracted_filenames)
         # Write the difference to a text file
         output_file = 'difference.txt'
-        with open(output_file, 'w') as f:
-            for filename in difference:
-                f.write(f"{filename}\n")
+        if len(difference) > 0:
+            with open(output_file, 'w') as f:
+                for filename in difference:
+                    f.write(f"{filename}\n")
+            print(f"Error: missing data in input folder. The missing filenames are outputted in {output_file}")
     else:
         datasets = list(list_datasets(args.input_directory))
 

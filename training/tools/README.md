@@ -23,12 +23,6 @@ filepaths that were not processed correctly. This can be fed into
 If the filtered annotation comes out empty, the resulting Datumaro
 conversion will not output any annotation file.
 
-`process_cvat_xml.py` may fail if one of the XML files are large
-and takes a long time to process as this can cause errors processing
-the other data in parallel. One fix is to set `--workers 1` in the
-flags to turn it to only a single thread/process. This can be done
-after running once in parallel to catch only the ones that had errors. 
-
 ## Examples
 
 By default, process CVAT annotations converting `__instance_id` to `track_id` and outputting as Datumaro, filtering items with annotations.
@@ -49,5 +43,10 @@ python3 ./process_cvat_xml.py --no-filter -f datumaro -o yolo --save-media --set
 
 Output 5 random empty frames from each sequence for the test set.
 ```bash
-python3 ../process_cvat_xml.py --workers 1 --no-filter -o yolo --save-media --empty-only --num-empty 5 --set-file ../../train_splits/test_koeye_2023.csv --anno-name output.xml ../../DDD_annos/DDD\ UPLOAD /mnt/ayumissd4tb/masamim/salm_dataset_yolo_empty_koeye_2023/test ../../2023_combined_salmon.yaml
+python3 ../process_cvat_xml.py --no-filter -o yolo --save-media --empty-only --num-empty 5 --set-file ../../train_splits/test_koeye_2023.csv --anno-name output.xml ../../DDD_annos/DDD\ UPLOAD /mnt/ayumissd4tb/masamim/salm_dataset_yolo_empty_koeye_2023/test ../../2023_combined_salmon.yaml
+```
+
+Do the same random empty frames output but on datumaro input datasets.
+```bash
+python3 ../process_cvat_xml.py --no-filter -f datumaro -o yolo --save-media --empty-only --num-empty 5 --set-file ../../train_splits/test_koeye_2023.csv --anno-name default.json /mnt/ayumissd4tb/masamim/salm_dataset_koeye_kwakwa_2023_batch /mnt/ayumissd4tb/masamim/salm_dataset_yolo_empty_koeye_2023/test ../../2023_combined_salmon.yaml
 ```
