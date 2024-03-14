@@ -81,30 +81,36 @@ class DatumaroLoader(DataLoader):
             self.datum_items = self._json_loader(datum_file)
 
             try:
-                # Check if there are multiple clips in one datumaro file
-                if len(list(self._get_dirs(self._get_images_path()))) > 1:
-                    self.cur_sub_clip_start_id = 0
-                    clip_name = self._get_sub_clip_name()
+                # Test if this doesn't fail, then there are multiple clips in one datumaro file
+                self._iter_subclip(self._get_sub_clip_name(0), 0)
+                        
+                self.cur_sub_clip_start_id = 0
+                clip_name = self._get_sub_clip_name()
+            except IndexError:
+                pass
             except FileNotFoundError:
                 pass
                 
         self.num_items = len(list(self._item_gen()))
         return clip_name
 
+    def _iter_subclip(self, clip_name, start_id):
+        i = 0
+        it_clip_name = clip_name
+        while clip_name == it_clip_name:
+            yield self.datum_items[self.KEY_ITEMS][start_id + i]
+            
+            i += 1
+            it_clip_name = self._get_sub_clip_name(start_id + i)
+
     def _item_gen(self):
         if self.cur_sub_clip_start_id is not None:
             clip_name = self._get_sub_clip_name()
-            i = 0
-            it_clip_name = clip_name
-            while clip_name == it_clip_name:
-                yield self.datum_items[self.KEY_ITEMS][self.cur_sub_clip_start_id + i]
-                
-                i += 1
-                try:
-                    it_clip_name = self._get_sub_clip_name(self.cur_sub_clip_start_id + i)
-                except IndexError:
-                    self.cur_sub_clip_start_id = None
-                    break
+            try:
+                for item in self._iter_subclip(clip_name, self.cur_sub_clip_start_id):
+                    yield item
+            except IndexError:
+                self.cur_sub_clip_start_id = None
         else:
             for datum_item in self.datum_items[self.KEY_ITEMS]:
                 yield datum_item

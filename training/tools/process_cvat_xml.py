@@ -26,18 +26,18 @@ DUP_LABELS_MAPPING = {
 
 CVAT_FORMAT = 'cvat'
 DATUM_FORMAT = 'datumaro'
-standard_names = ['datumaro_format', 'annotations', "default"]
+standard_names = ['datumaro_format', 'annotations', "default", "output"]
 
 def write_error(file_path):
     with write_lock: # Safely write to error output files
         with open(error_output_file_path, 'a') as f:
             f.write(file_path + '\n')
             
-def process_dataset(dataset_path, output_base_dir, no_filter=False, format=CVAT_FORMAT, out_format=DATUM_FORMAT, save_media=False):
+def process_dataset(dataset_path, output_base_dir, no_filter=False, format=CVAT_FORMAT, out_format=DATUM_FORMAT, save_media=False, empty_only=False, num_empty=None):
     # Process a single XML file: rename '__instance_id' to 'track_id', convert to Datumaro format and export.
     relative_path = os.path.relpath(dataset_path, start=original_root_dir)
     new_path = os.path.join(output_base_dir, relative_path)
-    os.makedirs(os.path.dirname(new_path), exist_ok=True)
+    os.makedirs(new_path, exist_ok=True)
     output_dir = os.path.join(new_path, f'{out_format}_format')
     
     import_path = new_path if format == CVAT_FORMAT else dataset_path
@@ -50,6 +50,11 @@ def process_dataset(dataset_path, output_base_dir, no_filter=False, format=CVAT_
             return
         elif os.path.exists(output_empty):
             print(f"Empty exists skipping... {output_empty}")
+            return
+    elif out_format == 'yolo':
+        output_data = os.path.join(output_dir, 'obj.data')
+        if os.path.exists(output_data):
+            print(f"Exists skipping... {output_data}")
             return
     else:
         if os.path.exists(output_dir):
@@ -68,14 +73,19 @@ def process_dataset(dataset_path, output_base_dir, no_filter=False, format=CVAT_
                     elem.set('name', 'track_id')
                 
             # Save the modified XML to a new file in the new output directory
-            tree.write(new_path)
+            tree.write(os.path.join(new_path, 'output.xml'))
 
         # Convert to Datumaro format and export
         dataset = Dataset.import_from(import_path, format=format)
         dataset = dataset.transform('remap_labels', mapping=DUP_LABELS_MAPPING)
         dataset = dataset.transform('project_labels', dst_labels=LABELS_ORDER)
-        if (not no_filter):
+        if not no_filter and not empty_only:
             dataset = dataset.filter('/item/annotation') # Must filter after remapping due to removed annotations
+        elif empty_only:
+            dataset = dataset.filter('/item[not(annotation)]')
+            if num_empty is not None:
+                dataset = dataset.transform('random_sampler', count=num_empty, seed=40)
+            
         try:
             dataset = dataset.transform('map_subsets', mapping={'output': 'default'})
         except Exception as e:
@@ -102,18 +112,17 @@ def find_xml_files(root_dir):
             if filename == 'output.xml':
                 yield subdir
 
-def get_seq_name(path):
+def get_seq_path(path):
     seq_name = path
     while seq_name.stem in standard_names:
         seq_name = seq_name.parent
     return seq_name
 
-def find_set_files(root_dir, set_file):
-    df_set = pd.read_csv(set_file, index_col=0)
-    set_names = df_set.index
-    for file_path in Path(root_dir).rglob('default.json'):
-        if get_seq_name(file_path).name in set_names:
-            yield str(file_path.parents[1])
+def find_set_files(root_dir, set_names, anno_name):
+    for file_path in Path(root_dir).rglob(anno_name):
+        seq_path = get_seq_path(file_path)
+        if seq_path.name in set_names:
+            yield str(seq_path)
 
 def list_datasets(root_dir):
     for name in os.listdir(root_dir):
@@ -133,10 +142,23 @@ def main(args):
         data = yaml.safe_load(file)
     LABELS_ORDER = list(data['names'].values())
 
-    if args.format == 'cvat':
+    if args.format == CVAT_FORMAT and args.set_file is None:
         datasets = list(find_xml_files(args.input_directory))
     elif args.set_file is not None:
-        datasets = list(find_set_files(args.input_directory, args.set_file))
+        df_set = pd.read_csv(args.set_file, index_col=0)
+        set_names = df_set.index
+
+        datasets = list(find_set_files(args.input_directory, set_names, args.anno_name))
+        breakpoint()
+
+        # Error handling
+        extracted_filenames = [Path(d).name for d in datasets]
+        difference = set(set_names) - set(extracted_filenames)
+        # Write the difference to a text file
+        output_file = 'difference.txt'
+        with open(output_file, 'w') as f:
+            for filename in difference:
+                f.write(f"{filename}\n")
     else:
         datasets = list(list_datasets(args.input_directory))
 
@@ -146,7 +168,7 @@ def main(args):
         from functools import partial
         process_file = partial(process_dataset, output_base_dir=args.output_directory, 
                                no_filter=args.no_filter, format=args.format, out_format=args.out_format,
-                               save_media=args.save_media)
+                               save_media=args.save_media, empty_only=args.empty_only, num_empty=args.num_empty)
         executor.map(process_file, datasets)
 
 # Command-line interface setup
@@ -161,12 +183,18 @@ if __name__ == "__main__":
                         help='Turn off filtering of only items that have annotations')
     parser.add_argument('--set-file', default=None,
                         help='Path to CSV file storing the filenames in the FIRST column for a particular set. Will filter to only these data.')
+    parser.add_argument('--anno-name', default='default.json',
+                        help='Annotation name to search with set file')
     parser.add_argument('-f', '--format', default=CVAT_FORMAT,
                         help='Input format of annotations for Datumaro to import')
     parser.add_argument('-o', '--out-format', default=DATUM_FORMAT,
                         help='Output format of annotations based on what Datumaro can export')
     parser.add_argument('--save-media', action='store_true',
                         help='Save media in output folder')
+    parser.add_argument('--empty-only', action='store_true',
+                        help='Will switch to outputting only empty items and will random sample up to specified --num-empty.')
+    parser.add_argument('--num-empty', type=int, default=None,
+                        help='Only for --empty-only. Specify the count of empty frames per sequence. By default saves all.')
     args = parser.parse_args()
 
     main(args)
