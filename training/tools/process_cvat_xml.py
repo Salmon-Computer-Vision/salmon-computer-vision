@@ -8,7 +8,6 @@ import argparse
 import yaml
 from pathlib import Path
 import pandas as pd
-import time
 
 DUP_LABELS_MAPPING = {
         'White Fish': 'Whitefish',

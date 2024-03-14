@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
-rivers=(bear koeye kwawka kitwanga)
+rivers=(bear koeye kwakwa kitwanga)
 
 datasets=("test" "val" "train")
 #datasets=("test")
