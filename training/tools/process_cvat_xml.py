@@ -149,7 +149,6 @@ def main(args):
         set_names = df_set.index
 
         datasets = list(find_set_files(args.input_directory, set_names, args.anno_name))
-        breakpoint()
 
         # Error handling
         extracted_filenames = [Path(d).name for d in datasets]
