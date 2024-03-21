@@ -1,7 +1,7 @@
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
 path: /training/export_combined_bear_kitwanga_yolo  # dataset root dir
 train: train.txt
-val: valid.txt
+val: val.txt
 test: test.txt
 
 # Classes
