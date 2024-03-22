@@ -46,7 +46,7 @@ class DatumaroLoader(DataLoader):
         return clip_name
 
     def _get_datum_dir(self):
-        if (self.cur_clip / self.DATUM_DIR).exists():
+        if (self._get_base_path() / self.DATUM_DIR).exists():
             return self.DATUM_DIR
         else:
             return ""
@@ -82,7 +82,11 @@ class DatumaroLoader(DataLoader):
 
             try:
                 # Test if this doesn't fail, then there are multiple clips in one datumaro file
-                self._iter_subclip(self._get_sub_clip_name(0), 0)
+                sub_name = self._get_sub_clip_name(0)
+                if sub_name.resolve() == Path.cwd():
+                    raise FileNotFoundError()
+                    
+                list(self._iter_subclip(sub_name, 0))
                         
                 self.cur_sub_clip_start_id = 0
                 clip_name = self._get_sub_clip_name()
@@ -90,7 +94,7 @@ class DatumaroLoader(DataLoader):
                 pass
             except FileNotFoundError:
                 pass
-                
+
         self.num_items = len(list(self._item_gen()))
         return clip_name
 
