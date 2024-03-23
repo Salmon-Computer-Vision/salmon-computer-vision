@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 docker run --rm -it --ipc=host -p 8888:8888 --gpus all -v $PWD:/training -w /training \
+    --device /dev/fuse --privileged \
     -v /mnt/shiorissd4tb:/mnt/shiorissd4tb \
     -v /mnt/ayumissd4tb:/mnt/ayumissd4tb \
     -v /home/masamim/salmon-computer-vision/utils/:/home/masamim/salmon-computer-vision/utils/ \

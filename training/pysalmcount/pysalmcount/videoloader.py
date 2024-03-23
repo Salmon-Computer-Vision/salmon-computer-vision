@@ -1,6 +1,7 @@
 from .dataloader import DataLoader, Item
 
 import cv2
+from pathlib import Path
 
 class VideoCaptureError(Exception):
     """Exception raised when video capture fails to open."""
@@ -21,9 +22,9 @@ class VideoLoader(DataLoader):
         return self.num_clips
 
     def next_clip(self):
-        self.cur_clip = next(self.clip_gen)
+        self.cur_clip = Path(next(self.clip_gen))
 
-        self.cap = cv2.VideoCapture(self.cur_clip)
+        self.cap = cv2.VideoCapture(str(self.cur_clip))
         if not self.cap.isOpened():
             raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
 
@@ -33,7 +34,7 @@ class VideoLoader(DataLoader):
         return self.cur_clip
 
     def items(self):
-        if not self.cur_clip:
+        if self.cur_clip is None:
             raise ValueError('Error: No current clip')
 
         while True:
@@ -45,6 +46,15 @@ class VideoLoader(DataLoader):
 
     def fps(self):
         return self.vid_fps
+
+    def get_frame_num(self):
+        return self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+
+    def get_timestamp(self):
+        seconds = self.get_frame_num() / self.fps()
+
+        timestamp = f'{int(seconds // 3600):02d}:{int((seconds % 3600) // 60):02d}:{int(seconds % 60):02d}'
+        return timestamp
 
     def classes(self) -> dict:
         """

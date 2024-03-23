@@ -4,6 +4,7 @@ from pathlib import Path
 import argparse
 
 from pysalmcount.datumaroloader import DatumaroLoader
+from pysalmcount.videoloader import VideoLoader
 from pysalmcount.salmon_counter import SalmonCounter
 
 def main(args):
@@ -12,9 +13,15 @@ def main(args):
         
     with open(args.anno_list_path, 'r') as f:
         anno_list = [line.strip() for line in f if line.strip()]
-    d = DatumaroLoader(args.input_directory, data['names'], anno_list)
+
+    if args.format == 'video':
+        loader = VideoLoader(anno_list, data['names'])
+    elif args.format == 'datumaro':
+        loader = DatumaroLoader(args.input_directory, data['names'], anno_list)
+    else:
+        raise ValueError(f'Incorrect format: {args.format}')
     
-    counter = SalmonCounter(args.weights, d, tracking_thresh=10)
+    counter = SalmonCounter(args.weights, loader, tracking_thresh=10)
     
     out_path = Path(args.csv_output_path)
     out_path.parent.mkdir(exist_ok=True)
@@ -38,6 +45,7 @@ if __name__ == "__main__":
     parser.add_argument('csv_output_path', help='Output CSV filepath for saving the counts.')
     parser.add_argument('--weights', default='weights/best.pt', help='Path to YOLO weights to load.')
     parser.add_argument('--device', default=0, help='GPU device to use.')
+    parser.add_argument('-f', '--format', default='datumaro', help='Input format. Acceptable formats: datumaro, video')
     args = parser.parse_args()
 
     main(args)

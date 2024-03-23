@@ -178,6 +178,11 @@ class SalmonCounter:
             out_vid.release()
         return self.salm_count
 
+    def _increm_count(name, timestamp, class_direct):
+        if (name, timestamp) not in df.index:
+            df.loc[(name, timestamp)] = 0
+        df.loc[(name, timestamp), class_direct] += 1
+
     def _line_of_interest(self, f_width, cur_clip, track_id, track, main_class_id):
         # Check start and end of track ID
         # Count if start and end are on either sides of the LOI
