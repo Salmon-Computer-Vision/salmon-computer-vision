@@ -7,7 +7,7 @@ inputs=(
 #/mnt/ayumissd4tb/masamim/salm_dataset8010_datumaro/salm_dataset8010_datumaro_koeye_2023
 #/mnt/ayumissd4tb/masamim/salm_dataset8010_datumaro/salm_dataset8010_datumaro_kwakwa_2023
 "/mnt/ayumissd4tb/masamim/Salmon_Videos/Koeye 2023 videos"
-"/mnt/ayumissd4tb/masamim/Salmon_Videos/Kwakwa Video 2023"
+#"/mnt/ayumissd4tb/masamim/Salmon_Videos/Kwakwa Video 2023"
 )
 
 input_format="video" # video|datumaro
@@ -15,6 +15,7 @@ output_folder="model_full_counts"
 
 # Define the base name for the split files
 base_split_name="split_list_"
+tmp_paths_file=all_paths_unfinished.txt
 
 declare -A models=( ["KiBeKoKw"]="33" ["KoKw"]="35" )
 
@@ -30,18 +31,18 @@ model="KoKw"
 
         if [[ "$input_format" == "datumaro" ]]; then
             # Step 1: Find all default.json files and save the list to a temporary file
-            find "$input_folder" -name 'default.json' > all_paths.txt
+            find "$input_folder" -name 'default.json' > "$tmp_paths_file"
         elif [[ "$input_format" == "video" ]]; then
             echo ""
-            #find "$input_folder" -name '*.mp4' > all_paths.txt
+            #find "$input_folder" -name '*.mp4' > "$tmp_paths_file"
         fi
 
         # Step 2: Split this list into 4 separate text files
-        total_lines=$(wc -l < all_paths.txt)
+        total_lines=$(wc -l < "$tmp_paths_file")
         ((lines_per_file = (total_lines + 3) / 4)) # Plus 3 for rounding up division
 
         # Splitting the file. Adding a suffix to easily identify them.
-        split -l "$lines_per_file" all_paths.txt "${base_split_name}"
+        split -l "$lines_per_file" "$tmp_paths_file" "${base_split_name}"
 
         # Collect the split files into an array
         split_files=(${base_split_name}*)

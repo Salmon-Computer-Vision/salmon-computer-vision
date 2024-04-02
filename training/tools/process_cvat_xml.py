@@ -22,6 +22,7 @@ DUP_LABELS_MAPPING = {
         'Chum Salmon': 'Chum',
         'Cutthroat Trout': 'Cutthroat',
         'Dolly Varden': 'Bull',
+        'Juvenile coho salmon': 'Juvenile Salmonoid',
         }
 
 CVAT_FORMAT = 'cvat'
