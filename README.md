@@ -11,7 +11,7 @@ The code is currently under the [MIT License](LICENSE) but could be subject to c
 The data and annotation are under [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 No commercial usage and any adaptations must be published with the same license.
 
-Any models published here will be under the [ResearchRAIL license](LICENSE-ResearchRAIL.md) for research purposes only.
+Any models published here will be under the [ResearchRAIL license](LICENSE-Model.md) for research purposes only.
 
 ## Video-based
 
