@@ -4,6 +4,15 @@ This repository contains several tools and utilities to assist in training
 salmon counting automation tools. Two major categories include [video-based](#video-based)
 enumeration and [sonar-based](#sonar-based) enumeration.
 
+## License
+
+The code is currently under the [MIT License](LICENSE) but could be subject to change in the future.
+
+The data and annotation are under [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+No commercial usage and any adaptations must be published with the same license.
+
+Any models published here will be under the [ResearchRAIL license](LICENSE-ResearchRAIL.md) for research purposes only.
+
 ## Video-based
 
 The current enumeration strategy is using two computer vision models:
@@ -31,7 +40,6 @@ Creek River bounding box annotations with no images. The conversion script is
 in the `utils` folder (`utils/datum_create_dataset.py`), requiring
 [Datumaro](https://github.com/openvinotoolkit/datumaro) to run. Refer to the
 [this documentation](utils/README.md) for more details.
-
 
 ### Models
 
