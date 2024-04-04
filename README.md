@@ -12,7 +12,7 @@ The data and annotation are under [Creative Commons BY-NC-SA 4.0](LICENSE-Data).
 license description outlined here](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 No commercial usage and any adaptations must be published with the same license.
 
-Any models published here is under the [ResearchRAIL license](LICENSE-Model.md) for research purposes only.
+Any Salmon Vision models published here is under the [ResearchRAIL license](LICENSE-Model.md) for research purposes only.
 
 ## Video-based
 
