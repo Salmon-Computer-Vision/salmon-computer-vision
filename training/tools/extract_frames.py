@@ -15,7 +15,10 @@ def extract_frames(input_base_dir, video_path, output_base_dir, frame_rate):
     """
     try:
         # Create output directory for the current video
-        relative_path = os.path.relpath(video_path, start=input_base_dir)
+        if os.path.exists(video_path):
+            relative_path = os.path.relpath(video_path, start=input_base_dir)
+        else:
+            relative_path = video_path
         output_dir = os.path.join(output_base_dir, os.path.splitext(relative_path)[0])
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -93,7 +96,7 @@ def get_video_file_paths(csv_path, text_file, filter_file):
             completed_videos = df.copy()
     
             # Combine "File Path" and "File Name" to form the full video file path
-            completed_videos.loc[:, 'Video Path'] = completed_videos['File Path'].str.cat(completed_videos['File Name'], sep='/')
+            completed_videos.loc[:, 'Video Path'] = completed_videos['File Path'].str.lstrip('\\').str.replace('\\', '/') + '/' + completed_videos['File Name']
 
             vid_paths = completed_videos['Video Path'].tolist()
             

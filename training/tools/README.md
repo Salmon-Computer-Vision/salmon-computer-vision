@@ -25,6 +25,11 @@ conversion will not output any annotation file.
 
 ## Examples
 
+Extract frames first:
+```bash
+python3 extract_frames.py /mnt/ayumissd4tb/masamim/Salmon_Videos/ PSF_Batch_RGB_Video_2024-02-13.csv output --workers 64
+```
+
 By default, process CVAT annotations converting `__instance_id` to `track_id` and outputting as Datumaro, filtering items with annotations.
 ```bash
 cd output_symlink
