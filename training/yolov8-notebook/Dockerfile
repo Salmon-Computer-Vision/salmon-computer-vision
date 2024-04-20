@@ -3,7 +3,7 @@
 FROM ultralytics/ultralytics:latest
 
 RUN pip3 install jupyterlab jupyterlab-vim
-RUN pip3 install -U datumaro[default] jupyter ipywidgets
+RUN pip3 install -U datumaro[default] jupyter ipywidgets opencv-contrib-python
 
 ENV JUPYTER_PORT=8888
 EXPOSE $JUPYTER_PORT

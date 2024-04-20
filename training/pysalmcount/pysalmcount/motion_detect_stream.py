@@ -65,6 +65,7 @@ class MotionDetector:
     def __init__(self, dataloader: DataLoader, save_folder):
         self.dataloader = dataloader
         self.save_folder = save_folder
+        self.frame_log = []
 
     def detect_motion(self, fg_mask, min_area=500):
         """
@@ -79,7 +80,7 @@ class MotionDetector:
                 return True
         return False
 
-    def run(self):
+    def run(self, save_video=True):
         # Motion Detection Params
         threshold_value = 50 # Increase threshold value to minimize noise
         kernel_size = (7, 7) # Increase kernel size to ignore smaller motions
@@ -108,6 +109,9 @@ class MotionDetector:
 
         delay = int(fps * 5) # Number of seconds to delay after motion
         count_delay = 0
+
+        frame_counter = 0
+        frame_start = 0
         for item in self.dataloader.items():
             frame = item.frame
 
@@ -140,18 +144,27 @@ class MotionDetector:
                 if not motion_detected:
                     print("Motion detected.")
                     motion_detected = True
-                    # Signal that we need to start saving the clip
-                    stop_event.clear()
-                    video_saver = VideoSaver(buffer, self.save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
-                    video_saver.start()
+                    frame_start = frame_counter
+                    if save_video:
+                        # Signal that we need to start saving the clip
+                        stop_event.clear()
+                        video_saver = VideoSaver(buffer, self.save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
+                        video_saver.start()
             else:
                 if count_delay < delay:
                     count_delay += 1
                 else:
                     # If motion has stopped and we have a video saver running, set the stop event
-                    if motion_detected and not stop_event.is_set():
-                        print("Stopping recording.")
-                        stop_event.set()
-                        with condition:
-                            condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
-                        motion_detected = False
+                    if motion_detected:
+                        print("Motion stopped exceeding delay.")
+                        self.frame_log.append((frame_start, frame_counter))
+                        if save_video and not stop_event.is_set():
+                            print("Stopping recording.")
+                            stop_event.set()
+                            with condition:
+                                condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
+                            motion_detected = False
+
+            frame_counter += 1
+
+        return self.frame_log
