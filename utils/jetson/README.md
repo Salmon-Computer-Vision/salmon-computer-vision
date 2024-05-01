@@ -5,6 +5,37 @@ used to make sure the IP does not change when connected to the Starlink router. 
 IP address to the same domain, look into [serial connection with a micro-USB](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-2gb-devkit#setup-headless),
 or connect with an HDMI cable.
 
+## Tailscale
+
+Tailscale is a remote connection software. Update `docker-compose.yaml` with the auth key from Tailscale and update the hostname.
+
+On the Jetson Nano, install docker-compose:
+```
+sudo apt-get update
+sudo apt-get install docker-compose
+```
+
+Run the following in this directory to start up Tailscale:
+```
+docker-compose up -d
+```
+
+The shut it down do
+```
+docker-compose down
+```
+
+Update the hostname of the device if not already to change the name on the admin console:
+```
+hostnamectl set-hostname <new-hostname>
+```
+
+We will standardize the hostnames as such
+```
+<river-name>-<device>
+```
+`<device>` could be `raspi` or `jetson`.
+
 ## ultralytics docker setup
 
 Try pulling and running ultralytics from main docker first:

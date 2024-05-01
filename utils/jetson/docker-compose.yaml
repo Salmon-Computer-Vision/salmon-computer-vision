@@ -5,7 +5,6 @@ services:
     image: tailscale/tailscale:latest
     container_name: tailscale-oauth
     # The name appear in Tailscale console
-    hostname: Jetson_docker_0
     environment:
       - TS_AUTHKEY=${YOURKEY}?ephemeral=false
       # Set tag name
