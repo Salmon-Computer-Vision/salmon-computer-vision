@@ -7,6 +7,7 @@ from collections import deque
 import argparse
 import datetime
 import os
+import pandas as pd
 from threading import Thread, Event, Lock, Condition
 
 class VideoSaver(Thread):
@@ -62,10 +63,12 @@ class VideoSaver(Thread):
         out.release()
 
 class MotionDetector:
+    FILENAME = 'filename'
+    CLIPS = 'clips'
     def __init__(self, dataloader: DataLoader, save_folder):
         self.dataloader = dataloader
         self.save_folder = save_folder
-        self.frame_log = []
+        self.frame_log = {}
 
     def detect_motion(self, fg_mask, min_area=500):
         """
@@ -88,7 +91,8 @@ class MotionDetector:
         min_contour_area = 2000 # Ignore contour objects smaller than this area
 
 
-        self.dataloader.next_clip()
+        cur_clip = self.dataloader.next_clip()
+        self.frame_log[cur_clip.name] = []
 
         # Retrieve the FPS of the video stream
         fps = self.dataloader.fps()
@@ -114,6 +118,9 @@ class MotionDetector:
         frame_start = 0
         for item in self.dataloader.items():
             frame = item.frame
+
+            if isinstance(frame, str):
+                frame = cv2.imread(frame)
 
             # Apply background subtraction algorithm to get the foreground mask
             fg_mask = bgsub.apply(frame)
@@ -157,12 +164,14 @@ class MotionDetector:
                     # If motion has stopped and we have a video saver running, set the stop event
                     if motion_detected:
                         print("Motion stopped exceeding delay.")
-                        self.frame_log.append((frame_start, frame_counter))
+                        self.frame_log[cur_clip.name].append((frame_start, frame_counter))
                         if save_video and not stop_event.is_set():
                             print("Stopping recording.")
                             stop_event.set()
                             with condition:
                                 condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
+                            motion_detected = False
+                        elif not save_video:
                             motion_detected = False
 
             frame_counter += 1

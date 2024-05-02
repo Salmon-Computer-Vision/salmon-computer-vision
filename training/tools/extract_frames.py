@@ -6,7 +6,7 @@ import argparse
 import pandas as pd
 from pathlib import Path
 
-def extract_frames(input_base_dir, video_path, output_base_dir, frame_rate):
+def extract_frames(input_base_dir, video_path, output_base_dir, frame_rate, symlink_dir=None):
     """
     Extracts frames from a video file at a specified frame rate.
     :param video_path: Path to the video file.
@@ -14,13 +14,18 @@ def extract_frames(input_base_dir, video_path, output_base_dir, frame_rate):
     :param frame_rate: Rate at which frames should be extracted (every 'frame_rate' frames).
     """
     try:
+
         # Create output directory for the current video
         if os.path.exists(video_path):
             relative_path = os.path.relpath(video_path, start=input_base_dir)
         else:
             relative_path = video_path
+
         output_dir = os.path.join(output_base_dir, os.path.splitext(relative_path)[0])
-        if not os.path.exists(output_dir):
+        if symlink_dir is None:
+            symlink_dir = f'{output_base_dir}_symlink'
+        sympath = os.path.join(symlink_dir, os.path.basename(os.path.splitext(relative_path)[0]))
+        if not os.path.exists(output_dir) and not os.path.exists(sympath):
             os.makedirs(output_dir)
             print(video_path, 'to', output_dir)
             
@@ -40,9 +45,8 @@ def extract_frames(input_base_dir, video_path, output_base_dir, frame_rate):
                 success, image = vidcap.read()
                 count += 1
 
-        symlink_dir = f'{output_base_dir}_symlink'
         os.makedirs(symlink_dir, exist_ok=True)
-        os.symlink(os.path.abspath(output_dir), os.path.join(symlink_dir, os.path.basename(os.path.splitext(relative_path)[0])))
+        os.symlink(os.path.abspath(output_dir), sympath)
 
     except Exception as e:
         print(f"Error extracting frames from video {video_path}: {e}")
@@ -139,7 +143,7 @@ def main(args):
     # Process each video in parallel
     with ThreadPoolExecutor(max_workers=args.workers) as executor:
         for video_path in videos:
-            executor.submit(extract_frames, args.input_directory, video_path, args.output_directory, args.frame_rate)
+            executor.submit(extract_frames, args.input_directory, video_path, args.output_directory, args.frame_rate, args.symlink_dir)
 
 # Command-line interface setup
 if __name__ == "__main__":
@@ -153,6 +157,7 @@ if __name__ == "__main__":
                         help='Frame rate to extract frames (e.g., --frame-rate 1 to extract all frames).')
     parser.add_argument('--workers', type=int, default=os.cpu_count(),
                         help='Maximum number of threads to use. Defaults to the number of CPU cores if not set.')
+    parser.add_argument('--symlink-dir', default=None, help='Sets the symdir')
     args = parser.parse_args()
 
     main(args)
