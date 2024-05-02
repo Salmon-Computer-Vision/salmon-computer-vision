@@ -52,8 +52,11 @@ Format SD card with SD card formatter with Quick format.
 
 Flash SD card with Jetpack SDK using balenaEtcher.
 
-To do headless mode, set the jumper to use the barrel power jack. Connect USB micro to Jetson Nano and
+To do headless mode, set the jumper to use the barrel power jack or USB-C (2GB only). Connect USB micro to Jetson Nano and
 connect it to a computer. Connect an ethernet cable and then the power jack.
+
+> ⚠️ Connecting using a barrel power jack or USB-C is required anyways to use Jetson Nano at MaxN (10W) or maximum performance mode. Be sure to get
+a barrel jack with at least 10W of output.
 
 Follow instructions to install.
 
