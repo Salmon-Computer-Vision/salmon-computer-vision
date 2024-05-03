@@ -32,9 +32,14 @@ hostnamectl set-hostname <new-hostname>
 
 We will standardize the hostnames as such
 ```
-<river-name>-<device>
+<river-name>-<device>-<num>
 ```
 `<device>` could be `raspi` or `jetson`.
+
+For example,
+```
+kwakwa-jetson-0
+```
 
 ## ultralytics docker setup
 
