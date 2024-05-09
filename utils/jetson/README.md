@@ -123,6 +123,31 @@ OR
 # On Jetson Nano, this is only ~2 MB/s for a compressed 2 GB file
 cat bytetrack_manual.tar.bz2 | pv | ssh salmonjetson@<jetson_hostname> docker load
 ```
+OR 
+
+Even better, setup a [local registry](https://www.allisonthackston.com/articles/local-docker-registry.html).
+
+Run the registry docker on the docker image host machine:
+```bash
+docker run -d -p 5000:5000 --restart always --name registry registry:2
+```
+
+Using the hostname and port of that host machine, edit `/etc/docker/daemon.json` by adding the following:
+```
+{
+    "insecure-registries": ["your_hostname.local:5000"]
+}
+```
+
+Then, push and pull using this hostname prepended to the docker image tag:
+```
+docker tag your_docker_image your_hostname.local:5000/your_docker_image
+docker push your_hostname.local:5000/your_docker_image
+```
+
+```
+docker pull your_hostname.local:5000/your_docker_image
+```
 
 For saving to a shared harddrive, set an sshfs from the outputs folder to the external hard disk on the raspi:
 
