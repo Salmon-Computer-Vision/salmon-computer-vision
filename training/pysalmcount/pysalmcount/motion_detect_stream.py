@@ -7,7 +7,6 @@ from collections import deque
 import argparse
 import datetime
 import os
-import pandas as pd
 from threading import Thread, Event, Lock, Condition
 
 class VideoSaver(Thread):
@@ -75,7 +74,7 @@ class MotionDetector:
         Detect motion in the foreground mask by looking for contours with an area larger than min_area.
         """
         # Find contours in the fg_mask
-        contours, _ = cv2.findContours(fg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(fg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]
 
         # Filter out small contours
         for contour in contours:
@@ -83,8 +82,9 @@ class MotionDetector:
                 return True
         return False
 
-    def run(self, save_video=True):
+    def run(self, algo='MOG2', save_video=True):
         # Motion Detection Params
+        bgsub_threshold = 16
         threshold_value = 50 # Increase threshold value to minimize noise
         kernel_size = (7, 7) # Increase kernel size to ignore smaller motions
         morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
@@ -99,7 +99,12 @@ class MotionDetector:
 
         print(f"FPS: {fps}")
 
-        bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=int(fps), maxPixelStability=int(fps*60))
+        if algo == 'MOG2':
+            bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
+        else:
+            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=int(fps), maxPixelStability=int(fps*60))
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
         warm_up = fps
         buffer_length = int(fps * 5)  # Buffer to save before motion
@@ -127,13 +132,12 @@ class MotionDetector:
 
             has_motion = False
             if warm_up <= 0:
-                # Apply a threshold to the foreground mask to get rid of noise
-                _, fg_mask = cv2.threshold(fg_mask, threshold_value, 255, cv2.THRESH_BINARY)
-
                 # Apply morphological operations to clean up the mask
-                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
                 for _ in range(morph_iterations):
                     fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel) 
+
+                # Apply a threshold to the foreground mask to get rid of noise
+                _, fg_mask = cv2.threshold(fg_mask, threshold_value, 255, cv2.THRESH_BINARY)
 
                 # Now detect motion
                 has_motion = self.detect_motion(fg_mask, min_area=min_contour_area)

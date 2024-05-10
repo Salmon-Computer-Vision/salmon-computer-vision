@@ -39,8 +39,6 @@ class VideoLoader(DataLoader):
 
         while True:
             ret, frame = self.cap.read()
-            if not ret:
-                break
 
             yield Item(frame, num_items=self.total_frames)
 
