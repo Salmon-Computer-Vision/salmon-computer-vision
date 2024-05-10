@@ -7,7 +7,7 @@ or connect with an HDMI cable.
 
 ## Tailscale
 
-Tailscale is a remote connection software. Update `docker-compose.yaml` with the auth key from Tailscale and update the hostname.
+Tailscale is a remote connection software. Copy `docker-compose-template.yaml` to `docker-compose.yaml` and update with the auth key from Tailscale.
 
 On the Jetson Nano, install docker-compose:
 ```
@@ -29,6 +29,7 @@ Update the hostname of the device if not already to change the name on the admin
 ```
 hostnamectl set-hostname <new-hostname>
 ```
+If this is run after tailscale is already up, the tailscale folder needs to be deleted and rebooted for it to reflect.
 
 We will standardize the hostnames as such
 ```
