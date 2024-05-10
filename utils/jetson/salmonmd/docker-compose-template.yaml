@@ -1,0 +1,10 @@
+---
+version: "3.3"
+services:
+  salmonmd:
+    image: ${LOCAL_REPO}/salmonmd:r32.7.1
+    container_name: salmonmd
+    network_mode: host
+    volumes:
+      ../../training/:/tools
+    restart: always
