@@ -77,6 +77,19 @@ Create a new user to restrict ssh key usage:
 - Put the contents of `sshfs.conf` into the bottom of `/etc/ssh/sshd_config`
 - Add the contents of `revtunnel_id_rsa.pub` to the new user's `/home/lockeduser/.ssh/authorized_keys`
 
+### Setup NFS Share
+
+Install NFS server:
+```bash
+sudo apt update && sudo apt install nfs-kernel-server
+```
+
+Edit `/etc/exports`:
+```
+/media/usb <jetson-0_ip>(rw,no_subtree_check)
+/media/usb <jetson-1_ip>(rw,no_subtree_check)
+```
+
 ## Set Static IP
 
 Get the gateway and DNS IP addresses of the current network:

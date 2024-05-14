@@ -42,6 +42,56 @@ For example,
 kwakwa-jetson-0
 ```
 
+## Salmon Motion Detection
+
+First setup NFS share from the Raspi to the Jetson to save videos to the external
+drive attached to the Raspi.
+
+### NFS Share
+
+To mount the NFS share from the raspi install NFS client:
+```bash
+sudo apt update && sudo apt install nfs-common
+```
+
+Create mount dir:
+```bash
+sudo mkdir /mnt/pi-drive
+```
+
+Mount using `/etc/fstab`:
+```
+<raspi_ip>:/media/usb    /mnt/pi-drive   nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0
+```
+
+```bash
+sudo mount -av
+```
+
+### Running SalmonMD
+
+Navigate to the `salmonmd` folder:
+```bash
+cd salmonmd
+```
+
+Create a `.env` file with the following:
+```
+IMAGE_REPO_HOST=<your_image_repo_host>
+RTSP_URL=rtsp://<your_rtsp_url>
+```
+
+For example:
+```
+IMAGE_REPO_HOST=kamicreed
+RTSP_URL=rtsp://192.168.1.191/av0_0
+```
+
+Run docker-compose in the `salmonmd` folder:
+```bash
+docker-compose up -d
+```
+
 ## ultralytics docker setup
 
 Try pulling and running ultralytics from main docker first:

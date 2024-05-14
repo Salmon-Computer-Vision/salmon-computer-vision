@@ -25,7 +25,7 @@ class VideoSaver(Thread):
 
     def get_output_filename(self, folder):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = os.path.join(folder, f"motion_{timestamp}.mp4")
+        filename = os.path.join(folder, f"{os.uname()[1]}_{timestamp}.mp4")
         return filename
 
 
