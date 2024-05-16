@@ -2,8 +2,7 @@
 version: "3.3"
 services:
   salmonmd:
-    image: salmonmd-test
-    #image: ${IMAGE_REPO_HOST}/salmonmd:r32.7.1
+    image: ${IMAGE_REPO_HOST}/salmonmd:r32.7.1
     environment:
       - HOSTNAME
     env_file:
