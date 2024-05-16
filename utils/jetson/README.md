@@ -11,8 +11,8 @@ Tailscale is a remote connection software. Copy `docker-compose-template.yaml` t
 
 On the Jetson Nano, install docker-compose:
 ```
-sudo apt-get update
-sudo apt-get install docker-compose
+python3 -m pip install -U pip
+python3 -m pip install docker-compose
 ```
 
 Run the following in this directory to start up Tailscale:
