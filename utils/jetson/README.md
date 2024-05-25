@@ -37,7 +37,7 @@ First, delete the Tailscale status folder (the folder name can be different depe
 ```
 rm tailscale-oauth -r
 ```
-Then, you ***MUST*** run the following command under the Tmux environment, otherwise, you are likely to lose the SSH remote connection permanently.
+***!!!*** Then, you ***MUST*** run the following command under the ***Tmux environment***, otherwise, you are likely to lose the SSH remote connection permanently.
 ```
 docker-compose down && docker-compose up -d
 ```
