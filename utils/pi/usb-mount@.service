@@ -1,0 +1,8 @@
+[Unit]
+Description=Mount USB Drive on %i
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/home/netlabmedia/mount.sh add %i
+ExecStop=/home/netlabmedia/mount.sh remove %i
