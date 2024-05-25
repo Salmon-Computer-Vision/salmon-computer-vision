@@ -52,7 +52,7 @@ We will standardize the hostnames as such
 ```
 <river-name>-<device>-<num>
 ```
-`<device>` could be `raspi` or `jetson`.
+`<device>` could be `pi` or `jetson`.
 
 For example,
 ```
