@@ -29,8 +29,15 @@ Update the hostname of the device if not already to change the name on the admin
 ```
 hostnamectl set-hostname <new-hostname>
 ```
-If this is run after tailscale is already up, the tailscale folder needs to be deleted and rebooted for it to reflect.
-
+If this is run after Tailscale is already up, reboot the machine and do the following:
+First, delete the Tailscale status folder (the folder name can be different depending on the YAML file)
+```
+rm tailscale-oauth -r
+```
+Then, you *** MUST *** run the following command under the Tmux environment, otherwise, you are likely to lose the SSH remote connection permanently.
+```
+docker-compose down && docker-compose up -d
+```
 We will standardize the hostnames as such
 ```
 <river-name>-<device>-<num>
