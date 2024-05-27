@@ -9,6 +9,12 @@ import datetime
 import os
 import errno
 from threading import Thread, Event, Lock, Condition
+import logging
+
+logging.basicConfig( 
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
 
 class VideoSaver(Thread):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480)):
@@ -38,7 +44,7 @@ class VideoSaver(Thread):
         # Write the pre-motion frames
         while self.buffer:
             if c % 20 == 0:
-                print(f'Saving pre... {c}')
+                logger.info(f'Saving pre... {c}')
             with self.lock:
                 frame = self.buffer.popleft()  # Safely pop from the left of the deque
             out.write(frame)
@@ -55,7 +61,7 @@ class VideoSaver(Thread):
                     with self.lock:
                         frame = self.buffer.popleft()
                     if c % 20 == 0:
-                        print(f'Saving... {c}')
+                        logger.info(f'Saving... {c}')
                     out.write(frame)
 
             c += 1
@@ -90,6 +96,8 @@ class MotionDetector:
         kernel_size = (7, 7) # Increase kernel size to ignore smaller motions
         morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
         min_contour_area = 2000 # Ignore contour objects smaller than this area
+        BUFFER_LENGTH = 5 # Number of seconds before motion to keep
+        MAX_CLIP_MINS = 2 # Maximum number of minutes per clip
 
 
         cur_clip = self.dataloader.next_clip()
@@ -98,7 +106,9 @@ class MotionDetector:
         # Retrieve the FPS of the video stream
         fps = self.dataloader.fps()
 
-        print(f"FPS: {fps}")
+        logger.info(f"FPS: {fps}")
+
+        MAX_FRAMES_CLIP = MAX_CLIP_MINS * 60 * fps
 
         if algo == 'MOG2':
             bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
@@ -108,7 +118,7 @@ class MotionDetector:
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
         warm_up = fps
-        buffer_length = int(fps * 5)  # Buffer to save before motion
+        buffer_length = int(fps * BUFFER_LENGTH)  # Buffer to save before motion
         buffer = deque(maxlen=buffer_length)
         motion_detected = False
 
@@ -121,6 +131,7 @@ class MotionDetector:
         count_delay = 0
 
         frame_counter = 0
+        motion_counter = 0
         frame_start = 0
         for item in self.dataloader.items():
             # Constantly check if save folder exists
@@ -154,28 +165,40 @@ class MotionDetector:
             with condition:
                 condition.notify() # Signal the VideoSaver thread that a new frame is available
 
+            motion_counter += 1
+
             # Check for motion
             if has_motion:
                 count_delay = 0
                 if not motion_detected:
-                    print("Motion detected.")
+                    logger.info("Motion detected.")
                     motion_detected = True
+                    motion_counter = 0
                     frame_start = frame_counter
                     if save_video:
                         # Signal that we need to start saving the clip
                         stop_event.clear()
                         video_saver = VideoSaver(buffer, self.save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
                         video_saver.start()
+                else:
+                    if save_video and motion_counter > MAX_FRAMES_CLIP and not stop_event.is_set():
+                        logger.info("Max clip length exceeded. Motion stopped.")
+                        logger.info("Stopping recording.")
+                        stop_event.set()
+                        with condition:
+                            condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
+                        motion_detected = False
             else:
                 if count_delay < delay:
                     count_delay += 1
                 else:
                     # If motion has stopped and we have a video saver running, set the stop event
                     if motion_detected:
-                        print("Motion stopped exceeding delay.")
+                        logger.info("Delay exceeded. Motion stopped.")
                         self.frame_log[cur_clip.name].append((frame_start, frame_counter))
+                        motion_counter = 0
                         if save_video and not stop_event.is_set():
-                            print("Stopping recording.")
+                            logger.info("Stopping recording.")
                             stop_event.set()
                             with condition:
                                 condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
