@@ -7,6 +7,7 @@ from collections import deque
 import argparse
 import datetime
 import os
+import errno
 from threading import Thread, Event, Lock, Condition
 
 class VideoSaver(Thread):
@@ -122,6 +123,10 @@ class MotionDetector:
         frame_counter = 0
         frame_start = 0
         for item in self.dataloader.items():
+            # Constantly check if save folder exists
+            if not os.path.exists(self.save_folder):
+                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
+
             frame = item.frame
 
             if isinstance(frame, str):
