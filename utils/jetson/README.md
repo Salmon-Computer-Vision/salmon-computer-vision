@@ -66,23 +66,41 @@ drive attached to the Raspi.
 
 ### NFS Share
 
-To mount the NFS share from the raspi install NFS client:
+To mount the NFS share and recover automatically from the raspi install NFS client and autofs:
 ```bash
-sudo apt update && sudo apt install nfs-common
+sudo apt update && sudo apt install nfs-common autofs
 ```
 
 Create mount dir:
 ```bash
-sudo mkdir /mnt/pi-drive
+sudo mkdir /media/nfs/hdd
 ```
 
-Mount using `/etc/fstab`:
-```
-<raspi_ip>:/media/usb    /mnt/pi-drive   nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0
-```
-
+Edit `/etc/auto.master`:
 ```bash
-sudo mount -av
+sudoedit /etc/auto.master
+```
+
+Add the following to the bottom:
+```bash
+/- /etc/auto.nfs --timeout=60
+```
+
+Create a new file `/etc/auto.nfs`
+```bash
+sudoedit /etc/auto.nfs
+```
+
+with the following:
+```bash
+/media/nfs/hdd  -fstype=nfs,rw,soft,intr,rsize=8192,wsize=8192,timeo=14,retrans=3  <raspi_ip>:/media/nfs/hdd
+```
+Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is mounting
+the external drive.
+
+Restart the autofs service:
+```bash
+sudo systemctl restart autofs
 ```
 
 ### Running SalmonMD
@@ -96,6 +114,7 @@ Create a `.env` file with the following:
 ```
 IMAGE_REPO_HOST=<your_image_repo_host>
 RTSP_URL=rtsp://<your_rtsp_url>
+DRIVE=/media/nfs/hdd
 ```
 
 For example:

@@ -10,7 +10,7 @@ services:
     container_name: salmonmd
     network_mode: host
     volumes:
-      - /mnt/pi-drive:/mnt/pi-drive
+      - ${DRIVE}:${DRIVE}
     deploy:
       resources:
         reservations:
@@ -19,5 +19,4 @@ services:
               capabilities: [gpu]
     restart: always
     command: >
-      bash -c "cd tools &&
-               python3 /tools/training/tools/run_motion_detect_rtsp.py '${RTSP_URL}' \"/mnt/pi-drive/$${HOSTNAME}\""
+      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py '${RTSP_URL}' \"${DRIVE}/$${HOSTNAME}\""
