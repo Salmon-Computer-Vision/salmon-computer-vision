@@ -7,7 +7,7 @@
 Create the mount folder:
 
 ```bash
-sudo mkdir -p /media/samba/hdd
+sudo mkdir -p /media/hdd
 ```
 
 Copy files in the `automount` folder to their respective places:
