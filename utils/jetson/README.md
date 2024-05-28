@@ -68,7 +68,7 @@ drive attached to the Raspi.
 
 To mount the NFS share and recover automatically from the raspi install NFS client and autofs:
 ```bash
-sudo apt update && sudo apt install cifs-utils
+sudo apt update && sudo apt install cifs-utils autofs
 ```
 
 Create mount dir:

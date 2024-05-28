@@ -115,12 +115,6 @@ static domain_name_servers=192.168.1.1 1.1.1.1 1.0.0.1 8.8.8.8
 static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 ```
 
-Restart and enable dhcpcd:
-```bash
-sudo systemctl restart dhcpcd
-sudo systemctl enable dhcpcd
-```
-
 ## Streaming from RTSP to Amazon Kinesis Video Streams
 
 Install dependecies:
