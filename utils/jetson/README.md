@@ -83,12 +83,12 @@ sudoedit /etc/auto.master
 
 Add the following to the bottom:
 ```bash
-/- /etc/auto.smb --timeout=60
+/- /etc/auto_static.smb --timeout=60
 ```
 
 Create a new file:
 ```bash
-sudoedit /etc/auto.smb
+sudoedit /etc/auto_static.smb
 ```
 
 with the following:
