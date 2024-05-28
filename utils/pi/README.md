@@ -71,10 +71,28 @@ ip r # Can find gateway
 grep "nameserver" /etc/resolv.conf # Get DNS IP address (Likely the gateway)
 ```
 
-Install `dhcpcd`:
+Depending on the Raspi, the network may be managed by dhcpcd or NetworkManager.
+
+Check if dhcpcd is installed already:
+
 ```bash
-sudo apt update && sudo apt install dhcpcd
+apt list dhcpcd
 ```
+
+If yes, jump to `dhcpcd`.
+
+If not, use `nmcli` to setup the network:
+```bash
+sudo nmcli con add con-name eth0 ifname eth0 type ethernet autoconnect yes
+sudo nmcli con mod eth0 ipv4.addresses 192.168.1.5/24
+sudo nmcli con mod eth0 ipv4.gateway 192.168.1.1
+sudo nmcli con mod eth0 ipv4.dns 192.168.1.1,1.1.1.1
+sudo nmcli con mod eth0 ipv4.method manual
+sudo nmcli con up eth0
+```
+Change `192.186.1.5` to your desired address.
+
+### dhcpcd
 
 Edit the following to setup static IP:
 ```bash
