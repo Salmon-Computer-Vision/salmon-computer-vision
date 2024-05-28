@@ -64,16 +64,16 @@ kwakwa-jetson-0
 First setup NFS share from the Raspi to the Jetson to save videos to the external
 drive attached to the Raspi.
 
-### NFS Share
+### Samba Share
 
 To mount the NFS share and recover automatically from the raspi install NFS client and autofs:
 ```bash
-sudo apt update && sudo apt install nfs-common autofs
+sudo apt update && sudo apt install cifs-utils
 ```
 
 Create mount dir:
 ```bash
-sudo mkdir -p /media/nfs/hdd
+sudo mkdir -p /media/hdd
 ```
 
 Edit `/etc/auto.master`:
@@ -83,17 +83,17 @@ sudoedit /etc/auto.master
 
 Add the following to the bottom:
 ```bash
-/- /etc/auto.nfs --timeout=60
+/- /etc/auto.smb --timeout=60
 ```
 
-Create a new file `/etc/auto.nfs`
+Create a new file:
 ```bash
-sudoedit /etc/auto.nfs
+sudoedit /etc/auto.smb
 ```
 
 with the following:
 ```bash
-/media/nfs/hdd  -fstype=nfs,rw,soft,intr,rsize=8192,wsize=8192,timeo=14,retrans=3  <raspi_ip>:/media/nfs/hdd
+/media/hdd  -fstype=nfs,rw,soft,intr,rsize=8192,wsize=8192,timeo=14,retrans=3  <raspi_ip>:/media/hdd
 ```
 Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is mounting
 the external drive.
@@ -114,7 +114,7 @@ Create a `.env` file with the following:
 ```
 IMAGE_REPO_HOST=<your_image_repo_host>
 RTSP_URL=rtsp://<your_rtsp_url>
-DRIVE=/media/nfs/hdd
+DRIVE=/media/hdd
 ```
 
 For example:
