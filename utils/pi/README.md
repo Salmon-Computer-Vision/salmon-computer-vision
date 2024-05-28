@@ -18,8 +18,10 @@ sudo cp ${scripts_dir}/99-external-hdd.rules /etc/udev/rules.d/
 # Copy service file to system
 sudo cp ${scripts_dir}/usb-mount@.service /etc/systemd/system/
 # Copy script to root folder
-sudo cp ${scripts_dir}/automount.sh /root/
+sudo cp -p ${scripts_dir}/automount.sh /root/
 ```
+
+* Update the `uid` in `automount.sh` if your raspi user uses a different `uid`.
 
 Then, reload the rules:
 ```bash
@@ -41,7 +43,7 @@ sudo apt update && sudo apt install nfs-kernel-server
 
 Edit `/etc/exports`:
 ```
-/media/usb <jetson-0_ip>(rw,no_subtree_check) <jetson-1_ip>(rw,no_subtree_check)
+/media/nfs/hdd <jetson-0_ip>(rw,no_subtree_check) <jetson-1_ip>(rw,no_subtree_check)
 ```
 
 ## Set Static IP
