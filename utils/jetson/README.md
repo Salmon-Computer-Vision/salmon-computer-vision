@@ -93,7 +93,7 @@ sudoedit /etc/auto_static.smb
 
 with the following:
 ```bash
-/media/hdd  -fstype=nfs,rw,soft,intr,rsize=8192,wsize=8192,timeo=14,retrans=3  <raspi_ip>:/media/hdd
+/media/hdd  -fstype=cifs,rw,guest,uid=1000,file_mode=0777,dir_mode=0777  ://<raspi_ip>/HDD
 ```
 Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is mounting
 the external drive.
