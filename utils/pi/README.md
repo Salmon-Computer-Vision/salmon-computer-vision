@@ -71,6 +71,11 @@ ip r # Can find gateway
 grep "nameserver" /etc/resolv.conf # Get DNS IP address (Likely the gateway)
 ```
 
+Install `dhcpcd`:
+```bash
+sudo apt update && sudo apt install dhcpcd
+```
+
 Edit the following to setup static IP:
 ```bash
 sudoedit /etc/dhcpcd.conf
