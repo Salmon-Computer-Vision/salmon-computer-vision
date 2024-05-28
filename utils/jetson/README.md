@@ -73,7 +73,7 @@ sudo apt update && sudo apt install nfs-common autofs
 
 Create mount dir:
 ```bash
-sudo mkdir /media/nfs/hdd
+sudo mkdir -p /media/nfs/hdd
 ```
 
 Edit `/etc/auto.master`:
