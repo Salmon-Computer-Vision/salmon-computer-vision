@@ -19,6 +19,7 @@ sudo cp ${scripts_dir}/99-external-hdd.rules /etc/udev/rules.d/
 sudo cp ${scripts_dir}/usb-mount@.service /etc/systemd/system/
 # Copy script to root folder
 sudo cp -p ${scripts_dir}/automount.sh /root/
+sudo chmod +x /root/automount.sh
 ```
 
 * Update the `uid` in `automount.sh` if your raspi user uses a different `uid`.
