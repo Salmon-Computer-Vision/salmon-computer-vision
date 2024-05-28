@@ -7,7 +7,7 @@
 Create the mount folder:
 
 ```bash
-sudo mkdir -p /media/nfs/hdd
+sudo mkdir -p /media/samba/hdd
 ```
 
 Copy files in the `automount` folder to their respective places:
@@ -33,18 +33,34 @@ This will attempt to mount all partitions of a external drive to
 a single folder, so this would only work if only one partition is
 non-empty.
 
-### Setup NFS Share
+### Setup Samba Share
 
-Export an NFS share for the Jetson Nanos to access the external drive.
+Export an Samba share for the Jetson Nanos to access the external drive.
 
-Install NFS server:
+Install Samba:
 ```bash
-sudo apt update && sudo apt install nfs-kernel-server
+sudo apt update && sudo apt install samba
 ```
 
-Edit `/etc/exports`:
+Edit Samba config:
+```bash
+sudoedit /etc/samba/smb.conf
 ```
-/media/nfs/hdd <jetson-0_ip>(rw,no_subtree_check) <jetson-1_ip>(rw,no_subtree_check)
+
+Add the following at the end of the file:
+```
+[HDD]
+path = /media/hdd
+browseable = yes
+read only = no
+guest ok = yes
+create mask = 0777
+directory mask = 0777
+```
+
+Restart Samba:
+```bash
+sudo systemctl restart smbd
 ```
 
 ## Set Static IP
