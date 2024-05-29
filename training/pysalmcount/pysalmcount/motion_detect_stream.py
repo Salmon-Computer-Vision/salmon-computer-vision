@@ -16,6 +16,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
+
 class VideoSaver(Thread):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480)):
         Thread.__init__(self)
@@ -28,17 +30,16 @@ class VideoSaver(Thread):
         self.resolution = resolution
         self.daemon = True
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
-        self.gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
 
-    def get_output_filename(self, folder):
+    @staticmethod
+    def get_output_filename(folder, suffix='_M'):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = os.path.join(folder, f"{os.uname()[1]}_{timestamp}.mp4")
+        filename = os.path.join(folder, f"{os.uname()[1]}_{timestamp}{suffix}.mp4")
         return filename
 
-
     def run(self):
-        filename = self.get_output_filename(self.folder)
-        out = cv2.VideoWriter(self.gst_writer_str + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
+        filename = VideoSaver.get_output_filename(self.folder)
+        out = cv2.VideoWriter(gst_writer_str + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
         # Write the pre-motion frames
@@ -97,7 +98,8 @@ class MotionDetector:
         morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
         min_contour_area = 2000 # Ignore contour objects smaller than this area
         BUFFER_LENGTH = 5 # Number of seconds before motion to keep
-        MAX_CLIP_MINS = 2 # Maximum number of minutes per clip
+        MAX_CLIP = 2 * 60 # Maximum number of seconds per clip
+        MAX_CONTINUOUS = 30 * 60 # Max continuous video in seconds
 
 
         cur_clip = self.dataloader.next_clip()
@@ -108,7 +110,8 @@ class MotionDetector:
 
         logger.info(f"FPS: {fps}")
 
-        MAX_FRAMES_CLIP = MAX_CLIP_MINS * 60 * fps
+        MAX_FRAMES_CLIP = MAX_CLIP * fps
+        MAX_CONTINUOUS_FRAMES = MAX_CONTINUOUS * fps
 
         if algo == 'MOG2':
             bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
@@ -130,7 +133,8 @@ class MotionDetector:
         delay = int(fps * 5) # Number of seconds to delay after motion
         count_delay = 0
 
-        frame_counter = 0
+
+        frame_counter = MAX_CONTINUOUS_FRAMES
         motion_counter = 0
         frame_start = 0
         for item in self.dataloader.items():
@@ -139,6 +143,15 @@ class MotionDetector:
                 raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
 
             frame = item.frame
+
+            if save_video:
+                if frame_counter >= MAX_CONTINUOUS_FRAMES:
+                    cont_filename = VideoSaver.get_output_filename(self.save_folder, '_C')
+                    cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
+                    frame_counter = 0
+
+                cont_vid_out.write(frame)
+
 
             if isinstance(frame, str):
                 frame = cv2.imread(frame)
