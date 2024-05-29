@@ -58,6 +58,15 @@ create mask = 0777
 directory mask = 0777
 ```
 
+Place the following to allow SMB ver 1.0 under `[global]`:
+```
+[global]
+workgroup = WORKGROUP
+...
+min protocol = NT1
+max protocol = NT1
+```
+
 Restart Samba:
 ```bash
 sudo systemctl restart smbd
