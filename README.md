@@ -23,14 +23,15 @@ and [YOLOv6](https://github.com/meituan/YOLOv6), respectively.
 
 ### Dataset
 
-* Full dataset
+* Full dataset and model
   ([Dropbox](https://www.dropbox.com/sh/xv8i6k0hzo5jppn/AADBypR1zchux30gjUKGd4dLa?dl=0))
   of ~100 GB each for MOT and object detection.
 
 It includes individual frame images and labels in the required format for
 ByteTrack and YOLOv6. They could be easily converted to other similar formats
 either manually or with
-[Datumaro](https://github.com/openvinotoolkit/datumaro).
+[Datumaro](https://github.com/openvinotoolkit/datumaro). The pre-trained models are
+also there with a preliminary YOLOv8 model.
 
 * Labels only ([GitHub
   repo](https://github.com/KamiCreed/salmon-count-labels.git)).
