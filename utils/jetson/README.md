@@ -123,6 +123,13 @@ IMAGE_REPO_HOST=kamicreed
 RTSP_URL=rtsp://192.168.1.191/av0_0
 ```
 
+If you are using a local docker registry, add your hostname to `/etc/docker/daemon.json`:
+```
+{ 
+    "insecure-registries": ["your_hostname.local:5000"] 
+}
+```
+
 Run docker-compose in the `salmonmd` folder:
 ```bash
 docker-compose up -d
