@@ -101,6 +101,12 @@ class MotionDetector:
         MAX_CLIP = 2 * 60 # Maximum number of seconds per clip
         MAX_CONTINUOUS = 30 * 60 # Max continuous video in seconds
 
+        cont_dir = os.path.join(self.save_folder, 'cont_vids')
+        if not os.path.exists(cont_dir):
+            os.mkdir(cont_dir) # Let exception be raised if recursive dir
+        motion_dir = os.path.join(self.save_folder, 'motion_vids')
+        if not os.path.exists(motion_dir):
+            os.mkdir(motion_dir) # Let exception be raised if recursive dir
 
         cur_clip = self.dataloader.next_clip()
         self.frame_log[cur_clip.name] = []
@@ -149,8 +155,9 @@ class MotionDetector:
 
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
-                    cont_filename = VideoSaver.get_output_filename(self.save_folder, '_C')
-                    cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
+                    cont_filename = VideoSaver.get_output_filename(cont_dir, '_C')
+                    cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, 
+                            cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
 
                 cont_vid_out.write(frame)
@@ -194,7 +201,9 @@ class MotionDetector:
                     if save_video:
                         # Signal that we need to start saving the clip
                         stop_event.clear()
-                        video_saver = VideoSaver(buffer, self.save_folder, stop_event, lock, condition, fps=fps, resolution=(frame.shape[1], frame.shape[0]))
+                        video_saver = VideoSaver(buffer, motion_dir, 
+                                stop_event, lock, condition, fps=fps, 
+                                resolution=(frame.shape[1], frame.shape[0]))
                         video_saver.start()
                 else:
                     if save_video and motion_counter > MAX_FRAMES_CLIP and not stop_event.is_set():
