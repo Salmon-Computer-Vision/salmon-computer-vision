@@ -50,7 +50,7 @@ Then restart the docker-compose as above in the Tmux environment.
 
 We will standardize the hostnames as such
 ```
-<river-name>-<device>-<num>
+<ORG-ID>-<river-name>-<device>-<num>
 ```
 `<device>` could be `pi` or `jetson`.
 
