@@ -14,12 +14,13 @@ def get_orgid_and_site_name(name):
     parts = name.split('-')
     orgid = parts[0]
     site_name = parts[1]
-    return orgid, site_name
+    device_id = '-'.join(parts[2:])
+    return orgid, site_name, device_id
 
 
 def main(rtsp_url, save_folder, fps):
-    orgid, site_name = get_orgid_and_site_name(os.uname()[1])
-    site_save_path = os.path.join(save_folder, orgid, site_name)
+    orgid, site_name, device_id = get_orgid_and_site_name(os.uname()[1])
+    site_save_path = os.path.join(save_folder, orgid, site_name, device_id)
 
     if not os.path.exists(site_save_path):
         os.makedirs(site_save_path)
