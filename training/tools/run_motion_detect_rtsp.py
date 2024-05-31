@@ -19,7 +19,7 @@ def get_orgid_and_site_name(name):
 
 def main(rtsp_url, save_folder, fps):
     orgid, site_name = get_orgid_and_site_name(os.uname()[1])
-    site_save_path = os.path.join(orgid, site_name, save_folder)
+    site_save_path = os.path.join(save_folder, orgid, site_name)
 
     if not os.path.exists(site_save_path):
         os.makedirs(site_save_path)
