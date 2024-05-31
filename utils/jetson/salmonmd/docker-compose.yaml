@@ -3,8 +3,6 @@ version: "3.3"
 services:
   salmonmd:
     image: ${IMAGE_REPO_HOST}/salmonmd:r32.7.1
-    environment:
-      - HOSTNAME
     env_file:
       - ./.env
     container_name: salmonmd
@@ -19,4 +17,4 @@ services:
               capabilities: [gpu]
     restart: always
     command: >
-      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py --fps ${FPS} '${RTSP_URL}' \"${DRIVE}/$${HOSTNAME}\""
+      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
