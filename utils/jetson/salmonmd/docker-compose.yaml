@@ -19,4 +19,4 @@ services:
               capabilities: [gpu]
     restart: always
     command: >
-      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py '${RTSP_URL}' \"${DRIVE}/$${HOSTNAME}\""
+      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py --fps ${FPS} '${RTSP_URL}' \"${DRIVE}/$${HOSTNAME}\""

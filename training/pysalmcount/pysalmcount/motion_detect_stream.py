@@ -90,7 +90,7 @@ class MotionDetector:
                 return True
         return False
 
-    def run(self, algo='MOG2', save_video=True):
+    def run(self, algo='MOG2', save_video=True, fps=None):
         # Motion Detection Params
         bgsub_threshold = 16
         threshold_value = 50 # Increase threshold value to minimize noise
@@ -105,8 +105,11 @@ class MotionDetector:
         cur_clip = self.dataloader.next_clip()
         self.frame_log[cur_clip.name] = []
 
-        # Retrieve the FPS of the video stream
-        fps = self.dataloader.fps()
+        if fps is None:
+            # Retrieve the FPS of the video stream
+            fps = self.dataloader.fps()
+
+        fps = int(fps)
 
         logger.info(f"FPS: {fps}")
 

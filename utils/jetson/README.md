@@ -115,7 +115,12 @@ Create a `.env` file with the following:
 IMAGE_REPO_HOST=<your_image_repo_host>
 RTSP_URL=rtsp://<your_rtsp_url>
 DRIVE=/media/hdd
+FPS=10
 ```
+
+FPS can be changed for your purposes, however, in previous tests,
+the Jetson Nano can only process up to 12-14 FPS at 1920x1080 resolution
+in real-time.
 
 For example:
 ```
