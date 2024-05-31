@@ -38,7 +38,7 @@ class VideoSaver(Thread):
         return filename
 
     def run(self):
-        filename = VideoSaver.get_output_filename(self.folder)
+        filename = VideoSaver.get_output_filename(os.path.join(self.folder, 'motion_vids'))
         out = cv2.VideoWriter(gst_writer_str + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
@@ -149,7 +149,7 @@ class MotionDetector:
 
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
-                    cont_filename = VideoSaver.get_output_filename(self.save_folder, '_C')
+                    cont_filename = VideoSaver.get_output_filename(os.path.join(self.save_folder, 'cont_vids'), '_C')
                     cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
 
