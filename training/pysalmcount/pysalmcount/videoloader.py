@@ -40,7 +40,10 @@ class VideoLoader(DataLoader):
         while True:
             ret, frame = self.cap.read()
 
-            yield Item(frame, num_items=self.total_frames)
+            if ret:
+                yield Item(frame, num_items=self.total_frames)
+            else:
+                break
 
     def fps(self):
         return self.vid_fps

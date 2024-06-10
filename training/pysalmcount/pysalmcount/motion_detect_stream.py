@@ -92,11 +92,12 @@ class MotionDetector:
 
     def run(self, algo='MOG2', save_video=True, fps=None):
         # Motion Detection Params
-        bgsub_threshold = 90
+        bgsub_threshold = 50
         threshold_value = 50 # Increase threshold value to minimize noise
         kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
         morph_iterations = 2 # Run multiple iterations to incrementally remove smaller objects
         min_contour_area = 2000 # Ignore contour objects smaller than this area
+        MOTION_EVENTS_THRESH = 0.5 # Ratio of seconds of motion required to trigger detection
         BUFFER_LENGTH = 5 # Number of seconds before motion to keep
         MAX_CLIP = 2 * 60 # Maximum number of seconds per clip
         MAX_CONTINUOUS = 30 * 60 # Max continuous video in seconds
@@ -121,6 +122,7 @@ class MotionDetector:
 
         MAX_FRAMES_CLIP = MAX_CLIP * fps
         MAX_CONTINUOUS_FRAMES = MAX_CONTINUOUS * fps
+        MOTION_EVENTS_THRESH_FRAMES = MOTION_EVENTS_THRESH * fps
 
         if algo == 'MOG2':
             bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
@@ -143,8 +145,10 @@ class MotionDetector:
         count_delay = 0
 
 
+        video_saver = None
         frame_counter = MAX_CONTINUOUS_FRAMES
         motion_counter = 0
+        num_motion_events = 0
         frame_start = 0
         for item in self.dataloader.items():
             # Constantly check if save folder exists
@@ -193,8 +197,9 @@ class MotionDetector:
 
             # Check for motion
             if has_motion:
+                num_motion_events += 1
                 count_delay = 0
-                if not motion_detected:
+                if not motion_detected and num_motion_events >= MOTION_EVENTS_THRESH_FRAMES:
                     logger.info("Motion detected.")
                     motion_detected = True
                     motion_counter = 0
@@ -215,6 +220,7 @@ class MotionDetector:
                             condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
                         motion_detected = False
             else:
+                num_motion_events = 0
                 if count_delay < delay:
                     count_delay += 1
                 else:
@@ -234,4 +240,20 @@ class MotionDetector:
 
             frame_counter += 1
 
+        try:
+            if motion_detected:
+                logger.info("No more frames. Motion stopped.")
+                self.frame_log[cur_clip.name].append((frame_start, frame_counter))
+                motion_counter = 0
+                if save_video and not stop_event.is_set():
+                    logger.info("Stopping recording.")
+                    stop_event.set()
+                    with condition:
+                        condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
+                    motion_detected = False
+                elif not save_video:
+                    motion_detected = False
+            video_saver.join()
+        except:
+            pass
         return self.frame_log
