@@ -97,7 +97,7 @@ class MotionDetector:
         kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
         morph_iterations = 2 # Run multiple iterations to incrementally remove smaller objects
         min_contour_area = 2000 # Ignore contour objects smaller than this area
-        MOTION_EVENTS_THRESH = 0.5 # Ratio of seconds of motion required to trigger detection
+        MOTION_EVENTS_THRESH = 0.4 # Ratio of seconds of motion required to trigger detection
         BUFFER_LENGTH = 5 # Number of seconds before motion to keep
         MAX_CLIP = 2 * 60 # Maximum number of seconds per clip
         MAX_CONTINUOUS = 30 * 60 # Max continuous video in seconds
@@ -120,9 +120,9 @@ class MotionDetector:
 
         logger.info(f"FPS: {fps}")
 
-        MAX_FRAMES_CLIP = MAX_CLIP * fps
-        MAX_CONTINUOUS_FRAMES = MAX_CONTINUOUS * fps
-        MOTION_EVENTS_THRESH_FRAMES = MOTION_EVENTS_THRESH * fps
+        MAX_FRAMES_CLIP = int(MAX_CLIP * fps)
+        MAX_CONTINUOUS_FRAMES = int(MAX_CONTINUOUS * fps)
+        MOTION_EVENTS_THRESH_FRAMES = int(MOTION_EVENTS_THRESH * fps)
 
         if algo == 'MOG2':
             bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
