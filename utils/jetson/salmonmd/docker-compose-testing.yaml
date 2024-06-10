@@ -1,0 +1,20 @@
+---
+version: "3.3"
+services:
+  salmonmd:
+    image: ${IMAGE_REPO_HOST}/salmonmd:r32.7.1
+    env_file:
+      - ./.env
+    container_name: salmonmd
+    network_mode: host
+    volumes:
+      - ${DRIVE}:${DRIVE}
+      - ../../..:/tools
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    command: >
+      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py --fps ${FPS} --test '${RTSP_URL}' \"${DRIVE}\""
