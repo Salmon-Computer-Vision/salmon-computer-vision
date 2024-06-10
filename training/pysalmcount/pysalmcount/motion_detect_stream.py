@@ -92,10 +92,10 @@ class MotionDetector:
 
     def run(self, algo='MOG2', save_video=True, fps=None):
         # Motion Detection Params
-        bgsub_threshold = 16
+        bgsub_threshold = 90
         threshold_value = 50 # Increase threshold value to minimize noise
-        kernel_size = (7, 7) # Increase kernel size to ignore smaller motions
-        morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
+        kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
+        morph_iterations = 2 # Run multiple iterations to incrementally remove smaller objects
         min_contour_area = 2000 # Ignore contour objects smaller than this area
         BUFFER_LENGTH = 5 # Number of seconds before motion to keep
         MAX_CLIP = 2 * 60 # Maximum number of seconds per clip
@@ -168,6 +168,7 @@ class MotionDetector:
 
             # Apply background subtraction algorithm to get the foreground mask
             fg_mask = bgsub.apply(frame)
+            #cont_vid_out.write(cv2.cvtColor(fg_mask, cv2.COLOR_GRAY2RGB))
 
             has_motion = False
             if warm_up <= 0:
