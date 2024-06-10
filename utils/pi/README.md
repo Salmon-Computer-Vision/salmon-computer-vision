@@ -128,7 +128,7 @@ static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 
 Install dependecies:
 ```bash
-sudo apt update && sudo apt upgrade && sudo apt install docker.io cmake
+sudo apt update && sudo apt install docker.io
 ```
 
 Add user to docker group and log out and log back in:
@@ -136,8 +136,38 @@ Add user to docker group and log out and log back in:
 sudo usermod -aG docker $USER
 ```
 
+Check your RaspiOS architecture:
+```bash
+uname -m
+```
+If it shows `aarch64` continue on to 64-bit instructions if not, skip to 32-bit.
+
+### RaspiOS 64-bit
+Download the installer:
+```bash
+curl -O 'https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip'
+```
+
+Unzip and install:
+```bash
+unzip awscli-exe-linux-aarch64.zip
+sudo ./aws/install
+```
+
+Check if it works:
+```bash
+aws --version
+```
+
+### RaspiOS 32-bit
 For raspi 32-bit, AWS-CLIv2 is not officially supported,
-so we will build it using Python. [First install Python 3.8](https://itheo.tech/install-python-38-on-a-raspberry-pi). Then, build aws-cli:
+so we will build it using Python. [First install Python 3.8](https://itheo.tech/install-python-38-on-a-raspberry-pi).
+
+```bash
+sudo apt update && sudo apt install cmake
+```
+
+Then, build aws-cli:
 ```bash
 # Install Rust as a dependency
 curl https://sh.rustup.rs -sSf | sh
@@ -150,7 +180,7 @@ pip3.8 install .
 aws --version
 ```
 
-Configure AWS-CLI:
+### Configuration
 ```bash
 aws configure
 ```
