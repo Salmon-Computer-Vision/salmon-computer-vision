@@ -180,13 +180,6 @@ pip3.8 install .
 aws --version
 ```
 
-### Configuration
-```bash
-aws configure
-```
-Make sure to configure with the correct region name where
-the KVSs are.
-
 ### [Run from Docker](https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/examples-gstreamer-plugin.html#examples-gstreamer-plugin-docker)
 
 **Create an IAM user on AWS with the KVS stream permissions and ECR access. Then, generate access credentials.**
@@ -196,6 +189,17 @@ The following are default policies that can be used:
 AmazonKinesisVideoStreamsFullAccess
 AWSAppRunnerServicePolicyForECRAccess
 ```
+
+Go to the AWS console and setup streams for each camera that will be streamed to it
+in the Kinesis Video Streams (KVS) dashboard. The name does not matter but it will
+be used as the key to target the stream. A good naming structure could be `ORGID-rivername-stream-0`.
+
+On the raspi setup the access credentials:
+```bash
+aws configure
+```
+Make sure to configure with the correct region name where
+the KVSs are.
 
 Authenticate to grab the docker image:
 ```bash
