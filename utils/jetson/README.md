@@ -132,6 +132,8 @@ DRIVE=/media/hdd
 FPS=10
 ```
 
+Valid values for `JETPACK_VER`: `r32.7.1`, `r36.2.0`
+
 If you are using a local docker registry, add your hostname to `/etc/docker/daemon.json`:
 ```
 { 
