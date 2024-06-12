@@ -64,7 +64,6 @@ Place the following to allow SMB ver 1.0 under `[global]`:
 workgroup = WORKGROUP
 ...
 min protocol = NT1
-max protocol = NT1
 ```
 
 Restart Samba:
