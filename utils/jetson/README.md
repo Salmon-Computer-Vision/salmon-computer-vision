@@ -56,7 +56,7 @@ We will standardize the hostnames as such
 
 For example,
 ```
-kwakwa-jetson-0
+KXSA-kwakwa-jetson-0
 ```
 
 ## Salmon Motion Detection
