@@ -2,7 +2,7 @@
 version: "3.3"
 services:
   salmonmd:
-    image: ${IMAGE_REPO_HOST}/salmonmd:r32.7.1
+    image: ${IMAGE_REPO_HOST}/salmonmd:${JETPACK_VER}
     env_file:
       - ./.env
     container_name: salmonmd
