@@ -8,7 +8,7 @@ import argparse
 import datetime
 import os
 import errno
-from threading import Thread, Event, Lock, Condition
+from multiprocessing import Process, Event, Lock, Condition
 import logging
 
 logging.basicConfig( 
