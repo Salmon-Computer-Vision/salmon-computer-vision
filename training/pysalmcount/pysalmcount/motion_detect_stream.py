@@ -60,8 +60,8 @@ class VideoSaver(Process):
         # Continue recording until stop_event is set
         while not self.stop_event.is_set():
             with self.condition:
-                while not self.buffer and not self.stop_event.is_set():
-                    self.condition.wait()  # Wait for a signal that a new frame is available or stop_event is set
+                # Wait for a signal that a new frame is available or stop_event is set
+                self.condition.wait_for(lambda: self.buffer or self.stop_event.is_set())
 
                 if self.buffer:
                     with self.lock:
