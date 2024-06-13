@@ -17,9 +17,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
+gst_writer_orin_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! x264enc ! h264parse ! qtmux ! filesink location="
 
 class VideoSaver(Thread):
-    def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480)):
+    def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), orin=False):
         Thread.__init__(self)
         self.buffer = buffer  # This will be a shared queue
         self.folder = folder
@@ -30,6 +31,7 @@ class VideoSaver(Thread):
         self.resolution = resolution
         self.daemon = True
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
+        self.orin = orin
 
     @staticmethod
     def get_output_filename(folder, suffix='_M'):
@@ -39,7 +41,8 @@ class VideoSaver(Thread):
 
     def run(self):
         filename = VideoSaver.get_output_filename(self.folder)
-        out = cv2.VideoWriter(gst_writer_str + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
+        gst_writer_choice = gst_writer_orin_str if self.orin else gst_writer_str
+        out = cv2.VideoWriter(gst_writer_choice + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
         # Write the pre-motion frames
@@ -90,7 +93,7 @@ class MotionDetector:
                 return True
         return False
 
-    def run(self, algo='MOG2', save_video=True, fps=None):
+    def run(self, algo='MOG2', save_video=True, fps=None, orin=False):
         # Motion Detection Params
         bgsub_threshold = 50
         threshold_value = 50 # Increase threshold value to minimize noise
@@ -160,7 +163,8 @@ class MotionDetector:
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C')
-                    cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, 
+                    gst_writer_choice = gst_writer_orin_str if orin else gst_writer_str
+                    cont_vid_out = cv2.VideoWriter(gst_writer_choice + cont_filename, 
                             cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
 
@@ -209,7 +213,8 @@ class MotionDetector:
                         stop_event.clear()
                         video_saver = VideoSaver(buffer, motion_dir, 
                                 stop_event, lock, condition, fps=fps, 
-                                resolution=(frame.shape[1], frame.shape[0]))
+                                resolution=(frame.shape[1], frame.shape[0]),
+                                orin=orin)
                         video_saver.start()
                 else:
                     if save_video and motion_counter > MAX_FRAMES_CLIP and not stop_event.is_set():

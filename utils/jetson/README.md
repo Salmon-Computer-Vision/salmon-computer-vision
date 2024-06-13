@@ -115,6 +115,7 @@ Create a `.env` file with the following:
 IMAGE_REPO_HOST=<your_image_repo_host>
 RTSP_URL=rtsp://<your_rtsp_url>
 JETPACK_VER=<Jetpack version>
+ORIN=<orin flag>
 DRIVE=/media/hdd
 FPS=10
 ```
@@ -128,6 +129,16 @@ For example:
 IMAGE_REPO_HOST=kamicreed
 RTSP_URL=rtsp://192.168.1.191:554/av0_0
 JETPACK_VER=r32.7.1
+DRIVE=/media/hdd
+FPS=10
+```
+
+For orin nano:
+```
+IMAGE_REPO_HOST=kamicreed
+RTSP_URL=rtsp://192.168.1.191:554/av0_0
+JETPACK_VER=r36.2.0
+ORIN=--orin
 DRIVE=/media/hdd
 FPS=10
 ```
