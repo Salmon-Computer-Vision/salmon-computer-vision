@@ -1,4 +1,4 @@
-FROM dustynv/l4t-pytorch:r36.2.0
+FROM dustynv/gstreamer:r36.2.0
 
 RUN python3 -m pip install -U pip
 
