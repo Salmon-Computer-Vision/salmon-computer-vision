@@ -17,7 +17,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
-gst_writer_orin_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=I420 ! x264enc ! h264parse ! qtmux ! filesink location="
 
 class VideoSaver(Process):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), orin=False):
@@ -29,7 +28,6 @@ class VideoSaver(Process):
         self.condition = condition
         self.fps = fps
         self.resolution = resolution
-        self.daemon = True
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
         self.orin = orin
 
@@ -44,7 +42,7 @@ class VideoSaver(Process):
         if self.orin:
             out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.resolution)
         else:
-            out = cv2.VideoWriter(gst_writer_choice + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
+            out = cv2.VideoWriter(gst_writer_str + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
         # Write the pre-motion frames
@@ -173,7 +171,7 @@ class MotionDetector:
                         cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"mp4v"),
                                 fps, (frame.shape[1], frame.shape[0]))
                     else:
-                        cont_vid_out = cv2.VideoWriter(gst_writer_choice + cont_filename, 
+                        cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, 
 				cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
 
