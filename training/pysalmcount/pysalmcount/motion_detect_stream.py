@@ -8,7 +8,7 @@ import argparse
 import datetime
 import os
 import errno
-from multiprocessing import Process, Event, Lock, Condition
+from multiprocessing import Process, Event, Lock, Condition, Manager
 import logging
 
 logging.basicConfig( 
@@ -52,7 +52,7 @@ class VideoSaver(Process):
             if c % 20 == 0:
                 logger.info(f'Saving pre... {c}')
             with self.lock:
-                frame = self.buffer.popleft()  # Safely pop from the left of the deque
+                frame = self.buffer.pop(0)  # Safely pop from the left of the deque
             out.write(frame)
             c += 1
 
@@ -60,15 +60,18 @@ class VideoSaver(Process):
         # Continue recording until stop_event is set
         while not self.stop_event.is_set():
             with self.condition:
-                # Wait for a signal that a new frame is available or stop_event is set
-                self.condition.wait_for(lambda: self.buffer or self.stop_event.is_set())
+                if not self.buffer:
+                    if not self.stop_event.is_set():
+                        # Wait for a signal that a new frame is available or stop_event is set
+                        self.condition.wait()
+                #self.condition.wait_for(lambda: self.buffer or self.stop_event.is_set())
 
-                if self.buffer:
-                    with self.lock:
-                        frame = self.buffer.popleft()
-                    if c % 20 == 0:
-                        logger.info(f'Saving... {c}')
-                    out.write(frame)
+            if self.buffer:
+                with self.lock:
+                    frame = self.buffer.pop(0)
+                if c % 20 == 0:
+                    logger.info(f'Saving... {c}')
+                out.write(frame)
 
             c += 1
 
@@ -136,15 +139,16 @@ class MotionDetector:
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
+        manager = Manager()
         warm_up = fps
         buffer_length = int(fps * BUFFER_LENGTH)  # Buffer to save before motion
-        buffer = deque(maxlen=buffer_length)
+        buffer = manager.list()
         motion_detected = False
 
         # Concurrency-safe constructs
         stop_event = Event()
         lock = Lock()
-        condition = Condition(lock)
+        condition = Condition()
 
         delay = int(fps * 5) # Number of seconds to delay after motion
         count_delay = 0
@@ -198,6 +202,8 @@ class MotionDetector:
                 warm_up -= 1
 
             with lock:
+                if len(buffer) >= buffer_length:
+                    buffer.pop(0)
                 buffer.append(frame)
             with condition:
                 condition.notify() # Signal the VideoSaver thread that a new frame is available
