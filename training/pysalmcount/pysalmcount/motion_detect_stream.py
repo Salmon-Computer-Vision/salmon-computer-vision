@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
 gst_writer_orin_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=I420 ! x264enc ! h264parse ! qtmux ! filesink location="
 
-class VideoSaver(Thread):
+class VideoSaver(Process):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), orin=False):
         Thread.__init__(self)
         self.buffer = buffer  # This will be a shared queue
@@ -165,11 +165,11 @@ class MotionDetector:
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C')
-		    if orin:
+                    if orin:
                         cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"mp4v"),
                                 fps, (frame.shape[1], frame.shape[0]))
                     else:
-			cont_vid_out = cv2.VideoWriter(gst_writer_choice + cont_filename, 
+                        cont_vid_out = cv2.VideoWriter(gst_writer_choice + cont_filename, 
 				cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
 
