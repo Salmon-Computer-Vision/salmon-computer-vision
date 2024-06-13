@@ -41,8 +41,10 @@ class VideoSaver(Thread):
 
     def run(self):
         filename = VideoSaver.get_output_filename(self.folder)
-        gst_writer_choice = gst_writer_orin_str if self.orin else gst_writer_str
-        out = cv2.VideoWriter(gst_writer_choice + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
+        if self.orin:
+            out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.resolution)
+        else:
+            out = cv2.VideoWriter(gst_writer_choice + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
         # Write the pre-motion frames
@@ -163,9 +165,12 @@ class MotionDetector:
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C')
-                    gst_writer_choice = gst_writer_orin_str if orin else gst_writer_str
-                    cont_vid_out = cv2.VideoWriter(gst_writer_choice + cont_filename, 
-                            cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
+		    if orin:
+                        cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"mp4v"),
+                                fps, (frame.shape[1], frame.shape[0]))
+                    else:
+			cont_vid_out = cv2.VideoWriter(gst_writer_choice + cont_filename, 
+				cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
 
                 cont_vid_out.write(frame)
