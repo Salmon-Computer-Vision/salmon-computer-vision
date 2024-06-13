@@ -144,7 +144,7 @@ class MotionDetector:
         # Concurrency-safe constructs
         stop_event = Event()
         lock = Lock()
-        condition = Condition()
+        condition = Condition(lock)
 
         delay = int(fps * 5) # Number of seconds to delay after motion
         count_delay = 0
