@@ -123,6 +123,41 @@ static domain_name_servers=192.168.1.1 1.1.1.1 1.0.0.1 8.8.8.8
 static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 ```
 
+## Continuously Copy Media Files
+
+This is all done using rclone to an AWS S3 bucket.
+
+First install rclone:
+```bash
+sudo apt update && sudo apt install rclone
+```
+
+Setup a user in AWS that has access to all or specific S3 buckets and generate
+their Access ID and Secret Key.
+
+Config rclone with AWS S3 buckets using that Access ID and Secret Key:
+```bash
+rclone config
+```
+
+Go to the syncing folder:
+```bash
+cd syncing
+```
+
+Create an `.env` file and fill the following variables:
+```
+DRIVE=<drive>
+USER=<pi-username>
+ORGID=<org-id>
+BUCKET=<bucket-name>
+```
+
+Start up the syncing:
+```bash
+docker-compose up -d
+```
+
 ## Streaming from RTSP to Amazon Kinesis Video Streams
 
 Install dependecies:

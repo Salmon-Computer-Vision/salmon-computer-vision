@@ -8,8 +8,8 @@ services:
     container_name: syncing
     volumes:
       - ${DRIVE}:${DRIVE}
-      - ${USER}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+      - /home/${USER}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
     restart: always
+    entrypoint: /bin/sh
     command: |
-      rclone copy /media/hdd/${ORGID} aws:${BUCKET} --config /config/rclone/rclone.conf --log-level INFO
-      sleep 300
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=32 --transfers=32 ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; sleep 300'
