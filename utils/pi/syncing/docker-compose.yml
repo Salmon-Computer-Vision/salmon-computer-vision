@@ -12,4 +12,4 @@ services:
     restart: always
     entrypoint: /bin/sh
     command: |
-      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=32 --transfers=32 --exclude "cont_vids/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; sleep 300'
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=2 --transfers=2 --exclude "cont_vids/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; sleep 300'
