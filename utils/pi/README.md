@@ -140,6 +140,8 @@ Config rclone with AWS S3 buckets using that Access ID and Secret Key:
 rclone config
 ```
 
+!! Name the remote `aws`
+
 Go to the syncing folder:
 ```bash
 cd syncing
