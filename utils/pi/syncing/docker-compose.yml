@@ -10,5 +10,6 @@ services:
       - ${DRIVE}:${DRIVE}
       - ${USER}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
     restart: always
-    command: >
-      rclone sync /media/hdd/${ORGID} aws:${BUCKET} --config /config/rclone/rclone.conf --log-level INFO
+    command: |
+      rclone copy /media/hdd/${ORGID} aws:${BUCKET} --config /config/rclone/rclone.conf --log-level INFO
+      sleep 300
