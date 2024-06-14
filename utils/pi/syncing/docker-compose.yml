@@ -1,0 +1,14 @@
+---
+version: "3.3"
+services:
+  syncing:
+    image: rclone/rclone
+    env_file:
+      - ./.env
+    container_name: syncing
+    volumes:
+      - ${DRIVE}:${DRIVE}
+      - ${USER}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+    restart: always
+    command: >
+      rclone sync /media/hdd/${ORGID} aws:${BUCKET} --config /config/rclone/rclone.conf --log-level INFO
