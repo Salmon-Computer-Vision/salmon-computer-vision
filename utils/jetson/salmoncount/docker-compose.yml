@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  salmon_counter:
+    image: ultralytics/ultralytics:latest-jetson-jetpack4
+    container_name: salmon_counter
+    volumes:
+      - ./videos:/app/videos
+      - ./detections:/app/detections
+      - ./config:/app/config
+    working_dir: /app
+    command: python3 watcher.py
+
