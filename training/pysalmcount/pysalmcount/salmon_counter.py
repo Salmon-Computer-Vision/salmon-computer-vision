@@ -177,8 +177,8 @@ class SalmonCounter:
                 out_vid.write(annotated_frame)
 
             end_time = time.time()
-            delta = end_time - start_time
-            logger.info(f"Execution time: {delta * 1000} ms")
+            elapsed_time = (end_time - start_time) * 1000
+            logger.info(f"Execution time: {elapsed_time:.2f} ms")
             frame_count += 1
 
         if stream_write:
