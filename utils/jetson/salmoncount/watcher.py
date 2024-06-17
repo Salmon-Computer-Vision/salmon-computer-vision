@@ -1,17 +1,35 @@
 #!/usr/bin/env python3
 import os
+import argparse
 import time
 from pathlib import Path
 import subprocess
 import pickle
+import logging
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-VIDEO_DIR = Path("/app/videos")
-DETECTION_DIR = Path("/app/detections")
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+)
+
+logger = logging.getLogger(__name__)
+
+DRIVE_DIR = Path("/app/drive")
+MOTION_DIR_NAME = "motion_vids"
+DETECTION_DIR_NAME = "detections"
 CONFIG_PATH = Path("/app/config/2023_combined_salmon.yaml")
 WEIGHTS_PATH = Path("/app/config/weights/best.pt")
 PROCESSED_FILE = Path("/app/processed_videos.pkl")
+
+def get_orgid_and_site_name(name):
+    parts = name.split('-')
+    orgid = parts[0]
+    site_name = parts[1]
+    device_id = '-'.join(parts[2:])
+    return orgid, site_name, device_id
 
 def load_processed_videos():
     if PROCESSED_FILE.exists():
@@ -23,25 +41,24 @@ def save_processed_videos(processed_videos):
     with open(PROCESSED_FILE, 'wb') as f:
         pickle.dump(processed_videos, f)
 
-def run_salmon_counter(video_path):
-    annotation_list_path = video_path.with_suffix('.txt')
-    csv_output_path = DETECTION_DIR / (video_path.stem + '_counts.csv')
-    
-    cmd = [
-        'python3', 'salmon_counter.py',
-        str(video_path),
-        str(annotation_list_path),
-        str(csv_output_path),
-        '--weights', str(WEIGHTS_PATH),
-        '--device', '0',
-        '--format', 'video'
-    ]
-    
-    subprocess.run(cmd)
+def run_salmon_counter(video_path, detection_dir):
+    with open(CONFIG_PATH, 'r') as file:
+        data = yaml.safe_load(file)
+    loader = VideoLoader([video_path], data['names'])
+    counter = SalmonCounter(args.weights, loader, tracking_thresh=10, str(detection_dir))
+
+    out_path = detection_dir / "summary" / "salmon_counts.csv"
+    out_path.parent.mkdir(exist_ok=True)
+    try:
+        counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
+                device=int(args.device), stream_write=True, output_csv=str(out_path))
+    except Exception as e:
+        logger.info(e)
 
 class VideoHandler(FileSystemEventHandler):
-    def __init__(self, processed_videos):
+    def __init__(self, processed_videos, detection_dir):
         self.processed_videos = processed_videos
+        self.detection_dir = detection_dir
 
     def on_created(self, event):
         if event.src_path.endswith(".mp4"):
@@ -50,9 +67,9 @@ class VideoHandler(FileSystemEventHandler):
                 if self.is_fully_written(video_path):
                     self.process_video(video_path)
                 else:
-                    print(f"File {video_path} is still being written.")
+                    logger.info(f"File {video_path} is still being written.")
             else:
-                print(f"Skipping {video_path}, already processed")
+                logger.info(f"Skipping {video_path}, already processed")
 
     def is_fully_written(self, file_path, wait_time=5, check_interval=1):
         """Check if the file is fully written by monitoring its size."""
@@ -65,32 +82,42 @@ class VideoHandler(FileSystemEventHandler):
             time.sleep(check_interval)
     
     def process_video(self, video_path):
-        detection_file = DETECTION_DIR / (video_path.stem + '_counts.csv')
+        detection_file = self.detection_dir / video_path.stem
         if not detection_file.exists():
-            print(f"Processing {video_path}")
-            run_salmon_counter(video_path)
+            logger.info(f"Processing {video_path}")
+            run_salmon_counter(video_path, self.detection_dir)
             self.processed_videos.add(video_path.name)
             save_processed_videos(self.processed_videos)
         else:
-            print(f"Skipping {video_path}, detection already exists")
+            logger.info(f"Skipping {video_path}, detection already exists")
 
-def main():
+def main(args):
     processed_videos = load_processed_videos()
-    video_handler = VideoHandler(processed_videos)
+
+    if args.test:
+        site_save_path = DRIVE_DIR
+    else:
+        orgid, site_name, device_id = get_orgid_and_site_name(os.uname()[1])
+        site_save_path = os.path.join(args.save_folder, orgid, site_name, device_id)
+
+    vids_path = Path(site_save_path) / MOTION_DIR_NAME
+    detection_dir = Path(site_save_path) / DETECTION_DIR_NAME
+
+    video_handler = VideoHandler(processed_videos, detection_dir)
 
     # Initial check of all existing videos
-    for video_file in VIDEO_DIR.glob('*.mp4'):
+    for video_file in vids_path.glob('*.mp4'):
         if video_file.name not in processed_videos:
             if video_handler.is_fully_written(video_file):
                 video_handler.process_video(video_file)
             else:
-                print(f"File {video_file} is still being written.")
+                logger.info(f"File {video_file} is still being written.")
         else:
-            print(f"Skipping {video_file}, already processed")
+            logger.info(f"Skipping {video_file}, already processed")
     
     # Schedule watchdog observer
     observer = Observer()
-    observer.schedule(video_handler, str(VIDEO_DIR), recursive=False)
+    observer.schedule(video_handler, str(vids_path), recursive=False)
     observer.start()
 
     try:
@@ -101,5 +128,9 @@ def main():
     observer.join()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
+    parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
+    args = parser.parse_args()
+
+    main(args)
 

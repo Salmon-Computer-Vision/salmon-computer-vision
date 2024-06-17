@@ -41,6 +41,7 @@ class SalmonCounter:
         for i in range(len(classes)):
             cols.append(self.LEFT_PRE + classes[i])
             cols.append(self.RIGHT_PRE + classes[i])
+        self.full_salm_count = pd.DataFrame(columns=cols).set_index(self.FILENAME)
         self.salm_count = pd.DataFrame(columns=cols).set_index(self.FILENAME)
         self.vis_salm_count = {self.LEFT_PRE: 0, self.RIGHT_PRE: 0} # For visualization purposes
         self.prev_track_ids = {}
@@ -186,11 +187,13 @@ class SalmonCounter:
             frame_count += 1
 
         if stream_write:
-            if len(output_csv) <= 0:
+            if not os.path.exists(output_csv):
                 self.salm_count.to_csv(output_csv, mode='w')
             else:
                 self.salm_count.to_csv(output_csv, mode='a', header=False)
                 
+        self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
+        self.salm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes
         if save_vid:
             out_vid.release()
         return self.salm_count
