@@ -1,8 +1,10 @@
 from .dataloader import DataLoader
 
 import os
+import logging
 from pathlib import Path
 import cv2
+import time
 from ultralytics import YOLO
 from ultralytics.engine.results import Results
 from ultralytics.engine.results import Boxes
@@ -15,7 +17,13 @@ VOTE_METHOD_ALL = 'all'
 VOTE_METHOD_IGN = 'ignore_thin'
 VOTE_METHOD_CONF = 'confidence'
 
-# tracker = botsort.yaml OR bytetrack.yaml
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+)
+
+logger = logging.getLogger(__name__)
 
 class SalmonCounter:
     LEFT_PRE = 'l_'
@@ -60,7 +68,7 @@ class SalmonCounter:
             
         cur_clip = self.dataloader.next_clip()
         self.salm_count.loc[cur_clip.name] = 0
-        print(cur_clip.name)
+        logger.info(cur_clip.name)
 
         if save_vid:
             OUTPUT_PATH = Path('output_vids')
@@ -73,6 +81,8 @@ class SalmonCounter:
 
         frame_count = 0
         for item in self.dataloader.items():
+            start_time = time.time()
+
             boxes = []
             track_ids = []
             cls_ids = []
@@ -119,7 +129,7 @@ class SalmonCounter:
                     # After a track disappears for tracking_thresh frames
                     # Find max voted class
                     class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
-                    print(class_vote)
+                    logger.info("Class vote:", class_vote)
                     if class_vote:
                         main_class_id = max(class_vote, key=class_vote.get)
                         # Run LOI on no longer tracking IDs
@@ -166,6 +176,9 @@ class SalmonCounter:
             if save_vid:
                 out_vid.write(annotated_frame)
 
+            end_time = time.time()
+            delta = end_time - start_time
+            logger.info(f"Execution time: {delta * 1000} ms")
             frame_count += 1
 
         if stream_write:
