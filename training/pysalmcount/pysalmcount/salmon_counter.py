@@ -32,7 +32,7 @@ class SalmonCounter:
     TRACK_COUNT = 'track_count'
     CLASS_VOTE = 'class_vote'
     FONT = cv2.FONT_HERSHEY_SIMPLEX
-    def __init__(self, model_path: str, dataloader: DataLoader, tracking_thresh = 10):
+    def __init__(self, model_path: str, dataloader: DataLoader, tracking_thresh = 10, save_dir="save_dir"):
         self.model = YOLO(model_path)
         self.dataloader = dataloader
         self.track_history = defaultdict(lambda: [])
@@ -45,6 +45,7 @@ class SalmonCounter:
         self.vis_salm_count = {self.LEFT_PRE: 0, self.RIGHT_PRE: 0} # For visualization purposes
         self.prev_track_ids = {}
         self.tracking_thresh = tracking_thresh
+        self.save_dir = save_dir
         
     def _vote_cond(self, w, h, vote_method='all'):
         if vote_method == VOTE_METHOD_ALL:
@@ -62,7 +63,8 @@ class SalmonCounter:
         elif vote_method == VOTE_METHOD_IGN:
             return 1
 
-    def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, vote_method='all', device=0, stream_write=True, output_csv='output_count.csv'):
+    def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, save_txt=False, vote_method='all', device=0,
+            stream_write=True, output_csv='output_count.csv'):
         if vote_method not in [VOTE_METHOD_ALL, VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
             raise ValueError(f'{vote_method} is not a valid method')
             
@@ -89,7 +91,9 @@ class SalmonCounter:
             confs = []
             if not use_gt:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
-                results = self.model.track(item.frame, tracker=tracker, persist=True, verbose=False, device=device)
+                results = self.model.track(item.frame, tracker=tracker,
+                        project=save_dir, name=cur_clip.name, save_txt=save_txt,
+                        persist=True, verbose=False, device=device)
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
