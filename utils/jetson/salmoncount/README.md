@@ -1,7 +1,4 @@
-Place engine file in `config` folder. Name it the following:
-```bash
-./config/salmoncount.engine
-```
+Place engine file in the `config` folder.
 
 Create an `.env` file here with the following:
 ```
