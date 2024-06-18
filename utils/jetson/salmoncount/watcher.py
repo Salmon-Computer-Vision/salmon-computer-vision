@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 DRIVE_DIR = Path("/app/drive")
 MOTION_DIR_NAME = "motion_vids"
 DETECTION_DIR_NAME = "detections"
+COUNTS_DIR_NAME = "counts"
 CONFIG_PATH = Path("/app/config/2023_combined_salmon.yaml")
 PROCESSED_FILE = Path("/app/processed_videos.pkl")
 
@@ -45,7 +46,7 @@ def save_processed_videos(processed_videos):
     with open(PROCESSED_FILE, 'wb') as f:
         pickle.dump(processed_videos, f)
 
-def run_salmon_counter(video_path, detection_dir, weights_path):
+def run_salmon_counter(video_path, detection_dir, counts_dir, weights_path):
     with open(CONFIG_PATH, 'r') as file:
         data = yaml.safe_load(file)
     loader = VideoLoader([video_path], data['names'])
@@ -60,10 +61,11 @@ def run_salmon_counter(video_path, detection_dir, weights_path):
         logger.info(e)
 
 class VideoHandler(FileSystemEventHandler):
-    def __init__(self, processed_videos, detection_dir, weights_path):
+    def __init__(self, processed_videos, detection_dir, counts_dir, weights_path):
         self.processed_videos = processed_videos
         self.detection_dir = detection_dir
         self.weights_path = weights_path
+        self.counts_dir = counts_dir
 
     def on_created(self, event):
         if event.src_path.endswith(".mp4"):
@@ -90,7 +92,7 @@ class VideoHandler(FileSystemEventHandler):
         detection_file = self.detection_dir / video_path.stem
         if not detection_file.exists():
             logger.info(f"Processing {video_path}")
-            run_salmon_counter(video_path, self.detection_dir, self.weights_path)
+            run_salmon_counter(video_path, self.detection_dir, self.counts_dir, self.weights_path)
             self.processed_videos.add(video_path.name)
             save_processed_videos(self.processed_videos)
         else:
@@ -107,8 +109,9 @@ def main(args):
 
     vids_path = Path(site_save_path) / MOTION_DIR_NAME
     detection_dir = Path(site_save_path) / DETECTION_DIR_NAME
+    counts_dir = Path(site_save_path) / COUNTS_DIR_NAME
 
-    video_handler = VideoHandler(processed_videos, detection_dir, args.weights)
+    video_handler = VideoHandler(processed_videos, detection_dir, counts_dir, args.weights)
 
     # Initial check of all existing videos
     for video_file in vids_path.glob('*.mp4'):

@@ -73,6 +73,9 @@ class SalmonCounter:
         self.salm_count.loc[cur_clip.name] = 0
         logger.info(cur_clip.name)
 
+        if save_txt:
+            txt_dir = Path(self.save_dir) / cur_clip.name
+            txt_dir.mkdir()
         if save_vid:
             OUTPUT_PATH = Path('output_vids')
             OUTPUT_PATH.mkdir(exist_ok=True)
@@ -92,9 +95,13 @@ class SalmonCounter:
             confs = []
             if not use_gt:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
+                inf_start_time = time.time()
                 results = self.model.track(item.frame, tracker=tracker,
-                        project=self.save_dir, name=cur_clip.name, save_txt=save_txt,
+                        project=self.save_dir, name=cur_clip.name,
                         persist=True, verbose=False, device=device)
+                inf_end_time = time.time()
+                inf_elapsed = inf_end_time - inf_start_time
+                logger.info(f"Inference time: {inf_elapsed:.2f}")
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
@@ -173,6 +180,9 @@ class SalmonCounter:
                         class_vote[cls_id] = 0
                     class_vote[cls_id] += self._vote_weight(conf, vote_method=vote_method)
 
+                if save_txt:
+                    with open(f"frame_{frame_count:06d}.txt", 'a') as f:
+                        f.write(f"{cls_id} {x} {y} {w} {h} {conf}\n")
                 if save_vid:
                     # Draw the tracking lines
                     points = np.hstack(track).astype(np.int32).reshape((-1, 1, 2))
