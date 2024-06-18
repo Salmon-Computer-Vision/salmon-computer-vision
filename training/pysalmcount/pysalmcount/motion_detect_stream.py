@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
-gst_raspi_writer_str = "appsrc ! autovideoconvert ! v4l2h264enc ! h264parse ! mp4mux ! filesink location="
+gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !  v4l2h264enc ! h264parse ! mp4mux ! filesink location="
 
 class VideoSaver(Process):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
@@ -192,6 +192,7 @@ class MotionDetector:
                         logger.info(f"Writing continuous video to {cont_filename}")
                         cont_vid_out = cv2.VideoWriter(gst_writer + cont_filename, 
                                                        cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
+                        logger.info(f"Created VideoWriter to {cont_filename}")
                     frame_counter = 0
 
                 cont_vid_out.write(frame)
@@ -242,7 +243,7 @@ class MotionDetector:
                         video_saver = VideoSaver(buffer, motion_dir, 
                                 stop_event, lock, condition, fps=fps, 
                                 resolution=(frame.shape[1], frame.shape[0]),
-                                orin=orin)
+                                orin=orin, save_prefix=self.save_prefix)
                         video_saver.start()
                 else:
                     if save_video and motion_counter > MAX_FRAMES_CLIP and not stop_event.is_set():

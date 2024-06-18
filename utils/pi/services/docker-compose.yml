@@ -25,4 +25,17 @@ services:
       - ${DRIVE}:${DRIVE}
     restart: always
     command: >
-      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
+      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
+  salmonmd-jetson-1:
+    image: salmonmd
+    environment:
+      - HOSTNAME
+    env_file:
+      - ./.env
+    container_name: salmonmd-jetson-1
+    network_mode: host
+    volumes:
+      - ${DRIVE}:${DRIVE}
+    restart: always
+    command: >
+      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_1} --fps ${FPS} '${RTSP_URL_1}' \"${DRIVE}\""
