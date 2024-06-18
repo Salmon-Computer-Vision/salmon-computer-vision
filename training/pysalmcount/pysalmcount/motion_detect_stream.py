@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
 
 class VideoSaver(Process):
-    def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), orin=False):
+    def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
+            orin=False, save_prefix=None):
         Process.__init__(self)
         self.buffer = buffer  # This will be a shared queue
         self.folder = folder
@@ -30,15 +31,18 @@ class VideoSaver(Process):
         self.resolution = resolution
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
         self.orin = orin
+        self.save_prefix = None
 
     @staticmethod
-    def get_output_filename(folder, suffix='_M'):
+    def get_output_filename(folder, suffix='_M', save_prefix=None):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = os.path.join(folder, f"{os.uname()[1]}_{timestamp}{suffix}.mp4")
+        if save_prefix is None:
+            save_prefix = os.uname()[1]
+        filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mp4")
         return filename
 
     def run(self):
-        filename = VideoSaver.get_output_filename(self.folder)
+        filename = VideoSaver.get_output_filename(self.folder, save_prefix=self.save_prefix)
         if self.orin:
             out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.resolution)
         else:
@@ -78,10 +82,11 @@ class VideoSaver(Process):
 class MotionDetector:
     FILENAME = 'filename'
     CLIPS = 'clips'
-    def __init__(self, dataloader: DataLoader, save_folder):
+    def __init__(self, dataloader: DataLoader, save_folder, save_prefix=None):
         self.dataloader = dataloader
         self.save_folder = save_folder
         self.frame_log = {}
+        self.save_prefix = None
 
     def detect_motion(self, fg_mask, min_area=500):
         """
@@ -166,7 +171,7 @@ class MotionDetector:
 
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
-                    cont_filename = VideoSaver.get_output_filename(cont_dir, '_C')
+                    cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
                     if orin:
                         cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"mp4v"),
                                 fps, (frame.shape[1], frame.shape[0]))

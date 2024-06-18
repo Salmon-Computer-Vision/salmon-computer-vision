@@ -19,10 +19,14 @@ def get_orgid_and_site_name(name):
 
 
 def main(args):
+    save_prefix = None
     if args.test:
         site_save_path = args.save_folder
     else:
         orgid, site_name, device_id = get_orgid_and_site_name(os.uname()[1])
+        if args.device_id is not None:
+            device_id = args.device_id
+            save_prefix = f"{orgid}-{site_name}-{device_id}"
         site_save_path = os.path.join(args.save_folder, orgid, site_name, device_id)
 
     if not os.path.exists(site_save_path):
@@ -30,7 +34,7 @@ def main(args):
 
     vidloader = vl.VideoLoader([args.rtsp_url])
 
-    det = md.MotionDetector(vidloader, site_save_path)
+    det = md.MotionDetector(vidloader, site_save_path, save_prefix)
     det.run(fps=args.fps, orin=args.orin)
 
 if __name__ == "__main__":
@@ -40,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from the camera")
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
+    parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
     args = parser.parse_args()
 
     main(args)
