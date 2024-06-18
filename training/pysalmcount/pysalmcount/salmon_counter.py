@@ -100,7 +100,7 @@ class SalmonCounter:
                         project=self.save_dir, name=cur_clip.name,
                         persist=True, verbose=False, device=device)
                 inf_end_time = time.time()
-                inf_elapsed = inf_end_time - inf_start_time
+                inf_elapsed = (inf_end_time - inf_start_time) * 1000
                 logger.info(f"Inference time: {inf_elapsed:.2f}")
 
                 orig_shape = results[0].orig_shape
@@ -181,7 +181,7 @@ class SalmonCounter:
                     class_vote[cls_id] += self._vote_weight(conf, vote_method=vote_method)
 
                 if save_txt:
-                    with open(f"frame_{frame_count:06d}.txt", 'a') as f:
+                    with open(str(txt_dir / f"frame_{frame_count:06d}.txt"), 'a') as f:
                         f.write(f"{cls_id} {x} {y} {w} {h} {conf}\n")
                 if save_vid:
                     # Draw the tracking lines
