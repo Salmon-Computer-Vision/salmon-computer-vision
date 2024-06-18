@@ -93,7 +93,7 @@ class VideoHandler(FileSystemEventHandler):
         loader = VideoLoader([video_path], self.data['names'])
         counter = SalmonCounter(self.weights_path, loader, tracking_thresh=10, save_dir=str(self.detection_dir))
 
-        out_path = self.counts_dir / "salmon_counts.csv"
+        out_path = self.counts_dir / f"{os.uname()[1]}_salmon_counts.csv"
         try:
             counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
                     stream_write=True, output_csv=str(out_path))
