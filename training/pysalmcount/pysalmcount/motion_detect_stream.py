@@ -11,8 +11,10 @@ import errno
 from multiprocessing import Process, Event, Lock, Condition, Manager
 import logging
 
-logging.basicConfig( 
+# Set up logging
+logging.basicConfig(
     level=logging.INFO,
+    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
 )
 logger = logging.getLogger(__name__)
 
@@ -50,6 +52,7 @@ class VideoSaver(Process):
         else:
             gst_writer = gst_writer_str
             if self.raspi:
+                logger.info("Writing with raspi hardware...")
                 gst_writer = gst_raspi_writer_str
             out = cv2.VideoWriter(gst_writer + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
@@ -183,6 +186,7 @@ class MotionDetector:
                     else:
                         gst_writer = gst_writer_str
                         if raspi:
+                            logger.info("Writing with raspi hardware...")
                             gst_writer = gst_raspi_writer_str
                         cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, 
                                                        cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
