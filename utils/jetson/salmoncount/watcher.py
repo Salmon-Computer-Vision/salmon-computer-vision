@@ -107,7 +107,7 @@ def main(args):
         site_save_path = DRIVE_DIR
     else:
         orgid, site_name, device_id = get_orgid_and_site_name(os.uname()[1])
-        site_save_path = os.path.join(args.save_folder, orgid, site_name, device_id)
+        site_save_path = os.path.join(DRIVE_DIR, orgid, site_name, device_id)
 
     vids_path = Path(site_save_path) / MOTION_DIR_NAME
     detection_dir = Path(site_save_path) / DETECTION_DIR_NAME
