@@ -47,6 +47,7 @@ class VideoSaver(Process):
 
     def run(self):
         filename = VideoSaver.get_output_filename(self.folder, save_prefix=self.save_prefix)
+        logger.info(f"Writing motion video to {filename}")
         if self.orin:
             out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.resolution)
         else:
@@ -54,7 +55,6 @@ class VideoSaver(Process):
             if self.raspi:
                 logger.info("Writing with raspi hardware...")
                 gst_writer = gst_raspi_writer_str
-            logger.info(f"Writing motion video to {filename}")
             out = cv2.VideoWriter(gst_writer + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
@@ -95,7 +95,7 @@ class MotionDetector:
         self.dataloader = dataloader
         self.save_folder = save_folder
         self.frame_log = {}
-        self.save_prefix = None
+        self.save_prefix = save_prefix
 
     def detect_motion(self, fg_mask, min_area=500):
         """
@@ -181,6 +181,7 @@ class MotionDetector:
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
+                    logger.info(f"Writing continuous video to {cont_filename}")
                     if orin:
                         cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"mp4v"),
                                 fps, (frame.shape[1], frame.shape[0]))
@@ -189,7 +190,6 @@ class MotionDetector:
                         if raspi:
                             logger.info("Writing with raspi hardware...")
                             gst_writer = gst_raspi_writer_str
-                        logger.info(f"Writing continuous video to {cont_filename}")
                         cont_vid_out = cv2.VideoWriter(gst_writer + cont_filename, 
                                                        cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                         logger.info(f"Created VideoWriter to {cont_filename}")

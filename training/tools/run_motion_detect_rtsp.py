@@ -4,6 +4,14 @@ from pysalmcount import motion_detect_stream as md
 
 import argparse
 import os
+import logging
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
+)
+logger = logging.getLogger(__name__)
 
 def read_rtsp_url(file_path):
     """Read RTSP URL from the specified file."""
@@ -26,7 +34,7 @@ def main(args):
         orgid, site_name, device_id = get_orgid_and_site_name(os.uname()[1])
         if args.device_id is not None:
             device_id = args.device_id
-            save_prefix = f"{orgid}-{site_name}-{device_id}"
+            save_prefix = f"{orgid}-{site_name}-{args.device_id}"
         site_save_path = os.path.join(args.save_folder, orgid, site_name, device_id)
 
     if not os.path.exists(site_save_path):
@@ -34,6 +42,7 @@ def main(args):
 
     vidloader = vl.VideoLoader([args.rtsp_url])
 
+    logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(vidloader, site_save_path, save_prefix)
     det.run(fps=args.fps, orin=args.orin, raspi=args.raspi)
 
