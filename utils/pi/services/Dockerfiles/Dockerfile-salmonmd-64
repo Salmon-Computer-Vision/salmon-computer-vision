@@ -1,0 +1,10 @@
+FROM balenalib/raspberrypi4-64-debian-python:bookworm-build
+
+RUN apt-get update
+RUN apt-get install -y git
+
+RUN python3 -m pip install -U pip
+
+RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
+
+RUN python3 -m pip install -e /tools/training/pysalmcount
