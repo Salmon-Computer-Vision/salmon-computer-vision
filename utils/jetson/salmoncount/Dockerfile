@@ -7,9 +7,8 @@ RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-compute
 
 RUN python3 -m pip install /tools/training/pysalmcount
 
-RUN pip install watchdog
+RUN pip install watchdog lapx
 
-COPY config /app/config
 COPY watcher.py /app/watcher.py
 
 WORKDIR /app

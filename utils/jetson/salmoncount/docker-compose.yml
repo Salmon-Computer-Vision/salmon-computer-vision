@@ -2,13 +2,15 @@ version: '3.8'
 
 services:
   salmon_counter:
-    image: salmoncounter:latest-jetson-jetpack4
+    image: ${IMAGE_REPO_HOST}/salmoncounter:latest-jetson-jetpack4
     container_name: salmon_counter
-    runtime: nvidia
     env_file:
       - ./.env
     volumes:
       - ${DRIVE}:/app/drive
+      - ./config:/app/config
+    runtime: nvidia
+    restart: always
     working_dir: /app
     command: python3 watcher.py ${TEST} --weights ${WEIGHTS}
 
