@@ -74,7 +74,7 @@ class SalmonCounter:
         logger.info(cur_clip.name)
 
         if save_txt:
-            txt_dir = Path((Path(self.save_dir) / cur_clip.name).stem)
+            txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem
             txt_dir.mkdir()
         if save_vid:
             OUTPUT_PATH = Path('output_vids')
