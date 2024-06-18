@@ -20,7 +20,7 @@ VOTE_METHOD_CONF = 'confidence'
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
 )
 
 logger = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ class SalmonCounter:
             if not use_gt:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
                 results = self.model.track(item.frame, tracker=tracker,
-                        project=save_dir, name=cur_clip.name, save_txt=save_txt,
+                        project=self.save_dir, name=cur_clip.name, save_txt=save_txt,
                         persist=True, verbose=False, device=device)
 
                 orig_shape = results[0].orig_shape

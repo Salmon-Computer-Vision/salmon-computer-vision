@@ -5,14 +5,19 @@ import time
 from pathlib import Path
 import subprocess
 import pickle
+import yaml
 import logging
+
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
+from pysalmcount.videoloader import VideoLoader
+from pysalmcount.salmon_counter import SalmonCounter
 
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
 )
 
 logger = logging.getLogger(__name__)
@@ -21,7 +26,6 @@ DRIVE_DIR = Path("/app/drive")
 MOTION_DIR_NAME = "motion_vids"
 DETECTION_DIR_NAME = "detections"
 CONFIG_PATH = Path("/app/config/2023_combined_salmon.yaml")
-WEIGHTS_PATH = Path("/app/config/weights/best.pt")
 PROCESSED_FILE = Path("/app/processed_videos.pkl")
 
 def get_orgid_and_site_name(name):
@@ -41,24 +45,25 @@ def save_processed_videos(processed_videos):
     with open(PROCESSED_FILE, 'wb') as f:
         pickle.dump(processed_videos, f)
 
-def run_salmon_counter(video_path, detection_dir):
+def run_salmon_counter(video_path, detection_dir, weights_path):
     with open(CONFIG_PATH, 'r') as file:
         data = yaml.safe_load(file)
     loader = VideoLoader([video_path], data['names'])
-    counter = SalmonCounter(args.weights, loader, tracking_thresh=10, str(detection_dir))
+    counter = SalmonCounter(weights_path, loader, tracking_thresh=10, save_dir=str(detection_dir))
 
     out_path = detection_dir / "summary" / "salmon_counts.csv"
-    out_path.parent.mkdir(exist_ok=True)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
-                device=int(args.device), stream_write=True, output_csv=str(out_path))
+                stream_write=True, output_csv=str(out_path))
     except Exception as e:
         logger.info(e)
 
 class VideoHandler(FileSystemEventHandler):
-    def __init__(self, processed_videos, detection_dir):
+    def __init__(self, processed_videos, detection_dir, weights_path):
         self.processed_videos = processed_videos
         self.detection_dir = detection_dir
+        self.weights_path = weights_path
 
     def on_created(self, event):
         if event.src_path.endswith(".mp4"):
@@ -85,7 +90,7 @@ class VideoHandler(FileSystemEventHandler):
         detection_file = self.detection_dir / video_path.stem
         if not detection_file.exists():
             logger.info(f"Processing {video_path}")
-            run_salmon_counter(video_path, self.detection_dir)
+            run_salmon_counter(video_path, self.detection_dir, self.weights_path)
             self.processed_videos.add(video_path.name)
             save_processed_videos(self.processed_videos)
         else:
@@ -103,7 +108,7 @@ def main(args):
     vids_path = Path(site_save_path) / MOTION_DIR_NAME
     detection_dir = Path(site_save_path) / DETECTION_DIR_NAME
 
-    video_handler = VideoHandler(processed_videos, detection_dir)
+    video_handler = VideoHandler(processed_videos, detection_dir, args.weights)
 
     # Initial check of all existing videos
     for video_file in vids_path.glob('*.mp4'):
@@ -130,6 +135,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
+    parser.add_argument('--weights', default='config/salmoncount.engine', help='Path to YOLO weights to load.')
     args = parser.parse_args()
 
     main(args)
