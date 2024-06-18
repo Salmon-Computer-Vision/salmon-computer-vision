@@ -4,6 +4,7 @@ RUN apt-get update
 RUN apt-get install -y git
 
 RUN python3 -m pip install -U pip
+RUN python3 -m pip install -U opencv-python-headless
 
 RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
 

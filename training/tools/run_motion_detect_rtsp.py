@@ -35,7 +35,7 @@ def main(args):
     vidloader = vl.VideoLoader([args.rtsp_url])
 
     det = md.MotionDetector(vidloader, site_save_path, save_prefix)
-    det.run(fps=args.fps, orin=args.orin)
+    det.run(fps=args.fps, orin=args.orin, raspi=args.raspi)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from the camera")
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
+    parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
     args = parser.parse_args()
 

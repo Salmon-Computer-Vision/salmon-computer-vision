@@ -19,11 +19,10 @@ services:
       - HOSTNAME
     env_file:
       - ./.env
-    container_name: salmonmd
+    container_name: salmonmd-jetson-0
     network_mode: host
     volumes:
       - ${DRIVE}:${DRIVE}
-    runtime: nvidia
     restart: always
     command: >
-      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${ORIN} ${TEST} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
+      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""

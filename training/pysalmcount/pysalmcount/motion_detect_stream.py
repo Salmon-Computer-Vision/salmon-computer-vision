@@ -16,11 +16,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! qtmux ! filesink location="
+gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
+gst_raspi_writer_str = "appsrc ! autovideoconvert ! v4l2h264enc ! h264parse ! mp4mux ! filesink location="
 
 class VideoSaver(Process):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
-            orin=False, save_prefix=None):
+            orin=False, raspi=False, save_prefix=None):
         Process.__init__(self)
         self.buffer = buffer  # This will be a shared queue
         self.folder = folder
@@ -31,6 +32,7 @@ class VideoSaver(Process):
         self.resolution = resolution
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
         self.orin = orin
+        self.raspi = raspi
         self.save_prefix = None
 
     @staticmethod
@@ -46,7 +48,10 @@ class VideoSaver(Process):
         if self.orin:
             out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.resolution)
         else:
-            out = cv2.VideoWriter(gst_writer_str + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
+            gst_writer = gst_writer_str
+            if self.raspi:
+                gst_writer = gst_raspi_writer_str
+            out = cv2.VideoWriter(gst_writer + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
         # Write the pre-motion frames
@@ -101,7 +106,7 @@ class MotionDetector:
                 return True
         return False
 
-    def run(self, algo='MOG2', save_video=True, fps=None, orin=False):
+    def run(self, algo='MOG2', save_video=True, fps=None, orin=False, raspi=False):
         # Motion Detection Params
         bgsub_threshold = 50
         threshold_value = 50 # Increase threshold value to minimize noise
@@ -176,8 +181,11 @@ class MotionDetector:
                         cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"mp4v"),
                                 fps, (frame.shape[1], frame.shape[0]))
                     else:
+                        gst_writer = gst_writer_str
+                        if raspi:
+                            gst_writer = gst_raspi_writer_str
                         cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, 
-				cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
+                                                       cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
 
                 cont_vid_out.write(frame)
