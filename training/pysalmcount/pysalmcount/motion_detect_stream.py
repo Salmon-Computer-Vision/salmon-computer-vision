@@ -54,6 +54,7 @@ class VideoSaver(Process):
             if self.raspi:
                 logger.info("Writing with raspi hardware...")
                 gst_writer = gst_raspi_writer_str
+            logger.info(f"Writing motion video to {filename}")
             out = cv2.VideoWriter(gst_writer + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
         
         c = 0
@@ -188,6 +189,7 @@ class MotionDetector:
                         if raspi:
                             logger.info("Writing with raspi hardware...")
                             gst_writer = gst_raspi_writer_str
+                        logger.info(f"Writing continuous video to {cont_filename}")
                         cont_vid_out = cv2.VideoWriter(gst_writer + cont_filename, 
                                                        cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
