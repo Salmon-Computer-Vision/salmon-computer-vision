@@ -52,7 +52,7 @@ def run_salmon_counter(video_path, detection_dir, counts_dir, weights_path):
     loader = VideoLoader([video_path], data['names'])
     counter = SalmonCounter(weights_path, loader, tracking_thresh=10, save_dir=str(detection_dir))
 
-    out_path = detection_dir / "summary" / "salmon_counts.csv"
+    out_path = counts_dir / "salmon_counts.csv"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
