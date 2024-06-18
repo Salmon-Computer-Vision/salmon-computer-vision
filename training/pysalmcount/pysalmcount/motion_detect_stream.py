@@ -188,7 +188,7 @@ class MotionDetector:
                         if raspi:
                             logger.info("Writing with raspi hardware...")
                             gst_writer = gst_raspi_writer_str
-                        cont_vid_out = cv2.VideoWriter(gst_writer_str + cont_filename, 
+                        cont_vid_out = cv2.VideoWriter(gst_writer + cont_filename, 
                                                        cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
                     frame_counter = 0
 
