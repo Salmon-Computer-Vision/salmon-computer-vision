@@ -14,7 +14,7 @@ services:
     command: |
       -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --exclude "cont_vids/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; sleep 300'
   salmonmd-jetson-0:
-    image: salmonmd
+    image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     environment:
       - HOSTNAME
     env_file:
@@ -27,7 +27,7 @@ services:
     command: >
       bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
   salmonmd-jetson-1:
-    image: salmonmd
+    image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     environment:
       - HOSTNAME
     env_file:

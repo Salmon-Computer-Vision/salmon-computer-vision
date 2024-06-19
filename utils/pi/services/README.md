@@ -4,6 +4,7 @@ so use the `--orin` flag to use CPU.
 `.env` file:
 ```
 HOST=<image_repo_host>
+TAG=latest-bookworm
 DRIVE=/media/hdd
 USER=netlabmedia
 ORGID=<orgid>
