@@ -10,6 +10,7 @@ import os
 import errno
 from multiprocessing import Process, Event, Lock, Condition, Manager
 import logging
+import time
 
 # Set up logging
 logging.basicConfig(
@@ -19,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
-gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !  v4l2h264enc ! h264parse ! mp4mux ! filesink location="
+gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=I420 !  v4l2h264enc ! h264parse ! qtmux ! filesink location="
 
 class VideoSaver(Process):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
@@ -172,6 +173,7 @@ class MotionDetector:
         num_motion_events = 0
         frame_start = 0
         for item in self.dataloader.items():
+            start_time=time.time()
             # Constantly check if save folder exists
             if not os.path.exists(self.save_folder):
                 raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
@@ -272,6 +274,9 @@ class MotionDetector:
                         elif not save_video:
                             motion_detected = False
 
+            end_time=time.time()
+            elapsed_time = (end_time - start_time) * 1000
+            logger.info(f"Time elapsed: {elapsed_time:.2f} ms")
             frame_counter += 1
 
         try:

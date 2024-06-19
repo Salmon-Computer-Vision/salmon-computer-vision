@@ -21,6 +21,7 @@ services:
       - ./.env
     container_name: salmonmd-jetson-0
     network_mode: host
+    privileged: true
     volumes:
       - ${DRIVE}:${DRIVE}
     restart: always
