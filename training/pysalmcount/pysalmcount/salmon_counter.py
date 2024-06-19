@@ -32,8 +32,8 @@ class SalmonCounter:
     TRACK_COUNT = 'track_count'
     CLASS_VOTE = 'class_vote'
     FONT = cv2.FONT_HERSHEY_SIMPLEX
-    def __init__(self, model_path: str, dataloader: DataLoader, tracking_thresh = 10, save_dir="save_dir"):
-        self.model = YOLO(model_path)
+    def __init__(self, model, dataloader: DataLoader, tracking_thresh = 10, save_dir="save_dir"):
+        self.model = model
         self.dataloader = dataloader
         self.track_history = defaultdict(lambda: [])
         classes = dataloader.classes()

@@ -7,6 +7,7 @@ import subprocess
 import pickle
 import yaml
 import logging
+from ultralytics import YOLO
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -49,9 +50,9 @@ def save_processed_videos(processed_videos):
 
 class VideoHandler(FileSystemEventHandler):
     def __init__(self, processed_videos, detection_dir, counts_dir, weights_path):
+        self.model = YOLO(weights_path)
         self.processed_videos = processed_videos
         self.detection_dir = detection_dir
-        self.weights_path = weights_path
         self.counts_dir = counts_dir
 
         with open(CONFIG_PATH, 'r') as file:
@@ -91,7 +92,7 @@ class VideoHandler(FileSystemEventHandler):
 
     def run_salmon_counter(self, video_path):
         loader = VideoLoader([video_path], self.data['names'])
-        counter = SalmonCounter(self.weights_path, loader, tracking_thresh=10, save_dir=str(self.detection_dir))
+        counter = SalmonCounter(self.model, loader, tracking_thresh=10, save_dir=str(self.detection_dir))
 
         out_path = self.counts_dir / f"{os.uname()[1]}_salmon_counts.csv"
         try:
