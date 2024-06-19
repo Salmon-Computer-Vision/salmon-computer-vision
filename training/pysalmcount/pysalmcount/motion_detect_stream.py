@@ -35,7 +35,7 @@ class VideoSaver(Process):
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
         self.orin = orin
         self.raspi = raspi
-        self.save_prefix = None
+        self.save_prefix = save_prefix
 
     @staticmethod
     def get_output_filename(folder, suffix='_M', save_prefix=None):
