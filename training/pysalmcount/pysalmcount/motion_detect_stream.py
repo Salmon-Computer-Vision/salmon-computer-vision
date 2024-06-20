@@ -24,10 +24,14 @@ gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video
 gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! v4l2convert !  v4l2h264enc extra-controls=encode,video_bitrate=3000000 ! h264parse ! mp4mux ! filesink location="
 
 class VideoSaver(Process):
-    def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
+    def __init__(self, buffer, frame_shape, head, tail, buffer_length, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
             orin=False, raspi=False, save_prefix=None):
         Process.__init__(self)
         self.buffer = buffer  # This will be a shared queue
+        self.frame_shape = frame_shape
+        self.head = head
+        self.tail = tail
+        self.buffer_length = buffer_length
         self.folder = folder
         self.stop_event = stop_event  # This will signal when to stop recording
         self.lock = lock  # This will ensure thread-safe access to the buffer
@@ -61,11 +65,17 @@ class VideoSaver(Process):
         
         c = 0
         # Write the pre-motion frames
-        while self.buffer:
+        while True:
             if c % 20 == 0:
                 logger.info(f'Saving pre... {c}')
             with self.lock:
-                frame = self.buffer.pop(0)  # Safely pop from the left of the deque
+                if self.tail.value == self.head.value:
+                    break
+                frame_idx = self.tail.value % self.buffer_length
+                start_idx = frame_idx * np.prod(self.frame_shape)
+                frame = np.frombuffer(self.shared_frames, dtype=np.uint8, count=np.prod(self.frame_shape), offset=start_idx).reshape(self.frame_shape)
+                #frame = self.buffer.pop(0)  # Safely pop from the left of the deque
+                self.tail.value = (self.tail.value + 1) % self.buffer_length # Increment circularly
             out.write(frame)
             c += 1
 
@@ -73,18 +83,23 @@ class VideoSaver(Process):
         # Continue recording until stop_event is set
         while not self.stop_event.is_set():
             with self.condition:
-                if not self.buffer:
-                    if not self.stop_event.is_set():
-                        # Wait for a signal that a new frame is available or stop_event is set
-                        self.condition.wait()
-                #self.condition.wait_for(lambda: self.buffer or self.stop_event.is_set())
+                #if not self.buffer:
+                #    if not self.stop_event.is_set():
+                #        # Wait for a signal that a new frame is available or stop_event is set
+                #        self.condition.wait()
+                self.condition.wait_for(lambda: self.tail.value != self.head.value or self.stop_event.is_set())
 
-            if self.buffer:
-                with self.lock:
-                    frame = self.buffer.pop(0)
-                if c % 20 == 0:
-                    logger.info(f'Saving... {c}')
-                out.write(frame)
+            with self.lock:
+                if self.tail.value != self.head.value:
+                    frame_idx = self.tail.value % self.buffer_length
+                    start_idx = frame_idx * np.prod(self.frame_shape)
+                    frame = np.frombuffer(self.shared_frames, dtype=np.uint8, count=np.prod(self.frame_shape), offset=start_idx).reshape(self.frame_shape)
+                    #frame = self.buffer.pop(0)
+                    self.tail.value = (self.tail.value + 1) % self.buffer_length # Increment circularly
+
+            if c % 20 == 0:
+                logger.info(f'Saving... {c}')
+            out.write(frame)
 
             c += 1
 
@@ -153,12 +168,12 @@ class MotionDetector:
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
-        manager = Manager()
         warm_up = fps
         buffer_length = int(fps * BUFFER_LENGTH)  # Buffer to save before motion
+        #manager = Manager()
         #buffer = manager.list()
-        frame_shape = (frame.shape[0], frame.shape[1], 3)
-        buffer = Array(ctypes.c_uint8, buffer_length * np.prod(frame_shape))
+        frame_shape = (self.dataloader.video_size()[0], self.dataloader.video_size()[1], 3)
+        buffer = Array(ctypes.c_uint8, range(buffer_length * np.prod(frame_shape)), lock=False)
         head = Value('i', 0)
         tail = Value('i', 0)
 
@@ -245,9 +260,16 @@ class MotionDetector:
 
             start_bg_time = time.time()
             with lock:
-                if len(buffer) >= buffer_length:
-                    buffer.pop(0)
-                buffer.append(frame)
+                # Increment in a circular fashion
+                head.value = (head.value + 1) % buffer_length
+
+                frame_idx = head.value % buffer_length
+                start_idx = frame_idx * np.prod(frame_shape)
+                np_frame = np.frombuffer(shared_frames, dtype=np.uint8, count=np.prod(frame_shape), offset=start_idx).reshape(frame_shape)
+                np.copyto(np_frame, frame)
+                #if len(buffer) >= buffer_length:
+                #    buffer.pop(0)
+                #buffer.append(frame)
             end_bg_time = time.time()
             if frame_counter % fps == 0:
                 bg_elapsed = (end_bg_time - start_bg_time) * 1000
@@ -269,7 +291,7 @@ class MotionDetector:
                     if save_video:
                         # Signal that we need to start saving the clip
                         stop_event.clear()
-                        video_saver = VideoSaver(buffer, motion_dir, 
+                        video_saver = VideoSaver(buffer, frame_shape, head, tail, buffer_length, motion_dir, 
                                 stop_event, lock, condition, fps=fps, 
                                 resolution=(frame.shape[1], frame.shape[0]),
                                 orin=orin, save_prefix=self.save_prefix)

@@ -31,11 +31,10 @@ class VideoLoader(DataLoader):
         return self.num_clips
 
     def next_clip(self):
-        self.cur_clip = Path(next(self.clip_gen))
-
+        raw_clip = next(self.clip_gen)
+        self.cur_clip = Path(raw_clip)
         if self.gstreamer_on:
-            logger.info("Capturing with gstreamer...")
-            self.cap = cv2.VideoCapture(str(self.cur_clip), cv2.CAP_GSTREAMER)
+            self.cap = cv2.VideoCapture(raw_clip, cv2.CAP_GSTREAMER)
         else:
             self.cap = cv2.VideoCapture(str(self.cur_clip))
 
@@ -44,6 +43,7 @@ class VideoLoader(DataLoader):
 
         self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.size = (int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 
         return self.cur_clip
 
@@ -61,6 +61,9 @@ class VideoLoader(DataLoader):
 
     def fps(self):
         return self.vid_fps
+
+    def video_size(self):
+        return self.size
 
     def get_frame_num(self):
         return self.cap.get(cv2.CAP_PROP_POS_FRAMES)

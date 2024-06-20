@@ -15,6 +15,10 @@ class DataLoader(ABC):
         pass
 
     @abstractmethod
+    def video_size(self):
+        pass
+
+    @abstractmethod
     def classes(self) -> dict:
         ### Expects return format {0: class1, 1: class2, ...}
         pass
