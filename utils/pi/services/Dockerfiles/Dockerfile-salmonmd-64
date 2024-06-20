@@ -9,3 +9,8 @@ RUN python3 -m pip install -U opencv-python-headless
 RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
 
 RUN python3 -m pip install -e /tools/training/pysalmcount
+
+# Set working directory
+WORKDIR /tools
+
+CMD ["bash"]
