@@ -8,7 +8,7 @@ class VideoCaptureError(Exception):
     pass
 
 class VideoLoader(DataLoader):
-    def __init__(self, vid_sources, custom_classes=None):
+    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False):
         """
         vid_source: list[string] of anything that can go in VideoCapture() including video paths and RTSP URLs
         """
@@ -17,6 +17,7 @@ class VideoLoader(DataLoader):
         self.num_clips = len(vid_sources)
         self.clip_gen = iter(vid_sources)
         self.cur_clip = None
+        self.gstreamer_on = gstreamer_on
 
     def clips_len(self):
         return self.num_clips
@@ -24,7 +25,10 @@ class VideoLoader(DataLoader):
     def next_clip(self):
         self.cur_clip = Path(next(self.clip_gen))
 
-        self.cap = cv2.VideoCapture(str(self.cur_clip))
+        if self.gstreamer_on:
+            self.cap = cv2.VideoCapture(str(self.cur_clip), cv2.CAP_GSTREAMER)
+        else:
+            self.cap = cv2.VideoCapture(str(self.cur_clip))
         if not self.cap.isOpened():
             raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
 

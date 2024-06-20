@@ -54,6 +54,7 @@ if __name__ == "__main__":
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
+    parser.add_argument("--gstreamer", action='store_true', help="Set this flag to use Gstreamer capturing")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
     args = parser.parse_args()
 

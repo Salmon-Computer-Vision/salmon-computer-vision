@@ -27,7 +27,7 @@ services:
       - ../../..:/tools
     restart: always
     command: >
-      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
+      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
   salmonmd-jetson-1:
     image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     environment:
@@ -41,4 +41,4 @@ services:
       - ${DRIVE}:${DRIVE}
     restart: always
     command: >
-      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_1} --fps ${FPS} '${RTSP_URL_1}' \"${DRIVE}\""
+      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_1} --fps ${FPS} '${RTSP_URL_1}' \"${DRIVE}\""
