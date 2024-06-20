@@ -51,7 +51,7 @@ def main(args):
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(vidloader, site_save_path, save_prefix)
-    det.run(fps=args.fps, orin=args.orin, raspi=args.raspi)
+    det.run(fps=args.fps, algo=args.algo, orin=args.orin, raspi=args.raspi)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
@@ -63,6 +63,7 @@ if __name__ == "__main__":
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
     parser.add_argument("--gstreamer", action='store_true', help="Set this flag to use Gstreamer capturing")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
+    parser.add_argument("--algo", default="MOG2", help="Set algo for motion detection")
     args = parser.parse_args()
 
     main(args)

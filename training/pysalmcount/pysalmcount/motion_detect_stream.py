@@ -8,7 +8,7 @@ import argparse
 import datetime
 import os
 import errno
-from multiprocessing import Process, Event, Lock, Condition, Manager
+from threading import Thread, Event, Lock, Condition
 import logging
 import time
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 bitrate=3000000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
 gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !  v4l2h264enc extra-controls=encode,video_bitrate=3000000 ! h264parse ! qtmux ! filesink location="
 
-class VideoSaver(Process):
+class VideoSaver(Thread):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
             orin=False, raspi=False, save_prefix=None):
         Process.__init__(self)
@@ -64,7 +64,7 @@ class VideoSaver(Process):
             if c % 20 == 0:
                 logger.info(f'Saving pre... {c}')
             with self.lock:
-                frame = self.buffer.pop(0)  # Safely pop from the left of the deque
+                frame = self.buffer.popleft()  # Safely pop from the left of the deque
             out.write(frame)
             c += 1
 
@@ -80,7 +80,7 @@ class VideoSaver(Process):
 
             if self.buffer:
                 with self.lock:
-                    frame = self.buffer.pop(0)
+                    frame = self.buffer.popleft()
                 if c % 20 == 0:
                     logger.info(f'Saving... {c}')
                 out.write(frame)
@@ -116,7 +116,7 @@ class MotionDetector:
         bgsub_threshold = 50
         threshold_value = 50 # Increase threshold value to minimize noise
         kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
-        morph_iterations = 2 # Run multiple iterations to incrementally remove smaller objects
+        morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
         min_contour_area = 2000 # Ignore contour objects smaller than this area
         MOTION_EVENTS_THRESH = 0.4 # Ratio of seconds of motion required to trigger detection
         BUFFER_LENGTH = 5 # Number of seconds before motion to keep
@@ -152,10 +152,9 @@ class MotionDetector:
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
-        manager = Manager()
         warm_up = fps
         buffer_length = int(fps * BUFFER_LENGTH)  # Buffer to save before motion
-        buffer = manager.list()
+        buffer = deque(maxlen=buffer_length)
         motion_detected = False
 
         # Concurrency-safe constructs
@@ -173,12 +172,15 @@ class MotionDetector:
         num_motion_events = 0
         frame_start = 0
         for item in self.dataloader.items():
-            start_time=time.time()
+            if frame_counter % fps == 0:
+                start_time=time.time()
             # Constantly check if save folder exists
             if not os.path.exists(self.save_folder):
                 raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
 
             frame = item.frame
+            if isinstance(frame, str):
+                frame = cv2.imread(frame)
 
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
@@ -199,31 +201,40 @@ class MotionDetector:
 
                 cont_vid_out.write(frame)
 
+            small_frame = cv2.resize(frame, (640, 640), interpolation=cv2.INTER_AREA)
 
-            if isinstance(frame, str):
-                frame = cv2.imread(frame)
+            if frame_counter % fps == 0:
+                start_in_time = time.time()
 
             # Apply background subtraction algorithm to get the foreground mask
-            fg_mask = bgsub.apply(frame)
+            fg_mask = bgsub.apply(small_frame)
+
+            if frame_counter % fps == 0:
+                end_in_time=time.time()
+                elapsed_in_time = (end_in_time - start_in_time) * 1000
+                logger.info(f"BGSub: {elapsed_in_time:.2f} ms")
             #cont_vid_out.write(cv2.cvtColor(fg_mask, cv2.COLOR_GRAY2RGB))
 
+            if frame_counter % fps == 0:
+                start_in_time = time.time()
             has_motion = False
             if warm_up <= 0:
-                # Apply morphological operations to clean up the mask
-                for _ in range(morph_iterations):
-                    fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel) 
-
                 # Apply a threshold to the foreground mask to get rid of noise
                 _, fg_mask = cv2.threshold(fg_mask, threshold_value, 255, cv2.THRESH_BINARY)
+
+                # Apply morphological operations to clean up the mask
+                fg_mask = cv2.dilate(fg_mask, None, iterations=morph_iterations) 
 
                 # Now detect motion
                 has_motion = self.detect_motion(fg_mask, min_area=min_contour_area)
             else:
                 warm_up -= 1
+            if frame_counter % fps == 0:
+                end_in_time=time.time()
+                elapsed_in_time = (end_in_time - start_in_time) * 1000
+                logger.info(f"check motion: {elapsed_in_time:.2f} ms")
 
             with lock:
-                if len(buffer) >= buffer_length:
-                    buffer.pop(0)
                 buffer.append(frame)
             with condition:
                 condition.notify() # Signal the VideoSaver thread that a new frame is available
@@ -274,9 +285,10 @@ class MotionDetector:
                         elif not save_video:
                             motion_detected = False
 
-            end_time=time.time()
-            elapsed_time = (end_time - start_time) * 1000
-            logger.info(f"Time elapsed: {elapsed_time:.2f} ms")
+            if frame_counter % fps == 0:
+                end_time=time.time()
+                elapsed_time = (end_time - start_time) * 1000
+                logger.info(f"Time elapsed: {elapsed_time:.2f} ms")
             frame_counter += 1
 
         try:
