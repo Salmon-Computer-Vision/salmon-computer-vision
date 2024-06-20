@@ -24,9 +24,10 @@ services:
     privileged: true
     volumes:
       - ${DRIVE}:${DRIVE}
+      - ../../..:/tools
     restart: always
     command: >
-      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
+      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
   salmonmd-jetson-1:
     image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     environment:
@@ -35,8 +36,9 @@ services:
       - ./.env
     container_name: salmonmd-jetson-1
     network_mode: host
+    privileged: true
     volumes:
       - ${DRIVE}:${DRIVE}
     restart: always
     command: >
-      bash -c "cd tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_1} --fps ${FPS} '${RTSP_URL_1}' \"${DRIVE}\""
+      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${ORIN} ${RASPI} ${TEST} ${DEVICE_ID_1} --fps ${FPS} '${RTSP_URL_1}' \"${DRIVE}\""

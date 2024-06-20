@@ -1,46 +1,74 @@
 FROM balenalib/raspberrypi3-python:3.7-buster-build
 
 ARG OPENCV_VER="4.x"
+ARG JOBS=4
 
-RUN apt-get update
-RUN apt-get install -y git
+# Update package list and install essential packages
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    cmake \
+    pkg-config \
+    libgtk-3-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libv4l-dev \
+    libxvidcore-dev \
+    libx264-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    gfortran \
+    libatlas-base-dev \
+    libgtk2.0-dev \
+    libcanberra-gtk* \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    gstreamer1.0-gl \
+    gstreamer1.0-opencv \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-tools \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get install -y --no-install-recommends \
-  gstreamer1.0-gl \
-  gstreamer1.0-opencv \
-  gstreamer1.0-plugins-bad \
-  gstreamer1.0-plugins-good \
-  gstreamer1.0-plugins-ugly \
-  gstreamer1.0-tools \
-  libgstreamer-plugins-base1.0-dev \
-  libgstreamer1.0-0 \
-  libgstreamer1.0-dev 
-  
-RUN python3 -m pip install -U pip
-RUN python3 -m pip install -U setuptools wheel
-
-RUN git clone --branch ${OPENCV_VER} --depth 1 --recurse-submodules --shallow-submodules https://github.com/opencv/opencv-python.git opencv-python-${OPENCV_VER}
-
+# Update pip and install numpy
 RUN printf '[global]\nextra-index-url=https://www.piwheels.org/simple' > /etc/pip.conf
+RUN python3 -m pip install --upgrade pip setuptools wheel
+RUN python3 -m pip install numpy==1.21.4
 
-# OpenCV 4.x requires openssl 3.x
-ARG OPENSSL_VER="openssl-3.3.1"
+# Clone OpenCV and OpenCV contrib repositories
+RUN git clone --branch ${OPENCV_VER} --depth 1 https://github.com/opencv/opencv.git /opencv
+RUN git clone --branch ${OPENCV_VER} --depth 1 https://github.com/opencv/opencv_contrib.git /opencv_contrib
 
-RUN git clone --branch ${OPENSSL_VER} --depth 1 https://github.com/openssl/openssl.git openssl-${OPENSSL_VER}
-RUN cd openssl-${OPENSSL_VER} && ./Configure && make -j`nproc` && make test && make install
-RUN ldconfig /usr/local/lib
+# Set environment variables for OpenCV build
+ENV OPENCV_EXTRA_MODULES_PATH=/opencv_contrib/modules
+ENV ENABLE_CONTRIB=0
+ENV ENABLE_HEADLESS=1
+ENV CMAKE_ARGS="-DWITH_GSTREAMER=ON -DWITH_TBB=ON -DCMAKE_BUILD_TYPE=RELEASE -DWITH_V4L=ON -DWITH_QT=OFF -DWITH_OPENGL=ON"
 
-ENV MAKEFLAGS="-j$(nproc)"
+# Build and install OpenCV
+RUN mkdir /opencv/build && cd /opencv/build && \
+    cmake -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_INSTALL_PREFIX=/usr/local \
+          -D OPENCV_EXTRA_MODULES_PATH=/opencv_contrib/modules \
+          -D WITH_GSTREAMER=ON \
+          -D WITH_TBB=ON \
+          -D WITH_V4L=ON \
+          -D WITH_QT=OFF \
+          -D WITH_OPENGL=ON \
+          -D BUILD_opencv_python3=ON \
+          -D PYTHON3_EXECUTABLE=/usr/local/bin/python3 \
+          -D PYTHON3_INCLUDE_DIR=/usr/local/include/python3.7m \
+          -D PYTHON3_LIBRARY=/usr/local/lib/libpython3.7m.so \
+          .. && \
+    make -j${JOBS} && make install && ldconfig
 
-# Install OpenCV with gstreamer support
-RUN cd opencv-python-${OPENCV_VER} && \
-    export ENABLE_CONTRIB=0 && \
-    export ENABLE_HEADLESS=1 && \
-    export CMAKE_ARGS="-DWITH_GSTREAMER=ON" && \
-    python3 -m pip wheel . --verbose && \
-    python3 -m pip install opencv_python*.whl
-
-
+# Clone and install Salmon Computer Vision tools
 RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
-
 RUN python3 -m pip install -e /tools/training/pysalmcount
+
+# Set working directory
+WORKDIR /tools
+

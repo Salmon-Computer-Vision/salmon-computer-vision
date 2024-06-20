@@ -16,3 +16,36 @@ ORIN=--orin
 DEVICE_ID_0=--device-id jetson-0
 DEVICE_ID_1=--device-id jetson-1
 ```
+
+### Increase swap memory
+
+Stop using swap:
+```bash
+sudo dphys-swapfile swapoff
+```
+
+Edit config:
+```bash
+sudoedit /etc/dphys-swapfile
+```
+
+Find the following:
+```
+CONF_SWAPSIZE=100
+```
+
+Replace with desired size, eg. 2GB:
+```
+CONF_SWAPSIZE=2048
+```
+
+Setup and put the swap back on:
+```
+sudo dphys-swapfile setup
+sudo dphys-swapfile swapon
+```
+
+Then, reboot:
+```
+sudo reboot
+```
