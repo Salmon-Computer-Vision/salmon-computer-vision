@@ -181,6 +181,7 @@ class MotionDetector:
             frame = item.frame
             if isinstance(frame, str):
                 frame = cv2.imread(frame)
+            frame = cv2.resize(frame, (1280, 720), interpolation=cv2.INTER_AREA)
 
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
@@ -209,13 +210,11 @@ class MotionDetector:
                     elapsed_in_time = (end_in_time - start_in_time) * 1000
                     logger.info(f"Cont save: {elapsed_in_time:.2f} ms")
 
-            small_frame = cv2.resize(frame, (640, 640), interpolation=cv2.INTER_AREA)
-
             if frame_counter % fps == 0:
                 start_in_time = time.time()
 
             # Apply background subtraction algorithm to get the foreground mask
-            fg_mask = bgsub.apply(small_frame)
+            fg_mask = bgsub.apply(frame)
 
             if frame_counter % fps == 0:
                 end_in_time=time.time()
