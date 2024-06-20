@@ -207,7 +207,7 @@ class MotionDetector:
                 if frame_counter % fps == 0:
                     end_in_time=time.time()
                     elapsed_in_time = (end_in_time - start_in_time) * 1000
-                    logger.info(f"Cont Time: {elapsed_in_time:.2f} ms")
+                    logger.info(f"Cont save: {elapsed_in_time:.2f} ms")
 
             small_frame = cv2.resize(frame, (640, 640), interpolation=cv2.INTER_AREA)
 
