@@ -12,7 +12,7 @@ BUCKET=<bucket>
 RTSP_URL_0=rtsp://<rtsp-url-0>
 RTSP_URL_1=rtsp://<rtsp-url-1>
 FPS=10
-FLAGS=--orin
+FLAGS=--orin --algo CNT
 DEVICE_ID_0=--device-id jetson-0
 DEVICE_ID_1=--device-id jetson-1
 ```
@@ -28,7 +28,7 @@ BUCKET=<bucket>
 RTSP_URL_0=rtsp://<rtsp-url-0>
 RTSP_URL_1=rtsp://<rtsp-url-1>
 FPS=10
-FLAGS=--raspi --gstreamer
+FLAGS=--raspi --gstreamer --algo CNT
 DEVICE_ID_0=--device-id jetson-0
 DEVICE_ID_1=--device-id jetson-1
 ```
