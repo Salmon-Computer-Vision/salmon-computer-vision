@@ -42,7 +42,10 @@ def main(args):
 
     if args.gstreamer:
         #input_str = f"rtspsrc location={args.rtsp_url} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
-        input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+        if args.h265:
+            input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+        else:
+            input_str = f"rtspsrc location={args.rtsp_url} ! rtph264depay ! queue ! h264parse ! v4l2h264dec ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
     else:
         input_str = args.rtsp_url
 
@@ -62,6 +65,7 @@ if __name__ == "__main__":
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
     parser.add_argument("--gstreamer", action='store_true', help="Set this flag to use Gstreamer capturing")
+    parser.add_argument("--h265", action='store_true', help="Set this flag to use h265 decoding")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
     parser.add_argument("--algo", default="MOG2", help="Set algo for motion detection")
     args = parser.parse_args()
