@@ -31,11 +31,10 @@ class VideoLoader(DataLoader):
         return self.num_clips
 
     def next_clip(self):
-        self.cur_clip = Path(next(self.clip_gen))
-
+        raw_clip = next(self.clip_gen)
+        self.cur_clip = Path(raw_clip)
         if self.gstreamer_on:
-            logger.info("Capturing with gstreamer...")
-            self.cap = cv2.VideoCapture(str(self.cur_clip), cv2.CAP_GSTREAMER)
+            self.cap = cv2.VideoCapture(raw_clip, cv2.CAP_GSTREAMER)
         else:
             self.cap = cv2.VideoCapture(str(self.cur_clip))
 
