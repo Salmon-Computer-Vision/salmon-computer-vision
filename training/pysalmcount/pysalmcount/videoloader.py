@@ -36,7 +36,7 @@ class VideoLoader(DataLoader):
         if self.gstreamer_on:
             self.cap = cv2.VideoCapture(raw_clip, cv2.CAP_GSTREAMER)
         else:
-            self.cap = cv2.VideoCapture(str(self.cur_clip))
+            self.cap = cv2.VideoCapture(raw_clip)
 
         if not self.cap.isOpened():
             raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
