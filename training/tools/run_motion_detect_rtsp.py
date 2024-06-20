@@ -41,12 +41,12 @@ def main(args):
         os.makedirs(site_save_path)
 
     if args.gstreamer:
-        logger.info(args.rtsp_url)
         #input_str = f"rtspsrc location={args.rtsp_url} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
-        input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1"
+        input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
     else:
         input_str = args.rtsp_url
 
+    logger.info(input_str)
     vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer)
 
     logger.info(f"save_prefix: {save_prefix}")
