@@ -24,7 +24,6 @@ services:
     privileged: true
     volumes:
       - ${DRIVE}:${DRIVE}
-      - ../../..:/tools
     restart: always
     command: >
       bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""

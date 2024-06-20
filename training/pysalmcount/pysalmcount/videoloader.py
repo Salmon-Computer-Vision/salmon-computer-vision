@@ -2,6 +2,14 @@ from .dataloader import DataLoader, Item
 
 import cv2
 from pathlib import Path
+import logging
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
+)
+logger = logging.getLogger(__name__)
 
 class VideoCaptureError(Exception):
     """Exception raised when video capture fails to open."""
@@ -26,9 +34,11 @@ class VideoLoader(DataLoader):
         self.cur_clip = Path(next(self.clip_gen))
 
         if self.gstreamer_on:
+            logger.info("Capturing with gstreamer...")
             self.cap = cv2.VideoCapture(str(self.cur_clip), cv2.CAP_GSTREAMER)
         else:
             self.cap = cv2.VideoCapture(str(self.cur_clip))
+
         if not self.cap.isOpened():
             raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
 

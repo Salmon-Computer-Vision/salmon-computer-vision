@@ -40,7 +40,14 @@ def main(args):
     if not os.path.exists(site_save_path):
         os.makedirs(site_save_path)
 
-    vidloader = vl.VideoLoader([args.rtsp_url])
+    if args.gstreamer:
+        logger.info(args.rtsp_url)
+        #input_str = f"rtspsrc location={args.rtsp_url} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+        input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! videoconvert ! video/x-raw,format=BGR ! appsink drop=1"
+    else:
+        input_str = args.rtsp_url
+
+    vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer)
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(vidloader, site_save_path, save_prefix)
