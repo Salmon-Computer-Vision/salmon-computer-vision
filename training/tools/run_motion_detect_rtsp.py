@@ -43,7 +43,7 @@ def main(args):
     if args.gstreamer:
         #input_str = f"rtspsrc location={args.rtsp_url} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
         if args.h265:
-            input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+            input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
         else:
             input_str = f"rtspsrc location={args.rtsp_url} ! rtph264depay ! queue ! h264parse ! v4l2h264dec ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
     else:
