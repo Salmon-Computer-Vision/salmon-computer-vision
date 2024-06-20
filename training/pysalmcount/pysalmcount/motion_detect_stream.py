@@ -25,7 +25,7 @@ gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !
 class VideoSaver(Thread):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
             orin=False, raspi=False, save_prefix=None):
-        Process.__init__(self)
+        Thread.__init__(self)
         self.buffer = buffer  # This will be a shared queue
         self.folder = folder
         self.stop_event = stop_event  # This will signal when to stop recording
