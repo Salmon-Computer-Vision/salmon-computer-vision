@@ -1,4 +1,4 @@
-Place engine file in the `config` folder.
+Place TensorRT engine file weights in the `config` folder.
 
 Create an `.env` file here with the following:
 ```
