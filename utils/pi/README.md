@@ -156,7 +156,9 @@ BUCKET=<bucket-name>
 ```
 
 `USER` is the username of the device, so the docker-compose can grab the rclone configuration files.
-`ORGID` will simply the subfolder in the `DRIVE` when uploading to the bucket.
+`ORGID` is simply the subfolder in the `DRIVE` when uploading to the bucket. The syncing service
+will upload everything in `${DRIVE}/${ORGID}` except folders named `cont_vids` as we assume they
+contain continuous videos that we don't want to upload.
 
 Start up the syncing service only:
 ```bash
