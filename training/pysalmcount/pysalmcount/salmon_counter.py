@@ -87,7 +87,8 @@ class SalmonCounter:
 
         frame_count = 0
         for item in self.dataloader.items():
-            start_time = time.time()
+            if frame_count % 20 == 0:
+                start_time = time.time()
 
             boxes = []
             track_ids = []
@@ -95,13 +96,15 @@ class SalmonCounter:
             confs = []
             if not use_gt:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
-                inf_start_time = time.time()
+                if frame_count % 20 == 0:
+                    inf_start_time = time.time()
                 results = self.model.track(item.frame, tracker=tracker,
                         project=self.save_dir, name=cur_clip.name,
                         persist=True, verbose=False, device=device)
-                inf_end_time = time.time()
-                inf_elapsed = (inf_end_time - inf_start_time) * 1000
-                logger.info(f"Inference time: {inf_elapsed:.2f}")
+                if frame_count % 20 == 0:
+                    inf_end_time = time.time()
+                    inf_elapsed = (inf_end_time - inf_start_time) * 1000
+                    logger.info(f"Inference time: {inf_elapsed:.2f}")
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
@@ -191,9 +194,11 @@ class SalmonCounter:
             if save_vid:
                 out_vid.write(annotated_frame)
 
-            end_time = time.time()
-            elapsed_time = (end_time - start_time) * 1000
-            logger.info(f"Execution time: {elapsed_time:.2f} ms")
+            if frame_count % 20 == 0:
+                end_time = time.time()
+                elapsed_time = (end_time - start_time) * 1000
+                logger.info(f"Execution time: {elapsed_time:.2f} ms")
+                logger.info("")
             frame_count += 1
 
         if stream_write:
