@@ -307,6 +307,13 @@ Use `nm-connection-editor` or the CLI to edit the IPv4 static IP.
 sudo nm-connection-editor
 ```
 
+If you are SSHing into the device, use the `-X` flag to relay the window
+to your host machine:
+
+```bash
+ssh -X <jetson_user>@<jetson_ip>
+```
+
 By default Starlink uses the following:
 * Gateway: 192.168.1.1
 * DNS: 192.168.1.1
