@@ -33,6 +33,9 @@ DEVICE_ID_0=--device-id jetson-0
 DEVICE_ID_1=--device-id jetson-1
 ```
 
+Sometimes the RTSP stream fails to open with gstreamer. If so,
+turn off gstreamer decoding by removing the `--gstreamer` flag.
+
 ### Increase swap memory
 
 Stop using swap:
