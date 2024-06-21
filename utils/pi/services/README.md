@@ -1,3 +1,10 @@
+Create your docker images using the respective dockerfiles in `Dockerfiles`:
+```bash
+docker build . -f Dockerfiles/Dockerfile-salmonmd -t <host>/salmonmd:<tag>
+```
+
+Create a `.env` file with the following:
+
 Newer Raspberry Pi does not have any hardware encoder, 
 so use the `--orin` flag to use CPU.
 
