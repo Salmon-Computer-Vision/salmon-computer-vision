@@ -142,9 +142,9 @@ rclone config
 
 !! Name the remote `aws`
 
-Go to the syncing folder:
+Go to the services folder:
 ```bash
-cd syncing
+cd services
 ```
 
 Create an `.env` file and fill the following variables:
@@ -155,9 +155,12 @@ ORGID=<org-id>
 BUCKET=<bucket-name>
 ```
 
-Start up the syncing:
+`USER` is the username of the device, so the docker-compose can grab the rclone configuration files.
+`ORGID` will simply the subfolder in the `DRIVE` when uploading to the bucket.
+
+Start up the syncing service only:
 ```bash
-docker-compose up -d
+docker-compose up -d syncing
 ```
 
 ## Streaming from RTSP to Amazon Kinesis Video Streams
