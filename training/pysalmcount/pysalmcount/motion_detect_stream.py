@@ -114,6 +114,8 @@ class MotionDetector:
     def run(self, algo='MOG2', save_video=True, fps=None, orin=False, raspi=False):
         # Motion Detection Params
         bgsub_threshold = 50
+        bgsub_min_pixelstability = 1
+        bgsub_max_pixelstability = 7
         threshold_value = 50 # Increase threshold value to minimize noise
         kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
         morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
@@ -148,7 +150,7 @@ class MotionDetector:
         if algo == 'MOG2':
             bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
         else:
-            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=int(fps), maxPixelStability=int(fps*60))
+            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=bgsub_min_pixelstability, maxPixelStability=bgsub_max_pixelstability))
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
