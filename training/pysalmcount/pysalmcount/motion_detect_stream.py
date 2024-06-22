@@ -115,7 +115,7 @@ class MotionDetector:
         # Motion Detection Params
         bgsub_threshold = 50
         bgsub_min_pixelstability = 1
-        bgsub_max_pixelstability = 7
+        bgsub_max_pixelstability = 4
         threshold_value = 50 # Increase threshold value to minimize noise
         kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
         morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
@@ -150,7 +150,7 @@ class MotionDetector:
         if algo == 'MOG2':
             bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
         else:
-            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=bgsub_min_pixelstability, maxPixelStability=bgsub_max_pixelstability))
+            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=bgsub_min_pixelstability, useHistory=True, maxPixelStability=bgsub_max_pixelstability)
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
@@ -255,7 +255,7 @@ class MotionDetector:
                 num_motion_events += 1
                 count_delay = 0
                 if not motion_detected and num_motion_events >= MOTION_EVENTS_THRESH_FRAMES:
-                    logger.info("Motion detected.")
+                    logger.info(f"Motion detected with {num_motion_events} events")
                     motion_detected = True
                     motion_counter = 0
                     frame_start = frame_counter
@@ -265,7 +265,7 @@ class MotionDetector:
                         video_saver = VideoSaver(buffer, motion_dir, 
                                 stop_event, lock, condition, fps=fps, 
                                 resolution=(frame.shape[1], frame.shape[0]),
-                                orin=orin, save_prefix=self.save_prefix)
+                                orin=orin, raspi=raspi, save_prefix=self.save_prefix)
                         video_saver.start()
                 else:
                     if save_video and motion_counter > MAX_FRAMES_CLIP and not stop_event.is_set():
