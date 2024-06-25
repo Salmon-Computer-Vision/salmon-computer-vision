@@ -185,7 +185,7 @@ class SalmonCounter:
 
                 if save_txt:
                     with open(str(txt_dir / f"frame_{frame_count:06d}.txt"), 'a') as f:
-                        f.write(f"{cls_id} {x} {y} {w} {h} {conf}\n")
+                        f.write(f"{cls_id} {x} {y} {w} {h} {conf} {track_id}\n")
                 if save_vid:
                     # Draw the tracking lines
                     points = np.hstack(track).astype(np.int32).reshape((-1, 1, 2))
