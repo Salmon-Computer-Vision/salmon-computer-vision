@@ -12,7 +12,31 @@ services:
     restart: always
     entrypoint: /bin/sh
     command: |
-      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --exclude "cont_vids/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; sleep 300'
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --include "*/motion_vids/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; sleep 300'
+  syncing-detects:
+    image: rclone/rclone
+    env_file:
+      - ./.env
+    container_name: syncing-detects
+    volumes:
+      - ${DRIVE}:${DRIVE}
+      - /home/${USER}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+    restart: always
+    entrypoint: /bin/sh
+    command: |
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --include "*/detections/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; sleep 300'
+  syncing-counts:
+    image: rclone/rclone
+    env_file:
+      - ./.env
+    container_name: syncing-detect
+    volumes:
+      - ${DRIVE}:${DRIVE}
+      - /home/${USER}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+    restart: always
+    entrypoint: /bin/sh
+    command: |
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=2 --include "*/counts/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; sleep 300'
   salmonmd-jetson-0:
     image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     environment:
