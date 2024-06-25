@@ -29,7 +29,7 @@ services:
     image: rclone/rclone
     env_file:
       - ./.env
-    container_name: syncing-detect
+    container_name: syncing-counts
     volumes:
       - ${DRIVE}:${DRIVE}
       - /home/${USER}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
