@@ -16,12 +16,36 @@ from pysalmcount.videoloader import VideoLoader
 from pysalmcount.salmon_counter import SalmonCounter
 
 # Set up logging
+class BufferedHandler(logging.Handler):
+    def __init__(self, buffer_size=10):
+        super().__init__()
+        self.buffer = []
+        self.buffer_size = buffer_size
+
+    def emit(self, record):
+        self.buffer.append(self.format(record))
+        if len(self.buffer) >= self.buffer_size:
+            self.flush()
+
+    def flush(self):
+        if self.buffer:
+            for log_entry in self.buffer:
+                print(log_entry)  # Replace with the desired output method, e.g., write to a file
+            self.buffer = []
+
+    def close(self):
+        self.flush()
+        super().close()
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
 )
 
 logger = logging.getLogger(__name__)
+
+buffered_handler = BufferedHandler(buffer_size=50)
+logger.addHandler(buffered_handler)
 
 DRIVE_DIR = Path("/app/drive/hdd")
 MOTION_DIR_NAME = "motion_vids"
@@ -142,8 +166,10 @@ def main(args):
     #observer.join()
 
     logger.info("Waiting a little before ending...")
+    logger.handlers[0].flush()
     time.sleep(30)
     logger.info("Ending...")
+    logger.handlers[0].flush()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
