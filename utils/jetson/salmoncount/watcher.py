@@ -23,7 +23,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-DRIVE_DIR = Path("/app/drive")
+DRIVE_DIR = Path("/app/drive/hdd")
 MOTION_DIR_NAME = "motion_vids"
 DETECTION_DIR_NAME = "detections"
 COUNTS_DIR_NAME = "counts"
