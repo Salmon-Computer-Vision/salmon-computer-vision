@@ -108,9 +108,13 @@ class VideoHandler(FileSystemEventHandler):
         detection_file = self.detection_dir / video_path.stem
         if not detection_file.exists():
             logger.info(f"Processing {video_path}")
-            self.run_salmon_counter(video_path)
-            self.processed_videos.add(video_path.name)
-            save_processed_videos(self.processed_videos)
+            try:
+                self.run_salmon_counter(video_path)
+                # Potentially skip adding if exception running salmon count
+                self.processed_videos.add(video_path.name)
+                save_processed_videos(self.processed_videos)
+            except Exception as e:
+                logger.info(e)
         else:
             logger.info(f"Skipping {video_path}, detection already exists")
 
@@ -119,11 +123,8 @@ class VideoHandler(FileSystemEventHandler):
         counter = SalmonCounter(self.model, loader, tracking_thresh=10, save_dir=str(self.detection_dir))
 
         out_path = self.counts_dir #/ f"{os.uname()[1]}_salmon_counts.csv"
-        try:
-            counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
-                    stream_write=True, output_csv_dir=str(out_path))
-        except Exception as e:
-            logger.info(e)
+        counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
+                stream_write=True, output_csv_dir=str(out_path))
 
 def main(args):
     processed_videos = load_processed_videos()
