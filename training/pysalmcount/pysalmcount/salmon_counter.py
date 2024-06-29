@@ -204,7 +204,7 @@ class SalmonCounter:
             if not os.path.exists(output_csv_dir):
                 os.makedirs(output_csv_dir)
             output_name_path = str(Path(output_csv_dir) / Path(cur_clip.name).stem)
-            self.salm_count.to_csv(f"{output_csv_path}.csv")
+            self.salm_count.to_csv(f"{output_name_path}.csv")
                 
         self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
         self.salm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes
