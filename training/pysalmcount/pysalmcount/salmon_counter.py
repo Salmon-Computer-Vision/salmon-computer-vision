@@ -65,7 +65,7 @@ class SalmonCounter:
             return 1
 
     def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, save_txt=False, vote_method='all', device=0,
-            stream_write=True, output_csv='output_count.csv'):
+            stream_write=True, output_csv_dir='output_count'):
         if vote_method not in [VOTE_METHOD_ALL, VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
             raise ValueError(f'{vote_method} is not a valid method')
             
@@ -201,10 +201,10 @@ class SalmonCounter:
             frame_count += 1
 
         if stream_write:
-            if not os.path.exists(output_csv):
-                self.salm_count.to_csv(output_csv, mode='w')
-            else:
-                self.salm_count.to_csv(output_csv, mode='a', header=False)
+            if not os.path.exists(output_csv_dir):
+                os.makedirs(output_csv_dir)
+            output_name_path = str(Path(output_csv_dir) / Path(cur_clip.name).stem)
+            self.salm_count.to_csv(f"{output_csv_path}.csv")
                 
         self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
         self.salm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes
