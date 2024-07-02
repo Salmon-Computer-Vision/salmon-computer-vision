@@ -72,9 +72,8 @@ def save_processed_videos(processed_videos):
 
 
 class VideoHandler(FileSystemEventHandler):
-    def __init__(self, processed_videos, detection_dir, counts_dir, weights_path):
+    def __init__(self, detection_dir, counts_dir, weights_path):
         self.model = YOLO(weights_path)
-        self.processed_videos = processed_videos
         self.detection_dir = detection_dir
         self.counts_dir = counts_dir
 
@@ -85,13 +84,10 @@ class VideoHandler(FileSystemEventHandler):
         logger.info("New file event")
         if event.src_path.endswith(".mp4"):
             video_path = Path(event.src_path)
-            if video_path.name not in self.processed_videos:
-                if self.is_fully_written(video_path):
-                    self.process_video(video_path)
-                else:
-                    logger.info(f"File {video_path} is still being written.")
+            if self.is_fully_written(video_path):
+                self.process_video(video_path)
             else:
-                logger.info(f"Skipping {video_path}, already processed")
+                logger.info(f"File {video_path} is still being written.")
 
     def is_fully_written(self, file_path, wait_time=5, check_interval=1):
         """Check if the file is fully written by monitoring its size."""
@@ -104,18 +100,16 @@ class VideoHandler(FileSystemEventHandler):
             time.sleep(check_interval)
     
     def process_video(self, video_path):
-        detection_file = self.detection_dir / video_path.stem
-        if not detection_file.exists():
+        counts_file = self.counts_dir / f"{video_path.stem}.csv"
+        detections_dir = self.detection_dir / video_path.stem
+        if not counts_file.exists() and not detections_dir.exists():
             logger.info(f"Processing {video_path}")
             try:
                 self.run_salmon_counter(video_path)
-                # Potentially skip adding if exception running salmon count
-                self.processed_videos.add(video_path.name)
-                save_processed_videos(self.processed_videos)
             except Exception as e:
                 logger.info(e)
         else:
-            logger.info(f"Skipping {video_path}, detection already exists")
+            logger.info(f"Skipping {video_path}, already processed")
 
     def run_salmon_counter(self, video_path):
         loader = VideoLoader([video_path], self.data['names'])
@@ -126,8 +120,6 @@ class VideoHandler(FileSystemEventHandler):
                 stream_write=True, output_csv_dir=str(out_path))
 
 def main(args):
-    processed_videos = load_processed_videos()
-
     if args.test:
         site_save_path = DRIVE_DIR
     else:
@@ -140,17 +132,18 @@ def main(args):
 
     detection_dir.mkdir(exist_ok=True)
     counts_dir.mkdir(exist_ok=True)
-    video_handler = VideoHandler(processed_videos, detection_dir, counts_dir, args.weights)
+    video_handler = VideoHandler(detection_dir, counts_dir, args.weights)
 
+    num_vids = len(sorted(os.listdir(str(vids_path))))
+
+    count = 0
     # Initial check of all existing videos
     for video_file in vids_path.glob('*.mp4'):
-        if video_file.name not in processed_videos:
-            if video_handler.is_fully_written(video_file):
-                video_handler.process_video(video_file)
-            else:
-                logger.info(f"File {video_file} is still being written.")
-        else:
-            logger.info(f"Skipping {video_file}, already processed")
+        if count >= num_vids - 3:
+            # Skip last few in case they are still writing
+            break
+        video_handler.process_video(video_file)
+        count += 1
     
     # Schedule watchdog observer
     #logger.info("Starting observer...")
