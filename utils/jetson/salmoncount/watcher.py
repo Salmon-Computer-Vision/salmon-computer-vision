@@ -134,16 +134,15 @@ def main(args):
     counts_dir.mkdir(exist_ok=True)
     video_handler = VideoHandler(detection_dir, counts_dir, args.weights)
 
-    num_vids = len(sorted(os.listdir(str(vids_path))))
+    current_time = time.time()
 
-    count = 0
     # Initial check of all existing videos
     for video_file in vids_path.glob('*.mp4'):
-        if count >= num_vids - 3:
-            # Skip last few in case they are still writing
-            break
-        video_handler.process_video(video_file)
-        count += 1
+        modif_time = video_file.stat().st_mtime
+        if current_time - modif_time > args.time_window:
+            video_handler.process_video(video_file)
+        else:
+            logger.info(f"Ignoring recently modified video: {video_file}")
     
     # Schedule watchdog observer
     #logger.info("Starting observer...")
@@ -168,6 +167,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
     parser.add_argument('--weights', default='config/salmoncount.engine', help='Path to YOLO weights to load.')
+    parser.add_argument('--time-window', default=4 * 60, help='The time window to ignore potentially still writing files in seconds.')
     args = parser.parse_args()
 
     main(args)
