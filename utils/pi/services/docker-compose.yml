@@ -33,10 +33,11 @@ services:
     volumes:
       - ${DRIVE}:${DRIVE}
       - /home/${USER}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+      - ./syncing-counts.sh:/app/syncing-counts.sh
     restart: always
     entrypoint: /bin/sh
     command: |
-      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=2 --include "/${SITE_NAME}/*/counts/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Waiting 5 min"; sleep 300'
+      /app/syncing-counts.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
   salmonmd-jetson-0:
     image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     environment:
@@ -48,6 +49,8 @@ services:
     privileged: true
     volumes:
       - ${DRIVE}:${DRIVE}
+      - ../../..:/tools
+      - ./:/app
     restart: always
     command: >
       bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""

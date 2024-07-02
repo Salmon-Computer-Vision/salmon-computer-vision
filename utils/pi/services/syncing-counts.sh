@@ -57,7 +57,7 @@ rclone_copy "$SITE_NAME" "$CONFIG" "$REMOTE_PATH" "$LOCAL_PATH"
 index=0
 for dir in "${LOCAL_PATH}/${SITE_NAME}"/*/counts; do
     if [ -d "$dir" ]; then
-        summary_csv_name = "${ORGID}-${SITE_NAME}-${count}_summary_salmon_counts.csv"
+        summary_csv_name="${ORGID}-${SITE_NAME}-${index}_summary_salmon_counts.csv"
         output_file="${dir}/${summary_csv_name}"
         concatenate_csv_in_directory "$dir" "$output_file"
         index=$((index + 1))
