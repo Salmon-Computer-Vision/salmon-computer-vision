@@ -37,14 +37,13 @@ class BufferedHandler(logging.Handler):
         self.flush()
         super().close()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
-)
-
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 buffered_handler = BufferedHandler(buffer_size=50)
+buffered_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s')
+buffered_handler.setFormatter(formatter)
 logger.addHandler(buffered_handler)
 
 DRIVE_DIR = Path("/app/drive/hdd")
