@@ -58,8 +58,11 @@ index=0
 for dir in "${LOCAL_PATH}/${SITE_NAME}"/*/counts; do
     if [ -d "$dir" ]; then
         summary_csv_name="${ORGID}-${SITE_NAME}-${index}_summary_salmon_counts.csv"
-        output_file="${dir}/${summary_csv_name}"
+        parent_dir=$(dirname "$dir")
+        base_dir=$(basename "$parent_dir")
+        output_file="${parent_dir}/${summary_csv_name}"
         concatenate_csv_in_directory "$dir" "$output_file"
+        rclone copy "$output_file" "${REMOTE_PATH}/${SITE_NAME}/${base_dir}/" --config "$CONFIG" --log-level INFO
         index=$((index + 1))
     fi
 done
