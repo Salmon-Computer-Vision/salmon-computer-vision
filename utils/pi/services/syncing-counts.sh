@@ -16,7 +16,7 @@ concatenate_csv_in_directory() {
     dir="$1"
     output_file="$2"
     first=1
-    for file in "$dir"/*.csv; do
+    for file in "$dir"/*_M.csv; do
         if [ -f "$file" ]; then
             if [ "$first" -eq 1 ]; then
                 cat "$file" > "$output_file"
