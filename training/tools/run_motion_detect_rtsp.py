@@ -45,7 +45,8 @@ def main(args):
         if args.h265:
             input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
         else:
-            input_str = f"rtspsrc location={args.rtsp_url} ! rtph264depay ! queue ! h264parse ! v4l2h264dec ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+            #input_str = f"rtspsrc location={args.rtsp_url} ! rtph264depay ! queue ! h264parse ! v4l2h264dec ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+            input_str = f"rtspsrc location={args.rtsp_url} ! rtph264depay ! h264parse ! v4l2h264dec ! videoconvert ! appsink"
     else:
         input_str = args.rtsp_url
 
