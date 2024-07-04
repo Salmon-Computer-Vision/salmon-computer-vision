@@ -118,7 +118,7 @@ class MotionDetector:
         bgsub_max_pixelstability = 4
         threshold_value = 50 # Increase threshold value to minimize noise
         kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
-        morph_iterations = 1 # Run multiple iterations to incrementally remove smaller objects
+        morph_iterations = 2 # Run multiple iterations to incrementally remove smaller objects
         min_contour_area = 10000 # Ignore contour objects smaller than this area
         MOTION_EVENTS_THRESH = 0.4 # Ratio of seconds of motion required to trigger detection
         BUFFER_LENGTH = 5 # Number of seconds before motion to keep
@@ -233,6 +233,7 @@ class MotionDetector:
 
                 # Apply morphological operations to clean up the mask
                 fg_mask = cv2.dilate(fg_mask, None, iterations=morph_iterations) 
+                fg_mask = cv2.erode(fg_mask, None, iterations=morph_iterations) 
 
                 # Now detect motion
                 has_motion = self.detect_motion(fg_mask, min_area=min_contour_area)
