@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   salmon_counter:
-    image: ${IMAGE_REPO_HOST}/salmoncounter:latest-jetson-jetpack4
+    image: ${IMAGE_REPO_HOST}/salmoncounter:${TAG}
     container_name: salmon_counter
     environment:
       - HOSTNAME
