@@ -7,6 +7,7 @@ import subprocess
 import pickle
 import yaml
 import logging
+import traceback
 from ultralytics import YOLO
 
 from watchdog.observers import Observer
@@ -107,7 +108,7 @@ class VideoHandler(FileSystemEventHandler):
             try:
                 self.run_salmon_counter(video_path)
             except Exception as e:
-                logger.info(e)
+                logger.error(traceback.format_exc())
         else:
             logger.info(f"Skipping {video_path}, already processed")
 

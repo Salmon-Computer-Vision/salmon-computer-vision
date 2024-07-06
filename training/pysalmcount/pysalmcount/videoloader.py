@@ -33,6 +33,7 @@ class VideoLoader(DataLoader):
     def next_clip(self):
         raw_clip = next(self.clip_gen)
         self.cur_clip = Path(raw_clip)
+        logger.info(f"Loading {raw_clip}")
         if self.gstreamer_on:
             self.cap = cv2.VideoCapture(raw_clip, cv2.CAP_GSTREAMER)
         else:
