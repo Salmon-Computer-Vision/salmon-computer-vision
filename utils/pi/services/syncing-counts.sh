@@ -13,6 +13,7 @@ rclone_copy() {
 
 # Function to concatenate CSV files in a directory
 concatenate_csv_in_directory() {
+    echo "Concatenating CSVs..."
     dir="$1"
     output_file="$2"
     first=1
@@ -50,24 +51,23 @@ fi
 REMOTE_PATH="aws:${BUCKET}/${ORGID}"
 LOCAL_PATH="${DRIVE}/${ORGID}"
 
-# Download from remote
+echo "Download from remote..."
 rclone_copy "$SITE_NAME" "$CONFIG" "$REMOTE_PATH" "$LOCAL_PATH"
 
 # Concatenate CSV files separately within each subfolder
-index=0
 for dir in "${LOCAL_PATH}/${SITE_NAME}"/*/counts; do
     if [ -d "$dir" ]; then
-        summary_csv_name="${ORGID}-${SITE_NAME}-${index}_summary_salmon_counts.csv"
         parent_dir=$(dirname "$dir")
         base_dir=$(basename "$parent_dir")
+        summary_csv_name="${ORGID}-${SITE_NAME}-${base_dir}_summary_salmon_counts.csv"
         output_file="${parent_dir}/${summary_csv_name}"
         concatenate_csv_in_directory "$dir" "$output_file"
         rclone copy "$output_file" "${REMOTE_PATH}/${SITE_NAME}/${base_dir}/" --config "$CONFIG" --log-level INFO
-        index=$((index + 1))
     fi
 done
 
 # Upload to remote
+echo "Upload to remote..."
 rclone_copy "$SITE_NAME" "$CONFIG" "$LOCAL_PATH" "$REMOTE_PATH"
 
 echo "Waiting 5 min"
