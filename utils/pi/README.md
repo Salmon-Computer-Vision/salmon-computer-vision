@@ -154,12 +154,12 @@ cd services
 Create an `.env` file and fill the following variables:
 ```
 DRIVE=<drive>
-USER=<pi-username>
+USERNAME=<pi-username>
 ORGID=<org-id>
 BUCKET=<bucket-name>
 ```
 
-`USER` is the username of the device, so the docker-compose can grab the rclone configuration files.
+`USERNAME` is the username of the device, so the docker-compose can grab the rclone configuration files.
 `ORGID` is simply the subfolder in the `DRIVE` when uploading to the bucket. The syncing service
 will upload everything in `${DRIVE}/${ORGID}` except folders named `cont_vids` as we assume they
 contain continuous videos that we don't want to upload.

@@ -13,7 +13,7 @@ so use the `--orin` flag to use CPU.
 IMAGE_REPO_HOST=<image_repo_host>
 TAG=latest-bookworm
 DRIVE=/media/hdd
-USER=netlabmedia
+USERNAME=netlabmedia
 ORGID=<orgid>
 SITE_NAME=<site_name>
 BUCKET=<bucket>
