@@ -37,6 +37,34 @@ FLAGS=--raspi --gstreamer --algo CNT
 Sometimes the RTSP stream fails to open with gstreamer. If so,
 turn off gstreamer decoding by removing the `--gstreamer` flag.
 
+### Remote Docker Commands
+
+Docker contexts are one of the keys to run docker commands over ssh.
+
+For example,
+
+```bash
+docker context create remote --docker "host=ssh://netlabmedia@192.168.1.5"
+```
+
+This will create a context that will send docker commands over ssh to the host specified.
+
+List all contexts:
+```bash
+docker context ls
+```
+
+Run command on different context:
+```bash
+docker --context remote ps
+```
+
+Switch to context
+```bash
+docker context use remote
+docker ps
+```
+
 ### Increase swap memory
 
 Stop using swap:
