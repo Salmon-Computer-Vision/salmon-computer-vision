@@ -1,6 +1,10 @@
 # Raspberry Pi utils
 
-***This has been tested on Raspberry Pi Buster.***
+***This has been tested on Raspberry Pi 5 Bookworm.***
+
+## Install Docker
+
+https://docs.docker.com/engine/install/debian/
 
 ## Auto-mounting external HDD
 
