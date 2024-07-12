@@ -35,9 +35,9 @@ class VideoLoader(DataLoader):
         self.cur_clip = Path(raw_clip)
         logger.info(f"Loading {raw_clip}")
         if self.gstreamer_on:
-            self.cap = cv2.VideoCapture(raw_clip, cv2.CAP_GSTREAMER)
+            self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_GSTREAMER)
         else:
-            self.cap = cv2.VideoCapture(raw_clip)
+            self.cap = cv2.VideoCapture(str(raw_clip))
 
         #self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         #self.cap.set(cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY)
