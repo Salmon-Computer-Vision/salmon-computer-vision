@@ -8,6 +8,15 @@ Create a `.env` file with the following:
 Newer Raspberry Pi does not have any hardware encoder, 
 so use the `--orin` flag to use CPU.
 
+The environment file below will save video clips to this format:
+```
+# Motion detected
+${ORGID}/${SITE_NAME}/${DEVICE_ID_*}/motion_vids/${ORGID}-${SITE_NAME}-${DEVICE_ID_*}_<yyyymmdd>_<hhmmss>_M.mp4
+
+# Continuous
+${ORGID}/${SITE_NAME}/${DEVICE_ID_*}/cont_vids/${ORGID}-${SITE_NAME}-${DEVICE_ID_*}_<yyyymmdd>_<hhmmss>_C.mp4
+``
+
 `.env` file:
 ```
 IMAGE_REPO_HOST=<image_repo_host>
