@@ -10,7 +10,7 @@ services:
       - ./.env
     volumes:
       - ${DRIVE}:/app/drive
-      - ./config:/app/config
+      - /home/${USERNAME}/config:/app/config
     network_mode: host
     runtime: nvidia
     restart: always

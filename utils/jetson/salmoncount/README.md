@@ -1,11 +1,20 @@
 # Salmon Counter
 
-Place TensorRT engine file weights in the `config` folder.
+Place TensorRT engine file weights in the `config` folder and then copy it to your home folder:
+```bash
+cp -r config ~/
+```
+Or the remote device's home folder:
+```bash
+scp -r config <user>@<host>:
+```
 
 Create an `.env` file here with the following:
 ```
 IMAGE_REPO_HOST=<host>
+TAG=<image_tag>
 DRIVE=/media
+USERNAME=<device-username>
 WEIGHTS=/app/config/<salmoncount_weights>.engine
 ```
 
