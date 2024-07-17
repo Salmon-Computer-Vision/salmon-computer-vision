@@ -197,7 +197,7 @@ class SalmonCounter:
             if frame_count % 20 == 0:
                 end_time = time.time()
                 elapsed_time = (end_time - start_time) * 1000
-                logger.info(f"Execution time: {elapsed_time:.2f} ms")
+                logger.info(f"Execution time: {elapsed_time:.2f} ms ({frame_count} frames)")
             frame_count += 1
 
         if stream_write:

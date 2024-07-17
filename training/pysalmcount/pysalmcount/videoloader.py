@@ -60,7 +60,8 @@ class VideoLoader(DataLoader):
             if ret:
                 yield Item(frame, num_items=self.total_frames)
             else:
-                logger.info('Failed to retrieve frame, skipping...')
+                logger.info('Failed to retrieve frame, assuming last frame ending...')
+                break
 
     def fps(self):
         return self.vid_fps
