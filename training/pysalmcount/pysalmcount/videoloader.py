@@ -58,6 +58,8 @@ class VideoLoader(DataLoader):
             ret, frame = self.cap.read()
 
             if ret:
+                logger.info('Read.')
+                continue
                 yield Item(frame, num_items=self.total_frames)
             else:
                 logger.info('Failed to retrieve frame, skipping...')
