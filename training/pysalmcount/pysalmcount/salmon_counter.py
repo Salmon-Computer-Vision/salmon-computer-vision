@@ -98,6 +98,7 @@ class SalmonCounter:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
                 if frame_count % 20 == 0:
                     inf_start_time = time.time()
+                continue
                 results = self.model.track(item.frame, tracker=tracker,
                         project=self.save_dir, name=cur_clip.name,
                         persist=True, verbose=False, device=device)
