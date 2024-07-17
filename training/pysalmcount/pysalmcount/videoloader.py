@@ -54,11 +54,13 @@ class VideoLoader(DataLoader):
         if self.cur_clip is None:
             raise ValueError('Error: No current clip')
 
+        c = 0
         while True:
             ret, frame = self.cap.read()
 
             if ret:
-                logger.info('Read.')
+                c += 1
+                logger.info(f'Read {c}.')
                 continue
                 yield Item(frame, num_items=self.total_frames)
             else:
