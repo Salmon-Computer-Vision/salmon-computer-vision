@@ -70,5 +70,5 @@ done
 echo "Upload to remote..."
 rclone_copy "$SITE_NAME" "$CONFIG" "$LOCAL_PATH" "$REMOTE_PATH"
 
-echo "Waiting 5 min"
-sleep 300
+echo "Finished. Waiting some time..."
+sleep 30m

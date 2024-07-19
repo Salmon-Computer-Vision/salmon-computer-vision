@@ -12,7 +12,7 @@ services:
     restart: always
     entrypoint: /bin/sh
     command: |
-      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --include "/${SITE_NAME}/*/motion_vids/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Waiting 5 min"; sleep 300'
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --include "/${SITE_NAME}/*/motion_vids/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
   syncing-detects:
     image: rclone/rclone
     env_file:
@@ -24,7 +24,7 @@ services:
     restart: always
     entrypoint: /bin/sh
     command: |
-      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --include "/${SITE_NAME}/*/detections/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Waiting 5 min"; sleep 300'
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --include "/${SITE_NAME}/*/detections/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
   syncing-counts:
     image: rclone/rclone
     env_file:
