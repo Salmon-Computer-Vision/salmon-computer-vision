@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 import json
 
-import utils
+from pysalmcount import utils
 
 # Set up logging
 logging.basicConfig(
