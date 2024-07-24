@@ -65,6 +65,8 @@ RUN mkdir /opencv/build && cd /opencv/build && \
           .. && \
     make -j${JOBS} && make install && ldconfig
 
+RUN python3 -m pip install ffmpeg
+
 # Clone and install Salmon Computer Vision tools
 RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
 RUN python3 -m pip install -e /tools/training/pysalmcount
