@@ -11,6 +11,10 @@ import errno
 from threading import Thread, Event, Lock, Condition
 import logging
 import time
+from pathlib import Path
+import json
+
+import utils
 
 # Set up logging
 logging.basicConfig(
@@ -21,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 bitrate=3000000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
 gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !  v4l2h264enc extra-controls=encode,video_bitrate=3000000 ! h264parse ! qtmux ! filesink location="
+MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
 
 class VideoSaver(Thread):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
@@ -46,8 +51,14 @@ class VideoSaver(Thread):
         filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mp4")
         return filename
 
+    @staticmethod
+    def filename_to_metadata_filepath(filename: Path) -> Path:
+        metadata_dir = filename.parent / MOTION_VIDS_METADATA_DIR
+        return metadata_dir / f"{filename.stem}.json"
+
     def run(self):
         filename = VideoSaver.get_output_filename(self.folder, save_prefix=self.save_prefix)
+
         logger.info(f"Writing motion video to {filename}")
         if self.orin:
             out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.resolution)
@@ -88,6 +99,16 @@ class VideoSaver(Thread):
             c += 1
 
         out.release()
+
+        metadata = utils.get_video_metadata(filename)
+        if metadata is not None:
+            logger.info(f"Metadata for video file {filename}: {metadata}")
+            metadata_filepath = VideoSaver.filename_to_metadata_filepath(Path(filename))
+            with open(str(metadata_filepath), 'w') as f:
+                json.dump(asdict(metadata), f)
+            logger.info(f"Saving metadata file to harddrive: {str(metadata_filepath)}")
+        else:
+            logger.error(f"Could not generate metadata for file: {filename}")
 
 class MotionDetector:
     FILENAME = 'filename'
