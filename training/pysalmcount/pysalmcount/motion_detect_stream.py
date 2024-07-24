@@ -54,7 +54,7 @@ class VideoSaver(Thread):
 
     @staticmethod
     def filename_to_metadata_filepath(filename: Path) -> Path:
-        metadata_dir = filename.parent / MOTION_VIDS_METADATA_DIR
+        metadata_dir = filename.parent.parent / MOTION_VIDS_METADATA_DIR
         metadata_dir.mkdir(exist_ok=True)
         return metadata_dir / f"{filename.stem}.json"
 
