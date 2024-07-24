@@ -13,6 +13,7 @@ import logging
 import time
 from pathlib import Path
 import json
+from dataclasses import asdict
 
 from pysalmcount import utils
 
