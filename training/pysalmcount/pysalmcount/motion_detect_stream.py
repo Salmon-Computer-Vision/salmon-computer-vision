@@ -63,7 +63,7 @@ class VideoSaver(Thread):
 
         logger.info(f"Writing motion video to {filename}")
         if self.orin:
-            out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.resolution)
+            out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"h264"), self.fps, self.resolution)
         else:
             gst_writer = gst_writer_str
             if self.raspi:
