@@ -1,0 +1,3 @@
+FROM rclone/rclone
+
+COPY syncing-counts.sh /app/syncing-counts.sh

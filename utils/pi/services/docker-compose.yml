@@ -26,14 +26,15 @@ services:
     command: |
       -c 'rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --include "/${SITE_NAME}/*/detections/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
   syncing-counts:
-    image: rclone/rclone
+    build: 
+      context: .
+      dockerfile: Dockerfiles/Dockerfile-syncing-counts
     env_file:
       - ./.env
     container_name: syncing-counts
     volumes:
       - ${DRIVE}:${DRIVE}
       - /home/${USERNAME}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
-      - ./syncing-counts.sh:/app/syncing-counts.sh
     restart: always
     entrypoint: /bin/sh
     command: |
@@ -49,6 +50,8 @@ services:
     privileged: true
     volumes:
       - ${DRIVE}:${DRIVE}
+      - /home/pi/2024_test_vids:/app/2024_test_vids
+      - /home/pi/salmon-computer-vision:/tools
     restart: always
     command: >
       bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
