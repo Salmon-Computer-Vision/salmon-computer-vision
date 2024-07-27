@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 bitrate=3000000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
 gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !  v4l2h264enc extra-controls=encode,video_bitrate=3000000 ! h264parse ! qtmux ! filesink location="
 MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
+VIDEO_ENCODER = 'avc1'
 
 class VideoSaver(Thread):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
@@ -49,7 +50,7 @@ class VideoSaver(Thread):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         if save_prefix is None:
             save_prefix = os.uname()[1]
-        filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mkv")
+        filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mp4")
         return filename
 
     @staticmethod
@@ -63,7 +64,7 @@ class VideoSaver(Thread):
 
         logger.info(f"Writing motion video to {filename}")
         if self.orin:
-            out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"h264"), self.fps, self.resolution)
+            out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*VIDEO_ENCODER), self.fps, self.resolution)
         else:
             gst_writer = gst_writer_str
             if self.raspi:
@@ -214,7 +215,7 @@ class MotionDetector:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
                     logger.info(f"Writing continuous video to {cont_filename}")
                     if orin:
-                        cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"h264"),
+                        cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*VIDEO_ENCODER),
                                 fps, (frame.shape[1], frame.shape[0]))
                     else:
                         gst_writer = gst_writer_str

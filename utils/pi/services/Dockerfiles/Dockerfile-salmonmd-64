@@ -1,9 +1,8 @@
-FROM balenalib/raspberrypi4-64-debian-python:bookworm-build
+FROM balenalib/raspberrypi5-python:3.11-bookworm-build
 
-RUN apt-get update && apt-get install -y git ffmpeg
+RUN apt-get update && apt-get install -y git ffmpeg python3-opencv
 
-RUN python3 -m pip install -U pip
-RUN python3 -m pip install -U opencv-contrib-python-headless ffmpeg-python
+RUN python3 -m pip install -U pip && python3 -m pip install -U ffmpeg-python
 
 RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
 
