@@ -49,7 +49,7 @@ class VideoSaver(Thread):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         if save_prefix is None:
             save_prefix = os.uname()[1]
-        filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mp4")
+        filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mkv")
         return filename
 
     @staticmethod
