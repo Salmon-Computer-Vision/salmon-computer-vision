@@ -214,7 +214,7 @@ class MotionDetector:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
                     logger.info(f"Writing continuous video to {cont_filename}")
                     if orin:
-                        cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"mp4v"),
+                        cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"h264"),
                                 fps, (frame.shape[1], frame.shape[0]))
                     else:
                         gst_writer = gst_writer_str
