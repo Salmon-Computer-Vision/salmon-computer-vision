@@ -1,3 +1,14 @@
+import logging
+import os
+import re
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+
+import ffmpeg
+
+from typing import Union
+
 @dataclass
 class VideoMetadata:
     duration: float
@@ -9,7 +20,7 @@ class VideoMetadata:
     avg_frame_rate: str
     r_frame_rate: str
 
-def parse_ffmpeg_video_stream_probe(video_stream: dict) -> None | VideoMetadata:
+def parse_ffmpeg_video_stream_probe(video_stream: dict) -> Union[None, VideoMetadata]:
     """
     Parses the video_stream dict into a VideoMetadata.
     """
@@ -39,7 +50,7 @@ def parse_ffmpeg_video_stream_probe(video_stream: dict) -> None | VideoMetadata:
         return None
 
 
-def get_video_metadata(video_filepath: Path) -> None | VideoMetadata:
+def get_video_metadata(video_filepath: Path) -> Union[None, VideoMetadata]:
     """
     Returns VideoMetadata of a video_filepath using ffmpeg or None if it encounters
     an error.

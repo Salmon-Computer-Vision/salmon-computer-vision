@@ -11,6 +11,11 @@ import errno
 from threading import Thread, Event, Lock, Condition
 import logging
 import time
+from pathlib import Path
+import json
+from dataclasses import asdict
+
+from pysalmcount import utils
 
 # Set up logging
 logging.basicConfig(
@@ -21,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 bitrate=3000000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
 gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !  v4l2h264enc extra-controls=encode,video_bitrate=3000000 ! h264parse ! qtmux ! filesink location="
+MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
+VIDEO_ENCODER = 'avc1'
 
 class VideoSaver(Thread):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
@@ -46,11 +53,18 @@ class VideoSaver(Thread):
         filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mp4")
         return filename
 
+    @staticmethod
+    def filename_to_metadata_filepath(filename: Path) -> Path:
+        metadata_dir = filename.parent.parent / MOTION_VIDS_METADATA_DIR
+        metadata_dir.mkdir(exist_ok=True)
+        return metadata_dir / f"{filename.stem}.json"
+
     def run(self):
         filename = VideoSaver.get_output_filename(self.folder, save_prefix=self.save_prefix)
+
         logger.info(f"Writing motion video to {filename}")
         if self.orin:
-            out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.resolution)
+            out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*VIDEO_ENCODER), self.fps, self.resolution)
         else:
             gst_writer = gst_writer_str
             if self.raspi:
@@ -88,6 +102,16 @@ class VideoSaver(Thread):
             c += 1
 
         out.release()
+
+        metadata = utils.get_video_metadata(filename)
+        if metadata is not None:
+            logger.info(f"Metadata for video file {filename}: {metadata}")
+            metadata_filepath = VideoSaver.filename_to_metadata_filepath(Path(filename))
+            logger.info(f"Saving metadata file to harddrive: {str(metadata_filepath)}")
+            with open(str(metadata_filepath), 'w') as f:
+                json.dump(asdict(metadata), f)
+        else:
+            logger.error(f"Could not generate metadata for file: {filename}")
 
 class MotionDetector:
     FILENAME = 'filename'
@@ -191,7 +215,7 @@ class MotionDetector:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
                     logger.info(f"Writing continuous video to {cont_filename}")
                     if orin:
-                        cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*"mp4v"),
+                        cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*VIDEO_ENCODER),
                                 fps, (frame.shape[1], frame.shape[0]))
                     else:
                         gst_writer = gst_writer_str
