@@ -107,9 +107,9 @@ class VideoSaver(Thread):
         if metadata is not None:
             logger.info(f"Metadata for video file {filename}: {metadata}")
             metadata_filepath = VideoSaver.filename_to_metadata_filepath(Path(filename))
+            logger.info(f"Saving metadata file to harddrive: {str(metadata_filepath)}")
             with open(str(metadata_filepath), 'w') as f:
                 json.dump(asdict(metadata), f)
-            logger.info(f"Saving metadata file to harddrive: {str(metadata_filepath)}")
         else:
             logger.error(f"Could not generate metadata for file: {filename}")
 
