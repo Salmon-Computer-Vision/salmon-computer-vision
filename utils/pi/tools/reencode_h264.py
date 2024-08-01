@@ -3,8 +3,11 @@
 import os
 import argparse
 import ffmpeg
+import json
 from pathlib import Path
+
 from pysalmcount import utils
+from pysalmcount.motion_detect_stream import MOTION_VIDS_METADATA_DIR
 
 EXT = '.mp4'
 
@@ -30,7 +33,16 @@ def reencode_h264(filepath):
 def main(args):
     for filename in os.listdir(args.input):
         # Check if metadata file exists
-        # Check if video file is not H264
+        filepath = Path(filename)
+        metadata_path = filepath.parent / MOTION_VIDS_METADATA_DIR / (filepath.stem + '.json')
+        if metadata_path.exists():
+            # Check if video file is not H264
+            with open(str(metadata_path), 'r') as f:
+                metadata_dict = json.load(f)
+
+            metadata = utils.VideoMetadata(**metadata_dict)
+            if metadata.codec_name == 'h264':
+                continue
         # Re-encode video to H264
         gen_metadata(filename)
 
