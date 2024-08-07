@@ -60,6 +60,11 @@ read only = no
 guest ok = yes
 create mask = 0777
 directory mask = 0777
+inherit permissions = yes
+force create mode = 0777
+force directory mode = 0777
+force user = netlabmedia
+force group = netlabmedia
 ```
 
 Place the following to allow SMB ver 1.0 under `[global]`:
