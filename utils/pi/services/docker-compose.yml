@@ -48,8 +48,12 @@ services:
     container_name: salmonmd-jetson-0
     network_mode: host
     privileged: true
+    user: ${HOST_UID}:${HOST_GID}
     volumes:
       - ${DRIVE}:${DRIVE}
+      - /home/${USERNAME}/2024_test_vids:/app/2024_test_vids
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
     restart: always
     command: >
       bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
@@ -62,8 +66,11 @@ services:
     container_name: salmonmd-jetson-1
     network_mode: host
     privileged: true
+    user: ${HOST_UID}:${HOST_GID}
     volumes:
       - ${DRIVE}:${DRIVE}
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
     restart: always
     command: >
       bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_1} --fps ${FPS} '${RTSP_URL_1}' \"${DRIVE}\""
