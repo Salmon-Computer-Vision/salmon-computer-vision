@@ -41,9 +41,13 @@ def main(args):
                 metadata_dict = json.load(f)
 
             metadata = utils.VideoMetadata(**metadata_dict)
+            # Generate metadata of the current vid
+            # Check that new generation is H264
             if metadata.codec_name == 'h264':
                 continue
         # Re-encode video to H264
+
+        # Create metadata if not exists or re-encoded
         gen_metadata(filename)
 
 if __name__ == "__main__":
