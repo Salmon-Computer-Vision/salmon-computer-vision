@@ -15,6 +15,8 @@ IMAGE_REPO_HOST=<host>
 TAG=<image_tag>
 DRIVE=/media
 USERNAME=<device-username>
+HOST_UID=1000
+HOST_GID=1000
 WEIGHTS=/app/config/<salmoncount_weights>.engine
 ```
 

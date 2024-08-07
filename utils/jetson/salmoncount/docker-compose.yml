@@ -8,9 +8,12 @@ services:
       - HOSTNAME
     env_file:
       - ./.env
+    user: ${HOST_UID}:${HOST_GID}
     volumes:
       - ${DRIVE}:/app/drive
       - /home/${USERNAME}/config:/app/config
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
     network_mode: host
     runtime: nvidia
     restart: always
