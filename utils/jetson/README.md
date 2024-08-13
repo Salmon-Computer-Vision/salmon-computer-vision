@@ -99,6 +99,7 @@ Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is moun
 the external drive.
 
 \[!\] Note if the device's uid/gid is different, change it the current device's uid/gid. Check the command `id`.
+Otherwise, the filesystem may be slower than normal.
 
 Restart the autofs service:
 ```bash
