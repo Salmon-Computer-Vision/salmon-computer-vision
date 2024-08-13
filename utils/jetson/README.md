@@ -93,10 +93,12 @@ sudoedit /etc/auto_static.smb
 
 with the following:
 ```bash
-/media/hdd  -fstype=cifs,rw,guest,uid=1000,file_mode=0777,dir_mode=0777  ://<raspi_ip>/HDD
+/media/hdd  -fstype=cifs,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777  ://<raspi_ip>/HDD
 ```
 Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is mounting
 the external drive.
+
+\[!\] Note if the device's uid/gid is different, change it the current device's uid/gid. Check the command `id`.
 
 Restart the autofs service:
 ```bash
