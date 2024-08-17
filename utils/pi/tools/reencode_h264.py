@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from pysalmcount import utils
+from pysalmcount.motion_detect_stream import VideoSaver
 from pysalmcount.motion_detect_stream import MOTION_VIDS_METADATA_DIR
 import shutil
 
