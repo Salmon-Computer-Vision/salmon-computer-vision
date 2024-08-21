@@ -83,4 +83,5 @@ def get_video_metadata(video_filepath: Path) -> Union[None, VideoMetadata]:
 
     except ffmpeg.Error as e:
         logger.error(f"Error occured: {e}")
+        logger.error(f"{e.stderr}")
         return None
