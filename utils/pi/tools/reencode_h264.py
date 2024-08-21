@@ -60,16 +60,16 @@ def main(args):
             logger.error(f'Cannot get metadata of {filepath}. Error: {e}')
             continue
 
-        is_h264 = False
-        if metadata.codec_name != 'h264':
-            # Re-encode video to H264
-            try:
-                reencode_h264(filepath, archive_path)
-            except Exception as e:
-                logger.error(f'Cannot re-encode {filepath}. Error: {e}')
-                continue
-        else:
-            is_h264 = True
+        try:
+            is_h264 = False
+            if metadata.codec_name != 'h264':
+                # Re-encode video to H264
+                    reencode_h264(filepath, archive_path)
+            else:
+                is_h264 = True
+        except Exception as e:
+            logger.error(f'Cannot re-encode {filepath}. Error: {e}')
+            continue
 
         metadata_path = metadata_dir / (filepath.stem + '.json')
         if not is_h264 or not metadata_path.exists():
