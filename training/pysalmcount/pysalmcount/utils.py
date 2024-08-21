@@ -9,6 +9,14 @@ import ffmpeg
 
 from typing import Union
 
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
+)
+
+logger = logging.getLogger(__name__)
+
 @dataclass
 class VideoMetadata:
     duration: float
@@ -46,7 +54,7 @@ def parse_ffmpeg_video_stream_probe(video_stream: dict) -> Union[None, VideoMeta
         )
 
     except Exception as e:
-        logging.error(f"Could not parse video_stream: {video_stream}, error {e}")
+        logger.error(f"Could not parse video_stream: {video_stream}, error {e}")
         return None
 
 
@@ -68,11 +76,12 @@ def get_video_metadata(video_filepath: Path) -> Union[None, VideoMetadata]:
             None,
         )
         if video_stream is None:
-            logging.error(f"No video stream found")
+            logger.error(f"No video stream found")
             return None
 
         return parse_ffmpeg_video_stream_probe(video_stream)
 
     except ffmpeg.Error as e:
-        logging.error(f"Error occured: {e}")
+        logger.error(f"Error occured: {e}")
+        logger.error(f"{e.stderr}")
         return None

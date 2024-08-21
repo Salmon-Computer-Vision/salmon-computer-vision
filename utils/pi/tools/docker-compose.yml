@@ -1,0 +1,15 @@
+services:
+  reencode:
+    env_file:
+      - ./.env
+    build: 
+      context: .
+      args:
+        IMAGE_REPO_HOST: ${IMAGE_REPO_HOST}
+        TAG: ${TAG}
+    container_name: reencode
+    volumes:
+      - ${DRIVE}:${DRIVE}
+    entrypoint: /bin/sh
+    command: |
+      -c 'python3 reencode_h264.py ${TARGET_DIR}'
