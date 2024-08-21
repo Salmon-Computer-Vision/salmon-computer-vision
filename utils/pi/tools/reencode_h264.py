@@ -52,18 +52,30 @@ def main(args):
 
     for filename in os.listdir(input_dir_path):
         filepath = input_dir_path / filename
-        metadata = utils.get_video_metadata(filepath)
+        try:
+            metadata = utils.get_video_metadata(filepath)
+        except Exception as e:
+            logger.error(f'Cannot get metadata of {filepath}. Error: {e}')
+            continue
 
         is_h264 = False
         if metadata.codec_name != 'h264':
             # Re-encode video to H264
-            reencode_h264(filepath, archive_path)
+            try:
+                reencode_h264(filepath, archive_path)
+            except Exception as e:
+                logger.error(f'Cannot re-encode {filepath}. Error: {e}')
+                continue
         else:
             is_h264 = True
 
         metadata_path = metadata_dir / (filepath.stem + '.json')
         if not is_h264 or not metadata_path.exists():
-            gen_metadata(filepath)
+            try:
+                gen_metadata(filepath)
+            except Exception as e:
+                logger.error(f'Cannot generate metadata for {filepath}. Error: {e}')
+                continue
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Re-encodes video clips in a folder to H264 and re-generates their metadata.")
