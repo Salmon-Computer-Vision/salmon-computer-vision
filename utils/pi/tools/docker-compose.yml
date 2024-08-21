@@ -12,4 +12,4 @@ services:
       - ${DRIVE}:${DRIVE}
     entrypoint: /bin/sh
     command: |
-      -c 'python3 reencode_h264.py ${DRIVE}'
+      -c 'python3 reencode_h264.py ${TARGET_DIR}'
