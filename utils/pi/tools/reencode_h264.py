@@ -50,8 +50,10 @@ def main(args):
     metadata_dir = input_dir_path.parent / MOTION_VIDS_METADATA_DIR
     metadata_dir.mkdir(exist_ok=True)
 
-    for filename in os.listdir(input_dir_path):
-        filepath = input_dir_path / filename
+    for filepath in input_dir_path.iterdir():
+        if not filepath.is_file():
+            continue
+
         try:
             metadata = utils.get_video_metadata(filepath)
         except Exception as e:
