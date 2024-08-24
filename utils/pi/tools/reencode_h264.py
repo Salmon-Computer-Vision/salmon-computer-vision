@@ -51,10 +51,10 @@ def main(args):
     metadata_dir.mkdir(exist_ok=True)
 
     for filepath in input_dir_path.iterdir():
-        if not filepath.is_file():
-            continue
-
         try:
+            if not filepath.is_file():
+                continue
+
             metadata = utils.get_video_metadata(filepath)
         except Exception as e:
             logger.error(f'Cannot get metadata of {filepath}. Error: {e}')
