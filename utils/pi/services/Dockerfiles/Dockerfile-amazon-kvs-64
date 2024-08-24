@@ -2,7 +2,7 @@
 # Build docker with
 # docker build -t kinesis-video-producer-sdk-cpp-raspberry-pi .
 
-FROM balenalib/raspberrypi4-64-debian-python:bookworm-build
+FROM balenalib/raspberrypi5-python:3.11-bookworm-build
 
 ARG JOBS=4
 
