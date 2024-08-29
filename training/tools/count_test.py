@@ -3,6 +3,8 @@ import yaml
 from pathlib import Path
 import argparse
 
+from ultralytics import YOLO
+
 from pysalmcount.datumaroloader import DatumaroLoader
 from pysalmcount.videoloader import VideoLoader
 from pysalmcount.salmon_counter import SalmonCounter
@@ -21,14 +23,15 @@ def main(args):
     else:
         raise ValueError(f'Incorrect format: {args.format}')
     
-    counter = SalmonCounter(args.weights, loader, tracking_thresh=10)
+    model = YOLO(args.weights)
+    counter = SalmonCounter(model, loader, tracking_thresh=10)
     
     out_path = Path(args.csv_output_path)
     out_path.parent.mkdir(exist_ok=True)
     try:
         while True:
             try:
-                counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, device=int(args.device))
+                counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=True, device=int(args.device))
             except StopIteration as e:
                 raise
             except Exception as e:
