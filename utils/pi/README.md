@@ -2,7 +2,7 @@
 
 ***This has been tested on Raspberry Pi 5 Bookworm.***
 
-The raspberry pi will perform motion detection and record videos from RTSP
+The Raspberry Pi will perform motion detection and record videos from RTSP
 camera streams. It will also act as a network share using an external harddrive
 and upload videos, detection files, and counts to the cloud.
 

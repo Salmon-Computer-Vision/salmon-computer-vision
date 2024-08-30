@@ -1,8 +1,10 @@
 # Salmon Computer Vision Project
 
 This repository contains several tools and utilities to assist in training
-salmon counting automation tools. Two major categories include [video-based](#video-based)
-enumeration and [sonar-based](#sonar-based) enumeration.
+salmon counting automation tools as well as to deploy to edge devices for
+edge-based processing of videos. Two major categories include
+[video-based](#video-based) enumeration and [sonar-based](#sonar-based)
+enumeration.
 
 ## License
 
@@ -48,125 +50,22 @@ in the `utils` folder (`utils/datum_create_dataset.py`), requiring
 Trained on a Ubuntu 20.04 [Lambda
 Scalar](https://lambdalabs.com/products/scalar) system with 4 A5000 GPUs.
 
-#### Multi-Object Tracker (MOT)
+The current strategy is to use YOLOv8's suite of tools to perform both
+object detection of salmon species and multi-object tracking of salmon
+throughout multiple frames.
 
-The current framework uses ByteTrack to track individual salmon for counting.
+Look into the [`training` folder](training/README.md)
+for more info about training the model.
 
-The following steps are for Ubuntu 20.04:
+### Edge Deployment
 
-Clone our version of the ByteTrack repo:
-```bash
-git clone https://github.com/Salmon-Computer-Vision/ByteTrack.git
-cd ByteTrack
-```
+To deploy our automated salmon counting system on the edge near rivers for near
+real-time processing, we use two main types of microprocessors: Raspberry Pis
+and Jetson Nanos.
 
-Follow either the docker install or host machine install in the [ByteTrack
-documentation](https://github.com/Salmon-Computer-Vision/ByteTrack/blob/main/README.md)
-to install all the requirements to run ByteTrack.
+[The Raspberry Pi setup instructions are here](utils/pi/README.md).
 
-Download the `bytetrack_salmon.tar.gz` dataset from the [Dataset](#dataset)
-section or convert the dataset to the MOT sequences format and use the script
-in the `ByteTrack` repo to convert them to the COCO format.
-
-Extract it and put the `salmon` folder in the `datasets` folder in `ByteTrack`
-if not already.
-
-```bash
-tar xzvf bytetrack_salmon.tar.gz
-```
-
-Download the pretrained model YOLOX nano at their [model
-zoo](https://github.com/Megvii-BaseDetection/YOLOX/tree/0.1.0).
-
-Place the pretrained model in the `pretrained` folder. The path should be
-`pretrained/yolox_nano.pth`.
-
-Run the training either inside the docker container or on the host machine:
-```bash
-python3 tools/train.py -f exps/example/mot/yolox_nano_salmon.py -d 4 -b 256 --fp16 -o -c pretrained/yolox_nano.pth
-```
-
-If you canceled the training in the middle, you can resume from a checkpoint
-with the following command:
-```bash
-python3 tools/train.py -f exps/example/mot/yolox_nano_salmon.py -d 4 -b 256 --fp16 -o --resume
-```
-
-Lower `-b` (batch size) if running on a GPU with less memory.
-
-Once finished, the final outputs will be in `YOLOX_outputs/yolox_nano_salmon/`
-where `best_ckpt.pth.tar` would be the checkpoint with the highest validation
-mAP score.
-
-To inference with the model on a video:
-
-```bash
-python3 tools/demo_track.py video -f exps/example/mot/yolox_nano_salmon.py -c pretrained/bytetrack_x_mot17.pth.tar --path path/to/video.mp4 --fp16 --fuse --save_result
-```
-
-Other options can be done with `demo_track.py` such as camera, and images. Run
-the following to check them all:
-
-```bash
-python3 tools/demo_track.py -h
-```
-
-#### Object Detector
-
-This will describe YOLOv6, however, the steps and format are similar for the other versions.
-
-Clone the YOLOv6 repo:
-```bash
-git clone https://github.com/meituan/YOLOv6.git
-```
-
-Install Python3 requirements:
-```bash
-cd YOLOv6
-pip3 install -r requirements.txt
-```
-
-Download the `yolov6_salmon.tar.gz` dataset from the [Dataset](#dataset)
-section or convert the dataset to the YOLO format following the instructions in
-the YOLOv6 repo.
-
-Extract the dataset:
-```bash
-tar xzvf yolov6_salmon.tar.gz
-```
-
-Download the `combined_bear-kitwanga.yaml` file from the [Dataset](#dataset)
-section and place it in the `data` folder which describes the location of the
-dataset and the class labels. Please edit the yaml to point to where you
-extract the dataset.
-
-Run the training using multi-GPUs:
-
-```bash
-python -m torch.distributed.launch --nproc_per_node 4 tools/train.py --epoch 100 --batch 512 --conf configs/yolov6n_finetune.py --eval-interval 2 --data data/combined_bear-kitwanga.yaml --device 0,1,2,3
-```
-
-Lower `--batch` size appropriately if running on GPUs with less memory.
-
-The final outputs will be in `runs/train/exp<X>`, where `<X>` is the number of
-the run.
-
-To run inferencing with YOLOv6:
-
-```bash
-python3 tools/infer.py \
-    --yaml data/combined_bear-kitwanga.yaml \
-    --weights runs/train/exp${X}/weights/best_ckpt.pt \
-    --source "$vid" \
-    --save-txt \
-    --device $device
-```
-
-`$device` describes the GPU device number. If you only have one, `$device = 0`.
-
-The resulting output will be in the `runs/inference` folder.
-
-Check the YOLOv6 README for further inference commands or check `python3 tools/infer.py -h`.
+[Jetsons Nano setup instructions are here](utils/jetson/README.md).
 
 ## Sonar-based
 
