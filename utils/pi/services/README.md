@@ -1,3 +1,5 @@
+# Raspberry Pi Services
+
 These services outlined in `docker-compose.yml` will perform motion detection,
 and uploading to the cloud. For a Raspberry Pi 5, the potential maximum is two
 simultaneous streams, and even then that may be too much considering all of the
@@ -103,6 +105,9 @@ docker ps
 ```
 
 ### Increase swap memory
+
+This is likely not necessary for newer raspberry pis but can be helpful if the
+raspberry pi does not have enough memory for all these services.
 
 Stop using swap:
 ```bash
