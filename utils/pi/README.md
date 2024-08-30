@@ -29,6 +29,13 @@ python3 -m pip install -U pip
 python3 -m pip install -U docker-compose
 ```
 
+## Tailscale
+
+Tailscale is a remote connection software that can allow remote connections
+past something like Starlink.
+
+Follow the [Jetson instructions](../jetson/README.md) in setting it up for the raspi.
+
 ## Auto-mounting external HDD
 
 When a harddrive is plugged into the raspberry pi by default, it may be mounted
