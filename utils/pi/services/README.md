@@ -1,23 +1,22 @@
 Create your docker images using the respective dockerfiles in `Dockerfiles`:
+
 ```bash
-docker build . -f Dockerfiles/Dockerfile-salmonmd -t <host>/salmonmd:<tag>
+docker build . -f Dockerfiles/Dockerfile-salmonmd-64 -t <host>/salmonmd:<tag>
 ```
 
-Create a `.env` file with the following:
-
-Newer Raspberry Pi does not have any hardware encoder, 
-so use the `--orin` flag to use CPU.
+If your raspberry pi is version 5 and 64-bit, use `Dockerfile-salmonmd-64`,
+otherwise, use `Dockerfile-salmonmd` for older and 32-bit versions.
 
 The environment file below will save video clips to this format:
 ```
-# Motion detected
+# Motion detection
 ${ORGID}/${SITE_NAME}/${DEVICE_ID_*}/motion_vids/${ORGID}-${SITE_NAME}-${DEVICE_ID_*}_<yyyymmdd>_<hhmmss>_M.mp4
 
 # Continuous
 ${ORGID}/${SITE_NAME}/${DEVICE_ID_*}/cont_vids/${ORGID}-${SITE_NAME}-${DEVICE_ID_*}_<yyyymmdd>_<hhmmss>_C.mp4
 ```
 
-`.env` file:
+Create a `.env` file here with the following:
 ```
 IMAGE_REPO_HOST=<image_repo_host>
 TAG=latest-bookworm
@@ -36,7 +35,13 @@ DEVICE_ID_0=--device-id jetson-0
 DEVICE_ID_1=--device-id jetson-1
 ```
 
-Older raspi do have the v4l2 or omx encoders:
+Raspberry Pi 5 does not have a hardware encoder, so use the `--orin` flag to
+use CPU encoding.
+
+
+Older raspi do have the v4l2 or omx encoders, so set the vars like this
+instead:
+
 ```
 ...
 TAG=latest-buster
@@ -45,12 +50,28 @@ FLAGS=--raspi --gstreamer --algo CNT
 ...
 ```
 
-Sometimes the RTSP stream fails to open with gstreamer. If so,
-turn off gstreamer decoding by removing the `--gstreamer` flag.
+Sometimes the RTSP stream fails to open with gstreamer. If so, turn off
+gstreamer decoding by removing the `--gstreamer` flag.
+
+Spin up docker containers and run them:
+```bash
+docker compose up -d
+```
+
+To restart, you can spin them down and then back up:
+```bash
+docker compose down && docker compose up -d
+```
+
+If you installed through pip, the command is simply `docker-compose` instead.
+
+!! We have also discovered corruption errors that could occur with older
+Raspberry Pis, so it may be beneficial to use newer Raspberry Pis from the
+get-go.
 
 ### Remote Docker Commands
 
-Docker contexts are one of the keys to run docker commands over ssh.
+Docker contexts are very convenient to run docker commands over ssh.
 
 For example,
 
