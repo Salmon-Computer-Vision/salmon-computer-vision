@@ -1,4 +1,10 @@
-# Jetson-nano Setup
+# Jetson Nano Setup
+
+The Jetson Nano is mainly used to process motion detected video clips and
+generate object detection tracks and salmon species counts using the trained
+deep learning model. The Jetson Nano will likely use all of the RAM as it is
+shared between the CPU and GPU, so it cannot perform many other tasks other
+than deep learning processing.
 
 > ⚠️ A Jetson already setup previously may be difficult to access due to [static IP address](#setup-static-ip) 
 used to make sure the IP does not change when connected to the Starlink router. Either change your computer
@@ -7,12 +13,18 @@ or connect with an HDMI cable.
 
 ## Tailscale
 
-Tailscale is a remote connection software. Copy `docker-compose-template.yaml` to `docker-compose.yaml` and update with the auth key from Tailscale.
+Tailscale is a remote connection software.
 
 On the Jetson Nano, install docker-compose:
 ```
 python3 -m pip install -U pip
 python3 -m pip install docker-compose
+```
+
+Create an `.env` file in this folder with your tailscale auth key:
+
+```
+YOURKEY=<auth key>
 ```
 
 Run the following in this directory to start up Tailscale:
@@ -98,8 +110,9 @@ with the following:
 Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is mounting
 the external drive.
 
-\[!\] Note if the device's uid/gid is different, change it the current device's uid/gid. Check the command `id`.
-Otherwise, the filesystem may be slower than normal.
+\[!\] Note if the device's uid/gid is different, change it the current device's
+uid/gid. Use the command `id` to do so. The filesystem may be slower than
+normal if not done.
 
 Restart the autofs service:
 ```bash
