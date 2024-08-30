@@ -11,15 +11,23 @@ used to make sure the IP does not change when connected to the Starlink router. 
 IP address to the same gateway, look into [serial connection with a micro-USB](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-2gb-devkit#setup-headless),
 or connect with an HDMI cable.
 
-## Tailscale
+## Docker compose
 
-Tailscale is a remote connection software.
+Docker compose is needed to run the services to allow remote access and process
+the video clips.
 
-On the Jetson Nano, install docker-compose:
+After SSHing to or opening the terminal on the Jetson Nano, install
+docker-compose:
+
 ```
 python3 -m pip install -U pip
 python3 -m pip install docker-compose
 ```
+
+## Tailscale
+
+Tailscale is a remote connection software. Setup your tailscale with connection
+filters for the tag `salmon-project`.
 
 Create an `.env` file in this folder with your tailscale auth key:
 
@@ -32,10 +40,24 @@ Run the following in this directory to start up Tailscale:
 docker-compose up -d
 ```
 
-The shut it down do
+You should then be able to remote access this device on other devices that are
+also running tailscale. You may need to [install
+manually](https://tailscale.com/download) on your client devices.
+
+Then, the following should be possible on the client device:
+```bash
+ssh <user>@<jetson-hostname>
+```
+
+The following will shutdown tailscale, however, **do not do this if the only
+connection is tailscale**:
+
 ```
 docker-compose down
 ```
+
+This may be fine if there are other local area devices you can access that can
+access this device.
 
 ### Rename the machine Hostname
 
