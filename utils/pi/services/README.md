@@ -1,3 +1,8 @@
+These services outlined in `docker-compose.yml` will perform motion detection,
+and uploading to the cloud. For a Raspberry Pi 5, the potential maximum is two
+simultaneous streams, and even then that may be too much considering all of the
+other tasks the Raspberry Pi needs to do.
+
 Create your docker images using the respective dockerfiles in `Dockerfiles`:
 
 ```bash
