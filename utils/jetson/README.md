@@ -26,8 +26,9 @@ python3 -m pip install docker-compose
 
 ## Tailscale
 
-Tailscale is a remote connection software. Setup your tailscale with connection
-filters for the tag `salmon-project`.
+Tailscale is a remote connection software. Create a [Tailscale
+account](https://tailscale.com/). Setup your tailscale with connection filters
+for the tag `salmon-project`.
 
 Create an `.env` file in this folder with your tailscale auth key:
 
