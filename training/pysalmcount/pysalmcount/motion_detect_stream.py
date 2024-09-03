@@ -138,12 +138,12 @@ class MotionDetector:
     def run(self, algo='MOG2', save_video=True, fps=None, orin=False, raspi=False):
         # Motion Detection Params
         bgsub_threshold = 50
-        bgsub_min_pixelstability = 1
-        bgsub_max_pixelstability = 4
-        threshold_value = 50 # Increase threshold value to minimize noise
+        bgsub_min_pixelstability = 5
+        bgsub_max_pixelstability = 500
+        threshold_value = 244 # Increase threshold value to minimize noise
         kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
+        erode_iter = 1 # Run multiple iterations to incrementally remove smaller objects
         dilate_iter = 1
-        erode_iter = 2 # Run multiple iterations to incrementally remove smaller objects
         min_contour_area = 10000 # Ignore contour objects smaller than this area
         MOTION_EVENTS_THRESH = 0.4 # Ratio of seconds of motion required to trigger detection
         BUFFER_LENGTH = 5 # Number of seconds before motion to keep
@@ -175,7 +175,7 @@ class MotionDetector:
         if algo == 'MOG2':
             bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
         else:
-            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=bgsub_min_pixelstability, useHistory=True, maxPixelStability=bgsub_max_pixelstability)
+            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=bgsub_min_pixelstability, useHistory=True, maxPixelStability=bgsub_max_pixelstability, isParallel=True)
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
@@ -240,6 +240,10 @@ class MotionDetector:
             if frame_counter % fps == 0:
                 start_in_time = time.time()
 
+            # Convert to grayscale and blur to reduce noise
+            gray = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
+            gray = cv2.GaussianBlur(gray, (7, 7), 0)
+
             # Apply background subtraction algorithm to get the foreground mask
             fg_mask = bgsub.apply(frame)
 
@@ -257,8 +261,8 @@ class MotionDetector:
                 _, fg_mask = cv2.threshold(fg_mask, threshold_value, 255, cv2.THRESH_BINARY)
 
                 # Apply morphological operations to clean up the mask
-                fg_mask = cv2.dilate(fg_mask, None, iterations=dilate_iter) 
                 fg_mask = cv2.erode(fg_mask, None, iterations=erode_iter) 
+                fg_mask = cv2.dilate(fg_mask, None, iterations=dilate_iter) 
 
                 # Now detect motion
                 has_motion = self.detect_motion(fg_mask, min_area=min_contour_area)

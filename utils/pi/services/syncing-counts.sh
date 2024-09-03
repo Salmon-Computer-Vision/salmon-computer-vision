@@ -7,7 +7,7 @@ rclone_copy() {
     src="$3"
     dst="$4"
     
-    rclone copy --bwlimit=0 --buffer-size=128M --checkers=8 --transfers=8 --include "/${site_name}/*/counts/**" \
+    rclone copy --bwlimit=0 --buffer-size=128M --transfers=2 --include "/${site_name}/*/counts/**" \
         "$src" "$dst" --config "$config" --log-level INFO
 }
 
