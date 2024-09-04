@@ -241,7 +241,7 @@ class MotionDetector:
                 start_in_time = time.time()
 
             # Convert to grayscale and blur to reduce noise
-            gray = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             gray = cv2.GaussianBlur(gray, (7, 7), 0)
 
             # Apply background subtraction algorithm to get the foreground mask
