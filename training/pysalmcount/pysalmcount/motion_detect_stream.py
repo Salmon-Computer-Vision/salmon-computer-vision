@@ -138,8 +138,8 @@ class MotionDetector:
     def run(self, algo='MOG2', save_video=True, fps=None, orin=False, raspi=False):
         # Motion Detection Params
         bgsub_threshold = 50
-        bgsub_min_pixelstability = 5
-        bgsub_max_pixelstability = 500
+        bgsub_min_pixelstability = 1
+        bgsub_max_pixelstability = 7
         threshold_value = 244 # Increase threshold value to minimize noise
         kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
         erode_iter = 1 # Run multiple iterations to incrementally remove smaller objects
