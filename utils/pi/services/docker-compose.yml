@@ -12,7 +12,7 @@ services:
     restart: always
     entrypoint: /bin/sh
     command: |
-      -c 'rclone copy --bwlimit=0 --buffer-size=128M --transfers=2 --include "/${SITE_NAME}/*/motion_vids/**" --include "/${SITE_NAME}/*/motion_vids_metadata/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --transfers=1 --include "/${SITE_NAME}/*/motion_vids/**" --include "/${SITE_NAME}/*/motion_vids_metadata/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
   syncing-detects:
     image: rclone/rclone
     env_file:
