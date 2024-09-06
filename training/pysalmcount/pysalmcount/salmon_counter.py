@@ -43,6 +43,7 @@ class SalmonCounter:
             cols.append(self.RIGHT_PRE + classes[i])
         self.full_salm_count = pd.DataFrame(columns=cols).set_index(self.FILENAME)
         self.salm_count = pd.DataFrame(columns=cols).set_index(self.FILENAME)
+        self.next_id = 0
         self.vis_salm_count = {self.LEFT_PRE: 0, self.RIGHT_PRE: 0} # For visualization purposes
         self.prev_track_ids = {}
         self.tracking_thresh = tracking_thresh
@@ -64,6 +65,14 @@ class SalmonCounter:
         elif vote_method == VOTE_METHOD_IGN:
             return 1
 
+    def _generate_new_id(self, used_track_ids):
+        # Generate the next available ID that does not conflict with used IDs
+        while self.next_id in used_track_ids:
+            self.next_id += 1
+        new_id = self.next_id
+        self.next_id += 1
+        return new_id
+
     def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, save_txt=False, vote_method='all', device=0,
             stream_write=True, output_csv_dir='output_count'):
         if vote_method not in [VOTE_METHOD_ALL, VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
@@ -84,6 +93,9 @@ class SalmonCounter:
             self.vis_salm_count[self.RIGHT_PRE] = 0
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
             out_vid = cv2.VideoWriter(str(OUTPUT_PATH / f'{cur_clip.name}.mp4'), fourcc, 25.0, (1920, 1080))
+
+        clip_track_ids = {}
+        used_track_ids = set()
 
         frame_count = 0
         for item in self.dataloader.items():
@@ -176,6 +188,12 @@ class SalmonCounter:
                         self.TRACK_COUNT: self.tracking_thresh,
                         self.CLASS_VOTE: {}
                     }
+                    new_id = track_id
+                    if new_id in clip_track_ids.keys():
+                        new_id = self._generate_new_id(used_track_ids)
+
+                    clip_track_ids[track_id] = new_id
+                    used_track_ids.add(new_id)
 
                 if track_id in self.prev_track_ids and self._vote_cond(w=w, h=h, vote_method=vote_method):
                     class_vote = self.prev_track_ids[track_id][self.CLASS_VOTE]
@@ -208,6 +226,7 @@ class SalmonCounter:
                 
         self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
         self.salm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes
+        self.next_id = 0
         if save_vid:
             out_vid.release()
         return self.salm_count
