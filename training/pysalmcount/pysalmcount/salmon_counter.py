@@ -202,8 +202,9 @@ class SalmonCounter:
                     class_vote[cls_id] += self._vote_weight(conf, vote_method=vote_method)
 
                 if save_txt:
+                    unique_id = clip_track_ids[track_id]
                     with open(str(txt_dir / f"frame_{frame_count:06d}.txt"), 'a') as f:
-                        f.write(f"{cls_id} {x} {y} {w} {h} {conf} {track_id}\n")
+                        f.write(f"{cls_id} {x} {y} {w} {h} {conf} {unique_id}\n")
                 if save_vid:
                     # Draw the tracking lines
                     points = np.hstack(track).astype(np.int32).reshape((-1, 1, 2))
