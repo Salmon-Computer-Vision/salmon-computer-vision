@@ -190,7 +190,7 @@ class SalmonCounter:
                         self.CLASS_VOTE: {}
                     }
                     new_id = track_id
-                    if new_id in clip_track_ids.keys() or new_id in used_track_ids:
+                    if new_id in used_track_ids:
                         new_id = self._generate_new_id(used_track_ids)
 
                     clip_track_ids[track_id] = new_id
