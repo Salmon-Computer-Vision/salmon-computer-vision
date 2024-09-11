@@ -43,7 +43,7 @@ class SalmonCounter:
             cols.append(self.RIGHT_PRE + classes[i])
         self.full_salm_count = pd.DataFrame(columns=cols).set_index(self.FILENAME)
         self.salm_count = pd.DataFrame(columns=cols).set_index(self.FILENAME)
-        self.next_id = 0
+        self.next_id = 1
         self.vis_salm_count = {self.LEFT_PRE: 0, self.RIGHT_PRE: 0} # For visualization purposes
         self.prev_track_ids = {}
         self.tracking_thresh = tracking_thresh
