@@ -16,6 +16,7 @@ import pandas as pd
 VOTE_METHOD_ALL = 'all'
 VOTE_METHOD_IGN = 'ignore_thin'
 VOTE_METHOD_CONF = 'confidence'
+MIN_TRACK_ID = 1
 
 # Set up logging
 logging.basicConfig(
@@ -43,7 +44,7 @@ class SalmonCounter:
             cols.append(self.RIGHT_PRE + classes[i])
         self.full_salm_count = pd.DataFrame(columns=cols).set_index(self.FILENAME)
         self.salm_count = pd.DataFrame(columns=cols).set_index(self.FILENAME)
-        self.next_id = 1
+        self.next_id = MIN_TRACK_ID
         self.vis_salm_count = {self.LEFT_PRE: 0, self.RIGHT_PRE: 0} # For visualization purposes
         self.prev_track_ids = {}
         self.tracking_thresh = tracking_thresh
@@ -227,7 +228,7 @@ class SalmonCounter:
                 
         self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
         self.salm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes
-        self.next_id = 0
+        self.next_id = MIN_TRACK_ID
         if save_vid:
             out_vid.release()
         return self.salm_count
