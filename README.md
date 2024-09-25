@@ -83,8 +83,8 @@ sites=(
 
 # Define an array of systems, each with its own image and environment file
 declare -A systems=(
-    ["jetsonorin"]="<host>/salmoncount:latest-jetson-jetpack6"
-    ["jetson"]="<host>/salmoncount:latest-jetson-jetpack4"
+    ["jetsonorin"]="<host>/salmoncounter:latest-jetson-jetpack6"
+    ["jetson"]="<host>/salmoncounter:latest-jetson-jetpack4"
     ["pi"]="<host>/salmonmd:latest-bookworm"
 )
 ```
