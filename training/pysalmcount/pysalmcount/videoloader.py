@@ -3,7 +3,7 @@ from .dataloader import DataLoader, Item
 import cv2
 from pathlib import Path
 import logging
-from threading import Thread, Condition
+from threading import Thread
 from queue import Queue
 
 # Set up logging
@@ -31,7 +31,6 @@ class VideoLoader(DataLoader):
 
         buffer_size = buffer_size
         self.frame_buffer = Queue(maxsize=buffer_size)
-        self.buffer_condition = Condition()
         self.thread = None
         self.stop_thread = False
 
