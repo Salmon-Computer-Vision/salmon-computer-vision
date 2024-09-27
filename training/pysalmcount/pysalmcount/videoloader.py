@@ -82,7 +82,7 @@ class VideoLoader(DataLoader):
 
             ret, frame = self.cap.read()
             if ret:
-                if self.target_fps < self.vid_fps && time_elapsed < 1. / self.target_fps:
+                if self.target_fps < self.vid_fps and time_elapsed < 1. / self.target_fps:
                     continue
                 else:
                     prev = time.time()
