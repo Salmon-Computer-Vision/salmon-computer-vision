@@ -34,7 +34,7 @@ class VideoLoader(DataLoader):
         self.frame_buffer = Queue(maxsize=buffer_size)
         self.thread = None
         self.stop_thread = False
-        self.target_fps = int(target_fps)
+        self.target_fps = int(target_fps) if target_fps is not None else target_fps
 
     def clips_len(self):
         return self.num_clips
@@ -77,15 +77,16 @@ class VideoLoader(DataLoader):
 
         prev_time = 0
         while not self.stop_thread:
-            if self.target_fps < self.vid_fps:
+            if self.target_fps is not None and self.target_fps < self.vid_fps:
                 time_elapsed = time.time() - prev_time
 
             ret, frame = self.cap.read()
             if ret:
-                if self.target_fps < self.vid_fps and time_elapsed < 1. / self.target_fps:
-                    continue
-                else:
-                    prev_time = time.time()
+                if self.target_fps is not None:
+                    if self.target_fps < self.vid_fps and time_elapsed < 1. / self.target_fps:
+                        continue
+                    else:
+                        prev_time = time.time()
                 self.frame_buffer.put(frame, block=True)
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
