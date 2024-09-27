@@ -3,6 +3,8 @@ from .dataloader import DataLoader, Item
 import cv2
 from pathlib import Path
 import logging
+from threading import Thread, Condition, Event
+from collections import deque
 
 # Set up logging
 logging.basicConfig(
@@ -16,7 +18,7 @@ class VideoCaptureError(Exception):
     pass
 
 class VideoLoader(DataLoader):
-    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False):
+    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False, buffer_size=10):
         """
         vid_source: list[string] of anything that can go in VideoCapture() including video paths and RTSP URLs
         """
@@ -27,10 +29,21 @@ class VideoLoader(DataLoader):
         self.cur_clip = None
         self.gstreamer_on = gstreamer_on
 
+        buffer_size = buffer_size
+        self.frame_buffer = deque(maxlen=buffer_size)
+        self.buffer_condition = Condition()
+        self.thread = None
+        self.stop_thread = False
+
     def clips_len(self):
         return self.num_clips
 
     def next_clip(self):
+        if self.thread and self.thread.is_alive():
+            # Stop previous thread if it's still running
+            self.stop_thread = True
+            self.thread.join()
+
         raw_clip = next(self.clip_gen)
         self.cur_clip = Path(raw_clip)
         logger.info(f"Loading {raw_clip}")
@@ -48,20 +61,39 @@ class VideoLoader(DataLoader):
         self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
+        # Start a new thread to read frames
+        self.stop_thread = False
+        self.thread = Thread(target=self._read_frames)
+        self.thread.daemon = True
+        self.thread.start()
+
         return self.cur_clip
+
+     def _read_frames(self):
+        """
+        Reads frames from the video capture in a separate thread and stores them in a deque.
+        """
+        while not self.stop_thread:
+            ret, frame = self.cap.read()
+            if ret:
+                with self.buffer_condition:
+                    self.frame_buffer.append(frame)
+                    self.buffer_condition.notify()  # Notify that a new frame is available
+            else:
+                logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
+                self.stop_thread = True
 
     def items(self):
         if self.cur_clip is None:
             raise ValueError('Error: No current clip')
 
-        while True:
-            ret, frame = self.cap.read()
+        while not self.stop_thread:
+            if not self.frame_buffer:
+                self.buffer_condition.wait()  # Wait until frames are available in the buffer
 
-            if ret:
+            if self.frame_buffer:
+                frame = self.frame_buffer.popleft()
                 yield Item(frame, num_items=self.total_frames)
-            else:
-                logger.info('Failed to retrieve frame, assuming last frame ending...')
-                break
 
     def fps(self):
         return self.vid_fps
