@@ -18,7 +18,7 @@ class VideoCaptureError(Exception):
     pass
 
 class VideoLoader(DataLoader):
-    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False, buffer_size=10, target_fps=None):
+    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False, buffer_size=10, target_fps: int=None):
         """
         vid_source: list[string] of anything that can go in VideoCapture() including video paths and RTSP URLs
         """
@@ -33,7 +33,7 @@ class VideoLoader(DataLoader):
         self.frame_buffer = Queue(maxsize=buffer_size)
         self.thread = None
         self.stop_thread = False
-        self.target_fps = target_fps
+        self.target_fps = int(target_fps)
 
     def clips_len(self):
         return self.num_clips
