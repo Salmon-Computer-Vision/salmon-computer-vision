@@ -1,10 +1,11 @@
 FROM balenalib/raspberrypi5-python:3.11-bookworm-build
+ARG BRANCH=master
 
 RUN apt-get update && apt-get install -y git ffmpeg python3-opencv
 
 RUN python3 -m pip install -U pip && python3 -m pip install -U ffmpeg-python
 
-RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
+RUN git clone --branch ${BRANCH} --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
 
 RUN python3 -m pip install -e /tools/training/pysalmcount
 
