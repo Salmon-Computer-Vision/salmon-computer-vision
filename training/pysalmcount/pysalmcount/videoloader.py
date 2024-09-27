@@ -78,14 +78,14 @@ class VideoLoader(DataLoader):
         prev_time = 0
         while not self.stop_thread:
             if self.target_fps < self.vid_fps:
-                time_elapsed = time.time() - prev
+                time_elapsed = time.time() - prev_time
 
             ret, frame = self.cap.read()
             if ret:
                 if self.target_fps < self.vid_fps and time_elapsed < 1. / self.target_fps:
                     continue
                 else:
-                    prev = time.time()
+                    prev_time = time.time()
                 self.frame_buffer.put(frame, block=True)
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
