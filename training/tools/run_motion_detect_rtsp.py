@@ -51,7 +51,7 @@ def main(args):
         input_str = args.rtsp_url
 
     logger.info(input_str)
-    vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*int(args.fps))
+    vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*int(args.fps), target_fps=args.fps)
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(vidloader, site_save_path, save_prefix)

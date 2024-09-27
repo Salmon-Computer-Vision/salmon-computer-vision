@@ -18,7 +18,7 @@ class VideoCaptureError(Exception):
     pass
 
 class VideoLoader(DataLoader):
-    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False, buffer_size=10):
+    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False, buffer_size=10, target_fps=None):
         """
         vid_source: list[string] of anything that can go in VideoCapture() including video paths and RTSP URLs
         """
@@ -33,6 +33,7 @@ class VideoLoader(DataLoader):
         self.frame_buffer = Queue(maxsize=buffer_size)
         self.thread = None
         self.stop_thread = False
+        self.target_fps = target_fps
 
     def clips_len(self):
         return self.num_clips
@@ -58,6 +59,8 @@ class VideoLoader(DataLoader):
             raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
 
         self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
+        if self.target_fps < self.vid_fps:
+            self.cap.set(cv2.CAP_PROP_FPS, self.target_fps)
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # Start a new thread to read frames
