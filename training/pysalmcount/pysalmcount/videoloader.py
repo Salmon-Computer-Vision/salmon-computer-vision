@@ -3,7 +3,7 @@ from .dataloader import DataLoader, Item
 import cv2
 from pathlib import Path
 import logging
-from threading import Thread, Condition, Event
+from threading import Thread, Condition
 from collections import deque
 
 # Set up logging
@@ -82,14 +82,18 @@ class VideoLoader(DataLoader):
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
                 self.stop_thread = True
+                with self.buffer_condition:
+                    self.buffer_condition.notify_all()  # Notify consumers to stop waiting if reading is done
+                break
 
     def items(self):
         if self.cur_clip is None:
             raise ValueError('Error: No current clip')
 
         while not self.stop_thread:
-            if not self.frame_buffer:
-                self.buffer_condition.wait()  # Wait until frames are available in the buffer
+            with self.buffer_condition:
+                if not self.frame_buffer:
+                    self.buffer_condition.wait()  # Wait until frames are available in the buffer
 
             if self.frame_buffer:
                 frame = self.frame_buffer.popleft()
