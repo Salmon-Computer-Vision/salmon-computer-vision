@@ -5,6 +5,7 @@ from pathlib import Path
 import logging
 from threading import Thread
 from queue import Queue
+import time
 
 # Set up logging
 logging.basicConfig(
@@ -59,8 +60,6 @@ class VideoLoader(DataLoader):
             raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
 
         self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
-        if self.target_fps < self.vid_fps:
-            self.cap.set(cv2.CAP_PROP_FPS, self.target_fps)
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # Start a new thread to read frames
@@ -75,9 +74,18 @@ class VideoLoader(DataLoader):
         """
         Reads frames from the video capture in a separate thread and stores them in a deque.
         """
+
+        prev_time = 0
         while not self.stop_thread:
+            if self.target_fps < self.vid_fps:
+                time_elapsed = time.time() - prev
+
             ret, frame = self.cap.read()
             if ret:
+                if self.target_fps < self.vid_fps && time_elapsed < 1. / self.target_fps:
+                    continue
+                else:
+                    prev = time.time()
                 self.frame_buffer.put(frame, block=True)
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
