@@ -4,7 +4,7 @@ import cv2
 from pathlib import Path
 import logging
 from threading import Thread, Condition
-from collections import deque
+from queue import Queue
 
 # Set up logging
 logging.basicConfig(
@@ -30,7 +30,7 @@ class VideoLoader(DataLoader):
         self.gstreamer_on = gstreamer_on
 
         buffer_size = buffer_size
-        self.frame_buffer = deque(maxlen=buffer_size)
+        self.frame_buffer = Queue(maxsize=buffer_size)
         self.buffer_condition = Condition()
         self.thread = None
         self.stop_thread = False
@@ -76,14 +76,11 @@ class VideoLoader(DataLoader):
         while not self.stop_thread:
             ret, frame = self.cap.read()
             if ret:
-                with self.buffer_condition:
-                    self.frame_buffer.append(frame)
-                    self.buffer_condition.notify()  # Notify that a new frame is available
+                self.frame_buffer.put(frame, block=True)
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
                 self.stop_thread = True
-                with self.buffer_condition:
-                    self.buffer_condition.notify_all()  # Notify consumers to stop waiting if reading is done
+                self.frame_buffer.put(None)  # Sentinel value to signal end of stream
                 break
 
     def items(self):
@@ -91,13 +88,13 @@ class VideoLoader(DataLoader):
             raise ValueError('Error: No current clip')
 
         while not self.stop_thread:
-            with self.buffer_condition:
-                if not self.frame_buffer:
-                    self.buffer_condition.wait()  # Wait until frames are available in the buffer
+            frame = self.frame_buffer.get(block=True)
+            if frame is None:
+                # Sentinel value to stop the consumer
+                logger.info('End of video stream detected.')
+                break
 
-            if self.frame_buffer:
-                frame = self.frame_buffer.popleft()
-                yield Item(frame, num_items=self.total_frames)
+            yield Item(frame, num_items=self.total_frames)
 
     def fps(self):
         return self.vid_fps
