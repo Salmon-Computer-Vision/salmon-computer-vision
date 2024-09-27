@@ -69,7 +69,7 @@ class VideoLoader(DataLoader):
 
         return self.cur_clip
 
-     def _read_frames(self):
+    def _read_frames(self):
         """
         Reads frames from the video capture in a separate thread and stores them in a deque.
         """
