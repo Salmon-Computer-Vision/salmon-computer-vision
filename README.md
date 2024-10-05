@@ -67,33 +67,10 @@ and Jetson Nanos.
 
 [Jetsons Nano setup instructions are here](utils/jetson/README.md).
 
-The bash script `deploy-system.sh` can be used to automatically deploy the services
-to all of your remote devices. Simply create and fill in a `deploy-vars.sh` file in
-the `utils` directory with the following:
+The `utils` folder has various helpful scripts such as quick deployment.
 
-```bash
-#!/usr/bin/env bash
-# utils/deploy-vars.sh
-MAX_DEVICES=2
+Please check the `utils` [README](utils/README.md) for more info on some important scripts.
 
-sites=(
-    hirmd-koeye
-    # Other sites here...
-)
-
-# Define an array of systems, each with its own image and environment file
-declare -A systems=(
-    ["jetsonorin"]="<host>/salmoncounter:latest-jetson-jetpack6"
-    ["jetson"]="<host>/salmoncounter:latest-jetson-jetpack4"
-    ["pi"]="<host>/salmonmd:latest-bookworm"
-)
-```
-
-Run the script as such
-```bash
-cd utils
-./deploy-system.sh
-```
 
 ## Sonar-based
 
