@@ -5,6 +5,7 @@ from pathlib import Path
 import logging
 from threading import Thread
 from queue import Queue
+import time
 
 # Set up logging
 logging.basicConfig(
@@ -18,7 +19,7 @@ class VideoCaptureError(Exception):
     pass
 
 class VideoLoader(DataLoader):
-    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False, buffer_size=10):
+    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False, buffer_size=10, target_fps: int=None):
         """
         vid_source: list[string] of anything that can go in VideoCapture() including video paths and RTSP URLs
         """
@@ -33,6 +34,7 @@ class VideoLoader(DataLoader):
         self.frame_buffer = Queue(maxsize=buffer_size)
         self.thread = None
         self.stop_thread = False
+        self.target_fps = int(target_fps) if target_fps is not None else target_fps
 
     def clips_len(self):
         return self.num_clips
@@ -72,9 +74,19 @@ class VideoLoader(DataLoader):
         """
         Reads frames from the video capture in a separate thread and stores them in a deque.
         """
+
+        prev_time = 0
         while not self.stop_thread:
+            if self.target_fps is not None and self.target_fps < self.vid_fps:
+                time_elapsed = time.time() - prev_time
+
             ret, frame = self.cap.read()
             if ret:
+                if self.target_fps is not None:
+                    if self.target_fps < self.vid_fps and time_elapsed < 1. / self.target_fps:
+                        continue
+                    else:
+                        prev_time = time.time()
                 self.frame_buffer.put(frame, block=True)
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
