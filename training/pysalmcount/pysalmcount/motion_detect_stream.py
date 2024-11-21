@@ -8,7 +8,8 @@ import argparse
 import datetime
 import os
 import errno
-from threading import Thread, Event, Lock, Condition
+#from threading import Thread, Event, Lock, Condition
+from multiprocessing import shared_memory, Process, Event, Lock, Condition
 import logging
 import time
 from pathlib import Path
@@ -29,10 +30,10 @@ gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !
 MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
 VIDEO_ENCODER = 'avc1'
 
-class VideoSaver(Thread):
+class VideoSaver(Process):
     def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
             orin=False, raspi=False, save_prefix=None):
-        Thread.__init__(self)
+        super().__init__()
         self.buffer = buffer  # This will be a shared queue
         self.folder = folder
         self.stop_event = stop_event  # This will signal when to stop recording
