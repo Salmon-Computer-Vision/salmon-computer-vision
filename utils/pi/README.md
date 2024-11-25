@@ -72,6 +72,11 @@ This will attempt to mount all partitions of a external drive to
 a single folder, so this would only work if only one partition is
 non-empty.
 
+## Software Services
+
+Follow the instructions in the `services` folder to setup the docker images for running the
+software.
+
 ### Setup Samba Share
 
 Having the external drive mounted is all good if we only need the raspberry pi
