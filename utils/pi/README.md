@@ -72,11 +72,6 @@ This will attempt to mount all partitions of a external drive to
 a single folder, so this would only work if only one partition is
 non-empty.
 
-## Software Services
-
-Follow the instructions in the `services` folder to setup the docker images for running the
-software.
-
 ### Setup Samba Share
 
 Having the external drive mounted is all good if we only need the raspberry pi
@@ -181,6 +176,11 @@ static routers=192.168.1.1
 static domain_name_servers=192.168.1.1 1.1.1.1 1.0.0.1 8.8.8.8
 static ip_address=[STATIC IP ADDRESS YOU WANT]/24
 ```
+
+## Software Services
+
+Follow the instructions in the [`services` folder](services) to setup the docker images for running the
+software.
 
 ## Setup for uploading to the cloud
 
