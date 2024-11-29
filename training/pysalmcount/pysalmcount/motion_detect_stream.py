@@ -9,7 +9,7 @@ import datetime
 import os
 import errno
 #from threading import Thread, Event, Lock, Condition
-from multiprocessing import shared_memory, Process, Event, Lock, Condition
+from multiprocessing import shared_memory, Process, Event, Lock, Condition, Value
 import logging
 import time
 from pathlib import Path
@@ -31,16 +31,21 @@ MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
 VIDEO_ENCODER = 'avc1'
 
 class VideoSaver(Process):
-    def __init__(self, buffer, folder, stop_event, lock, condition, fps=10.0, resolution=(640, 480), 
+    def __init__(self, shm_name, frame_shape, head: Value, tail: Value, buffer_length, folder, stop_event, lock_head, lock_tail, condition, fps=10.0,
             orin=False, raspi=False, save_prefix=None):
         super().__init__()
-        self.buffer = buffer  # This will be a shared queue
+        self.shm_name = shm_name
+        self.frame_shape = frame_shape
+        self.head = head
+        self.tail = tail
+        self.buffer_length = buffer_length
         self.folder = folder
         self.stop_event = stop_event  # This will signal when to stop recording
-        self.lock = lock  # This will ensure thread-safe access to the buffer
+        self.lock_head = lock_head  # Locks the head value
+        self.lock_tail = lock_tail  # Locks the tail value
         self.condition = condition
         self.fps = fps
-        self.resolution = resolution
+        self.resolution = (frame_shape[1], frame_shape[0])
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
         self.orin = orin
         self.raspi = raspi
@@ -60,6 +65,21 @@ class VideoSaver(Process):
         metadata_dir.mkdir(exist_ok=True)
         return metadata_dir / f"{filename.stem}.json"
 
+    def _get_head_tail():
+        with self.lock_head, self.lock_tail:
+            tail = self.tail.value
+            head = self.head.value
+
+        return head, tail
+
+    def _get_frame():
+        with self.lock_tail:
+            frame_idx = self.tail.value % self.buffer_length
+            frame = self.shared_frames[frame_idx]
+            self.tail.value = (self.tail.value + 1) % self.buffer_length
+
+        return frame
+
     def run(self):
         filename = VideoSaver.get_output_filename(self.folder, save_prefix=self.save_prefix)
 
@@ -75,30 +95,30 @@ class VideoSaver(Process):
         
         c = 0
         # Write the pre-motion frames
-        while self.buffer:
+        head, tail = self._get_head_tail()
+        while tail != head:
             if c % 20 == 0:
                 logger.info(f'Saving pre... {c}')
-            with self.lock:
-                frame = self.buffer.popleft()  # Safely pop from the left of the deque
+
+            frame = self._get_frame()
             out.write(frame)
             c += 1
+            head, tail = self._get_head_tail()
 
         c = 0
         # Continue recording until stop_event is set
         while not self.stop_event.is_set():
             with self.condition:
-                if not self.buffer:
-                    if not self.stop_event.is_set():
-                        # Wait for a signal that a new frame is available or stop_event is set
-                        self.condition.wait()
-                #self.condition.wait_for(lambda: self.buffer or self.stop_event.is_set())
+                # Wait for a signal that a new frame is available or stop_event is set
+                self.condition.wait_for(lambda: self.tail.value != self.head.value or self.stop_event.is_set())
 
-            if self.buffer:
-                with self.lock:
-                    frame = self.buffer.popleft()
-                if c % 20 == 0:
-                    logger.info(f'Saving... {c}')
-                out.write(frame)
+            head, tail = self._get_head_tail()
+            if tail != head:
+                frame = self._get_frame()
+
+            if c % 20 == 0:
+                logger.info(f'Saving... {c}')
+            out.write(frame)
 
             c += 1
 
@@ -182,17 +202,32 @@ class MotionDetector:
 
         warm_up = fps
         buffer_length = int(fps * BUFFER_LENGTH)  # Buffer to save before motion
-        buffer = deque(maxlen=buffer_length)
         motion_detected = False
+
+        # Sacrifice first frame to get frame shape data
+        item = next(self.dataloader.items())
+        frame = item.frame
+
+        # Create shared memory between multi processes
+        shm = shared_memory.SharedMemory(create=True, size=buffer_length * np.prod(frame.shape))
+        shared_frames = np.ndarray(
+            (buffer_length, *(frame.shape)), 
+            dtype=np.uint8, 
+            buffer=shm.buf,
+        )
+
+        # Create pointers for circular array
+        head = Value('i', 0)
+        tail = Value('i', 0)
 
         # Concurrency-safe constructs
         stop_event = Event()
-        lock = Lock()
+        lock_head = Lock()
+        lock_tail = Lock()
         condition = Condition()
 
         delay = int(fps * 5) # Number of seconds to delay after motion
         count_delay = 0
-
 
         video_saver = None
         frame_counter = MAX_CONTINUOUS_FRAMES
@@ -270,8 +305,10 @@ class MotionDetector:
                 elapsed_in_time = (end_in_time - start_in_time) * 1000
                 logger.info(f"check motion: {elapsed_in_time:.2f} ms")
 
-            with lock:
-                buffer.append(frame)
+            with lock_head:
+                frame_idx = head.value % buffer_length
+                np.copyto(shared_frames[frame_idx], frame)
+                head.value = (head.value + 1) % buffer_length
             with condition:
                 condition.notify() # Signal the VideoSaver thread that a new frame is available
 
@@ -289,9 +326,10 @@ class MotionDetector:
                     if save_video:
                         # Signal that we need to start saving the clip
                         stop_event.clear()
-                        video_saver = VideoSaver(buffer, motion_dir, 
-                                stop_event, lock, condition, fps=fps, 
-                                resolution=(frame.shape[1], frame.shape[0]),
+                        video_saver = VideoSaver(
+                                shm_name=shm.name, frame_shape=frame.shape, head=head, tail=tail, 
+                                buffer_length=buffer_length, folder=motion_dir, 
+                                stop_event=stop_event, lock_head=lock_head, lock_tail=lock_tail, condition=condition, fps=fps, 
                                 orin=orin, raspi=raspi, save_prefix=self.save_prefix)
                         video_saver.start()
                 else:
