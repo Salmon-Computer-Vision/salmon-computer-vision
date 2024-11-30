@@ -215,7 +215,7 @@ class MotionDetector:
         frame_shape = (FRAME_RESIZE[1], FRAME_RESIZE[0], 3)
 
         # Create shared memory between multi processes
-        shm = shared_memory.SharedMemory(create=True, size=buffer_length * frame_shape)
+        shm = shared_memory.SharedMemory(create=True, size=buffer_length * np.prod(frame_shape))
         shared_frames = np.ndarray(
             (buffer_length, *(frame_shape)), 
             dtype=np.uint8, 
