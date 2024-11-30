@@ -207,16 +207,17 @@ class MotionDetector:
         motion_detected = False
 
         # Sacrifice first frame to get frame shape data
-        item = next(self.dataloader.items())
-        frame = item.frame
-        if isinstance(frame, str):
-            frame = cv2.imread(frame)
-        frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
+        #item = next(self.dataloader.items())
+        #frame = item.frame
+        #if isinstance(frame, str):
+        #    frame = cv2.imread(frame)
+        #frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
+        frame_shape = (FRAME_RESIZE[1], FRAME_RESIZE[0], 3)
 
         # Create shared memory between multi processes
-        shm = shared_memory.SharedMemory(create=True, size=buffer_length * np.prod(frame.shape))
+        shm = shared_memory.SharedMemory(create=True, size=buffer_length * frame_shape)
         shared_frames = np.ndarray(
-            (buffer_length, *(frame.shape)), 
+            (buffer_length, *(frame_shape)), 
             dtype=np.uint8, 
             buffer=shm.buf,
         )
