@@ -171,6 +171,8 @@ class MotionDetector:
         MAX_CLIP = 2 * 60 # Maximum number of seconds per clip
         MAX_CONTINUOUS = 30 * 60 # Max continuous video in seconds
 
+        FRAME_RESIZE = (1280, 720)
+
         cont_dir = os.path.join(self.save_folder, 'cont_vids')
         if not os.path.exists(cont_dir):
             os.mkdir(cont_dir) # Let exception be raised if recursive dir
@@ -207,6 +209,9 @@ class MotionDetector:
         # Sacrifice first frame to get frame shape data
         item = next(self.dataloader.items())
         frame = item.frame
+        if isinstance(frame, str):
+            frame = cv2.imread(frame)
+        frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
 
         # Create shared memory between multi processes
         shm = shared_memory.SharedMemory(create=True, size=buffer_length * np.prod(frame.shape))
@@ -244,7 +249,7 @@ class MotionDetector:
             frame = item.frame
             if isinstance(frame, str):
                 frame = cv2.imread(frame)
-            frame = cv2.resize(frame, (1280, 720), interpolation=cv2.INTER_AREA)
+            frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
 
             if save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
