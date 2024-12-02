@@ -117,10 +117,9 @@ class VideoSaver(Process):
         while not self.stop_event.is_set():
             with self.condition:
                 # Wait for a signal that a new frame is available or stop_event is set
-                self.condition.wait_for(lambda: self.tail.value != self.head.value or self.stop_event.is_set())
+                self.condition.wait_for(lambda: not self._check_empty() or self.stop_event.is_set())
 
-            head, tail = self._get_head_tail()
-            if tail != head:
+            if not self._check_empty():
                 frame = self._get_frame()
 
             if c % 20 == 0:
@@ -226,12 +225,8 @@ class MotionDetector:
 
         # Create shared memory between multi processes
         dtype = np.uint8  # Frame data type
-        temp_arr = np.ndarray(
-            (buffer_length, *frame_shape), 
-            dtype=dtype
-        )
-        #shm = shared_memory.SharedMemory(create=True, size=buffer_length * np.prod(frame_shape) * np.dtype(dtype).itemsize)
-        shm = shared_memory.SharedMemory(create=True, size=temp_arr.nbytes)
+
+        shm = shared_memory.SharedMemory(create=True, size=buffer_length * np.prod(frame_shape) * np.dtype(dtype).itemsize)
         logger.info(f"Created shared memory with buffer {shm.size}")
         shared_frames = np.ndarray(
             (buffer_length, *frame_shape), 
@@ -347,9 +342,6 @@ class MotionDetector:
                 condition.notify() # Signal the VideoSaver thread that a new frame is available
 
             motion_counter += 1
-
-            if motion_counter >= 100:
-                has_motion = not has_motion
 
             # Check for motion
             if has_motion:
