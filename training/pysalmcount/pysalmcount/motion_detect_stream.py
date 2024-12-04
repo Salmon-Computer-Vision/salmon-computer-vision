@@ -52,11 +52,11 @@ class VideoSaver(Process):
         self.save_prefix = save_prefix
 
         # Attach to shared memory
-        shm = shared_memory.SharedMemory(name=self.shm_name)
+        self.shm = shared_memory.SharedMemory(name=self.shm_name)
         self.shared_frames = np.ndarray(
             (self.buffer_length, *self.frame_shape),
             dtype=np.uint8,
-            buffer=shm.buf,
+            buffer=self.shm.buf,
         )
 
     @staticmethod
@@ -80,13 +80,11 @@ class VideoSaver(Process):
         return empty
 
     def _get_frame(self):
-        logger.info(f"Getting frame to save.")
         with self.lock_tail:
             frame_idx = self.tail.value % self.buffer_length
             frame = self.shared_frames[frame_idx]
             self.tail.value = (self.tail.value + 1) % self.buffer_length
 
-        logger.info(f"{frame.shape}")
         return frame
 
     def run(self):
@@ -342,6 +340,10 @@ class MotionDetector:
                 condition.notify() # Signal the VideoSaver thread that a new frame is available
 
             motion_counter += 1
+
+            # TESTING ONLY
+            #if motion_counter >= 100:
+            #    has_motion = not has_motion
 
             # Check for motion
             if has_motion:
