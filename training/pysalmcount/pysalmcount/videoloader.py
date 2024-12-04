@@ -107,6 +107,8 @@ class VideoLoader(DataLoader):
 
             yield Item(frame, num_items=self.total_frames)
 
+        logger.info('Grabbing items stopped...')
+
     def fps(self):
         return self.vid_fps
 
