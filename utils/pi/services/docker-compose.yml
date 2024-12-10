@@ -39,13 +39,13 @@ services:
     entrypoint: /bin/sh
     command: |
       /app/syncing-counts.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
-  salmonmd-jetson-0:
+  salmonmd-jetson:
     image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     environment:
       - HOSTNAME
     env_file:
       - ./.env
-    container_name: salmonmd-jetson-0
+    container_name: salmonmd-jetson
     network_mode: host
     privileged: true
     user: ${HOST_UID}:${HOST_GID}
@@ -56,21 +56,4 @@ services:
       - /etc/group:/etc/group:ro
     restart: always
     command: >
-      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_0} --fps ${FPS} '${RTSP_URL_0}' \"${DRIVE}\""
-  salmonmd-jetson-1:
-    image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
-    environment:
-      - HOSTNAME
-    env_file:
-      - ./.env
-    container_name: salmonmd-jetson-1
-    network_mode: host
-    privileged: true
-    user: ${HOST_UID}:${HOST_GID}
-    volumes:
-      - ${DRIVE}:${DRIVE}
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    restart: always
-    command: >
-      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID_1} --fps ${FPS} '${RTSP_URL_1}' \"${DRIVE}\""
+      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} ${DEVICE_ID} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""

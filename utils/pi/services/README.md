@@ -34,16 +34,16 @@ HOST_GID=1000
 ORGID=<orgid>
 SITE_NAME=<site_name>
 BUCKET=<bucket>
-RTSP_URL_0=rtsp://<rtsp-url-0>
-RTSP_URL_1=rtsp://<rtsp-url-1>
+RTSP_URL=rtsp://<rtsp-url>
 FPS=10
 FLAGS=--orin --algo CNT
-DEVICE_ID_0=--device-id jetson-0
-DEVICE_ID_1=--device-id jetson-1
+DEVICE_ID=--device-id jetson-0
 ```
 
 Raspberry Pi 5 does not have a hardware encoder, so use the `--orin` flag to
 use CPU encoding.
+
+Change the `RTSP_URL` and `DEVICE_ID` to the respective URLs and Jetson ending ID hostnames.
 
 
 Older raspi do have the v4l2 or omx encoders, so set the vars like this
