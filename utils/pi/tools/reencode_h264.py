@@ -35,12 +35,13 @@ def gen_metadata(filepath: Path):
     else:
         logger.error(f"Could not generate metadata for file: {filepath}")
 
-def reencode_h264(filepath: Path, archive_dir: str):
-    temp_path = filepath.with_name(filepath.stem + '_temp' + filepath.suffix) 
+def reencode_h264(filepath: Path, archive_dir: str, archive=True):
+    temp_path = Path(archive_dir).with_name(filepath.stem + '_temp' + filepath.suffix) 
     archive_path = Path(archive_dir) / filepath.name
 
     ffmpeg.input(str(filepath)).output(str(temp_path), vcodec='libx264', movflags='faststart').run()
-    shutil.move(filepath, archive_path)
+    if archive:
+        shutil.move(filepath, archive_path)
     shutil.move(temp_path, filepath)
 
 def main(args):
@@ -64,7 +65,7 @@ def main(args):
             is_h264 = False
             if metadata.codec_name != 'h264':
                 # Re-encode video to H264
-                    reencode_h264(filepath, archive_path)
+                    reencode_h264(filepath, archive_path, not args.no_archives)
             else:
                 is_h264 = True
         except Exception as e:
@@ -82,6 +83,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Re-encodes video clips in a folder to H264 and re-generates their metadata.")
     parser.add_argument("input", help="Input folder")
+    parser.add_argument("-n", "--no-archives", help="Do not archive original videos")
     args = parser.parse_args()
 
     main(args)
