@@ -5,8 +5,8 @@
 ***Only works after all devices are properly setup***
 
 The bash script `deploy-system.sh` can be used to automatically deploy the services
-to all of your remote devices. Simply create and fill in a `deploy-vars.sh` file in
-the `utils` directory with the following:
+to all of your remote devices. Simply create and fill in a `deploy-vars.sh` file with
+the following:
 
 ```bash
 #!/usr/bin/env bash
@@ -26,9 +26,7 @@ declare -A systems=(
 )
 ```
 
-Run the script as such
+Run the script as such in this directory
 ```bash
-cd utils
 ./deploy-system.sh
 ```
-

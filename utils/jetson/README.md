@@ -2,19 +2,21 @@
 
 The Jetson Nano is mainly used to process motion detected video clips and
 generate object detection tracks and salmon species counts using the trained
-deep learning model. The Jetson Nano will likely use all of the RAM as it is
-shared between the CPU and GPU, so it cannot perform many other tasks other
-than deep learning processing.
+deep learning model. The Jetson Nano will likely use all of the RAM it has
+available to do this, and due to the RAM being shared between the CPU and GPU,
+it cannot perform too many other tasks other than deep learning processing.
 
-> ⚠️ A Jetson already setup previously may be difficult to access due to [static IP address](#setup-static-ip) 
-used to make sure the IP does not change when connected to the Starlink router. Either change your computer
-IP address to the same gateway, look into [serial connection with a micro-USB](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-2gb-devkit#setup-headless),
-or connect with an HDMI cable.
+> ⚠️ A Jetson already setup previously may be difficult to access due to [static
+IP address](#setup-static-ip) used to make sure the IP does not change when
+connected to the Starlink router. Either change your computer IP address to the
+same gateway, look into [serial connection with a
+micro-USB](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-2gb-devkit#setup-headless),
+or connect a monitor using an HDMI cable.
 
 ## Docker compose
 
-Docker compose is needed to run the services to allow remote access and process
-the video clips.
+Docker compose is needed to run the services with specific settings that allow
+remote access and process video clips.
 
 After SSHing to or opening the terminal on the Jetson Nano, install
 docker-compose:
@@ -26,12 +28,55 @@ python3 -m pip install docker-compose
 
 ## Tailscale
 
-Tailscale is a remote connection software. Once setup, you will be able to
-access this device through any network related means including SSH.
+Tailscale is a remote connection software. Once setup, any client that's also
+running on the same Tailscale network will be able to access this device
+through any network related means including SSH. This can be fine-tuned to only
+allow certain clients or group of clients on the Tailscale console.
 
 First, create a [Tailscale account](https://tailscale.com/). Then, setup your
-tailscale with connection filters for the tag `salmon-project` to prevent
-reverse access to client devices for security.
+tailscale with Access controls for the tag `salmon-project` to prevent reverse
+access to client devices for security.
+
+This can look like as follows:
+
+```
+{
+    // // Declare static groups of users. Use autogroups for all users or users with a specific role.
+	"groups": {
+        "group:admin": ["admin@example.com"],
+		"group:salmon-project": [
+            "email@example.com",
+		],
+	},
+
+    
+	// Define the tags which can be applied to devices and by which users.
+	"tagOwners": {
+		"tag:salmon-project":        ["group:admin"],
+		"tag:shared-public-devices": ["group:admin"],
+	},
+
+	// Define access control lists for users, groups, autogroups, tags,
+	// Tailscale IP addresses, and subnet ranges.
+    "acls": [
+		// Allow all connections.
+		// Comment this section out if you want to define specific restrictions.
+		{
+			"action": "accept",
+			"src":    ["autogroup:member"],
+			"dst":    ["autogroup:self:*"],
+		},
+		{
+			"action": "accept",
+			"src":    ["group:admin", "group:salmon-project"],
+			"dst":    ["tag:salmon-project:*"],
+		},
+	],
+}
+```
+
+Generate a Tailscale OAuth client key in the settings with "Devices" read permissions
+and the `salmon-project` tag.
 
 Create an `.env` file in this folder with your tailscale auth key:
 
