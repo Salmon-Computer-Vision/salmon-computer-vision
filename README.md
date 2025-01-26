@@ -1,8 +1,8 @@
 # SalmonVision
 
 This repository contains several tools and utilities to assist in training
-salmon counting automation tools as well as to deploy to edge devices for
-edge-based processing of videos. Two major categories include
+salmon counting automation tools including deployment docker compose scripts to
+edge devices for edge-based processing of videos. Two major categories include
 [video-based](#video-based) enumeration and [sonar-based](#sonar-based)
 enumeration.
 
@@ -73,6 +73,8 @@ Please check the `utils` [README](utils/README.md) for more info on some importa
 
 
 ## Sonar-based
+
+***IN PROGRESS***
 
 Convert ARIS sonar files to videos with `pyARIS` using the Python 3 script
 `./extract_aris/aris_to_video.py`.
