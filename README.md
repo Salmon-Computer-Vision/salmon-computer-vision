@@ -1,4 +1,4 @@
-# Salmon Computer Vision Project
+# SalmonVision
 
 This repository contains several tools and utilities to assist in training
 salmon counting automation tools as well as to deploy to edge devices for
