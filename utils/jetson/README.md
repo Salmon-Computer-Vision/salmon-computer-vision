@@ -135,9 +135,9 @@ For example,
 KXSA-kwakwa-jetson-0
 ```
 
-# SalmonCounter
+## Salmon Counter
 
-See [`salmoncount`'s README](salmoncount) for more info.
+See the [`salmoncount` folder's README](salmoncount) for more info.
 
 ## Setup Static IP
 
