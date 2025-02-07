@@ -76,13 +76,18 @@ class SalmonCounter:
         return new_id
 
     def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, save_txt=False, vote_method='all', device=0,
-            stream_write=True, output_csv_dir='output_count'):
+            stream_write=True, output_csv_dir='output_count', drop_bounding_boxes=None, bound_line_ratio=None):
         if vote_method not in [VOTE_METHOD_ALL, VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
             raise ValueError(f'{vote_method} is not a valid method')
             
         cur_clip = self.dataloader.next_clip()
         self.salm_count.loc[cur_clip.name] = 0
         logger.info(cur_clip.name)
+        
+        if drop_bounding_boxes is None:
+            drop_bounding_boxes = int(os.getenv("DROP_BOUNDING_BOXES", 0))
+        if bound_line_ratio is None:
+            bound_line_ratio = float(os.getenv("BOUND_LINE_RATIO", 0.5))
 
         if save_txt:
             txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem
@@ -120,12 +125,12 @@ class SalmonCounter:
                     inf_elapsed = (inf_end_time - inf_start_time) * 1000
                     logger.info(f"Inference time: {inf_elapsed:.2f}")
                     
-                
-                bound_line = item.frame.shape[0] // 2
-                for result in results:
-                    y_center = (2 * result.boxes.data[:, 1] + result.boxes.data[:, 3]) // 2
-                    keep_indices = torch.where(y_center < bound_line)[0]
-                    result.boxes.data = result.boxes.data[keep_indices]
+                if drop_bounding_boxes:
+                    bound_line = int(item.frame.shape[0] * bound_line_ratio)
+                    for result in results:
+                        y_center = (2 * result.boxes.data[:, 1] + result.boxes.data[:, 3]) // 2
+                        keep_indices = torch.where(y_center < bound_line)[0]
+                        result.boxes.data = result.boxes.data[keep_indices]
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
