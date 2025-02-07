@@ -15,5 +15,5 @@ services:
     runtime: nvidia
     restart: always
     working_dir: /app
-    command: bash -c 'export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libstdc++.so.6; python3 watcher.py ${TEST} --weights ${WEIGHTS} --drop-bbox ${DROP_BOUNDING_BOXES}'
+    command: bash -c 'export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libstdc++.so.6; python3 watcher.py ${TEST} --weights ${WEIGHTS} ${DROP_BOUNDING_BOXES}'
 
