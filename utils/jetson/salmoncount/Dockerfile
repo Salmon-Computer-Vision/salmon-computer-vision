@@ -1,14 +1,14 @@
 FROM ultralytics/ultralytics:latest-jetson-jetpack4
-ARG BRANCH=master
+ARG USER=Salmon-Computer-Vision REPO=salmon-computer-vision BRANCH=master
 
 # Install dependencies
-RUN python3 -m pip install -U pip
+RUN python3 -m pip install -U pip && \
+    python3 -m pip install watchdog lapx
 
-RUN git clone --branch ${BRANCH} --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
+ADD https://api.github.com/repos/${USER}/${REPO}/git/refs/heads/${BRANCH} version.json
+RUN git clone --branch ${BRANCH} --depth 1 https://github.com/${USER}/${REPO}.git /tools
 
 RUN python3 -m pip install /tools/training/pysalmcount
-
-RUN pip install watchdog lapx
 
 COPY watcher.py /app/watcher.py
 
