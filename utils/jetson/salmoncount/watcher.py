@@ -170,7 +170,7 @@ if __name__ == "__main__":
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
     parser.add_argument('--weights', default='config/salmoncount.engine', help='Path to YOLO weights to load.')
     parser.add_argument('--time-window', default=4 * 60, help='The time window to ignore potentially still writing files in seconds.')
-    parser.add_argument('--drop-bbox', action='store_true', help='Set this flag to determine whether the DLL top-view boxes should be removed.')
+    parser.add_argument('--drop-bbox', action='store_true', help='Set this flag to determine whether the top-view boxes should be removed.')
     parser.add_argument('--bound-line', default=0.5, help='Determine where the middle line is.')
     args = parser.parse_args()
 

@@ -28,12 +28,16 @@ scp -r config <user>@<host>:
 ```
 
 Create an `.env` file here with the following:
-```
+```bash
 IMAGE_REPO_HOST=<host>
 TAG=<image_tag>
 DRIVE=/media
 USERNAME=<device-username>
 WEIGHTS=/app/config/<salmoncount_weights>.engine
+
+# Drop bounding boxes (optional flag)
+# DROP_BOUNDING_BOXES: Set to "--drop-bbox" to remove top-view bounding boxes, or leave it empty to disable this option.
+FLAGS=--drop-bbox
 ```
 
 !! Make sure your drive folder is named `hdd` and is the next subdir after your `${DRIVE}` dir.
