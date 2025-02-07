@@ -76,7 +76,7 @@ class SalmonCounter:
         return new_id
 
     def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, save_txt=False, vote_method='all', device=0,
-            stream_write=True, output_csv_dir='output_count', drop_bounding_boxes=None, bound_line_ratio=None):
+            stream_write=True, output_csv_dir='output_count', drop_bounding_boxes=False, bound_line_ratio=0.5):
         if vote_method not in [VOTE_METHOD_ALL, VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
             raise ValueError(f'{vote_method} is not a valid method')
             
@@ -84,10 +84,6 @@ class SalmonCounter:
         self.salm_count.loc[cur_clip.name] = 0
         logger.info(cur_clip.name)
         
-        if drop_bounding_boxes is None:
-            drop_bounding_boxes = int(os.getenv("DROP_BOUNDING_BOXES", 0))
-        if bound_line_ratio is None:
-            bound_line_ratio = float(os.getenv("BOUND_LINE_RATIO", 0.5))
 
         if save_txt:
             txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem

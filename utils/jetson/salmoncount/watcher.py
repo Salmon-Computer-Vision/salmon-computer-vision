@@ -100,25 +100,25 @@ class VideoHandler(FileSystemEventHandler):
             initial_size = current_size
             time.sleep(check_interval)
     
-    def process_video(self, video_path):
+    def process_video(self, video_path, drop_bounding_boxes=False, bound_line_ratio=0.5):
         counts_file = self.counts_dir / f"{video_path.stem}.csv"
         detections_dir = self.detection_dir / video_path.stem
         if not counts_file.exists() and not detections_dir.exists():
             logger.info(f"Processing {video_path}")
             try:
-                self.run_salmon_counter(video_path)
+                self.run_salmon_counter(video_path, drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
             except Exception as e:
                 logger.error(traceback.format_exc())
         else:
             logger.info(f"Skipping {video_path}, already processed")
 
-    def run_salmon_counter(self, video_path):
+    def run_salmon_counter(self, video_path, drop_bounding_boxes=False, bound_line_ratio=0.5):
         loader = VideoLoader([video_path], self.data['names'])
         counter = SalmonCounter(self.model, loader, tracking_thresh=10, save_dir=str(self.detection_dir))
 
         out_path = self.counts_dir #/ f"{os.uname()[1]}_salmon_counts.csv"
         counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
-                stream_write=True, output_csv_dir=str(out_path))
+                stream_write=True, output_csv_dir=str(out_path),drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
 
 def main(args):
     if args.test:
@@ -142,7 +142,7 @@ def main(args):
         video_file = vids_path / filename
         modif_time = video_file.stat().st_mtime
         if current_time - modif_time > args.time_window:
-            video_handler.process_video(video_file)
+            video_handler.process_video(video_file, drop_bounding_boxes=args.drop_bbox, bound_line_ratio=args.bound_line)
         else:
             logger.info(f"Ignoring recently modified video: {video_file}")
     
@@ -170,6 +170,8 @@ if __name__ == "__main__":
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
     parser.add_argument('--weights', default='config/salmoncount.engine', help='Path to YOLO weights to load.')
     parser.add_argument('--time-window', default=4 * 60, help='The time window to ignore potentially still writing files in seconds.')
+    parser.add_argument('--drop-bbox', default=False, help='Set this flag to determine whether the DLL top-view boxes should be removed.')
+    parser.add_argument('--bound-line', default=0.5, help='Determine where the middle line is.')
     args = parser.parse_args()
 
     main(args)
