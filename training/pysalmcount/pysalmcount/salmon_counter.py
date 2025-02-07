@@ -12,6 +12,7 @@ from ultralytics.engine.results import Boxes
 from collections import defaultdict
 import numpy as np
 import pandas as pd
+import torch
 
 VOTE_METHOD_ALL = 'all'
 VOTE_METHOD_IGN = 'ignore_thin'
@@ -75,13 +76,14 @@ class SalmonCounter:
         return new_id
 
     def count(self, tracker="botsort.yaml", use_gt=False, save_vid=False, save_txt=False, vote_method='all', device=0,
-            stream_write=True, output_csv_dir='output_count'):
+            stream_write=True, output_csv_dir='output_count', drop_bounding_boxes=False, bound_line_ratio=0.5):
         if vote_method not in [VOTE_METHOD_ALL, VOTE_METHOD_IGN, VOTE_METHOD_CONF]:
             raise ValueError(f'{vote_method} is not a valid method')
             
         cur_clip = self.dataloader.next_clip()
         self.salm_count.loc[cur_clip.name] = 0
         logger.info(cur_clip.name)
+        
 
         if save_txt:
             txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem
@@ -118,6 +120,13 @@ class SalmonCounter:
                     inf_end_time = time.time()
                     inf_elapsed = (inf_end_time - inf_start_time) * 1000
                     logger.info(f"Inference time: {inf_elapsed:.2f}")
+                    
+                if drop_bounding_boxes:
+                    bound_line = int(item.frame.shape[0] * bound_line_ratio)
+                    for result in results:
+                        y_center = (2 * result.boxes.data[:, 1] + result.boxes.data[:, 3]) // 2
+                        keep_indices = torch.where(y_center < bound_line)[0]
+                        result.boxes.data = result.boxes.data[keep_indices]
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
@@ -141,8 +150,7 @@ class SalmonCounter:
                     cls_ids = boxes_obj.cls.tolist()
                     confs = boxes_obj.conf.tolist()
                 results = [Results(img, item.frame, self.dataloader.classes(), boxes=input_boxes)]
-
-    
+            
             # When any tracking ID is lost
             # Set difference prev track IDs - current track IDs
             not_tracking = set(self.prev_track_ids.keys()).difference(track_ids)
