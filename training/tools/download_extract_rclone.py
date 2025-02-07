@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import argparse
+from pathlib import Path
 
 def main(args):
     SOURCE = "aws"
+    OUTPUT_DIR = Path("frames")
     MOTION_VID_DIR = "motion_vids"
 
-    download_cmd = ["rclone", "copy", "--log-level INFO"]
+    download_cmd = ["rclone", "copy", "-v"]
 
     for filename in os.listdir(args.input):
         print(filename)
@@ -20,7 +23,7 @@ def main(args):
         print(org, site, device)
 
         download_cmd.append(f"{SOURCE}:{args.bucket}/{org}/{site}/{device}/{MOTION_VID_DIR}/{filename}")
-        download_cmd.append('.')
+        download_cmd.append(OUTPUT_DIR)
 
         subprocess.run(download_cmd)
         
