@@ -36,7 +36,7 @@ USERNAME=<device-username>
 WEIGHTS=/app/config/<salmoncount_weights>.engine
 
 # Drop bounding boxes (optional flag)
-# DROP_BOUNDING_BOXES: Set to "--drop-bbox" to remove top-view bounding boxes, or leave it empty to disable this option.
+# FLAGS: Set to "--drop-bbox" to remove top-view bounding boxes, or leave it empty to disable this option.
 FLAGS=--drop-bbox
 ```
 
