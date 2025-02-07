@@ -45,6 +45,16 @@ the drive to a single location everytime a drive is plugged in. We use a
 combination of udev rules and systemd to watch for a drive and execute a mount
 when plugged in.
 
+Clone this repo if you haven't already:
+```bash
+git clone https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git
+```
+
+Go to the directory of this readme:
+```bash
+cd salmon-computer-vision/utils/pi
+```
+
 On the raspberry pi through SSH or in a terminal, create the mount folder:
 
 ```bash
