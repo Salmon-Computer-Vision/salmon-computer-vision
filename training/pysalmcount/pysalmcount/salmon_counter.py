@@ -12,6 +12,7 @@ from ultralytics.engine.results import Boxes
 from collections import defaultdict
 import numpy as np
 import pandas as pd
+import torch
 
 VOTE_METHOD_ALL = 'all'
 VOTE_METHOD_IGN = 'ignore_thin'
@@ -118,6 +119,13 @@ class SalmonCounter:
                     inf_end_time = time.time()
                     inf_elapsed = (inf_end_time - inf_start_time) * 1000
                     logger.info(f"Inference time: {inf_elapsed:.2f}")
+                    
+                
+                bound_line = item.frame.shape[0] // 2
+                for result in results:
+                    y_center = (2 * result.boxes.data[:, 1] + result.boxes.data[:, 3]) // 2
+                    keep_indices = torch.where(y_center < bound_line)[0]
+                    result.boxes.data = result.boxes.data[keep_indices]
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
@@ -141,8 +149,7 @@ class SalmonCounter:
                     cls_ids = boxes_obj.cls.tolist()
                     confs = boxes_obj.conf.tolist()
                 results = [Results(img, item.frame, self.dataloader.classes(), boxes=input_boxes)]
-
-    
+            
             # When any tracking ID is lost
             # Set difference prev track IDs - current track IDs
             not_tracking = set(self.prev_track_ids.keys()).difference(track_ids)
