@@ -6,7 +6,7 @@ from pathlib import Path
 
 def main(args):
     SOURCE = "aws"
-    OUTPUT_DIR = Path("downloaded_vids")
+    OUTPUT_DIR = Path(args.output) if args.output else Path("downloaded_vids")
     MOTION_VID_DIR = "motion_vids"
 
 
@@ -34,6 +34,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Downloads and extracts the frames and puts it next to YOLO labels.")
     parser.add_argument("input", help="Input folder")
     parser.add_argument("bucket", help="AWS Bucket")
+    parser.add_argument("-o", "--output", help="Output folder")
     args = parser.parse_args()
 
     main(args)
