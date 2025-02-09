@@ -9,9 +9,9 @@ def main(args):
     OUTPUT_DIR = Path("frames")
     MOTION_VID_DIR = "motion_vids"
 
-    download_cmd = ["rclone", "copy", "-v"]
 
     for filename in os.listdir(args.input):
+        download_cmd = ["rclone", "copy", "-v"]
         print(filename)
         parts = filename.split('-')
         org = parts[0]
@@ -22,12 +22,12 @@ def main(args):
 
         print(org, site, device)
 
+        output_vid_dir = OUTPUT_DIR / org / site / device / MOTION_VID_DIR
+
         download_cmd.append(f"{SOURCE}:{args.bucket}/{org}/{site}/{device}/{MOTION_VID_DIR}/{filename}")
-        download_cmd.append(OUTPUT_DIR)
+        download_cmd.append(output_vid_dir)
 
         subprocess.run(download_cmd)
-        
-        break
 
 
 if __name__ == "__main__":
