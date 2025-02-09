@@ -6,7 +6,7 @@ from pathlib import Path
 
 def main(args):
     SOURCE = "aws"
-    OUTPUT_DIR = Path("frames")
+    OUTPUT_DIR = Path("downloaded_vids")
     MOTION_VID_DIR = "motion_vids"
 
 
