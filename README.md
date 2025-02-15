@@ -18,10 +18,10 @@ Any Salmon Vision models published here is under the [ResearchRAIL license](LICE
 
 ## Video-based
 
-The current enumeration strategy is using two computer vision models:
-multi-object tracking (MOT) and object detection. We use
-[ByteTrack](https://github.com/Salmon-Computer-Vision/ByteTrack.git) for MOT
-and [YOLOv6](https://github.com/meituan/YOLOv6), respectively.
+The current enumeration strategy is to use one computer vision model to detect and recognize the salmon species and then
+run a multi-object tracking algorithm such as ByteTrack or BoT-SORT to track the salmon and count it.
+We use [YOLOv8](https://github.com/ultralytics/ultralytics) that provides a suite of tools to perform these two tasks
+simultaneously during the inferencing step.
 
 ### Dataset
 
