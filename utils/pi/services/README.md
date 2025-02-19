@@ -5,6 +5,11 @@ and uploading to the cloud. For a Raspberry Pi 5, the potential maximum is two
 simultaneous streams, and even then that may be too much considering all of the
 other tasks the Raspberry Pi needs to do.
 
+First, move to this folder:
+```bash
+cd utils/pi/services
+```
+
 Create your docker images using the respective dockerfiles in `Dockerfiles`:
 
 ```bash
@@ -25,6 +30,7 @@ ${ORGID}/${SITE_NAME}/${DEVICE_ID_*}/cont_vids/${ORGID}-${SITE_NAME}-${DEVICE_ID
 
 Create a `.env` file here with the following:
 ```
+# utils/pi/services/.env
 IMAGE_REPO_HOST=<image_repo_host>
 TAG=latest-bookworm
 DRIVE=/media/hdd

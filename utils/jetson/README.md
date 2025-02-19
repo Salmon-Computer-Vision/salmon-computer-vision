@@ -71,14 +71,20 @@ This can look like as follows:
 Generate a Tailscale OAuth client key in the settings with "Devices" read permissions
 and the `salmon-project` tag.
 
+Move to this directory:
+```bash
+cd utils/jetson
+```
+
 Create an `.env` file in this folder with your tailscale auth key:
 
 ```
+# utils/jetson/.env
 YOURKEY=<auth key>
 ```
 
-Run the following in this directory to start up Tailscale:
-```
+Run the following to start up Tailscale:
+```bash
 docker-compose up -d
 ```
 
