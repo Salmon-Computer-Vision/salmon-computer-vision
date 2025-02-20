@@ -32,9 +32,12 @@ DRIVE=/media
 USERNAME=<device-username>
 WEIGHTS=/app/config/<salmoncount_weights>.engine
 
-# Drop bounding boxes (optional flag)
-# FLAGS: Uncomment and set to "--drop-bbox" to remove top-view bounding boxes 
-#       for cameras with a mirror displaying both top and side view
+# FLAGS
+
+# Drop bounding boxes (optional): Uncomment and set "--drop-bbox" to remove
+# top-view bounding boxes on the bottom half of each frame for cameras with a
+# mirror displaying both top and side view
+
 #FLAGS=--drop-bbox
 ```
 
