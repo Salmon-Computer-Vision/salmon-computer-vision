@@ -129,7 +129,7 @@ sudo hostnamectl set-hostname <new-hostname>
 
 **!! Note to facilitate downstream tasks, we will standardize the hostnames as such**
 ```
-<ORG-ID>-<river-name>-<device>-<num>
+<ORGID>-<river-name>-<device>-<num>
 ```
 `<device>` could be `pi` or `jetson`.
 
