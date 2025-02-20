@@ -126,6 +126,26 @@ docker context use remote
 docker ps
 ```
 
+Be careful as the `.env` file that will be read will be the current directory
+of the ***HOST*** machine. This does however allow you to create all
+environment files on the host machine without spreading them out to all of the
+devices.
+
+For example, you can have a `.env-raspi_example_river` to denote an environment
+file for the Raspi at "Example River" on the host machine and then spin up its
+docker containers remotely without needing to send this environment file:
+
+```bash
+docker --context remote compose --env-file .env-raspi_example_river up -d
+```
+
+The `--env-file` flag can be used more than once, so realistically, a common
+`.env` file can also be created.
+
+```bash
+docker --context remote compose --env-file .env-common --env-file .env-raspi_example_river up -d
+```
+
 ### Increase swap memory
 
 This is likely not necessary for newer raspberry pis but can be helpful if the
