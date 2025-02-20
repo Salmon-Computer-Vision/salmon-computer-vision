@@ -34,8 +34,7 @@ WEIGHTS=/app/config/<salmoncount_weights>.engine
 
 # Drop bounding boxes (optional flag)
 # FLAGS: Uncomment and set to "--drop-bbox" to remove top-view bounding boxes 
-#       for cameras with a mirror displaying both top and side view, 
-#       or leave it empty to disable this option.
+#       for cameras with a mirror displaying both top and side view
 #FLAGS=--drop-bbox
 ```
 
