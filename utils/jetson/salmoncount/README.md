@@ -1,12 +1,13 @@
 # Salmon Counter
 
-This will automatically count salmon by processing video clips in a specific
-folder format, ignoring videos that have been created too early to prevent
-attempting to process a currently recording video. The top level folder is
-specified as an environment variable, however, the subfolders depend on the
-hostname of the device.
+The Salmon Counter runs the deep learning model to automatically detect fish
+species, track their position, and count each species. This is done by
+processing video clips in a specific folder format, ignoring videos that have
+been created too early to prevent processing a currently recording video. The
+top level folder is specified as an `.env` variable, however, ***the subfolders
+depend on the hostname*** of the device.
 
-The device running this docker container must have the following format:
+The device running this docker container ***must*** have the following format:
 ```
 ${ORG}-${site}-jetson-#
 ```

@@ -157,7 +157,11 @@ Then restart the docker-compose as above in the Tmux environment.
 
 ## Salmon Counter
 
-See the [`salmoncount` folder's README](salmoncount) for more info.
+The Salmon Counter runs the deep learning model to automatically detect fish
+species, track their position, and count each species.
+
+See the [`salmoncount` folder's README](salmoncount) for step-by-step
+instructions.
 
 ## Setup Static IP
 
