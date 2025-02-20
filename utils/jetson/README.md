@@ -23,8 +23,11 @@ python3 -m pip install docker-compose
 
 Tailscale is a remote connection software. Once setup, any client that's also
 running on the same Tailscale network will be able to access this device
-through any network related means including SSH. This can be fine-tuned to only
-allow certain clients or group of clients on the Tailscale console.
+through any network including SSH. This can be fine-tuned to only allow certain
+clients or tag a group of clients on the Tailscale console.
+
+We use tailscale to remotely access the devices at sites with network
+connectivity for troubleshooting and updating the docker images if necessary.
 
 First, create a [Tailscale account](https://tailscale.com/). Then, setup your
 tailscale with Access controls for the tag `salmon-project` to prevent reverse
@@ -67,6 +70,10 @@ This can look like as follows:
 	],
 }
 ```
+
+This sets the `salmon-project` tag to prevent reverse connections through
+Tailscale for security reasons but would allow a host machine that installs
+tailscale manually to connect to them.
 
 Generate a Tailscale OAuth client key in the settings with "Devices" read permissions
 and the `salmon-project` tag.
@@ -113,6 +120,18 @@ Update the hostname of the device if not already to change the name on the admin
 ```
 sudo hostnamectl set-hostname <new-hostname>
 ```
+
+**!! Note to facilitate downstream tasks, we will standardize the hostnames as such**
+```
+<ORG-ID>-<river-name>-<device>-<num>
+```
+`<device>` could be `pi` or `jetson`.
+
+For example,
+```
+KXSA-kwakwa-jetson-0
+```
+
 If this is run after Tailscale is already up, reboot the machine and do the following:
 
 First, delete the Tailscale status folder (the folder name can be different depending on the YAML file)
@@ -129,17 +148,6 @@ docker-compose down && docker-compose up -d
 docker pull tailscale/tailscale:latest
 ```
 Then restart the docker-compose as above in the Tmux environment. 
-
-We will standardize the hostnames as such
-```
-<ORG-ID>-<river-name>-<device>-<num>
-```
-`<device>` could be `pi` or `jetson`.
-
-For example,
-```
-KXSA-kwakwa-jetson-0
-```
 
 ## Salmon Counter
 
