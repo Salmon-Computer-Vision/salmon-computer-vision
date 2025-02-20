@@ -23,7 +23,7 @@ run a multi-object tracking algorithm such as ByteTrack or BoT-SORT to track the
 We use [YOLOv8](https://github.com/ultralytics/ultralytics) that provides a suite of tools to perform these two tasks
 simultaneously during the inferencing step.
 
-### Dataset
+### Dataset and Models
 
 * Full dataset and model
   ([Dropbox](https://www.dropbox.com/sh/xv8i6k0hzo5jppn/AADBypR1zchux30gjUKGd4dLa?dl=0))
@@ -45,7 +45,7 @@ in the `utils` folder (`utils/datum_create_dataset.py`), requiring
 [Datumaro](https://github.com/openvinotoolkit/datumaro) to run. Refer to the
 [this documentation](utils/README.md) for more details.
 
-### Models
+### Model Info
 
 Trained on a Ubuntu 20.04 [Lambda
 Scalar](https://lambdalabs.com/products/scalar) system with 4 A5000 GPUs.

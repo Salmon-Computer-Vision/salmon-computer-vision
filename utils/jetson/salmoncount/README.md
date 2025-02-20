@@ -17,7 +17,7 @@ For example,
 HIRMD-tankeeah-jetson-0
 ```
 
-Download the TensorRT `.engine` file weights and place it in the `config`
+Download the [TensorRT `.engine` file weights](/README.md#dataset-and-models) and place it in the `config`
 folder. Then, copy it to your home folder:
 
 ```bash
