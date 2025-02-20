@@ -6,6 +6,12 @@ The Raspberry Pi will perform motion detection and record videos from RTSP
 camera streams. It will also act as a network share using an external harddrive
 and upload videos, detection files, and counts to the cloud.
 
+If you have multiple devices that require setting up, you can perform this
+setup once on one device and then clone the SD card for every other device to
+save time.
+
+! Remember to update the [hostname appropriately and restart Tailscale](../jetson/README.md#Rename-the-machine-Hostname).
+
 ## Install Docker and Docker compose
 
 Follow the instructions to install docker on the raspberry pi:
