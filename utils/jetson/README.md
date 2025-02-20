@@ -6,6 +6,12 @@ deep learning model. The Jetson Nano will likely use all of the RAM it has
 available to do this, and due to the RAM being shared between the CPU and GPU,
 it cannot perform too many other tasks other than deep learning processing.
 
+If you have multiple devices that require setting up, you can perform this
+setup once on one device and then clone the SD card for every other device to
+save time.
+
+! Remember to update the [hostname appropriately and restart Tailscale](#Rename-the-machine-Hostname).
+
 ## Docker compose
 
 Docker compose is needed to run the services with specific settings that allow
