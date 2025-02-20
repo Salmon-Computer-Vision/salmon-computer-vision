@@ -32,8 +32,12 @@ simultaneously during the inferencing step.
 It includes individual frame images and labels in the required format for
 ByteTrack and YOLOv6. They could be easily converted to other similar formats
 either manually or with
-[Datumaro](https://github.com/openvinotoolkit/datumaro). The pre-trained models are
-also there with a preliminary YOLOv8 model.
+[Datumaro](https://github.com/openvinotoolkit/datumaro). The pre-trained models
+and TensorRT `.engine` compiled model are also there with a preliminary YOLOv8
+model. Ideally, you would compile the TensorRT model from the original `.pt`
+model manually for a particular edge device you are using as it may be more
+optimized for the device itself. This is especially the case if the device has
+limited RAM as it would optimize the TensorRT model to use less RAM.
 
 * Labels only ([GitHub
   repo](https://github.com/KamiCreed/salmon-count-labels.git)).
