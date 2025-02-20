@@ -51,6 +51,8 @@ use CPU encoding.
 
 Change the `RTSP_URL` and `DEVICE_ID` to the respective URLs and Jetson ending ID hostnames.
 
+Ignore `BUCKET` if the device is deployed at a site with no Internet connectivity and as such
+will not upload to the cloud. This param is the AWS bucket name to upload to.
 
 Older raspi do have the v4l2 or omx encoders, so set the vars like this
 instead:
@@ -76,11 +78,18 @@ To restart, you can spin them down and then back up:
 docker compose down && docker compose up -d
 ```
 
+To run without cloud uploads, spin up only the `salmonmd-jetson` service:
+```bash
+docker compose up salmonmd-jetson -d
+```
+
+The other `syncing*` services deal with uploading to the cloud.
+
 If you installed through pip, the command is simply `docker-compose` instead.
 
-!! We have also discovered corruption errors that could occur with older
-Raspberry Pis, so it may be beneficial to use newer Raspberry Pis from the
-get-go.
+!! We have also discovered corruption errors that could occur when ingesting
+the camera streams with older Raspberry Pis, so it may be beneficial to use
+newer Raspberry Pis from the get-go.
 
 ### Remote Docker Commands
 
