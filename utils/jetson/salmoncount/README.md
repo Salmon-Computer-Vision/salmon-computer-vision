@@ -17,15 +17,11 @@ For example,
 HIRMD-tankeeah-jetson-0
 ```
 
-Download the [TensorRT `.engine` file weights](/README.md#dataset-and-models) and place it in the `config`
-folder. Then, copy it to your home folder:
+Download the [TensorRT `.engine` file weights](/README.md#dataset-and-models)
+and place it in the `config` folder. Then, copy it to the device's home folder:
 
 ```bash
 cp -r config ~/
-```
-OR the remote device's home folder:
-```bash
-scp -r config <user>@<host>:
 ```
 
 Create an `.env` file here with the following:
@@ -37,8 +33,10 @@ USERNAME=<device-username>
 WEIGHTS=/app/config/<salmoncount_weights>.engine
 
 # Drop bounding boxes (optional flag)
-# FLAGS: Set to "--drop-bbox" to remove top-view bounding boxes, or leave it empty to disable this option.
-FLAGS=--drop-bbox
+# FLAGS: Uncomment and set to "--drop-bbox" to remove top-view bounding boxes 
+#       for cameras with mirror displaying both top and side view, 
+#       or leave it empty to disable this option.
+#FLAGS=--drop-bbox
 ```
 
 !! Make sure your drive folder is named `hdd` and is the next subdir after your `${DRIVE}` dir.
