@@ -41,8 +41,8 @@ the model more for the device itself. This is especially the case if the device
 has limited RAM as it would optimize the TensorRT model to use less RAM.
 
 The `.tar.gz` zip files contain the entire dataset whereas the `.pt` file is
-the original pre-trained model. The `.engine` files are the exported model for
-the Jetson Nano.
+the pre-trained model. The `.engine` files are the exported model for the
+Jetson Nano.
 
 * Labels only ([GitHub
   repo](https://github.com/KamiCreed/salmon-count-labels.git)).
