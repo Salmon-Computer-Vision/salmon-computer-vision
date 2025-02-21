@@ -149,11 +149,65 @@ sudo rm tailscale-oauth/ -r
 docker-compose down && docker-compose up -d
 ```
 
-### Update the Docker Tailscale
+### Updating Tailscale
+
+If there is an urgent security update for tailscale, you can update tailscale
+as follows:
+
 ```
 docker pull tailscale/tailscale:latest
 ```
 Then restart the docker-compose as above in the Tmux environment. 
+
+
+### Samba Share
+
+To automatically mount the NFS share from the raspi install NFS client and autofs:
+```bash
+sudo apt update && sudo apt install cifs-utils autofs
+```
+
+Create mount dir:
+```bash
+sudo mkdir -p /media/hdd
+```
+
+Edit `/etc/auto.master`:
+```bash
+sudoedit /etc/auto.master
+```
+
+Add the following to the bottom:
+```bash
+/- /etc/auto_static.smb --timeout=60
+```
+
+Create a new file:
+```bash
+sudoedit /etc/auto_static.smb
+```
+
+with the following:
+```bash
+/media/hdd  -fstype=cifs,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777  ://<raspi_ip>/HDD
+```
+Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is mounting
+the external drive.
+
+\[!\] Note if the device's uid/gid is different, change it the current device's
+uid/gid. Run the command `id` to view. The filesystem may be slower than normal
+if this is not done.
+
+Restart the autofs service:
+```bash
+sudo systemctl restart autofs
+```
+
+Check if it is properly mounted by listing or running `df`:
+```bash
+ls /media/hdd
+df -h
+```
 
 ## Salmon Counter
 
@@ -194,7 +248,7 @@ sudo nmcli con mod eth0 ipv4.dns 192.168.1.1,1.1.1.1
 sudo nmcli con mod eth0 ipv4.method manual
 sudo nmcli con up eth0
 ```
-Replace `192.168.1.20` with your perferred address.
+Replace `192.168.1.20` with your preferred address.
 Check `nmcli con show` to find the correct network interface if it's not `eth0`.
 
 ## Barlus Camera Caveats

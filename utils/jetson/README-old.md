@@ -3,49 +3,6 @@
 First setup NFS share from the Raspi to the Jetson to save videos to the external
 drive attached to the Raspi.
 
-### Samba Share
-
-To mount the NFS share and recover automatically from the raspi install NFS client and autofs:
-```bash
-sudo apt update && sudo apt install cifs-utils autofs
-```
-
-Create mount dir:
-```bash
-sudo mkdir -p /media/hdd
-```
-
-Edit `/etc/auto.master`:
-```bash
-sudoedit /etc/auto.master
-```
-
-Add the following to the bottom:
-```bash
-/- /etc/auto_static.smb --timeout=60
-```
-
-Create a new file:
-```bash
-sudoedit /etc/auto_static.smb
-```
-
-with the following:
-```bash
-/media/hdd  -fstype=cifs,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777  ://<raspi_ip>/HDD
-```
-Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is mounting
-the external drive.
-
-\[!\] Note if the device's uid/gid is different, change it the current device's
-uid/gid. Use the command `id` to do so. The filesystem may be slower than
-normal if not done.
-
-Restart the autofs service:
-```bash
-sudo systemctl restart autofs
-```
-
 ### Running SalmonMD
 
 Navigate to the `salmonmd` folder:
