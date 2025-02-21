@@ -196,7 +196,7 @@ the external drive.
 
 \[!\] Note if the device's uid/gid is different, change it the current device's
 uid/gid. Run the command `id` to view. The filesystem may be slower than normal
-if this is not done.
+if this is not done correctly.
 
 Restart the autofs service:
 ```bash
