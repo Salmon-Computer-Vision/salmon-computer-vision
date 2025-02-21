@@ -25,6 +25,11 @@ python3 -m pip install -U pip
 python3 -m pip install docker-compose
 ```
 
+Add the user to the docker group:
+```bash
+sudo usermod -aG docker <username>
+```
+
 ## Tailscale
 
 Tailscale is a remote connection software. Once setup, any client that's also
