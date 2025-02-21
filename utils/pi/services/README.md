@@ -20,8 +20,11 @@ cd utils/pi/services
 Create your docker images using the respective dockerfiles in `Dockerfiles`:
 
 ```bash
-docker build . -f Dockerfiles/Dockerfile-salmonmd-64 -t <host>/salmonmd:<tag>
+docker build . -f Dockerfiles/Dockerfile-salmonmd-64 -t <image_repo_host>/salmonmd:<tag>
 ```
+
+The `<image_repo_host>` is mainly for uploading to Docker Hub, but it'll be necessary for
+the upcoming `.env` file.
 
 If your raspberry pi is version 5 and 64-bit, use `Dockerfile-salmonmd-64`,
 otherwise, use `Dockerfile-salmonmd` for older and 32-bit versions.
@@ -52,6 +55,23 @@ FPS=10
 FLAGS=--orin --algo CNT
 DEVICE_ID=--device-id jetson-0
 ```
+
+The `RTSP_URL` depends on what URL the camera streams out. For example, BARLUS cameras
+have two main types:
+```
+RTSP_URL=rtsp://<ip.address>/av0_0
+```
+OR
+```
+RTSP_URL=rtsp://<ip.address>/0
+```
+Eg.
+```
+RTSP_URL=rtsp://192.168.1.120/0
+```
+
+Please check your camera's manual for the correct RTSP URL. Also, make sure the
+cameras are set to static IPs.
 
 Raspberry Pi 5 does not have a hardware encoder, so use the `--orin` flag to
 use CPU encoding.
