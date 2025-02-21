@@ -76,10 +76,10 @@ cameras are set to static IPs.
 Raspberry Pi 5 does not have a hardware encoder, so use the `--orin` flag to
 use CPU encoding.
 
-Change the `RTSP_URL` and `DEVICE_ID` to the respective URLs and Jetson ending ID hostnames.
+Change `DEVICE_ID` to the appropriate Jetson ending ID hostnames.
 
 Ignore `BUCKET` if the device is deployed at a site with no Internet connectivity and as such
-will not upload to the cloud. This param is the AWS bucket name to upload to.
+will not upload to the cloud. This param should be the AWS S3 bucket name to upload to.
 
 Older raspi do have the v4l2 or omx encoders, so set the vars like this
 instead:
