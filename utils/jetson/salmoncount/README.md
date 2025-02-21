@@ -7,6 +7,11 @@ been created too early to prevent processing a currently recording video. The
 top level folder is specified as an `.env` variable, however, ***the subfolders
 depend on the hostname*** of the device.
 
+First, build the salmoncounter docker image:
+```bash
+docker build -t <host>/salmoncounter:latest-jetson-jetpack4 .
+```
+
 The device running this docker container ***must*** have the following format:
 ```
 ${ORG}-${site}-jetson-#
@@ -27,7 +32,7 @@ cp -r config ~/
 Create an `.env` file here with the following:
 ```bash
 IMAGE_REPO_HOST=<host>
-TAG=<image_tag>
+TAG=latest-jetson-jetpack4
 DRIVE=/media
 USERNAME=<device-username>
 WEIGHTS=/app/config/<salmoncount_weights>.engine
@@ -43,6 +48,10 @@ WEIGHTS=/app/config/<salmoncount_weights>.engine
 
 !! Make sure your drive folder is named `hdd` and is the next subdir after your `${DRIVE}` dir.
 You must have the folder format in `${DRIVE}/hdd`.
+
+The folders in `WEIGHTS` describe within the docker container, so simply
+make sure the `<salmoncount_weights>.engine` name is the same in the config
+folder.
 
 If you have any private docker repos, you may need to install
 the following to login with docker:
