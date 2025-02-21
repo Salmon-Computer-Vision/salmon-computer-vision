@@ -32,12 +32,17 @@ simultaneously during the inferencing step.
 It includes individual frame images and labels in the required format for
 ByteTrack and YOLOv6. They could be easily converted to other similar formats
 either manually or with
-[Datumaro](https://github.com/openvinotoolkit/datumaro). The pre-trained models
-and TensorRT `.engine` compiled model are also there with a preliminary YOLOv8
-model. Ideally, you would compile the TensorRT model from the original `.pt`
-model manually for a particular edge device you are using as it may be more
-optimized for the device itself. This is especially the case if the device has
-limited RAM as it would optimize the TensorRT model to use less RAM.
+[Datumaro](https://github.com/openvinotoolkit/datumaro). The pre-trained `.pt`
+models and TensorRT `.engine` exported model are also there for YOLOv8.
+Ideally, the TensorRT model should be
+[re-exported](https://docs.ultralytics.com/integrations/tensorrt/) from the
+original `.pt` model manually for a particular edge device as it may optimize
+the model more for the device itself. This is especially the case if the device
+has limited RAM as it would optimize the TensorRT model to use less RAM.
+
+The `.tar.gz` zip files contain the entire dataset whereas the `.pt` file is
+the original pre-trained model. The `.engine` files are the exported model for
+the Jetson Nano.
 
 * Labels only ([GitHub
   repo](https://github.com/KamiCreed/salmon-count-labels.git)).
