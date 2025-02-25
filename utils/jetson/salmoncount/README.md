@@ -7,7 +7,12 @@ been created too early to prevent processing a currently recording video. The
 top level folder is specified as an `.env` variable, however, ***the subfolders
 depend on the hostname*** of the device.
 
-First, build the salmoncounter docker image:
+First, go to this directory:
+```bash
+cd utils/jetson/salmoncount
+```
+
+Build the salmoncounter docker image:
 ```bash
 docker build -t <host>/salmoncounter:latest-jetson-jetpack4 .
 ```
