@@ -18,12 +18,8 @@ docker build -t <image_repo_host>/salmoncounter:latest-jetson-jetpack4 .
 ```
 
 `<image_repo_host>` here refers to the image repository host that you may
-upload this built docker image to if you so choose. It could allow updating or
-pulling the image to other devices more streamlined instead of having to build
-the image for each device. This could be something as simple as a public Docker
-Hub repo. Be sure to `docker login` before you decide to `docker push` the
-image. Read the relevant docs and references of these commands for more
-details.
+upload this built docker image to if you so choose. [See the updating docker
+image section](#uploading-the-docker-image) for more info.
 
 The device running this docker container ***must*** have the following format:
 ```
@@ -76,6 +72,22 @@ To restart, you can spin them down and then back up:
 docker compose down && docker compose up -d
 ```
 
+## Uploading the Docker Image
+
+Uploading the docker image could make updating or pulling the image to other
+devices more streamlined instead of having to build the image for each device.
+This could be something as simple as a public Docker Hub repo.
+
+If you have made changes to the code, you can update the docker image by
+rebuilding as shown above ideally on a dev device (Maybe with `--no-cache` if
+needed). The following outlines the steps on uploading the docker images.
+
+Login to your image repo:
+
+```bash
+docker login
+```
+
 If you have any private docker repos, you may need to install
 the following to login with docker:
 ```bash
@@ -87,15 +99,17 @@ Then, you should be able to login:
 docker login
 ```
 
-## Updating the docker image
-
-If you have made changes to the code, you can update the docker image by
-rebuilding as shown above ideally on a dev device (Maybe with `--no-cache` if
-needed). Then, push your docker image:
+Push your docker image:
 
 ```bash
 docker push <image_repo_host>/salmoncounter:latest-jetson-jetpack4
 ```
+
+Make sure `<image_repo_host>` is either your Docker Hub account username or the
+URL of your private docker image repository.
+
+Once it is pushed, it will live in the cloud of whatever repository you pushed
+to. Then, you can go to your other devices and pull the image and any changes.
 
 On the production devices, run the following to update:
 
