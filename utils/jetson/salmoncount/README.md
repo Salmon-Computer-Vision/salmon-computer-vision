@@ -14,8 +14,16 @@ cd utils/jetson/salmoncount
 
 Build the salmoncounter docker image:
 ```bash
-docker build -t <host>/salmoncounter:latest-jetson-jetpack4 .
+docker build -t <image_repo_host>/salmoncounter:latest-jetson-jetpack4 .
 ```
+
+`<image_repo_host>` here refers to the image repository host that you may
+upload this built docker image to if you so choose. It could allow updating or
+pulling the image to other devices more streamlined instead of having to build
+the image for each device. This could be something as simple as a public Docker
+Hub repo. Be sure to `docker login` before you decide to `docker push` the
+image. Read the relevant docs and references of these commands for more
+details.
 
 The device running this docker container ***must*** have the following format:
 ```
@@ -36,7 +44,7 @@ cp -r config ~/
 
 Create an `.env` file here with the following:
 ```bash
-IMAGE_REPO_HOST=<host>
+IMAGE_REPO_HOST=<image_repo_host>
 TAG=latest-jetson-jetpack4
 DRIVE=/media
 USERNAME=<device-username>
@@ -58,6 +66,16 @@ The folders in `WEIGHTS` describe within the docker container, so simply
 make sure the `<salmoncount_weights>.engine` name is the same in the config
 folder.
 
+Spin up the services:
+```bash
+docker compose up -d
+```
+
+To restart, you can spin them down and then back up:
+```bash
+docker compose down && docker compose up -d
+```
+
 If you have any private docker repos, you may need to install
 the following to login with docker:
 ```bash
@@ -67,6 +85,34 @@ sudo apt install gnupg2 pass
 Then, you should be able to login:
 ```bash
 docker login
+```
+
+## Updating the docker image
+
+If you have made changes to the code, you can update the docker image by
+rebuilding as shown above ideally on a dev device (Maybe with `--no-cache` if
+needed). Then, push your docker image:
+
+```bash
+docker push <image_repo_host>/salmoncounter:latest-jetson-jetpack4
+```
+
+On the production devices, run the following to update:
+
+```bash
+docker pull <image_repo_host>/salmoncounter:latest-jetson-jetpack4
+```
+
+Spinning the services up again should automatically update the container:
+
+```bash
+docker compose up -d
+```
+
+Otherwise, you can fully remove and spin them back up:
+
+```bash
+docker compose down && docker compose up -d
 ```
 
 ## [Temp] Build Jetpack 6 Ultralytics docker
