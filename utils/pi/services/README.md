@@ -44,7 +44,7 @@ Create a `.env` file here with the following:
 IMAGE_REPO_HOST=<image_repo_host>
 TAG=latest-bookworm
 DRIVE=/media/hdd
-USERNAME=netlabmedia
+USERNAME=<pi_username>
 HOST_UID=1000
 HOST_GID=1000
 ORGID=<orgid>
@@ -55,6 +55,12 @@ FPS=10
 FLAGS=--orin --algo CNT
 DEVICE_ID=--device-id jetson-0
 ```
+
+Change the `jetson-0` in `DEVICE_ID` to the same name and number as ending
+portion of the corresponding Jetson's hostname.
+
+For example, if your raspi is `HMD-rivername-pi-1` and the corresponding jetson
+is `HMD-rivername-jetson-1` put `jetson-1` here.
 
 The `RTSP_URL` depends on what URL the camera streams out. For example, BARLUS cameras
 have two main types:
