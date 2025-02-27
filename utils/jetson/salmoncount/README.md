@@ -38,7 +38,7 @@ and place it in the `config` folder. Then, copy it to the device's home folder:
 cp -r config ~/
 ```
 
-Create an `.env` file here with the following:
+Create an `.env` file in the `salmoncount` with the following:
 ```bash
 IMAGE_REPO_HOST=<image_repo_host>
 TAG=latest-jetson-jetpack4

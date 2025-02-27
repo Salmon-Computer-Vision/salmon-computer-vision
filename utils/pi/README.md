@@ -129,8 +129,8 @@ directory mask = 0777
 inherit permissions = yes
 force create mode = 0777
 force directory mode = 0777
-force user = netlabmedia
-force group = netlabmedia
+force user = <pi_username>
+force group = <pi_username>
 ```
 
 Restart Samba:

@@ -12,7 +12,7 @@ save time.
 
 ! Remember to update the [hostname appropriately and restart Tailscale](#Rename-the-machine-Hostname).
 
-## Docker compose
+## Setup
 
 Docker compose is needed to run the services with specific settings that allow
 remote access and process video clips.
@@ -23,6 +23,7 @@ docker-compose:
 ```
 python3 -m pip install -U pip
 python3 -m pip install docker-compose
+sudo apt update && sudo apt install tmux
 ```
 
 Add the user to the docker group:
@@ -156,7 +157,8 @@ First, delete the Tailscale status folder (the folder name can be different depe
 sudo rm tailscale-oauth/ -r
 ```
 ***!!!*** Then, you ***MUST*** run the following command under the ***Tmux environment***, otherwise, you are likely to lose the SSH remote connection permanently.
-```
+```bash
+tmux
 docker-compose down && docker-compose up -d
 ```
 
