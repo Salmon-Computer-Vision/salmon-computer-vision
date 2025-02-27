@@ -53,7 +53,7 @@ when plugged in.
 
 On the raspberry pi through SSH or in the terminal, clone this repo if you haven't already:
 ```bash
-git clone https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git
+git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git
 ```
 
 Go to the directory of this readme:

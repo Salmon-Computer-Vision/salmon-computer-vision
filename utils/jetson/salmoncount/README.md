@@ -9,7 +9,7 @@ depend on the hostname*** of the device.
 
 First, go to this directory:
 ```bash
-cd utils/jetson/salmoncount
+cd salmon-computer-vision/utils/jetson/salmoncount
 ```
 
 Build the salmoncounter docker image:

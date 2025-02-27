@@ -89,9 +89,15 @@ tailscale manually to connect to them.
 Generate a Tailscale OAuth client key in the settings with "Devices" read permissions
 and the `salmon-project` tag.
 
+Clone this repo on the target device if not already:
+
+```bash
+git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git
+```
+
 Move to this directory:
 ```bash
-cd utils/jetson
+cd salmon-computer-vision/utils/jetson
 ```
 
 Create an `.env` file in this folder with your tailscale auth key:
