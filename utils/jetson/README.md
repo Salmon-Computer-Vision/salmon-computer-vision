@@ -139,7 +139,7 @@ Update the hostname of the device if not already to change the name on the admin
 sudo hostnamectl set-hostname <new-hostname>
 ```
 
-**!! Note to facilitate downstream tasks, we will standardize the hostnames as such**
+***!! Note to facilitate downstream tasks, we will standardize the hostnames as such***
 ```
 <ORGID>-<river-name>-<device>-<num>
 ```
