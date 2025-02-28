@@ -72,6 +72,11 @@ To restart, you can spin them down and then back up:
 docker compose down && docker compose up -d
 ```
 
+Check the logs to see if it is running and for troubleshooting:
+```bash
+docker compose logs --tail 10 -f
+```
+
 ## Uploading the Docker Image
 
 Uploading the docker image could make updating or pulling the image to other

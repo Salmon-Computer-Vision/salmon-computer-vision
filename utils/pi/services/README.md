@@ -116,6 +116,11 @@ To run without cloud uploads, spin up only the `salmonmd-jetson` service:
 docker compose up salmonmd-jetson -d
 ```
 
+Check the logs to see if it is running and for troubleshooting:
+```bash
+docker compose logs --tail 10 -f
+```
+
 The other `syncing*` services deal with uploading to the cloud.
 
 If you installed through pip, the command is simply `docker-compose` instead.
