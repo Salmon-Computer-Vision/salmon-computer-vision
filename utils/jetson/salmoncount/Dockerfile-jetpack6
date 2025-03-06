@@ -2,6 +2,7 @@ FROM ultralytics/ultralytics:latest-jetson-jetpack6
 
 # Install dependencies
 RUN python3 -m pip install -U pip
+RUN python3 -m pip install -U setuptools wheel check-wheel-contents
 
 RUN git clone --depth 1 https://github.com/Salmon-Computer-Vision/salmon-computer-vision.git /tools
 
