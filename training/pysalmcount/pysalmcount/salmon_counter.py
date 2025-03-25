@@ -87,7 +87,6 @@ class SalmonCounter:
 
         if save_txt:
             txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem
-            txt_dir.mkdir()
         if save_vid:
             OUTPUT_PATH = Path('output_vids')
             OUTPUT_PATH.mkdir(exist_ok=True)
@@ -212,6 +211,7 @@ class SalmonCounter:
 
                 if save_txt:
                     unique_id = clip_track_ids[track_id]
+                    txt_dir.mkdir(exist_ok=True)
                     with open(str(txt_dir / f"frame_{frame_count:06d}.txt"), 'a') as f:
                         f.write(f"{cls_id} {x} {y} {w} {h} {conf} {unique_id}\n")
                 if save_vid:
