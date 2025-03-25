@@ -77,6 +77,20 @@ Check the logs to see if it is running and for troubleshooting:
 docker compose logs --tail 10 -f
 ```
 
+## Nvidia runtime missing
+
+If docker errors saying there's no nvidia runtime, run the following to add
+nvidia to the docker config:
+
+```bash
+sudo nvidia-ctk runtime configure --runtime=docker
+```
+
+Restart docker
+```bash
+sudo systemctl restart docker
+```
+
 ## Uploading the Docker Image
 
 Uploading the docker image could make updating or pulling the image to other
