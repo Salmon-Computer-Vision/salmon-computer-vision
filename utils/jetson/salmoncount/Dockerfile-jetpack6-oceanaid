@@ -1,0 +1,24 @@
+FROM oceanaid/oceanaid-public:latest-jetson-jetpack6
+ARG USER=Salmon-Computer-Vision REPO=salmon-computer-vision BRANCH=master
+
+# Install dependencies
+RUN python3 -m pip install -U pip
+RUN python3 -m pip install -U setuptools wheel check-wheel-contents packaging
+
+RUN python3 -m pip uninstall -y torchvision && python3 -m pip install torchvision --index-url https://download.pytorch.org/whl/cu126
+
+ADD https://api.github.com/repos/${USER}/${REPO}/git/refs/heads/${BRANCH} version.json
+RUN git clone --branch ${BRANCH} --depth 1 https://github.com/${USER}/${REPO}.git /tools
+
+RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y ffmpeg python3-opencv
+
+RUN python3 -m pip install /tools/training/pysalmcount
+RUN python3 -m pip install watchdog lapx ffmpeg-python opencv-contrib-python
+
+COPY watcher.py /app/watcher.py
+
+WORKDIR /app
+
+# Start the watcher script
+CMD ["python3", "watcher.py"]
+
