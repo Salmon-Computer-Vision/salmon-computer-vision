@@ -12,8 +12,8 @@ RUN git clone --branch ${BRANCH} --depth 1 https://github.com/${USER}/${REPO}.gi
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y ffmpeg python3-opencv
 
-RUN python3 -m pip install /tools/training/pysalmcount
-RUN python3 -m pip install watchdog lapx ffmpeg-python opencv-contrib-python
+RUN python3 -m pip install -e /tools/training/pysalmcount
+RUN python3 -m pip install watchdog lapx ffmpeg-python
 
 COPY watcher.py /app/watcher.py
 

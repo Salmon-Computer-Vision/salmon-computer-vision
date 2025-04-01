@@ -1,7 +1,7 @@
 ---
 services:
   salmonmd:
-    image: ${IMAGE_REPO_HOST}/salmoncounter:${TAG}
+    image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     environment:
       - HOSTNAME
     env_file:
