@@ -90,11 +90,11 @@ non-empty.
 
 ### Setup Samba Share
 
-Having the external drive mounted is all good if we only need the raspberry pi
-to access the drive. However, we also need other devices to accesss it to
-process videos and output the detection and count files. We use Samba for
-compatibility of most drives out of the box. Export a Samba share for the
-Jetson to access the external drive.
+Having the external drive mounted is all good if we only need the one raspberry
+pi to access the drive. However, we also need other devices or potentially
+other raspis to accesss it to output or process videos and output the detection
+and count files. We use Samba for compatibility of most drives out of the box.
+Export a Samba share for the Jetson to access the external drive.
 
 Install Samba:
 ```bash
