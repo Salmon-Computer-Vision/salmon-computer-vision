@@ -36,6 +36,9 @@ cp ../pi/services/.env .
 cp ~/.config/rclone/rclone.conf .
 ```
 
+However, the `.env` and `rclone.conf` files can be swapped without rebuilding
+the program by putting them adjacent to the executable file.
+
 Build and package the program
 ```
 pyoxidizer build
