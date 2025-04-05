@@ -249,7 +249,7 @@ def make_exe():
 
     # Invoke `pip install` using a requirements file and add the collected resources
     # to our binary.
-    #exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"]))
+    exe.add_python_resources(exe.pip_install(["-r", "requirements.txt"]))
 
     # Read Python files from a local directory and add them to our embedded
     # context, taking just the resources belonging to the `foo` and `bar`
@@ -285,6 +285,8 @@ def make_install(exe):
 
     # Add the generated executable to our install layout in the root directory.
     files.add_python_resource(".", exe)
+    files.add_path('.env', '')
+    files.add_path('rclone.conf', '')
 
     return files
 
@@ -294,13 +296,13 @@ def make_msi(exe):
     # .msi installer when it is built.
     return exe.to_wix_msi_builder(
         # Simple identifier of your app.
-        "myapp",
+        "batch-upload",
         # The name of your application.
-        "My Application",
+        "Batch Upload",
         # The version of your application.
         "1.0",
         # The author/manufacturer of your application.
-        "Alice Jones"
+        "KamiCreed"
     )
 
 
