@@ -41,4 +41,29 @@ Build and package the program
 pyoxidizer build
 ```
 
-Executable installs are in the folder build.
+Executable installs are in the folder `build`.
+
+Repeat these steps for other desired OSes and place them with
+the file structure as follows:
+```
+batch-upload/
+├─ batch-upload-amd-linux/
+   ├─ batch_upload
+   ├─ ...
+├─ batch-upload-amd-windows/
+   ├─ batch_upload.exe
+   ├─ ...
+├─ batch-upload-amd-mac/
+   ├─ batch_upload
+   ├─ ...
+```
+
+This `batch-upload` folder must be placed in the harddrive adjacent to the data
+ORGID folder to be uploaded.
+
+Run the executables within the same folder as such:
+```
+# Linux
+cd batch-upload/batch-upload-amd-linux
+./batch_upload
+```
