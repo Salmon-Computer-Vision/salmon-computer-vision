@@ -285,7 +285,7 @@ def make_install(exe):
 
     # Add the generated executable to our install layout in the root directory.
     files.add_python_resource(".", exe)
-    #files.add_path('.env', '')
+    files.add_path('.env', '')
     files.add_path('rclone.conf', '')
     files.add_path('rclone-install/rclone', '')
     files.add_path('rclone-install/rclone.1', '')

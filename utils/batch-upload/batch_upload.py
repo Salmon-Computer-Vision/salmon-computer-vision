@@ -15,6 +15,8 @@ def main():
     COMMON_FLAGS = '--bwlimit=0 --buffer-size=128M --transfers=1 --log-level INFO'.split()
     MOTION_VIDS_INCLUDE = ['--include', f"/{SITE_NAME}/*/motion_vids/**"]
     MOTION_VIDS_METADATA_INCLUDE = ['--include', f"/{SITE_NAME}/*/motion_vids_metadata/**"]
+    DETECTIONS_INCLUDE = f"--include /{SITE_NAME}/*/detections/**".split()
+    COUNTS_INCLUDE = f"--include /{SITE_NAME}/*/counts/** --include /{SITE_NAME}/*/*.csv".split()
     LOCATION = [str(Path("..") / ".." / ORGID), f'aws:{BUCKET}/{ORGID}']
     CONFIG = ["--config", "rclone.conf"]
 
@@ -23,11 +25,13 @@ def main():
 
     UPLOAD_CMD = ['copy']
 
-    CMD = UPLOAD_LOC + UPLOAD_CMD + COMMON_FLAGS + MOTION_VIDS_INCLUDE + \
-            MOTION_VIDS_METADATA_INCLUDE + CONFIG + LOCATION
-    print(CMD)
+    MOTION_VIDS_CMD = UPLOAD_LOC + UPLOAD_CMD + COMMON_FLAGS + \
+            MOTION_VIDS_INCLUDE + MOTION_VIDS_METADATA_INCLUDE + \
+            DETECTIONS_INCLUDE + COUNTS_INCLUDE + \
+            CONFIG + LOCATION
+    print(MOTION_VIDS_CMD)
 
-    subprocess.run(CMD)
+    subprocess.run(MOTION_VIDS_CMD)
 
 if __name__ == "__main__":
     main()
