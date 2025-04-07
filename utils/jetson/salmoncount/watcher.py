@@ -2,6 +2,7 @@
 import os
 import argparse
 import time
+import datetime
 from pathlib import Path
 import subprocess
 import pickle
@@ -38,19 +39,22 @@ class BufferedHandler(logging.Handler):
         self.flush()
         super().close()
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+rootlogger = logging.getLogger()
+rootlogger.setLevel(logging.INFO)
 
 buffered_handler = BufferedHandler(buffer_size=50)
 buffered_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s')
 buffered_handler.setFormatter(formatter)
-logger.addHandler(buffered_handler)
+rootlogger.addHandler(buffered_handler)
+
+logger = logging.getLogger(__name__)
 
 DRIVE_DIR = Path("/app/drive/hdd")
 MOTION_DIR_NAME = "motion_vids"
 DETECTION_DIR_NAME = "detections"
 COUNTS_DIR_NAME = "counts"
+LOGS_DIR_PATH = "logs/salmoncount_logs"
 CONFIG_PATH = Path("/app/config/2023_combined_salmon.yaml")
 PROCESSED_FILE = Path("/app/config/processed_videos.pkl")
 
@@ -130,10 +134,18 @@ def main(args):
     vids_path = Path(site_save_path) / MOTION_DIR_NAME
     detection_dir = Path(site_save_path) / DETECTION_DIR_NAME
     counts_dir = Path(site_save_path) / COUNTS_DIR_NAME
+    logs_dir = Path(site_save_path) / LOGS_DIR_PATH
 
     detection_dir.mkdir(exist_ok=True)
     counts_dir.mkdir(exist_ok=True)
+    logs_dir.mkdir(exist_ok=True, parents=True)
     video_handler = VideoHandler(detection_dir, counts_dir, args.weights)
+
+    timestamp = datetime.datetime.now().strftime("%Y%m%d")
+    file_handler = logging.FileHandler(logs_dir / f"salmoncount_logs_{timestamp}.txt")
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(formatter)
+    rootlogger.addHandler(file_handler)
 
     current_time = time.time()
 
@@ -160,10 +172,10 @@ def main(args):
     #observer.join()
 
     logger.info("Waiting a little before ending...")
-    logger.handlers[0].flush()
+    rootlogger.handlers[0].flush()
     time.sleep(30)
     logger.info("Ending...")
-    logger.handlers[0].flush()
+    rootlogger.handlers[0].flush()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")

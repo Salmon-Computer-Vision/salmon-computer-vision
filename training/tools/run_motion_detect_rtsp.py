@@ -5,13 +5,18 @@ from pysalmcount import motion_detect_stream as md
 import argparse
 import os
 import logging
+from pathlib import Path
 
 # Set up logging
+log_format = '%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s'
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
+    format=log_format,
 )
+formatter = logging.Formatter(log_format)
 logger = logging.getLogger(__name__)
+
+LOGS_DIR_PATH = "logs/salmonmd_logs"
 
 def read_rtsp_url(file_path):
     """Read RTSP URL from the specified file."""
@@ -29,16 +34,25 @@ def get_orgid_and_site_name(name):
 def main(args):
     save_prefix = None
     if args.test:
-        site_save_path = args.save_folder
+        site_save_path = Path(args.save_folder)
     else:
         orgid, site_name, device_id = get_orgid_and_site_name(os.uname()[1])
         if args.device_id is not None:
             device_id = args.device_id
             save_prefix = f"{orgid}-{site_name}-{args.device_id}"
-        site_save_path = os.path.join(args.save_folder, orgid, site_name, device_id)
+        site_save_path = Path(args.save_folder) / orgid / site_name / device_id
 
-    if not os.path.exists(site_save_path):
-        os.makedirs(site_save_path)
+    site_save_path.mkdir(exist_ok=True, parents=True)
+
+    log_dir = site_save_path / LOGS_DIR_PATH
+    log_dir.mkdir(exist_ok=True, parents=True)
+
+    rootlogger = logging.getLogger()
+    timestamp = datetime.datetime.now().strftime("%Y%m%d")
+    file_handler = logging.FileHandler(logs_dir / f"salmoncount_logs_{timestamp}.txt")
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(formatter)
+    rootlogger.addHandler(file_handler)
 
     if args.gstreamer:
         #input_str = f"rtspsrc location={args.rtsp_url} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
