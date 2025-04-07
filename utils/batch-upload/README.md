@@ -9,7 +9,7 @@ You need to install [*Build Tools for Visual Studio 2019 or
 later*](https://visualstudio.microsoft.com/downloads/?q=build+tools) for
 pyoxidizer to properly build the program into an exe.
 
-## Install
+## Build
 
 Install pyoxidizer
 ```
@@ -19,6 +19,11 @@ python3 -m pip install pyoxidizer==0.24.0
 Install wget:
 ```
 sudo apt update && sudo apt install wget
+```
+
+Move to this folder:
+```bash
+cd utils/batch-upload
 ```
 
 [Download the rclone executable](https://rclone.org/downloads/). You can use
@@ -34,11 +39,30 @@ wget https://downloads.rclone.org/rclone-current-windows-amd64.zip
 wget https://downloads.rclone.org/rclone-current-osx-amd64.zip
 ```
 
-Make sure you download the correct one for your OS.
+Make sure you download the correct one for the OS that is building the
+executable.
 
 Unzip the file and *rename* the extracted folder to `rclone-install`.
 
-Add `.env` file of the syncing services and `rclone.conf` file to here:
+You can create an `rclone.conf` file in two ways. One by following the steps
+from running `rclone config` on the host machine and finding `rclone.conf` in
+`~/.config/rclone`. You can also simply use the following template for AWS S3:
+
+```
+# rclone.conf
+[aws]
+type = s3
+provider = AWS
+access_key_id = <access_key_ID>
+secret_access_key = <access_key_secret>
+region = <region_tag>
+location_constraint = <region_constraint_tag>
+acl = private
+```
+
+`region` and `location_constraint` are AWS region tags such as 
+
+Add `.env` file of the syncing services and `rclone.conf` file to this folder:
 ```
 cp ../pi/services/.env .
 cp ~/.config/rclone/rclone.conf .
@@ -69,13 +93,13 @@ Repeat these steps for other desired OSes and place them with
 the file structure as follows:
 ```
 batch-upload/
-├─ batch-upload-amd-linux/
+├─ batch-upload-linux-amd64/
    ├─ batch_upload
    ├─ ...
-├─ batch-upload-amd-windows/
+├─ batch-upload-windows-amd64/
    ├─ batch_upload.exe
    ├─ ...
-├─ batch-upload-amd-mac/
+├─ batch-upload-mac-amd64/
    ├─ batch_upload
    ├─ ...
 ```
