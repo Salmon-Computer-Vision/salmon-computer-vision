@@ -20,8 +20,7 @@ def main():
     LOCATION = [str(Path("..") / ".." / ORGID), f'aws:{BUCKET}/{ORGID}']
     CONFIG = ["--config", "rclone.conf"]
 
-    # TODO: Change depending on distribution
-    UPLOAD_LOC = ['rclone']
+    UPLOAD_LOC = [str(Path('rclone-install') / 'rclone')]
 
     UPLOAD_CMD = ['copy']
 

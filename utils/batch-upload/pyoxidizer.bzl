@@ -287,7 +287,11 @@ def make_install(exe):
     files.add_python_resource(".", exe)
     files.add_path('.env', '')
     files.add_path('rclone.conf', '')
-    files.add_path('rclone-install/rclone', '')
+
+    if 'windows' in VARS:
+        files.add_path('rclone-install/rclone.exe', '')
+    else:
+        files.add_path('rclone-install/rclone', '')
     files.add_path('rclone-install/rclone.1', '')
 
     return files

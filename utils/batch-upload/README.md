@@ -3,6 +3,14 @@
 This will create a cross-platform executable for offline sites that will batch
 upload the data offsite.
 
+## Windows Requirements
+
+You need to install [*Build Tools for Visual Studio 2019 or
+later*](https://visualstudio.microsoft.com/downloads/?q=build+tools) for
+pyoxidizer to properly build the program into an exe.
+
+## Install
+
 Install pyoxidizer
 ```
 python3 -m pip install pyoxidizer==0.24.0
@@ -41,10 +49,21 @@ the program by putting them adjacent to the executable file.
 
 Build and package the program
 ```
-pyoxidizer build
+# Linux and Mac
+pyoxidizer build --release
+# Windows
+pyoxidizer build --var windows "" --release
 ```
 
 Executable installs are in the folder `build`.
+
+You can build and run the program with debugging by running the following:
+```
+# Linux and Mac
+pyoxidizer run
+# Windows
+pyoxidizer run --var windows ""
+```
 
 Repeat these steps for other desired OSes and place them with
 the file structure as follows:
