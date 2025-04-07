@@ -7,7 +7,6 @@ from pathlib import Path
 def main():
     config = dotenv_values(".env")
 
-    DRIVE = config.get('DRIVE')
     SITE_NAME = config.get('SITE_NAME')
     ORGID = config.get('ORGID')
     BUCKET = config.get('BUCKET')
