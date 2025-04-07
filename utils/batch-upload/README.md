@@ -76,7 +76,7 @@ Build and package the program
 # Linux and Mac
 pyoxidizer build --release
 # Windows
-pyoxidizer build --var windows "" --release
+pyoxidizer build --var windows . --release
 ```
 
 Executable installs are in the folder `build`.
@@ -86,7 +86,7 @@ You can build and run the program with debugging by running the following:
 # Linux and Mac
 pyoxidizer run
 # Windows
-pyoxidizer run --var windows ""
+pyoxidizer run --var windows .
 ```
 
 Repeat these steps for other desired OSes and place them with
