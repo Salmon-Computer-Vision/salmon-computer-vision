@@ -1,5 +1,7 @@
 # Batch Upload User Manual
 
+***Place this folder adjacent to the ORGID folder to be uploaded.***
+
 Open the folder for your particular operating system (OS).
 
 `batch-upload-windows-amd64/` for windows
