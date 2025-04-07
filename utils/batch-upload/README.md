@@ -95,12 +95,27 @@ the file structure as follows:
 batch-upload/
 ├─ batch-upload-linux-amd64/
    ├─ batch_upload
+   ├─ .env
+   ├─ rclone.conf
+   ├─ rclone-install/
+       ├─ rclone
+       ├─ rclone.1
    ├─ ...
 ├─ batch-upload-windows-amd64/
    ├─ batch_upload.exe
+   ├─ .env
+   ├─ rclone.conf
+   ├─ rclone-install/
+       ├─ rclone.exe
+       ├─ rclone.1
    ├─ ...
 ├─ batch-upload-mac-amd64/
    ├─ batch_upload
+   ├─ .env
+   ├─ rclone.conf
+   ├─ rclone-install/
+       ├─ rclone
+       ├─ rclone.1
    ├─ ...
 ```
 
