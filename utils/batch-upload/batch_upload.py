@@ -16,6 +16,7 @@ def main():
     MOTION_VIDS_METADATA_INCLUDE = ['--include', f"/{SITE_NAME}/*/motion_vids_metadata/**"]
     DETECTIONS_INCLUDE = f"--include /{SITE_NAME}/*/detections/**".split()
     COUNTS_INCLUDE = f"--include /{SITE_NAME}/*/counts/** --include /{SITE_NAME}/*/*.csv".split()
+    LOGS_INCLUDE = f"--include /{SITE_NAME}/*/logs/**".split()
     LOCATION = [str(Path("..") / ".." / ORGID), f'aws:{BUCKET}/{ORGID}']
     CONFIG = ["--config", "rclone.conf"]
 
@@ -25,7 +26,7 @@ def main():
 
     MOTION_VIDS_CMD = UPLOAD_LOC + UPLOAD_CMD + COMMON_FLAGS + \
             MOTION_VIDS_INCLUDE + MOTION_VIDS_METADATA_INCLUDE + \
-            DETECTIONS_INCLUDE + COUNTS_INCLUDE + \
+            DETECTIONS_INCLUDE + COUNTS_INCLUDE + LOGS_INCLUDE \
             CONFIG + LOCATION
     print(MOTION_VIDS_CMD)
 

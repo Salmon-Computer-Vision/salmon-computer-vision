@@ -13,6 +13,7 @@ logging.basicConfig(
     level=logging.INFO,
     format=log_format,
 )
+rootlogger = logging.getLogger()
 formatter = logging.Formatter(log_format)
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,6 @@ def main(args):
     log_dir = site_save_path / LOGS_DIR_PATH
     log_dir.mkdir(exist_ok=True, parents=True)
 
-    rootlogger = logging.getLogger()
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
     file_handler = logging.FileHandler(logs_dir / f"salmoncount_logs_{timestamp}.txt")
     file_handler.setLevel(logging.INFO)
