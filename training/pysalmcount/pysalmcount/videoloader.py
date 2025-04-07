@@ -7,7 +7,6 @@ from threading import Thread
 from queue import Queue
 import time
 
-# Set up logging
 logger = logging.getLogger(__name__)
 
 class VideoCaptureError(Exception):

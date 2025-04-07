@@ -9,12 +9,6 @@ import ffmpeg
 
 from typing import Union
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
-)
-
 logger = logging.getLogger(__name__)
 
 @dataclass

@@ -19,12 +19,6 @@ VOTE_METHOD_IGN = 'ignore_thin'
 VOTE_METHOD_CONF = 'confidence'
 MIN_TRACK_ID = 1
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s',
-)
-
 logger = logging.getLogger(__name__)
 
 class SalmonCounter:
