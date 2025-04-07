@@ -12,7 +12,7 @@ from pathlib import Path
 # Set up logging
 log_format = '%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s'
 rootlogger = logging.getLogger()
-rootlogger.setLevel(loggin.INFO)
+rootlogger.setLevel(logging.INFO)
 formatter = logging.Formatter(log_format)
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setFormatter(formatter)
