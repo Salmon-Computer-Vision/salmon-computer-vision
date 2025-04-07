@@ -4,18 +4,20 @@ from pysalmcount import motion_detect_stream as md
 
 import argparse
 import os
+import sys
 import logging
 import datetime
 from pathlib import Path
 
 # Set up logging
 log_format = '%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s'
-logging.basicConfig(
-    level=logging.INFO,
-    format=log_format,
-)
 rootlogger = logging.getLogger()
+rootlogger.setLevel(loggin.INFO)
 formatter = logging.Formatter(log_format)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+rootlogger.addHandler(console_handler)
+
 logger = logging.getLogger(__name__)
 
 LOGS_DIR_PATH = "logs/salmonmd_logs"
@@ -46,14 +48,17 @@ def main(args):
 
     site_save_path.mkdir(exist_ok=True, parents=True)
 
-    log_dir = site_save_path / LOGS_DIR_PATH
-    log_dir.mkdir(exist_ok=True, parents=True)
+    logs_dir = site_save_path / LOGS_DIR_PATH
+    logs_dir.mkdir(exist_ok=True, parents=True)
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
-    file_handler = logging.FileHandler(logs_dir / f"salmoncount_logs_{timestamp}.txt")
+    log_file = logs_dir / f"salmonmd_logs_{timestamp}.txt"
+    file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
     rootlogger.addHandler(file_handler)
+
+    logger.info(f"Writing logs to {log_file}")
 
     if args.gstreamer:
         #input_str = f"rtspsrc location={args.rtsp_url} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
