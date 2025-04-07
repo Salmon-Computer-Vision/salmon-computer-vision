@@ -5,6 +5,7 @@ from pysalmcount import motion_detect_stream as md
 import argparse
 import os
 import logging
+import datetime
 from pathlib import Path
 
 # Set up logging
