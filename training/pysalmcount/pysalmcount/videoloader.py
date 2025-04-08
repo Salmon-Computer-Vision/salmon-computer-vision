@@ -6,6 +6,7 @@ import logging
 from threading import Thread
 from queue import Queue
 import time
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,8 @@ class VideoLoader(DataLoader):
             raise VideoCaptureError(f"Error: Could not open video stream {raw_clip}.")
 
         self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
+        logger.info(f"Stream or video FPS: {self.vid_fps}")
+
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # Start a new thread to read frames
@@ -75,20 +78,31 @@ class VideoLoader(DataLoader):
         prev_time = 0
         count = 0
         overflow_elapsed = 0
-        target_time_elapse = 1. / self.target_fps
+        skip_frame_target = None
+        if self.target_fps is not None and self.target_fps < self.vid_fps:
+            skip_frame_target = self.vid_fps / (self.vid_fps - self.target_fps)
+            cur_frame_target = math.trunc(skip_frame_target)
+            remainder_frame = skip_frame_target % 1
+        #target_time_elapse = 1. / self.target_fps
         while not self.stop_thread:
-            if self.target_fps is not None and self.target_fps < self.vid_fps:
-                time_elapsed = time.time() - prev_time + overflow_elapsed
+            #if self.target_fps is not None and self.target_fps < self.vid_fps:
+            #    time_elapsed = time.time() - prev_time + overflow_elapsed
 
             ret, frame = self.cap.read()
             if ret:
                 if self.target_fps is not None:
-                    if self.target_fps < self.vid_fps and time_elapsed < target_time_elapse:
+                    #if self.target_fps < self.vid_fps and time_elapsed < target_time_elapse:
+                    #    continue
+                    #else:
+                    #    overflow_elapsed = time_elapsed - target_time_elapse
+                    #    prev_time = time.time()
+                    if skip_frame_target is not None and count >= cur_frame_target:
+                        cur_frame_target = skip_frame_target + remainder_frame
+                        remainder_frame = cur_frame_target % 1
+                        cur_frame_target = math.trunc(cur_frame_target)
                         continue
-                    else:
-                        overflow_elapsed = time_elapsed - target_time_elapse
-                        prev_time = time.time()
                 self.frame_buffer.put(frame, block=True)
+                count += 1
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
                 self.stop_thread = True

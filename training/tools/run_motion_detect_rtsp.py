@@ -61,14 +61,14 @@ def main(args):
     logger.info(f"Writing logs to {log_file}")
 
     if args.gstreamer:
-        #input_str = f"rtspsrc location={args.rtsp_url} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+        #input_str = f"rtspsrc location={args.input} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
         if args.h265:
-            input_str = f"rtspsrc location={args.rtsp_url} ! decodebin ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+            input_str = f"rtspsrc location={args.input} ! decodebin ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
         else:
-            #input_str = f"rtspsrc location={args.rtsp_url} ! rtph264depay ! queue ! h264parse ! v4l2h264dec ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
-            input_str = f"rtspsrc location={args.rtsp_url} ! rtph264depay ! h264parse ! v4l2h264dec ! videoconvert ! appsink"
+            #input_str = f"rtspsrc location={args.input} ! rtph264depay ! queue ! h264parse ! v4l2h264dec ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
+            input_str = f"rtspsrc location={args.input} ! rtph264depay ! h264parse ! v4l2h264dec ! videoconvert ! appsink"
     else:
-        input_str = args.rtsp_url
+        input_str = args.input
 
     logger.info(input_str)
     vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*int(args.fps), target_fps=int(args.fps))
@@ -79,9 +79,9 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
-    parser.add_argument("rtsp_url", help="The RTSP URL of the camera")
+    parser.add_argument("input", help="The input string. Normally an RTSP URL starting with rtsp:// of a camera. If it is a video path, set the --video flag.")
     parser.add_argument("save_folder", help="Folder where video clips will be saved")
-    parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from the camera")
+    parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from input")
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
