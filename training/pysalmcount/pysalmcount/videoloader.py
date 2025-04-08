@@ -100,6 +100,7 @@ class VideoLoader(DataLoader):
                         cur_frame_target = skip_frame_target + remainder_frame
                         remainder_frame = cur_frame_target % 1
                         cur_frame_target = math.trunc(cur_frame_target)
+                        count = 0
                         continue
                 self.frame_buffer.put(frame, block=True)
                 count += 1
