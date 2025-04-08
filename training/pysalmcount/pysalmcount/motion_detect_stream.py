@@ -253,7 +253,7 @@ class MotionDetector:
             if not os.path.exists(self.save_folder):
                 raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
 
-            frame = item.frame
+            frame = np.ascontiguousarray(item.frame)
             if isinstance(frame, str):
                 frame = cv2.imread(frame)
             frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
