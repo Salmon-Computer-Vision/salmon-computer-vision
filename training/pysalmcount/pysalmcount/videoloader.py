@@ -44,15 +44,17 @@ class VideoLoader(DataLoader):
         self.cur_clip = Path(raw_clip)
         logger.info(f"Loading {raw_clip}")
         if self.gstreamer_on:
+            logger.info("Loading with gstreamer")
             self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_GSTREAMER)
         else:
-            self.cap = cv2.VideoCapture(str(raw_clip))
+            logger.info("Loading not gstreamer")
+            self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_FFMPEG)
 
         #self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         #self.cap.set(cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY)
 
         if not self.cap.isOpened():
-            raise VideoCaptureError(f"Error: Could not open video stream {self.cur_clip}.")
+            raise VideoCaptureError(f"Error: Could not open video stream {raw_clip}.")
 
         self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
