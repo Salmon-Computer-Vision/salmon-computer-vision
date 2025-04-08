@@ -73,16 +73,20 @@ class VideoLoader(DataLoader):
         """
 
         prev_time = 0
+        count = 0
+        overflow_elapsed = 0
+        target_time_elapse = 1. / self.target_fps
         while not self.stop_thread:
             if self.target_fps is not None and self.target_fps < self.vid_fps:
-                time_elapsed = time.time() - prev_time
+                time_elapsed = time.time() - prev_time + overflow_elapsed
 
             ret, frame = self.cap.read()
             if ret:
                 if self.target_fps is not None:
-                    if self.target_fps < self.vid_fps and time_elapsed < 1. / self.target_fps:
+                    if self.target_fps < self.vid_fps and time_elapsed < target_time_elapse:
                         continue
                     else:
+                        overflow_elapsed = time_elapsed - target_time_elapse
                         prev_time = time.time()
                 self.frame_buffer.put(frame, block=True)
             else:
