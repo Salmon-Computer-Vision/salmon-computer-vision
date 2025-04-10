@@ -218,7 +218,6 @@ class MotionDetector:
         dtype = np.uint8  # Frame data type
 
         raw = Array('B', int(buffer_length * np.prod(frame_shape) * np.dtype(dtype).itemsize), lock=False)
-        logger.info(f"Created Array with buffer {raw.size}")
         shared_frames = np.ndarray(
             (buffer_length, *frame_shape), 
             dtype=dtype, 
