@@ -217,7 +217,7 @@ class MotionDetector:
         # Create shared memory between multi processes
         dtype = np.uint8  # Frame data type
 
-        raw = shared_memory.Array('B', buffer_length * np.prod(frame_shape) * np.dtype(dtype).itemsize, lock=False)
+        raw = Array('B', buffer_length * np.prod(frame_shape) * np.dtype(dtype).itemsize, lock=False)
         logger.info(f"Created Array with buffer {raw.size}")
         shared_frames = np.ndarray(
             (buffer_length, *frame_shape), 
