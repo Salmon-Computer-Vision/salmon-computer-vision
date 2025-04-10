@@ -9,7 +9,7 @@ import datetime
 import os
 import errno
 #from threading import Thread, Event, Lock, Condition
-from multiprocessing import shared_memory, Process, Event, Lock, Condition, Value
+from multiprocessing import shared_memory, Process, Event, Lock, Condition, Value, Array
 import logging
 import time
 from pathlib import Path
@@ -29,7 +29,6 @@ class VideoSaver(Process):
     def __init__(self, shm_name, frame_shape, head: Value, tail: Value, buffer_length, folder, stop_event, lock_head, lock_tail, condition, fps=10.0,
             orin=False, raspi=False, save_prefix=None):
         super().__init__()
-        self.shm_name = shm_name
         self.frame_shape = frame_shape
         self.head = head
         self.tail = tail
@@ -47,11 +46,10 @@ class VideoSaver(Process):
         self.save_prefix = save_prefix
 
         # Attach to shared memory
-        self.shm = shared_memory.SharedMemory(name=self.shm_name)
         self.shared_frames = np.ndarray(
             (self.buffer_length, *self.frame_shape),
             dtype=np.uint8,
-            buffer=self.shm.buf,
+            buffer=shm_name,
         )
 
     @staticmethod
@@ -219,12 +217,11 @@ class MotionDetector:
         # Create shared memory between multi processes
         dtype = np.uint8  # Frame data type
 
-        shm = shared_memory.SharedMemory(create=True, size=buffer_length * np.prod(frame_shape) * np.dtype(dtype).itemsize)
-        logger.info(f"Created shared memory with buffer {shm.size}")
+        raw = Array('B', int(buffer_length * np.prod(frame_shape) * np.dtype(dtype).itemsize), lock=False)
         shared_frames = np.ndarray(
             (buffer_length, *frame_shape), 
             dtype=dtype, 
-            buffer=shm.buf,
+            buffer=raw,
         )
         logger.info(f"Size of shared frames: {shared_frames.shape}")
 
@@ -353,7 +350,7 @@ class MotionDetector:
                         # Signal that we need to start saving the clip
                         stop_event.clear()
                         video_saver = VideoSaver(
-                                shm_name=shm.name, frame_shape=frame.shape, head=head, tail=tail, 
+                                shm_name=raw, frame_shape=frame.shape, head=head, tail=tail, 
                                 buffer_length=buffer_length, folder=motion_dir, 
                                 stop_event=stop_event, lock_head=lock_head, lock_tail=lock_tail, condition=condition, fps=fps, 
                                 orin=orin, raspi=raspi, save_prefix=self.save_prefix)
@@ -405,8 +402,6 @@ class MotionDetector:
                 elif not save_video:
                     motion_detected = False
             video_saver.join()
-            shm.close()
-            shm.unlink()
         except Exception as e:
             logger.error(e)
             pass
