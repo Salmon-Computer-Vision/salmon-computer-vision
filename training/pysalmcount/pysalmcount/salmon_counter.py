@@ -102,6 +102,8 @@ class SalmonCounter:
             track_ids = []
             cls_ids = []
             confs = []
+            bound_line = int(item.frame.shape[0] * bound_line_ratio)
+            
             if not use_gt:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
                 if frame_count % 20 == 0:
@@ -114,12 +116,11 @@ class SalmonCounter:
                     inf_elapsed = (inf_end_time - inf_start_time) * 1000
                     logger.info(f"Inference time: {inf_elapsed:.2f}")
                     
-                if drop_bounding_boxes:
-                    bound_line = int(item.frame.shape[0] * bound_line_ratio)
-                    for result in results:
-                        y_center = (2 * result.boxes.data[:, 1] + result.boxes.data[:, 3]) // 2
-                        keep_indices = torch.where(y_center < bound_line)[0]
-                        result.boxes.data = result.boxes.data[keep_indices]
+                # if drop_bounding_boxes:
+                #     for result in results:
+                #         y_center = (2 * result.boxes.data[:, 1] + result.boxes.data[:, 3]) // 2
+                #         keep_indices = torch.where(y_center < bound_line)[0]
+                #         result.boxes.data = result.boxes.data[keep_indices]
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
@@ -182,8 +183,9 @@ class SalmonCounter:
             # Plot the tracks
             for box, track_id, cls_id, conf in zip(boxes, track_ids, cls_ids, confs):
                 x, y, w, h = box
-                track = self.track_history[track_id]
-                track.append((float(x), float(y)))  # x, y center point
+                if not (drop_bounding_boxes and y > bound_line):
+                    track = self.track_history[track_id]
+                    track.append((float(x), float(y)))  # x, y center point
 
                 if track_id not in self.prev_track_ids:
                     self.prev_track_ids[track_id] = {
