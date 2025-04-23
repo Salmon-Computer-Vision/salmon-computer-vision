@@ -175,7 +175,12 @@ Then restart the docker-compose as above in the Tmux environment.
 
 ### Samba Share
 
-To automatically mount the NFS share from the raspi install NFS client and autofs:
+This setup will allow access to the harddrive for the video data is not
+attached to this device.
+
+To automatically mount the NFS share of the harddrive attached to a different
+device install NFS client and autofs:
+
 ```bash
 sudo apt update && sudo apt install cifs-utils autofs
 ```
