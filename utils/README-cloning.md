@@ -2,6 +2,7 @@
 
 - Update hostname and update tailscale name
 - Update static IP if necessary
+- Mount samba share if necessary
 - Update `.env` variables
 - Test on dev bucket
 - Set for production
