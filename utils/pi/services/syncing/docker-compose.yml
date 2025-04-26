@@ -1,0 +1,34 @@
+---
+services:
+  syncing:
+    image: rclone/rclone
+    container_name: syncing
+    volumes:
+      - ${DRIVE}:${DRIVE}
+      - /home/${USERNAME}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+    restart: always
+    entrypoint: /bin/sh
+    command: |
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --transfers=1 --include "/${SITE_NAME}/*/motion_vids/**" --include "/${SITE_NAME}/*/motion_vids_metadata/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
+  syncing-detects:
+    image: rclone/rclone
+    container_name: syncing-detects
+    volumes:
+      - ${DRIVE}:${DRIVE}
+      - /home/${USERNAME}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+    restart: always
+    entrypoint: /bin/sh
+    command: |
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --transfers=2 --include "/${SITE_NAME}/*/detections/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
+  syncing-counts:
+    build: 
+      context: .
+      dockerfile: Dockerfile-syncing-counts
+    container_name: syncing-counts
+    volumes:
+      - ${DRIVE}:${DRIVE}
+      - /home/${USERNAME}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+    restart: always
+    entrypoint: /bin/sh
+    command: |
+      /app/syncing-counts.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
