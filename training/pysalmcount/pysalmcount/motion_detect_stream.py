@@ -153,7 +153,7 @@ class MotionDetector:
                 return True
         return False
 
-    def run(self, algo='MOG2', save_video=True, fps=None: int, orin=False, raspi=False):
+    def run(self, algo='MOG2', save_video=True, fps: int=None, orin=False, raspi=False):
         # Motion Detection Params
         bgsub_threshold = 50
         bgsub_min_pixelstability = 1
