@@ -30,9 +30,18 @@ sudo hostnamectl set-hostname ORGID-sitename-jetsonnx-0
 
 * Increment the number if there is another camera on the same site
 
-For example, one hostname could be `HIRMD-koeye-jetson-0`. This is the hostname
-of the organization with the ID HIRMD for the Koeye river. This one was a
-normal Jetson Nano for the first camera of the weir.
+For example, one hostname for the Koeye river is `HIRMD-koeye-jetson-0`. This
+is the hostname of the organization with the ID HIRMD for the Koeye river. This
+one was a normal Jetson Nano for the first camera of the weir.
+
+To prevent sudo warnings due to the new hostname, edit `/etc/hosts` with the
+new hostname:
+
+```
+sudoedit /etc/hosts
+```
+
+Now that the hostname is changed, we need to update the Tailscale name.
 
 Open a tmux session
 ```
@@ -49,7 +58,9 @@ Remove the tailscale config folder
 sudo rm -r tailscale-oauth/
 ```
 
-Restart the tailscale service
+The following ***MUST*** be run in a tmux session if you're SSHing through
+tailscale. Restart the tailscale service:
+
 ```
 docker compose down && docker compose up -d
 ```
@@ -59,13 +70,6 @@ Open a new terminal and the device should come up as the new hostname on tailsca
 
 ```
 tailscale status
-```
-
-To prevent sudo warnings due to the new hostname, edit `/etc/hosts` with the
-new hostname:
-
-```
-sudoedit /etc/hosts
 ```
 
 It would helpful to use some labeling tape and place it on the device to label
@@ -109,5 +113,35 @@ hours the Starlink should be on.
 
 This is only necessary if this will not be the device the external harddisk/SSD
 will be attached to such as it being the second device for a two camera system.
+
+Create a new file:
+```bash
+sudoedit /etc/auto_static.smb
+```
+
+with the following:
+```bash
+/media/hdd  -fstype=cifs,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777  ://<ip_address>/HDD
+```
+
+Replace `<ip_address>` with the static IP address of the device that is
+mounting the external drive.
+
+\[!\] Note if the device's uid/gid is different, change it the current device's
+uid/gid. Run the command `id` to view. The filesystem may be slower than normal
+if this is not done correctly.
+
+Restart the autofs service:
+```bash
+sudo systemctl restart autofs
+```
+
+Check if it is properly mounted by listing or running `df`:
+```bash
+ls /media/hdd
+df -h
+```
+
+## Update `.env` Variables
 
 
