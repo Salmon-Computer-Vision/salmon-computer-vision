@@ -187,10 +187,9 @@ class MotionDetector:
             # Retrieve the FPS of the video stream
             fps = self.dataloader.fps()
         else:
+            fps = int(fps)
             if fps > self.dataloader.fps():
                 fps = self.dataloader.fps()
-
-        fps = int(fps)
 
         logger.info(f"FPS: {fps}")
 
