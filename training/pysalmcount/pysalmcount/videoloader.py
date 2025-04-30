@@ -85,6 +85,9 @@ class VideoLoader(DataLoader):
             remainder_frame = skip_frame_target % 1
         #target_time_elapse = 1. / self.target_fps
         while not self.stop_thread:
+            if count % self.vid_fps == 0:
+                start_time=time.time()
+
             #if self.target_fps is not None and self.target_fps < self.vid_fps:
             #    time_elapsed = time.time() - prev_time + overflow_elapsed
 
@@ -103,6 +106,13 @@ class VideoLoader(DataLoader):
                         count = 0
                         continue
                 self.frame_buffer.put(frame, block=True)
+
+                if count % self.vid_fps == 0:
+                    end_time=time.time()
+                    elapsed_time = (end_time - start_time) * 1000
+                    logger.info(f"Retrieval time: {elapsed_time:.2f} ms")
+                    if skip_frame_target is None:
+                        count = 0
                 count += 1
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
