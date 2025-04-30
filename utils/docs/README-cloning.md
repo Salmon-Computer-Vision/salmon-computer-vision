@@ -30,6 +30,10 @@ sudo hostnamectl set-hostname ORGID-sitename-jetsonnx-0
 
 * Increment the number if there is another camera on the same site
 
+For example, one hostname could be `HIRMD-koeye-jetson-0`. This is the hostname
+of the organization with the ID HIRMD for the Koeye river. This one was a
+normal Jetson Nano for the first camera of the weir.
+
 Open a tmux session
 ```
 tmux
