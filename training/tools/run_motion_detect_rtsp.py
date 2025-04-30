@@ -75,7 +75,7 @@ def main(args):
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(vidloader, site_save_path, save_prefix)
-    det.run(fps=args.fps, algo=args.algo, orin=args.orin, raspi=args.raspi)
+    det.run(fps=int(args.fps), algo=args.algo, orin=args.orin, raspi=args.raspi)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
