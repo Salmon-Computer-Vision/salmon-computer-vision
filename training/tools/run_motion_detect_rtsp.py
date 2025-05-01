@@ -88,7 +88,7 @@ if __name__ == "__main__":
     parser.add_argument("--gstreamer", action='store_true', help="Set this flag to use Gstreamer capturing")
     parser.add_argument("--h265", action='store_true', help="Set this flag to use h265 decoding")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
-    parser.add_argument("--algo", default="MOG2", help="Set algo for motion detection")
+    parser.add_argument("--algo", default="MOG2", choices=["MOG2", "CNT"], help="Set algorithm for motion detection")
     args = parser.parse_args()
 
     main(args)
