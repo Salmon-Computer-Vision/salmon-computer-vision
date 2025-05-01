@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("input", help="The input string. Normally an RTSP URL starting with rtsp:// of a camera. If it is a video path, set the --video flag.")
     parser.add_argument("save_folder", help="Folder where video clips will be saved")
     parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from input")
-    parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
+    parser.add_argument("--test", action='store_true', help="Set this flag to not use the hostname to create the save paths")
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
     parser.add_argument("--gstreamer", action='store_true', help="Set this flag to use Gstreamer capturing")
