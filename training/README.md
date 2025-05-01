@@ -20,10 +20,11 @@ Tuned hyperparameters are in `salmon_*_hyperparams.yaml`.
 Copy the individual hyperparameters to `/usr/src/ultralytics/ultralytics/cfg/default.yaml` inside the
 YOLOv8 docker container. Be careful to check each parameter, because you cannot directly copy them.
 
-The testing of model training is done in `video-salmon-cv.ipynb`, however, it
-may desirable to run the model training in a terminal inside the docker
-container instead as there may be a limit to how long the Jupyter Lab Notebook
-can run a long running command.
+The testing of model training is done in
+[`video-salmon-cv.ipynb`](video-salmon-cv.ipynb), however, it may desirable to
+run the model training in a terminal inside the docker container instead as
+there may be a limit to how long the Jupyter Lab Notebook can run a long
+running command.
 
 Ultralytics [training](https://docs.ultralytics.com/modes/train/) and
 [tuning](https://docs.ultralytics.com/guides/hyperparameter-tuning/)
