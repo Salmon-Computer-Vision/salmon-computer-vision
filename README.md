@@ -66,6 +66,14 @@ throughout multiple frames.
 Look into the [`training` folder](training/README.md)
 for more info about training the model.
 
+### Motion Detection
+
+We employ motion detection to cut continuous video into manageable clips. This
+simply looks for motion within the processed videos and cuts places and outputs
+it into multiple motion detected clips.
+
+Information on our motion detection solution is described in [`./training`](training)
+
 ### Edge Deployment
 
 To deploy our automated salmon counting system on the edge near rivers for near
