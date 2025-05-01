@@ -144,4 +144,24 @@ df -h
 
 ## Update `.env` Variables
 
+There are potentially 3 places with an `.env` file that might require changes
+for a new site or device:
+- salmon-computer-vision/utils/jetson/salmoncount/.env
+- salmon-computer-vision/utils/jetson/salmonmd/.env
+- salmon-computer-vision/utils/syncing/.env
+
+
+`salmoncount/.env`
+
+Only thing to potentially change is to uncomment the `FLAG` variable with the
+`--drop-bbox` flag only if the target site is split between top and side views
+stacked in each frame.
+
+[klukshu example](klukshu_chinook.jpg)
+
+As can be seen here, there is a top and side view of the same fish using a
+mirror to do so. Setting that flag will drop the bottom bounding box,
+preventing potential overcounting.
+
+Also, if the username is changed, the `.env` files must be updated accordingly.
 
