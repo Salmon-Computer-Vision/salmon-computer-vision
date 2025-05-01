@@ -32,6 +32,10 @@ to be installed on the computer, so if it is not done in a ultralytics docker
 container, it could be best for an individual user to create their own running
 script using the tool script as reference.
 
+`run_motion_detect_rtsp.py` script creates a specific folder structure for the
+edge devices deployment by utilizing the running device's hostname, so if this
+is unnecessary, use the `--test` flag when running the script.
+
 ## Mounting Google Drive with rclone
 
 Follow config for Google Drive
