@@ -4,10 +4,11 @@
 rclone_copy() {
     site_name="$1"
     config="$2"
-    src="$3"
-    dst="$4"
+    include="$3"
+    src="$4"
+    dst="$5"
     
-    rclone copy --bwlimit=0 --buffer-size=128M --transfers=1 --include "/${site_name}/*/counts/**" \
+    rclone copy --bwlimit=0 --buffer-size=128M --transfers=1 --include "$include" \
         "$src" "$dst" --config "$config" --log-level INFO
 }
 
@@ -62,13 +63,13 @@ for dir in "${LOCAL_PATH}/${SITE_NAME}"/*/counts; do
         summary_csv_name="${ORGID}-${SITE_NAME}-${base_dir}_summary_salmon_counts.csv"
         output_file="${parent_dir}/${summary_csv_name}"
         concatenate_csv_in_directory "$dir" "$output_file"
-        rclone copy "$output_file" "${REMOTE_PATH}/${SITE_NAME}/${base_dir}/" --config "$CONFIG" --log-level INFO
+	rclone_copy "$SITE_NAME" "$CONFIG" "/${SITE_NAME}/*/${summary_csv_name}" "$LOCAL_PATH" "$REMOTE_PATH"
     fi
 done
 
 # Upload to remote
 echo "Upload to remote..."
-rclone_copy "$SITE_NAME" "$CONFIG" "$LOCAL_PATH" "$REMOTE_PATH"
+rclone_copy "$SITE_NAME" "$CONFIG" "/${SITE_NAME}/*/counts/**" "$LOCAL_PATH" "$REMOTE_PATH"
 
 echo "Finished. Waiting some time..."
 sleep 30m
