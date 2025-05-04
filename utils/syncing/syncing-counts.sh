@@ -53,7 +53,7 @@ REMOTE_PATH="aws:${BUCKET}/${ORGID}"
 LOCAL_PATH="${DRIVE}/${ORGID}"
 
 echo "Download from remote..."
-rclone_copy "$SITE_NAME" "$CONFIG" "$REMOTE_PATH" "$LOCAL_PATH"
+rclone_copy "$SITE_NAME" "$CONFIG" "/${SITE_NAME}/*/counts/**" "$REMOTE_PATH" "$LOCAL_PATH"
 
 # Concatenate CSV files separately within each subfolder
 for dir in "${LOCAL_PATH}/${SITE_NAME}"/*/counts; do
