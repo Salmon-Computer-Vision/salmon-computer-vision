@@ -157,7 +157,7 @@ Only thing to potentially change is to uncomment the `FLAG` variable with the
 `--drop-bbox` flag only if the target site is split between top and side views
 stacked in each frame.
 
-[klukshu example](klukshu_chinook.jpg)
+![klukshu example](klukshu_chinook.jpg)
 
 As can be seen here, there is a top and side view of the same fish using a
 mirror to do so. Setting that flag will drop the bottom bounding box,
