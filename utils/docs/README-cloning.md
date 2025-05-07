@@ -68,8 +68,9 @@ Open a new terminal and the device should come up as the new hostname on tailsca
 tailscale status
 ```
 
-It would helpful to use some labeling tape and place it on the device to label
-it with the hostname to differentiate it visually with the other devices.
+> 💡 It would be helpful to use some labeling tape and place it on the device
+> to label it with the hostname to differentiate it visually with the other
+> devices.
 
 ## Static IP
 
@@ -102,7 +103,7 @@ sudo nmcli con up eth0
 ```
 
 Usually, we standardize to `192.168.1.40` and increment by one for each new
-Jetson.
+Jetson. For example, the second Jetson would be `192.168.1.41`
 
 Check `ifconfig` if the IP address updated.
 
@@ -111,10 +112,12 @@ Check `ifconfig` if the IP address updated.
 This is only useful for Internet-enabled sites as we can have the device send
 healthcheck pings to healthchecks.io to make sure it is still running.
 
-First, login to healthchecks.io and get an invite to the Salmon CV Project.
+First, login to [healthchecks.io](healthchecks.io) and get an invite to the
+Salmon CV Project.
 
-It is easier to clone one of the existing checks by clicking the three dots
-on the right of one of them, going to the bottom and clicking "Create a Copy..."
+It is easier to duplicate one of the existing checks by clicking the three dots
+on the right of one of them, going to the bottom and clicking "Create a
+Copy..."
 
 Update the name to be same as the new hostname determined above and click "Copy URL."
 
@@ -124,22 +127,27 @@ Login or SSH back to the Jetson and open crontab:
 crontab -e
 ```
 
-And either replace the URL or add append this, updating the URL:
+And either replace the URL or append this to the bottom, updating the URL with
+what was copied:
 
 ```
 * * * * * curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<ping_url>
 ```
 
-This will then send a ping every minute
+This will then send a ping every minute to heatlchecks.io.
 
 Finally, adjust the schedule on healthchecks.io to how long the
 Starlink/Internet connectivity is up using cron expressions, determining which
-hours the Starlink should be on.
+hours the Starlink should be on. This is because most sites do not have enough
+power to run Starlink for the full 24 hours, so it is usually scheduled to turn
+off at certain night time hours.
 
 ## Mount Samba Share
 
-This is only necessary if this will not be the device the external harddisk/SSD
-will be attached to such as it being the second device for a two camera system.
+This is only necessary if this site has more than one camera and this is the
+second or above device and will not directly connect to the external
+harddisk/SSD. This will mount the SSD through the local network from the device
+that is connected to the external SSD.
 
 Create a new file:
 ```bash
@@ -212,6 +220,9 @@ during low light.
 
 `syncing/.env`
 
+> 💡 The syncing services is only necessary on the first Jetson that is
+> directly attached to the external HDD/SSD.
+
 This requires changing the variables `ORGID` and `SITE_NAME` to the same
 demarcation described when changing the hostname above. The only other change
 is whether to point to the dev or prod buckets. Once testing is finished,
@@ -277,6 +288,9 @@ upload motion detected videos, detection text files, and count CSVs. Simply
 make sure there is no errors attempting to upload the respective files in
 `motion_vids`, `detections`, and `counts` folders.
 
+> 💡 The syncing services is only necessary on the first Jetson that is
+> directly attached to the external HDD/SSD.
+
 ## Set for Production
 
 Once testing is finished, update `syncing/.env` to production by uncommenting
@@ -298,7 +312,7 @@ docker compose logs --tail 10 -f
 The docker compose logs are also saved to the drive in
 `/media/hdd/ORGID/sitename/device-id/logs`
 
-Once everythin seems to be running correctly, shut down the devices:
+Once everything seems to be running correctly, shut down the devices:
 ```
 sudo shutdown now
 ```
