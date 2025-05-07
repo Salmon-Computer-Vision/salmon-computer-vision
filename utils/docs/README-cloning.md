@@ -1,16 +1,18 @@
 # Jetson After Cloning Setup
 
+After cloning/imaging the disk to a different device, these are the steps to
+take to set it up for either a new site or another camera of the same site.
+
+## Table of Contents
+
 - [Hostname](#hostname)
 - [Static IP](#static-ip)
-- [Healthchecks.io](#healthchecks.io)
+- [Healthchecks.io](#healthchecksio)
 - [Mount Samba Share](#mount-samba-share)
-- [Update `.env` Variables](#update-.env-variables)
+- [Update `.env` Variables](#update-env-variables)
 - [Check Drive Mount Point](#check-drive-mount-point)
 - [Tests](#tests)
 - [Set for production](#set-for-production)
-
-After cloning/imaging the disk to a different device, these are the steps to
-take to set it up for either a new site or another camera of the same site.
 
 ## Hostname
 
