@@ -20,13 +20,11 @@ take to set it up for either a new site or another camera of the same site.
 sudo hostnamectl set-hostname ORGID-sitename-jetsonnx-0
 ```
 
-* `ORGID` is the organization ID in all caps that will be provided, denoting each organization
-* `sitename` is usually the river name but can be different and will also be provided
-
-* `jetsonnx` is the device ID usually depends on the type of device. Keep this
+- `ORGID` is the organization ID in all caps that will be provided, denoting each organization
+- `sitename` is usually the river name but can be different and will also be provided
+- `jetsonnx` is the device ID usually depends on the type of device. Keep this
   the same if it's the Jetson Orin NX Supers
-
-* Increment the number if there is another camera on the same site
+- Increment the number if there is another camera on the same site
 
 For example, one hostname for the Koeye river is `HIRMD-koeye-jetson-0`. This
 is the hostname of the organization with the ID HIRMD for the Koeye river. This
