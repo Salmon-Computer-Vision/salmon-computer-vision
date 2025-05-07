@@ -1,17 +1,13 @@
 # Jetson After Cloning Setup
 
-- Update hostname and update tailscale name
-- Update `/etc/hosts`
-- Physically label the device with tape with the same hostname
-- Update static IP if necessary
-- Add device to healthchecks
-- Mount samba share if necessary
-- Update `.env` variables
-- Check if the external drive is auto-mounted to `/media/hdd`
-- Test on dev bucket
-- Set for production
-- Spin up services
-- Turn off
+- [Hostname](#hostname)
+- [Static IP](#static-ip)
+- [Healthchecks.io](#healthchecks.io)
+- [Mount Samba Share](#mount-samba-share)
+- [Update `.env` Variables](#update-.env-variables)
+- [Check Drive Mount Point](#check-drive-mount-point)
+- [Tests](#tests)
+- [Set for production](#set-for-production)
 
 After cloning/imaging the disk to a different device, these are the steps to
 take to set it up for either a new site or another camera of the same site.
@@ -22,7 +18,7 @@ take to set it up for either a new site or another camera of the same site.
 sudo hostnamectl set-hostname ORGID-sitename-jetsonnx-0
 ```
 
-* `ORGID` is the organization ID that will be provided.
+* `ORGID` is the organization ID in all caps that will be provided, denoting each organization
 * `sitename` is usually the river name but can be different and will also be provided
 
 * `jetsonnx` is the device ID usually depends on the type of device. Keep this
@@ -153,15 +149,125 @@ for a new site or device:
 
 `salmoncount/.env`
 
-Only thing to potentially change is to uncomment the `FLAG` variable with the
-`--drop-bbox` flag only if the target site is split between top and side views
-stacked in each frame.
+Only variables to potentially change is the `USERNAME` if changed on the device
+and to uncomment the `FLAG` variable with the `--drop-bbox` flag only if the
+target site is split between top and side views stacked in each frame as
+follows:
 
 ![klukshu example](klukshu_chinook.jpg)
 
 As can be seen here, there is a top and side view of the same fish using a
-mirror to do so. Setting that flag will drop the bottom bounding box,
-preventing potential overcounting.
+mirror to do so. Setting that flag will drop the bounding boxes in the bottom
+half of the frame, preventing potential overcounting.
 
-Also, if the username is changed, the `.env` files must be updated accordingly.
+`salmonmd/.env`
 
+Once again `USERNAME` and also the `RTSP_URL` might need to be changed if the
+IP address or RTSP URL structure is different than what is already written.
+
+New BARLUS cameras usually have this structure:
+
+```
+RTSP_URL=rtsp://192.168.1.120/0
+```
+
+With `0` at the end denoting the main stream where you can change it to `1` for
+the substream.
+
+If possible, the camera could be accessed through HTTP to change lighting
+settings resolution or FPS. BARLUS cameras have numerical presets such as 152
+and 154 turn on automatic white light and infrared light sensors, respectively,
+during low light.
+
+`syncing/.env`
+
+This requires changing the variables `ORGID` and `SITE_NAME` to the same
+demarcation described when changing the hostname above. The only other change
+is whether to point to the dev or prod buckets. Once testing is finished,
+comment the dev `BUCKET` var and uncomment the prod `BUCKET`. dev and prod
+buckets require different access keys, so do one final test on the prod bucket
+after switching.
+
+Using the same example for hostname above, it could look something like this:
+```
+USERNAME=oceanaid
+DRIVE=/media/hdd
+ORGID=HIRMD
+SITE_NAME=koeye
+
+# Comment if finished testing
+BUCKET=dev-...
+
+# Uncomment if set to production
+#BUCKET=prod-...
+```
+
+## Check Drive Mount Point
+
+When the external drive is plugged in, it should automatically be mounted to
+`/media/hdd`. You can test hotswapping the external drive, and check `df -h` to
+see if the drive is mounted at that folder.
+
+## Tests
+
+The typical steps to spin up the software is to go to each folder with a
+`docker-compose.yml` file and run `docker compose up` on them. Doing this
+without the detach flag would attach to them and output logs, so be sure to run
+each `up` command in separate terminals or separate `tmux` panels (eg. CTRL+b
+c).
+
+The docker compose services are within these three folders where the `.env`
+files are from above.
+
+- salmon-computer-vision/utils/jetson/salmoncount/
+- salmon-computer-vision/utils/jetson/salmonmd/
+- salmon-computer-vision/utils/syncing/
+
+`cd` to each one and run `docker compose up` to spin up the services.
+
+If there is a camera hooked up at the `RTSP_URL` specified, the logs of all of
+the devices shouldn't have any errors.
+
+SalmonMD should show constant processing times in milliseconds and `/media/hdd`
+should be populated with continuous video in the
+`ORGID/sitename/device-id/cont_vids` folder.
+
+Then, test motion detection by moving something in front of the camera, and it should
+start saving a clip in `ORGID/sitename/device-id/motion_vids`.
+
+The SalmonCount can be tested, however, it will refuse to process newly created
+motion detected videos to prevent attempting to process partially saved videos.
+Therefore, you would need to wait a couple of minutes after the motion detected
+clip is created before testing the salmoncount. It would constantly restart
+itself checking the motion detected videos for clips to process.
+
+The syncing services are made of three different instances to in parallel
+upload motion detected videos, detection text files, and count CSVs. Simply
+make sure there is no errors attempting to upload the respective files in
+`motion_vids`, `detections`, and `counts` folders.
+
+## Set for Production
+
+Once testing is finished, update `syncing/.env` to production by uncommenting
+the prod bucket. Then, go to each folder described during testing and run
+
+```
+docker compose up -d
+```
+
+to spin up all the services in detached state.
+
+To check the logs when they are in this detached state, go to the desired folder
+and run
+
+```
+docker compose logs --tail 10 -f
+```
+
+The docker compose logs are also saved to the drive in
+`/media/hdd/ORGID/sitename/device-id/logs`
+
+Once everythin seems to be running correctly, shut down the devices:
+```
+sudo shutdown now
+```
