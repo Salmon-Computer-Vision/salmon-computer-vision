@@ -221,7 +221,8 @@ during low light.
 `syncing/.env`
 
 > 💡 The syncing services is only necessary on the first Jetson that is
-> directly attached to the external HDD/SSD.
+> directly attached to the external HDD/SSD. Subsequent Jetsons can safely
+> ignore this.
 
 This requires changing the variables `ORGID` and `SITE_NAME` to the same
 demarcation described when changing the hostname above. The only other change
@@ -288,8 +289,8 @@ upload motion detected videos, detection text files, and count CSVs. Simply
 make sure there is no errors attempting to upload the respective files in
 `motion_vids`, `detections`, and `counts` folders.
 
-> 💡 The syncing services is only necessary on the first Jetson that is
-> directly attached to the external HDD/SSD.
+> 💡 Only spin up the syncing services for the first Jetson that is directly
+> attached to the external HDD/SSD.
 
 ## Set for Production
 
