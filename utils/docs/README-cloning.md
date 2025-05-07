@@ -245,11 +245,14 @@ BUCKET=dev-...
 #BUCKET=prod-...
 ```
 
-Another part is changing the access key ID and secret for rclone to the ORGID
+Another part is updating the access key ID and secret for rclone to the ORGID
 specific access key that we would generate for the webapp. Once you obtain the
 access key ID and secret, edit `~/.config/rclone/rclone.conf` and under
 `[aws]`, change the `access_key_id` and `secret_access_key` with the proper ID
 and secret provided.
+
+> 💡 Note that there might be two access keys that either only go to dev or
+> only go to prod buckets.
 
 ## Check Drive Mount Point
 
