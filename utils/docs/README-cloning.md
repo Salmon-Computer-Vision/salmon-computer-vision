@@ -75,7 +75,38 @@ it with the hostname to differentiate it visually with the other devices.
 
 ## Static IP
 
+The static IP can be set in the GUI or through `nmcli` commands.
 
+By default Starlink uses the following:
+* Gateway: 192.168.1.1
+* DNS: 192.168.1.1
+* Netmask: 255.255.255.0 OR 24
+
+Use the GUI Network Manager Editor:
+
+```
+sudo nm-connection-editor
+```
+
+Set the above and IP address to `192.168.1.40`
+
+OR
+
+These series of commands would likely work:
+
+```bash
+sudo nmcli con add con-name eth0 ifname eth0 type ethernet autoconnect yes
+sudo nmcli con mod eth0 ipv4.addresses 192.168.1.40/24
+sudo nmcli con mod eth0 ipv4.gateway 192.168.1.1
+sudo nmcli con mod eth0 ipv4.dns 192.168.1.1,1.1.1.1
+sudo nmcli con mod eth0 ipv4.method manual
+sudo nmcli con up eth0
+```
+
+Usually, we standardize to `192.168.1.40` and increment by one for each new
+Jetson.
+
+Check `ifconfig` if the IP address updated.
 
 ## Healthchecks.io
 
