@@ -88,6 +88,13 @@ The `utils` folder has various helpful scripts such as quick deployment.
 
 Please check the `utils` [README](utils/README.md) for more info on some important scripts.
 
+YOLOv8n model:
+
+Jetson Orin NX Super
+* Up to 30 FPS
+
+Jetson Nano
+* Up to 10 FPS
 
 ## Sonar-based
 
