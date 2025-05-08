@@ -227,6 +227,13 @@ ls /media/hdd
 df -h
 ```
 
+## SalmonMD
+
+The Salmon Motion Detector runs simple background subtraction and erosion algorithms
+to cut up continuous video into more manageable clips.
+
+See the [`salmonmd` folder](salmonmd) for step-by-step instructions.
+
 ## Salmon Counter
 
 The Salmon Counter runs the deep learning model to automatically detect fish
