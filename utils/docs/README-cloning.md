@@ -138,7 +138,7 @@ what was copied:
 * * * * * curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<ping_url>
 ```
 
-This will then send a ping every minute to heatlchecks.io.
+This will then send a ping every minute to healthchecks.io.
 
 Finally, adjust the schedule on healthchecks.io to how long the
 Starlink/Internet connectivity is up using cron expressions, determining which
@@ -160,13 +160,13 @@ sudoedit /etc/auto_static.smb
 
 with the following:
 ```bash
-/media/hdd  -fstype=cifs,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777  ://<ip_address>/HDD
+/media/hdd  -fstype=cifs,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777  ://192.168.1.40/HDD
 ```
 
-Replace `<ip_address>` with the static IP address of the device that is
-mounting the external drive.
+Replace `192.168.1.40` with the static IP address of the device that is
+mounting the external drive if it is different.
 
-\[!\] Note if the device's uid/gid is different, change it the current device's
+> 💡 Note if the device's uid/gid is different, change it the current device's
 uid/gid. Run the command `id` to view. The filesystem may be slower than normal
 if this is not done correctly.
 
