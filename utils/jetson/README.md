@@ -230,7 +230,9 @@ df -h
 ## SalmonMD
 
 The Salmon Motion Detector runs simple background subtraction and erosion algorithms
-to cut up continuous video into more manageable clips.
+to cut up continuous video into more manageable clips. Depending on RAM or resources usage,
+this may not be able to run simultaneously with the salmon counting software and deep learning
+model, requiring a separate device such as a raspberry pi to perform the motion detection.
 
 See the [`salmonmd` folder](salmonmd) for step-by-step instructions.
 
