@@ -119,7 +119,11 @@ It is easier to duplicate one of the existing checks by clicking the three dots
 on the right of one of them, going to the bottom and clicking "Create a
 Copy..."
 
-Update the name to be same as the new hostname determined above and click "Copy URL."
+Click "(edit...)" and Update the name to be same as the new hostname determined
+above and also click on the "Use Suggested" button to also update the "Slug"
+and then Save.
+
+Then, click on "Copy URL" to copy the URL to ping for healthchecks.
 
 Login or SSH back to the Jetson and open crontab:
 
