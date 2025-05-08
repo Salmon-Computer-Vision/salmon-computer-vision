@@ -87,8 +87,8 @@ This sets the `salmon-project` tag to prevent reverse connections through
 Tailscale for security reasons but would allow a host machine that installs
 tailscale manually to connect to them.
 
-Generate a Tailscale OAuth client key in the settings with "Devices" read permissions
-and the `salmon-project` tag.
+Generate a Tailscale OAuth client key in the settings with "Auth Keys" Read and
+Write permissions with the `salmon-project` tag.
 
 Clone this repo on the target device if not already:
 
@@ -113,9 +113,13 @@ Run the following to start up Tailscale:
 docker-compose up -d
 ```
 
+This adds the `salmon-project` tag on top of connecting to the tailscale
+account described by the OAuth client key.
+
 You should then be able to remote access this device on other devices that are
 also running tailscale. You may need to [install
-manually](https://tailscale.com/download) on your client devices.
+manually](https://tailscale.com/download) on your client devices as the OAuth
+key only allows one-way access.
 
 Then, the following should be possible on the client device:
 ```bash
