@@ -113,7 +113,7 @@ Run the following to start up Tailscale:
 docker-compose up -d
 ```
 
-This creates a docker container described in `docker-compose.yml` that adds the
+This creates a docker container described in `docker-compose.yaml` that adds the
 `salmon-project` tag to connect to the tailscale account described by the OAuth
 client key.
 
