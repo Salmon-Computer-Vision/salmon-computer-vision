@@ -113,8 +113,9 @@ Run the following to start up Tailscale:
 docker-compose up -d
 ```
 
-This adds the `salmon-project` tag on top of connecting to the tailscale
-account described by the OAuth client key.
+This creates a docker container described in `docker-compose.yml` that adds the
+`salmon-project` tag to connect to the tailscale account described by the OAuth
+client key.
 
 You should then be able to remote access this device on other devices that are
 also running tailscale. You may need to [install
