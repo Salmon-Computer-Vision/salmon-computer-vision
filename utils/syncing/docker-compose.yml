@@ -5,7 +5,7 @@ services:
     container_name: syncing
     volumes:
       - ${DRIVE}:${DRIVE}
-      - /home/${USERNAME}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+      - /home/${USERNAME}/.config/rclone/:/config/rclone/
     restart: always
     entrypoint: /bin/sh
     command: |
@@ -15,7 +15,7 @@ services:
     container_name: syncing-detects
     volumes:
       - ${DRIVE}:${DRIVE}
-      - /home/${USERNAME}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+      - /home/${USERNAME}/.config/rclone/:/config/rclone/
     restart: always
     entrypoint: /bin/sh
     command: |
@@ -27,7 +27,7 @@ services:
     container_name: syncing-counts
     volumes:
       - ${DRIVE}:${DRIVE}
-      - /home/${USERNAME}/.config/rclone/rclone.conf:/config/rclone/rclone.conf
+      - /home/${USERNAME}/.config/rclone/:/config/rclone/
     restart: always
     entrypoint: /bin/sh
     command: |
