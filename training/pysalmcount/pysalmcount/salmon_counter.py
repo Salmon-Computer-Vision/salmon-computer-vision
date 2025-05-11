@@ -246,8 +246,13 @@ class SalmonCounter:
         # Check start and end of track ID
         # Count if start and end are on either sides of the LOI
         half_width = f_width / 2
-        first_track_x = track[0][0]
-        last_track_x = track[-1][0]
+        try:
+            first_track_x = track[0][0]
+            last_track_x = track[-1][0]
+        except IndexError as e:
+            logger.error(e)
+            return
+
         classes = self.dataloader.classes()
         if first_track_x < half_width and last_track_x >= half_width:
             # Counted going to the right
