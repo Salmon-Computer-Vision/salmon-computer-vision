@@ -28,7 +28,9 @@ sudo hostnamectl set-hostname ORGID-sitename-jetsonnx-0
 
 For example, one hostname for the Koeye river is `HIRMD-koeye-jetson-0`. This
 is the hostname of the organization with the ID HIRMD for the Koeye river. This
-one was a normal Jetson Nano for the first camera of the weir.
+one was a normal Jetson Nano for the first camera of the weir. A second device
+for the second camera was named `HIRMD-koeye-jetson-1`, incrementing one to
+differentiate.
 
 To prevent sudo warnings due to the new hostname, edit `/etc/hosts` with the
 new hostname:
