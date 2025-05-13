@@ -221,9 +221,10 @@ the external drive.
 uid/gid. Run the command `id` to view. The filesystem may be slower than normal
 if this is not done correctly.
 
-Restart the autofs service:
+Restart and enable the autofs service:
 ```bash
 sudo systemctl restart autofs
+sudo systemctl enable autofs
 ```
 
 Check if it is properly mounted by listing or running `df`:
