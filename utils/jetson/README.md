@@ -233,6 +233,14 @@ ls /media/hdd
 df -h
 ```
 
+### Troubleshooting Mount
+
+If the drive isn't mounted or doesn't mount automatically upon system restart, check the status and logs for errors:
+```bash
+systemctl status autofs
+journalctl -u autofs
+```
+
 ## SalmonMD
 
 The Salmon Motion Detector runs simple background subtraction and erosion algorithms
