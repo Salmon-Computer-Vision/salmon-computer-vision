@@ -68,6 +68,8 @@ Spin up the services:
 docker compose up -d
 ```
 
+!! The above command must be run again if the docker image is updated or the `.env` file is changed to update the container.
+
 To restart, you can spin them down and then back up:
 ```bash
 docker compose down && docker compose up -d
