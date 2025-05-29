@@ -17,6 +17,8 @@ Build the salmoncounter docker image:
 docker build -t <image_repo_host>/salmoncounter:latest-jetson-jetpack4 .
 ```
 
+!! This is for building on the Jetson Nano using Jetpack 4. If you're using a Jetson Orin Nano, add the flag `-f Dockerfile-jetpack6` to build for the Jetson Orin Nano on Jetpack 6.
+
 `<image_repo_host>` here refers to the image repository host that you may
 upload this built docker image to if you so choose. [See the updating docker
 image section](#uploading-the-docker-image) for more info.
