@@ -9,7 +9,7 @@ services:
     env_file:
       - ./.env
     volumes:
-      - ${DRIVE}:/app/drive
+      - ${DRIVE}:/app/drive:shared
       - /home/${USERNAME}/config:/app/config
     network_mode: host
     runtime: nvidia
