@@ -5,8 +5,12 @@
 ### Slowness in SD Card-powered microcontrollers
 
 If a microcontroller that relies on SD cards become slow, this could be due to
-SD card deterioration and should be replaced. However, it could fixed
-temporarily by removing unnecessary docker images and rebooting.
+SD card deterioration and should be replaced. SD cards are not ideal for heavy
+production use products and should be switched to an M.2 SSD if the
+microcontroller allows.
+
+One step, however, that could fix this issue temporarily is by removing
+unnecessary docker images and rebooting.
 
 Check docker images:
 ```bash
