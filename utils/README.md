@@ -1,6 +1,29 @@
 # Utils
 
-## Quick Deploy Services Script
+## Troubleshooting
+
+### Slowness in SD Card-powered microcontrollers
+
+If a microcontroller that relies on SD cards become slow, this could be due to
+SD card deterioration and should be replaced. However, it could fixed
+temporarily by removing unnecessary docker images and rebooting.
+
+Check docker images:
+```bash
+docker images
+```
+
+Remove docker image:
+```
+docker rmi <image_tag>
+```
+
+Reboot:
+```bash
+sudo reboot
+```
+
+## [Incomplete] Quick Deploy Services Script
 
 ***Only works after all devices are properly setup***
 
