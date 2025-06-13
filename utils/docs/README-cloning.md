@@ -127,7 +127,14 @@ and then Save.
 
 Then, click on "Copy URL" to copy the URL to ping for healthchecks.
 
-Login or SSH back to the Jetson and open crontab:
+Login or SSH back to the Jetson.
+
+First install curl:
+```bash
+sudo apt update && sudo apt install curl
+```
+
+Open crontab:
 
 ```
 crontab -e
