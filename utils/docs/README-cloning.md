@@ -76,6 +76,8 @@ tailscale status
 
 ## Static IP
 
+Set the device in static IP *ONLY* if this device will act as some kind of local server (Network storage server).
+
 The static IP can be set in the GUI or through `nmcli` commands.
 
 By default Starlink uses the following:
@@ -106,6 +108,20 @@ sudo nmcli con up eth0
 
 Usually, we standardize to `192.168.1.40` and increment by one for each new
 Jetson. For example, the second Jetson would be `192.168.1.41`
+
+Check `ifconfig` if the IP address updated.
+
+## Set DHCP after Static IP
+
+Follow these steps to set the device back to DHCP after setting static IP.
+
+```bash
+sudo nmcli con mod eth0 ipv4.addresses ""
+sudo nmcli con mod eth0 ipv4.gateway ""
+sudo nmcli con mod eth0 ipv4.dns ""
+sudo nmcli con mod eth0 ipv4.method auto
+sudo nmcli con up eth0
+```
 
 Check `ifconfig` if the IP address updated.
 
