@@ -27,6 +27,24 @@ Reboot:
 sudo reboot
 ```
 
+Another step is to have the system check the filesystem after boot:
+
+```bash
+sudo tune2fs -c 1 /dev/sdX
+```
+This will have the filesystem be checked after every boot.
+
+Reboot
+```bash
+sudo reboot
+```
+
+Set to after 3 boots
+```bash
+sudo tune2fs -c 3 /dev/sdX
+```
+
+
 ## [Incomplete] Quick Deploy Services Script
 
 ***Only works after all devices are properly setup***
