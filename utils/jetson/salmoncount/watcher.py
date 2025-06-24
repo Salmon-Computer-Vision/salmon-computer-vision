@@ -107,7 +107,7 @@ class VideoHandler(FileSystemEventHandler):
     def process_video(self, video_path, drop_bounding_boxes=False, bound_line_ratio=0.5):
         counts_file = self.counts_dir / f"{video_path.stem}.csv"
         detections_dir = self.detection_dir / video_path.stem
-        if not counts_file.exists() and not detections_dir.exists():
+        if not counts_file.exists() or not detections_dir.exists():
             logger.info(f"Processing {video_path}")
             try:
                 self.run_salmon_counter(video_path, drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
