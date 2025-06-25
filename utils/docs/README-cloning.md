@@ -76,7 +76,7 @@ tailscale status
 
 ## Static IP
 
-Set the device in static IP *ONLY* if this device will act as some kind of local server (Network storage server).
+Set the device in static IP just in case the router or a DHCP server is not available.
 
 The static IP can be set in the GUI or through `nmcli` commands.
 
