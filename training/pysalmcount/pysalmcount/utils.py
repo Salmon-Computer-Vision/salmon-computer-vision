@@ -4,6 +4,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+import requests
 
 import ffmpeg
 
@@ -79,3 +80,10 @@ def get_video_metadata(video_filepath: Path) -> Union[None, VideoMetadata]:
         logger.error(f"Error occured: {e}")
         logger.error(f"{e.stderr}")
         return None
+
+def send_ping(url):
+    try:
+        response = requests.get(url, timeout=10)
+        logger.info("Ping success")
+    except requests.RequestException as e:
+        logger.info("Ping failed: %s" % e)
