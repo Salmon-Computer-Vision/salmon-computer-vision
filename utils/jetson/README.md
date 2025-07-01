@@ -127,8 +127,8 @@ Then, the following should be possible on the client device:
 ssh <user>@<jetson-hostname>
 ```
 
-The following will shutdown tailscale, however, **do not do this if the only
-connection is tailscale**:
+The following will shutdown tailscale, however, **do not do this if your only
+connection is currently tailscale**:
 
 ```
 docker-compose down
@@ -136,6 +136,14 @@ docker-compose down
 
 This may be fine if there are other local area devices you can access that can
 access this device.
+
+### Remote access on top of tailscale
+
+After tailscale is setup, RDP can also be setup, so a user can remotely access
+the device without needing to use SSH or physically connect a monitor.
+
+The steps are [described
+here](https://www.jeremymorgan.com/tutorials/generative-ai/remote-desktop-jetson-orin-nano/).
 
 ### Rename the machine Hostname
 
