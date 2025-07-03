@@ -32,6 +32,13 @@ class VideoLoader(DataLoader):
         self.stop_thread = False
         self.target_fps = int(target_fps) if target_fps is not None else target_fps
 
+    def __del__(self):
+        if self.thread and self.thread.is_alive():
+            self.stop_thread = True
+            self.thread.join()
+        if hasattr(self, 'cap') and self.cap.isOpened():
+            self.cap.release()
+
     def clips_len(self):
         return self.num_clips
 
@@ -124,7 +131,7 @@ class VideoLoader(DataLoader):
         if self.cur_clip is None:
             raise ValueError('Error: No current clip')
 
-        while not self.stop_thread:
+        while True:
             frame = self.frame_buffer.get(block=True)
             if frame is None:
                 # Sentinel value to stop the consumer
@@ -133,7 +140,15 @@ class VideoLoader(DataLoader):
 
             yield Item(frame, num_items=self.total_frames)
 
-        logger.info('Grabbing items stopped...')
+        # ✅ Ensure the reader thread is joined
+        if self.thread and self.thread.is_alive():
+            logger.info('Joining frame reader thread...')
+            self.thread.join()
+            logger.info('Grabbing items stopped.')
+
+        if self.cap.isOpened():
+            self.cap.release()
+            logger.info('VideoCapture released.')
 
     def fps(self):
         return self.vid_fps

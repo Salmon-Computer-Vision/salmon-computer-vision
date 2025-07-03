@@ -114,7 +114,7 @@ class VideoHandler(FileSystemEventHandler):
             except Exception as e:
                 logger.error(traceback.format_exc())
         else:
-            logger.info(f"Skipping {video_path}, already processed")
+            logger.debug(f"Skipping {video_path}, already processed")
 
     def run_salmon_counter(self, video_path, drop_bounding_boxes=False, bound_line_ratio=0.5):
         loader = VideoLoader([video_path], self.data['names'])
@@ -123,6 +123,8 @@ class VideoHandler(FileSystemEventHandler):
         out_path = self.counts_dir #/ f"{os.uname()[1]}_salmon_counts.csv"
         counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
                 stream_write=True, output_csv_dir=str(out_path),drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
+
+        del loader, counter
 
 def main(args):
     if args.test:
@@ -150,8 +152,10 @@ def main(args):
     current_time = time.time()
 
     # Initial check of all existing videos
-    for filename in os.listdir(str(vids_path)):
-        video_file = vids_path / filename
+    for video_file in vids_path.iterdir():
+        if not video_file.is_file():
+            continue # Skip dirs or special files
+
         modif_time = video_file.stat().st_mtime
         if current_time - modif_time > args.time_window:
             video_handler.process_video(video_file, drop_bounding_boxes=args.drop_bbox, bound_line_ratio=args.bound_line)
