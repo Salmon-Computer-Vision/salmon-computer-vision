@@ -131,7 +131,7 @@ class VideoLoader(DataLoader):
         if self.cur_clip is None:
             raise ValueError('Error: No current clip')
 
-        while not self.stop_thread:
+        while True:
             frame = self.frame_buffer.get(block=True)
             if frame is None:
                 # Sentinel value to stop the consumer
