@@ -44,6 +44,9 @@ class SalmonCounter:
         self.prev_track_ids = {}
         self.tracking_thresh = tracking_thresh
         self.save_dir = save_dir
+
+    def __del__(self):
+        self._cleanup()
         
     def _vote_cond(self, w, h, vote_method='all'):
         if vote_method == VOTE_METHOD_ALL:
@@ -222,6 +225,11 @@ class SalmonCounter:
                 end_time = time.time()
                 elapsed_time = (end_time - start_time) * 1000
                 logger.info(f"Execution time: {elapsed_time:.2f} ms ({frame_count} frames)")
+
+            # Explicitly delete to save memory
+            del results, boxes, id_items, cls_ids, confs
+            torch.cuda.empty_cache()
+
             frame_count += 1
 
         if stream_write:
@@ -230,8 +238,8 @@ class SalmonCounter:
             output_name_path = str(Path(output_csv_dir) / Path(cur_clip.name).stem)
             self.salm_count.to_csv(f"{output_name_path}.csv")
                 
-        self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
-        self.salm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes
+        #self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
+        self.slm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes
         self.next_id = MIN_TRACK_ID
         if save_vid:
             out_vid.release()
@@ -262,3 +270,11 @@ class SalmonCounter:
             # Counted going to the left
             self.vis_salm_count[self.LEFT_PRE] += 1
             self.salm_count.loc[cur_clip.name, self.LEFT_PRE + classes[main_class_id]] += 1
+
+    def _cleanup(self):
+        self.track_history.clear()
+        self.prev_track_ids.clear()
+        self.full_salm_count = pd.DataFrame()
+        self.salm_count = pd.DataFrame()
+        torch.cuda.empty_cache()
+
