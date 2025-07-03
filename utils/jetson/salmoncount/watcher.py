@@ -150,8 +150,10 @@ def main(args):
     current_time = time.time()
 
     # Initial check of all existing videos
-    for filename in os.listdir(str(vids_path)):
-        video_file = vids_path / filename
+    for video_file in vids_path.iterdir():
+        if not video_file.is_file():
+            continue # Skip dirs or special files
+
         modif_time = video_file.stat().st_mtime
         if current_time - modif_time > args.time_window:
             video_handler.process_video(video_file, drop_bounding_boxes=args.drop_bbox, bound_line_ratio=args.bound_line)
