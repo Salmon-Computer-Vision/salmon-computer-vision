@@ -44,7 +44,8 @@ Create an `.env` file in the `salmoncount` with the following:
 ```bash
 IMAGE_REPO_HOST=<image_repo_host>
 TAG=latest-jetson-jetpack4
-DRIVE=/media
+DRIVE=network-drive
+NETWORK_DRIVE_SHARE=//192.168.1.5/HDD
 USERNAME=<device-username>
 WEIGHTS=/app/config/<salmoncount_weights>.engine
 
@@ -58,8 +59,8 @@ WEIGHTS=/app/config/<salmoncount_weights>.engine
 #FLAGS=--drop-bbox
 ```
 
-!! Make sure your drive folder is named `hdd` and is the next subdir after your `${DRIVE}` dir.
-You must have the folder format in `${DRIVE}/hdd`.
+!! Change 192.168.1.5 to the proper static IP of the device that is mounting the
+harddrive. If the Jetson is mounting the external harddrive change `DRIVE` to `DRIVE=/media/hdd`
 
 The folders in `WEIGHTS` describe within the docker container, so simply
 make sure the `<salmoncount_weights>.engine` name is the same in the config
@@ -138,10 +139,10 @@ to. Then, you can go to your other devices and pull the image and any changes.
 On the production devices, run the following to update:
 
 ```bash
-docker pull <image_repo_host>/salmoncounter:latest-jetson-jetpack4
+docker compose pull
 ```
 
-Spinning the services up again should automatically update the container:
+Spinning the services up again should automatically recreate the containers:
 
 ```bash
 docker compose up -d
