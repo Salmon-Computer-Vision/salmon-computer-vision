@@ -139,10 +139,10 @@ to. Then, you can go to your other devices and pull the image and any changes.
 On the production devices, run the following to update:
 
 ```bash
-docker pull <image_repo_host>/salmoncounter:latest-jetson-jetpack4
+docker compose pull
 ```
 
-Spinning the services up again should automatically update the container:
+Spinning the services up again should automatically recreate the containers:
 
 ```bash
 docker compose up -d
