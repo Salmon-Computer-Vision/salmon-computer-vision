@@ -65,6 +65,9 @@ class VideoLoader(DataLoader):
             raise VideoCaptureError(f"Error: Could not open video stream {raw_clip}.")
 
         self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
+        if self.vid_fps <= 0 or self.vid_fps > 1000:
+            logger.warning(f"Invalid FPS reported ({self.vid_fps}), estimating manually...")
+            self.vid_fps = self._estimate_fps(self.cap)
         logger.info(f"Stream or video FPS: {self.vid_fps}")
 
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -76,6 +79,34 @@ class VideoLoader(DataLoader):
         self.thread.start()
 
         return self.cur_clip
+
+    def _estimate_fps(self, cap, sample_frames=30, min_duration=0.5):
+        """
+        Estimate FPS of a stream by timing how long it takes to read a few frames.
+        Args:
+            cap: An opened cv2.VideoCapture object.
+            sample_frames: Number of frames to read for estimating FPS.
+            min_duration: Minimum total time in seconds to wait before computing FPS.
+        Returns:
+            Estimated FPS as float.
+        """
+        timestamps = []
+        for _ in range(sample_frames):
+            start = time.time()
+            ret, _ = cap.read()
+            if not ret:
+                break
+            timestamps.append(start)
+            # Avoid spinning too fast for some broken sources
+            if len(timestamps) >= 2 and timestamps[-1] - timestamps[0] >= min_duration:
+                break
+
+        if len(timestamps) >= 2:
+            duration = timestamps[-1] - timestamps[0]
+            return round((len(timestamps) - 1) / duration, 2)
+        else:
+            return 0.0
+
 
     def _read_frames(self):
         """
