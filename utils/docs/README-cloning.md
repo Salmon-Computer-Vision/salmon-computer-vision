@@ -95,7 +95,14 @@ Set the above and IP address to `192.168.1.40`
 
 OR
 
-These series of commands would likely work:
+First check the ethernet interface of the device. Run and check
+```
+ifconfig
+```
+
+Usually, it looks like `eth0` or `enP8p1s0`.
+
+Then, these series of commands would likely work (Change eth0 if you have a different interface):
 
 ```bash
 sudo nmcli con add con-name eth0 ifname eth0 type ethernet autoconnect yes
