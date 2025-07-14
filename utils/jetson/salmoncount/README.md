@@ -176,3 +176,10 @@ If you get a TLS block memory error, run the following beforehand:
 ```bash
 export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libstdc++.so.6
 ```
+
+## Troubleshooting issues
+
+A major issue that could happen if the device is offline is if the date/time
+of the Jetson gets reset for some reason, this could cause everything to
+exhibit errors and not work, so the date/time must be checked and updated
+appropriately if the device will be run offline.
