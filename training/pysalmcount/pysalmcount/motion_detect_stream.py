@@ -393,7 +393,7 @@ class MotionDetector:
                 end_time=time.time()
                 elapsed_time = (end_time - start_time) * 1000
                 logger.info(f"Time elapsed: {elapsed_time:.2f} ms")
-                utils.ping_in_background(ping_url)
+                utils.ping_in_background(self.ping_url)
             frame_counter += 1
 
         try:
