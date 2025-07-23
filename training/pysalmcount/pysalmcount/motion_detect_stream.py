@@ -134,11 +134,12 @@ class VideoSaver(Process):
 class MotionDetector:
     FILENAME = 'filename'
     CLIPS = 'clips'
-    def __init__(self, dataloader: DataLoader, save_folder, save_prefix=None):
+    def __init__(self, dataloader: DataLoader, save_folder, save_prefix=None, ping_url='https://google.com'):
         self.dataloader = dataloader
         self.save_folder = save_folder
         self.frame_log = {}
         self.save_prefix = save_prefix
+        self.ping_url = ping_url
 
     def detect_motion(self, fg_mask, min_area=500):
         """
@@ -152,6 +153,11 @@ class MotionDetector:
             if cv2.contourArea(contour) > min_area:
                 return True
         return False
+
+    def is_check_time(self, frame_counter, fps):
+        HEALTH_CHECKS_LEN = 30 # Frequency of healthchecks in seconds
+
+        return frame_counter % (fps * HEALTH_CHECKS_LEN) == 0
 
     def run(self, algo='MOG2', save_video=True, fps: int=None, orin=False, raspi=False):
         # Motion Detection Params
@@ -245,7 +251,7 @@ class MotionDetector:
         num_motion_events = 0
         frame_start = 0
         for item in self.dataloader.items():
-            if frame_counter % fps == 0:
+            if self.is_check_time(frame_counter, fps):
                 start_time=time.time()
             # Constantly check if save folder exists
             if not os.path.exists(self.save_folder):
@@ -273,29 +279,29 @@ class MotionDetector:
                         logger.info(f"Created VideoWriter to {cont_filename}")
                     frame_counter = 0
 
-                if frame_counter % fps == 0:
+                if self.is_check_time(frame_counter, fps):
                     start_in_time = time.time()
 
                 cont_vid_out.write(frame)
 
-                if frame_counter % fps == 0:
+                if self.is_check_time(frame_counter, fps):
                     end_in_time=time.time()
                     elapsed_in_time = (end_in_time - start_in_time) * 1000
                     logger.info(f"Cont save: {elapsed_in_time:.2f} ms")
 
-            if frame_counter % fps == 0:
+            if self.is_check_time(frame_counter, fps):
                 start_in_time = time.time()
 
             # Apply background subtraction algorithm to get the foreground mask
             fg_mask = bgsub.apply(frame)
 
-            if frame_counter % fps == 0:
+            if self.is_check_time(frame_counter, fps):
                 end_in_time=time.time()
                 elapsed_in_time = (end_in_time - start_in_time) * 1000
                 logger.info(f"BGSub: {elapsed_in_time:.2f} ms")
             #cont_vid_out.write(cv2.cvtColor(fg_mask, cv2.COLOR_GRAY2RGB))
 
-            if frame_counter % fps == 0:
+            if self.is_check_time(frame_counter, fps):
                 start_in_time = time.time()
             has_motion = False
             if warm_up <= 0:
@@ -310,7 +316,7 @@ class MotionDetector:
                 has_motion = self.detect_motion(fg_mask, min_area=min_contour_area)
             else:
                 warm_up -= 1
-            if frame_counter % fps == 0:
+            if self.is_check_time(frame_counter, fps):
                 end_in_time=time.time()
                 elapsed_in_time = (end_in_time - start_in_time) * 1000
                 logger.info(f"check motion: {elapsed_in_time:.2f} ms")
@@ -383,10 +389,11 @@ class MotionDetector:
                         elif not save_video:
                             motion_detected = False
 
-            if frame_counter % fps == 0:
+            if self.is_check_time(frame_counter, fps):
                 end_time=time.time()
                 elapsed_time = (end_time - start_time) * 1000
                 logger.info(f"Time elapsed: {elapsed_time:.2f} ms")
+                utils.ping_in_background(self.ping_url)
             frame_counter += 1
 
         try:

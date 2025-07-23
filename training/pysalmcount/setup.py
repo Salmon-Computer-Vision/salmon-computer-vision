@@ -10,7 +10,8 @@ setup(
     # List of dependencies
     install_requires=[
         'numpy',
-        'pandas'
+        'pandas',
+        'requests'
     ],
 )
 

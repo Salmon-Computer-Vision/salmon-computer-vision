@@ -74,7 +74,7 @@ def main(args):
     vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*int(args.fps), target_fps=int(args.fps))
 
     logger.info(f"save_prefix: {save_prefix}")
-    det = md.MotionDetector(vidloader, site_save_path, save_prefix)
+    det = md.MotionDetector(vidloader, site_save_path, save_prefix, ping_url=args.url)
     det.run(fps=int(args.fps), algo=args.algo, orin=args.orin, raspi=args.raspi)
 
 if __name__ == "__main__":
@@ -89,6 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("--h265", action='store_true', help="Set this flag to use h265 decoding")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
     parser.add_argument("--algo", default="MOG2", choices=["MOG2", "CNT"], help="Set algorithm for motion detection")
+    parser.add_argument("--url", default='https://google.com', help="Healthchecks URL to ping. This could be from healthchecks.io or another healthchecks service")
     args = parser.parse_args()
 
     main(args)
