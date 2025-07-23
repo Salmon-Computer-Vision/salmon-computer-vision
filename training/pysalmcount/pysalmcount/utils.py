@@ -4,6 +4,8 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+import requests
+import threading
 
 import ffmpeg
 
@@ -79,3 +81,16 @@ def get_video_metadata(video_filepath: Path) -> Union[None, VideoMetadata]:
         logger.error(f"Error occured: {e}")
         logger.error(f"{e.stderr}")
         return None
+
+def send_ping(url):
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        logger.info("Ping sent successfully")
+    except requests.RequestException as e:
+        logger.info("Ping failed: %s", e)
+
+def ping_in_background(url):
+    t = threading.Thread(target=send_ping, args=(url,), daemon=True)
+    t.start()
+    return t
