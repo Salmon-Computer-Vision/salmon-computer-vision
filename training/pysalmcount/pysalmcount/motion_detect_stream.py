@@ -134,12 +134,23 @@ class VideoSaver(Process):
 class MotionDetector:
     FILENAME = 'filename'
     CLIPS = 'clips'
-    def __init__(self, dataloader: DataLoader, save_folder, save_prefix=None, ping_url='https://google.com'):
+    def __init__(self, dataloader: DataLoader, save_folder, save_video=True, save_prefix=None, ping_url='https://google.com'):
         self.dataloader = dataloader
         self.save_folder = save_folder
         self.frame_log = {}
         self.save_prefix = save_prefix
         self.ping_url = ping_url
+
+        self.save_video = save_video
+        self.motion_counter = 0
+        self.motion_detected = False
+
+        # Concurrency-safe constructs
+        self.stop_event = Event()
+        self.lock_head = Lock()
+        self.lock_tail = Lock()
+        self.condition = Condition()
+
 
     def detect_motion(self, fg_mask, min_area=500):
         """
@@ -159,7 +170,19 @@ class MotionDetector:
 
         return frame_counter % (fps * HEALTH_CHECKS_LEN) == 0
 
-    def run(self, algo='MOG2', save_video=True, fps: int=None, orin=False, raspi=False):
+    def stop_video_saving(self):
+        self.motion_counter = 0
+        if self.save_video and not self.stop_event.is_set():
+            logger.info("Stopping recording.")
+            self.stop_event.set()
+            with self.condition:
+                self.condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
+            self.motion_detected = False
+        elif not self.save_video:
+            self.motion_detected = False
+
+
+    def run(self, algo='MOG2', fps: int=None, orin=False, raspi=False):
         # Motion Detection Params
         bgsub_threshold = 50
         bgsub_min_pixelstability = 1
@@ -211,7 +234,7 @@ class MotionDetector:
 
         warm_up = fps
         buffer_length = int(fps * BUFFER_LENGTH)  # Buffer to save before motion
-        motion_detected = False
+        self.motion_detected = False
 
         # Sacrifice first frame to get frame shape data
         #item = next(self.dataloader.items())
@@ -236,18 +259,12 @@ class MotionDetector:
         head = Value('i', 0)
         tail = Value('i', 0)
 
-        # Concurrency-safe constructs
-        stop_event = Event()
-        lock_head = Lock()
-        lock_tail = Lock()
-        condition = Condition()
-
         delay = int(fps * 5) # Number of seconds to delay after motion
         count_delay = 0
 
         video_saver = None
         frame_counter = MAX_CONTINUOUS_FRAMES
-        motion_counter = 0
+        self.motion_counter = 0
         num_motion_events = 0
         frame_start = 0
         for item in self.dataloader.items():
@@ -255,6 +272,8 @@ class MotionDetector:
                 start_time=time.time()
             # Constantly check if save folder exists
             if not os.path.exists(self.save_folder):
+                if self.motion_detected:
+                    self.stop_video_saving()
                 self.dataloader.close()
                 raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
 
@@ -263,7 +282,7 @@ class MotionDetector:
                 frame = cv2.imread(frame)
             frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
 
-            if save_video:
+            if self.save_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
                     logger.info(f"Writing continuous video to {cont_filename}")
@@ -322,11 +341,11 @@ class MotionDetector:
                 elapsed_in_time = (end_in_time - start_in_time) * 1000
                 logger.info(f"check motion: {elapsed_in_time:.2f} ms")
 
-            with lock_head:
+            with self.lock_head:
                 frame_idx = head.value % buffer_length
                 logger.debug(f"Frame index: {frame_idx}, Head: {head.value}, Buffer length: {buffer_length}")
 
-                with lock_tail:
+                with self.lock_tail:
                     # Check if head is overtaking tail (buffer full)
                     if (head.value + 1) % buffer_length == tail.value:
                         logger.debug("Buffer full! Overwriting old frames.")
@@ -336,59 +355,46 @@ class MotionDetector:
                 shared_frames[frame_idx] = frame
                 head.value = (head.value + 1) % buffer_length
 
-            with condition:
-                condition.notify() # Signal the VideoSaver thread that a new frame is available
+            with self.condition:
+                self.condition.notify() # Signal the VideoSaver thread that a new frame is available
 
-            motion_counter += 1
+            self.motion_counter += 1
 
             # TESTING ONLY
-            #if motion_counter >= 100:
+            #if self.motion_counter >= 100:
             #    has_motion = not has_motion
 
             # Check for motion
             if has_motion:
                 num_motion_events += 1
                 count_delay = 0
-                if not motion_detected and num_motion_events >= MOTION_EVENTS_THRESH_FRAMES:
+                if not self.motion_detected and num_motion_events >= MOTION_EVENTS_THRESH_FRAMES:
                     logger.info(f"Motion detected with {num_motion_events} events")
-                    motion_detected = True
-                    motion_counter = 0
+                    self.motion_detected = True
+                    self.motion_counter = 0
                     frame_start = frame_counter
-                    if save_video:
+                    if self.save_video:
                         # Signal that we need to start saving the clip
-                        stop_event.clear()
+                        self.stop_event.clear()
                         video_saver = VideoSaver(
                                 shm_name=raw, frame_shape=frame.shape, head=head, tail=tail, 
                                 buffer_length=buffer_length, folder=motion_dir, 
-                                stop_event=stop_event, lock_head=lock_head, lock_tail=lock_tail, condition=condition, fps=fps, 
+                                stop_event=self.stop_event, lock_head=self.lock_head, lock_tail=self.lock_tail, condition=self.condition, fps=fps, 
                                 orin=orin, raspi=raspi, save_prefix=self.save_prefix)
                         video_saver.start()
-                else:
-                    if save_video and motion_counter > MAX_FRAMES_CLIP and not stop_event.is_set():
-                        logger.info("Max clip length exceeded. Motion stopped.")
-                        logger.info("Stopping recording.")
-                        stop_event.set()
-                        with condition:
-                            condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
-                        motion_detected = False
+                elif self.motion_counter > MAX_FRAMES_CLIP:
+                    logger.info("Max clip length exceeded")
+                    self.stop_video_saving()
             else:
                 num_motion_events = 0
                 if count_delay < delay:
                     count_delay += 1
                 else:
                     # If motion has stopped and we have a video saver running, set the stop event
-                    if motion_detected:
+                    if self.motion_detected:
                         logger.info("Delay exceeded. Motion stopped.")
                         self.frame_log[cur_clip.name].append((frame_start, frame_counter))
-                        motion_counter = 0
-                        if save_video and not stop_event.is_set():
-                            logger.info("Stopping recording.")
-                            stop_event.set()
-                            with condition:
-                                condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
-                            motion_detected = False
-                        elif not save_video:
-                            motion_detected = False
+                        self.stop_video_saving()
 
             if self.is_check_time(frame_counter, fps):
                 end_time=time.time()
@@ -400,18 +406,11 @@ class MotionDetector:
         try:
             self.dataloader.close()
 
-            if motion_detected:
+            if self.motion_detected:
                 logger.info("No more frames. Motion stopped.")
                 self.frame_log[cur_clip.name].append((frame_start, frame_counter))
-                motion_counter = 0
-                if save_video and not stop_event.is_set():
-                    logger.info("Stopping recording.")
-                    stop_event.set()
-                    with condition:
-                        condition.notify_all()  # Signal the VideoSaver thread to stop waiting and finish
-                    motion_detected = False
-                elif not save_video:
-                    motion_detected = False
+                self.stop_video_saving()
+
             video_saver.join()
         except Exception as e:
             logger.error(e)

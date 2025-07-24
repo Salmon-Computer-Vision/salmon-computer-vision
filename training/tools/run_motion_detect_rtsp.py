@@ -74,7 +74,7 @@ def main(args):
     vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*int(args.fps), target_fps=int(args.fps))
 
     logger.info(f"save_prefix: {save_prefix}")
-    det = md.MotionDetector(vidloader, site_save_path, save_prefix, ping_url=args.url)
+    det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url)
     det.run(fps=int(args.fps), algo=args.algo, orin=args.orin, raspi=args.raspi)
 
 if __name__ == "__main__":
