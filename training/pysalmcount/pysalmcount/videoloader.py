@@ -37,10 +37,14 @@ class VideoLoader(DataLoader):
 
     def close(self):
         if self.thread and self.thread.is_alive():
+            logger.info('Joining frame reader thread...')
             self.stop_thread = True
             self.thread.join()
+            logger.info('Grabbing items stopped.')
+
         if hasattr(self, 'cap') and self.cap.isOpened():
             self.cap.release()
+            logger.info('VideoCapture released.')
 
     def clips_len(self):
         return self.num_clips
@@ -174,15 +178,7 @@ class VideoLoader(DataLoader):
 
             yield Item(frame, num_items=self.total_frames)
 
-        # ✅ Ensure the reader thread is joined
-        if self.thread and self.thread.is_alive():
-            logger.info('Joining frame reader thread...')
-            self.thread.join()
-            logger.info('Grabbing items stopped.')
-
-        if self.cap.isOpened():
-            self.cap.release()
-            logger.info('VideoCapture released.')
+        self.close()
 
     def fps(self):
         return self.vid_fps
