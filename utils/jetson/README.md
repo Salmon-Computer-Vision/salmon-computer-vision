@@ -241,6 +241,24 @@ ls /media/hdd
 df -h
 ```
 
+#### Alternative through fstab
+
+Open fstab:
+```
+sudoedit /etc/fstab
+```
+
+Enter the following to mount:
+```
+://192.168.1.5/HDD   /media/hdd   cifs   _netdev,nofail,x-systemd.automount,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777   0  0
+```
+
+Restart daemon and reload mounting:
+```
+sudo systemctl restart daemon-reload
+sudo systemctl restart remote-fs.target
+```
+
 ### Troubleshooting Mount
 
 If the drive isn't mounted or doesn't mount automatically upon system restart, check the status and logs for errors:
