@@ -33,6 +33,9 @@ class VideoLoader(DataLoader):
         self.target_fps = int(target_fps) if target_fps is not None else target_fps
 
     def __del__(self):
+        self.close()
+
+    def close(self):
         if self.thread and self.thread.is_alive():
             self.stop_thread = True
             self.thread.join()

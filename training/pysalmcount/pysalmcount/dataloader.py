@@ -19,6 +19,10 @@ class DataLoader(ABC):
         ### Expects return format {0: class1, 1: class2, ...}
         pass
 
+    @abstractmethod
+    def close(self):
+        pass
+
 class Item():
     def __init__(self, frame, num_items, boxes=None, orig_shape=None,  attrs=None):
         """

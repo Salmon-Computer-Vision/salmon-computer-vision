@@ -255,6 +255,7 @@ class MotionDetector:
                 start_time=time.time()
             # Constantly check if save folder exists
             if not os.path.exists(self.save_folder):
+                self.dataloader.close()
                 raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
 
             frame = np.ascontiguousarray(item.frame)
@@ -397,6 +398,8 @@ class MotionDetector:
             frame_counter += 1
 
         try:
+            self.dataloader.close()
+
             if motion_detected:
                 logger.info("No more frames. Motion stopped.")
                 self.frame_log[cur_clip.name].append((frame_start, frame_counter))
