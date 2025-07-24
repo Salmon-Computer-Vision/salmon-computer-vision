@@ -255,7 +255,7 @@ Enter the following to mount:
 
 Restart daemon and reload mounting:
 ```
-sudo systemctl restart daemon-reload
+sudo systemctl daemon-reload
 sudo systemctl restart remote-fs.target
 ```
 
