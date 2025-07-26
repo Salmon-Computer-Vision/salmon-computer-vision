@@ -274,6 +274,8 @@ class MotionDetector:
             if not os.path.exists(self.save_folder):
                 if self.motion_detected:
                     self.stop_video_saving()
+                if video_saver is not None:
+                    video_saver.join()
                 self.dataloader.close()
                 raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
 
