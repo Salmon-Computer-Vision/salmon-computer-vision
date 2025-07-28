@@ -11,7 +11,8 @@ setup(
     install_requires=[
         'numpy',
         'pandas',
-        'requests'
+        'requests',
+        'ffmpeg-python',
     ],
 )
 
