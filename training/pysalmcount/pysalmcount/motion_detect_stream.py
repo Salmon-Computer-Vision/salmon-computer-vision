@@ -270,14 +270,6 @@ class MotionDetector:
         for item in self.dataloader.items():
             if self.is_check_time(frame_counter, fps):
                 start_time=time.time()
-            # Constantly check if save folder exists
-            if not os.path.exists(self.save_folder):
-                if self.motion_detected:
-                    self.stop_video_saving()
-                if video_saver is not None:
-                    video_saver.join()
-                self.dataloader.close()
-                raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.save_folder)
 
             frame = np.ascontiguousarray(item.frame)
             if isinstance(frame, str):
