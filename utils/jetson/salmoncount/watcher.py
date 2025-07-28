@@ -77,10 +77,11 @@ def save_processed_videos(processed_videos):
 
 
 class VideoHandler(FileSystemEventHandler):
-    def __init__(self, detection_dir, counts_dir, weights_path):
+    def __init__(self, detection_dir, counts_dir, weights_path, ping_url):
         self.model = YOLO(weights_path)
         self.detection_dir = detection_dir
         self.counts_dir = counts_dir
+        self.ping_url = ping_url
 
         with open(CONFIG_PATH, 'r') as file:
             self.data = yaml.safe_load(file)
@@ -118,11 +119,13 @@ class VideoHandler(FileSystemEventHandler):
 
     def run_salmon_counter(self, video_path, drop_bounding_boxes=False, bound_line_ratio=0.5):
         loader = VideoLoader([video_path], self.data['names'])
-        counter = SalmonCounter(self.model, loader, tracking_thresh=10, save_dir=str(self.detection_dir))
+        counter = SalmonCounter(self.model, loader, tracking_thresh=10, 
+                save_dir=str(self.detection_dir), ping_url=self.ping_url)
 
         out_path = self.counts_dir #/ f"{os.uname()[1]}_salmon_counts.csv"
         counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
-                stream_write=True, output_csv_dir=str(out_path),drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
+                stream_write=True, output_csv_dir=str(out_path),
+                drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
 
         del loader, counter
 
@@ -141,7 +144,7 @@ def main(args):
     detection_dir.mkdir(exist_ok=True)
     counts_dir.mkdir(exist_ok=True)
     logs_dir.mkdir(exist_ok=True, parents=True)
-    video_handler = VideoHandler(detection_dir, counts_dir, args.weights)
+    video_handler = VideoHandler(detection_dir, counts_dir, args.weights, ping_url=args.url)
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
     file_handler = logging.FileHandler(logs_dir / f"salmoncount_logs_{timestamp}.txt")
@@ -184,10 +187,17 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
     parser.add_argument("--test", action='store_true', help="Set this flag to not use site save path")
-    parser.add_argument('--weights', default='config/salmoncount.engine', help='Path to YOLO weights to load.')
-    parser.add_argument('--time-window', default=4 * 60, help='The time window to ignore potentially still writing files in seconds.')
-    parser.add_argument('--drop-bbox', action='store_true', help='Set this flag to determine whether the top-view boxes should be removed when calculating the counts.')
+    parser.add_argument('--weights', default='config/salmoncount.engine', 
+            help='Path to YOLO weights to load.')
+    parser.add_argument('--time-window', default=4 * 60, 
+            help='The time window to ignore potentially still writing files in seconds.')
+    parser.add_argument('--drop-bbox', action='store_true', 
+            help='Set this flag to determine whether the top-view \
+                    boxes should be removed when calculating the counts.')
     parser.add_argument('--bound-line', default=0.5, help='Determine where the middle line is.')
+    parser.add_argument("--url", default='https://google.com', 
+            help="Healthchecks URL to ping. This could be from healthchecks.io or \
+                    another healthchecks service")
     args = parser.parse_args()
 
     main(args)

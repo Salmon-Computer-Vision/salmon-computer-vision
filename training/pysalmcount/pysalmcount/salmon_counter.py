@@ -1,4 +1,5 @@
 from .dataloader import DataLoader
+from pysalmcount import utils
 
 import os
 import logging
@@ -28,7 +29,7 @@ class SalmonCounter:
     TRACK_COUNT = 'track_count'
     CLASS_VOTE = 'class_vote'
     FONT = cv2.FONT_HERSHEY_SIMPLEX
-    def __init__(self, model, dataloader: DataLoader, tracking_thresh = 10, save_dir="save_dir"):
+    def __init__(self, model, dataloader: DataLoader, tracking_thresh = 10, save_dir="save_dir", ping_url='https://google.com'):
         self.model = model
         self.dataloader = dataloader
         self.track_history = defaultdict(lambda: [])
@@ -44,6 +45,7 @@ class SalmonCounter:
         self.prev_track_ids = {}
         self.tracking_thresh = tracking_thresh
         self.save_dir = save_dir
+        self.ping_url = ping_url
 
     def __del__(self):
         self._cleanup()
@@ -98,7 +100,7 @@ class SalmonCounter:
 
         frame_count = 0
         for item in self.dataloader.items():
-            if frame_count % 20 == 0:
+            if utils.is_check_time(frame_count, self.dataloader.fps()):
                 start_time = time.time()
 
             boxes = []
@@ -109,12 +111,12 @@ class SalmonCounter:
             
             if not use_gt:
                 # Run YOLOv8 tracking on the frame, persisting tracks between frames
-                if frame_count % 20 == 0:
+                if utils.is_check_time(frame_count, self.dataloader.fps()):
                     inf_start_time = time.time()
                 results = self.model.track(item.frame, tracker=tracker,
                         project=self.save_dir, name=cur_clip.name,
                         persist=True, verbose=False, device=device)
-                if frame_count % 20 == 0:
+                if utils.is_check_time(frame_count, self.dataloader.fps()):
                     inf_end_time = time.time()
                     inf_elapsed = (inf_end_time - inf_start_time) * 1000
                     logger.info(f"Inference time: {inf_elapsed:.2f}")
@@ -221,10 +223,11 @@ class SalmonCounter:
             if save_vid:
                 out_vid.write(annotated_frame)
 
-            if frame_count % 20 == 0:
+            if utils.is_check_time(frame_count, self.dataloader.fps()):
                 end_time = time.time()
                 elapsed_time = (end_time - start_time) * 1000
                 logger.info(f"Execution time: {elapsed_time:.2f} ms ({frame_count} frames)")
+                utils.ping_in_background(self.ping_url)
 
             # Explicitly delete to save memory
             del results, boxes, id_items, cls_ids, confs

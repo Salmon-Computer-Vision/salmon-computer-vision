@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from .dataloader import DataLoader
+from pysalmcount import utils
 
 import cv2
 import numpy as np
@@ -15,8 +16,6 @@ import time
 from pathlib import Path
 import json
 from dataclasses import asdict
-
-from pysalmcount import utils
 
 logger = logging.getLogger(__name__)
 
@@ -165,11 +164,6 @@ class MotionDetector:
                 return True
         return False
 
-    def is_check_time(self, frame_counter, fps):
-        HEALTH_CHECKS_LEN = 30 # Frequency of healthchecks in seconds
-
-        return frame_counter % (fps * HEALTH_CHECKS_LEN) == 0
-
     def stop_video_saving(self):
         self.motion_counter = 0
         if self.save_video and not self.stop_event.is_set():
@@ -268,7 +262,7 @@ class MotionDetector:
         num_motion_events = 0
         frame_start = 0
         for item in self.dataloader.items():
-            if self.is_check_time(frame_counter, fps):
+            if utils.is_check_time(frame_counter, fps):
                 start_time=time.time()
 
             frame = np.ascontiguousarray(item.frame)
@@ -293,29 +287,29 @@ class MotionDetector:
                         logger.info(f"Created VideoWriter to {cont_filename}")
                     frame_counter = 0
 
-                if self.is_check_time(frame_counter, fps):
+                if utils.is_check_time(frame_counter, fps):
                     start_in_time = time.time()
 
                 cont_vid_out.write(frame)
 
-                if self.is_check_time(frame_counter, fps):
+                if utils.is_check_time(frame_counter, fps):
                     end_in_time=time.time()
                     elapsed_in_time = (end_in_time - start_in_time) * 1000
                     logger.info(f"Cont save: {elapsed_in_time:.2f} ms")
 
-            if self.is_check_time(frame_counter, fps):
+            if utils.is_check_time(frame_counter, fps):
                 start_in_time = time.time()
 
             # Apply background subtraction algorithm to get the foreground mask
             fg_mask = bgsub.apply(frame)
 
-            if self.is_check_time(frame_counter, fps):
+            if utils.is_check_time(frame_counter, fps):
                 end_in_time=time.time()
                 elapsed_in_time = (end_in_time - start_in_time) * 1000
                 logger.info(f"BGSub: {elapsed_in_time:.2f} ms")
             #cont_vid_out.write(cv2.cvtColor(fg_mask, cv2.COLOR_GRAY2RGB))
 
-            if self.is_check_time(frame_counter, fps):
+            if utils.is_check_time(frame_counter, fps):
                 start_in_time = time.time()
             has_motion = False
             if warm_up <= 0:
@@ -330,7 +324,7 @@ class MotionDetector:
                 has_motion = self.detect_motion(fg_mask, min_area=min_contour_area)
             else:
                 warm_up -= 1
-            if self.is_check_time(frame_counter, fps):
+            if utils.is_check_time(frame_counter, fps):
                 end_in_time=time.time()
                 elapsed_in_time = (end_in_time - start_in_time) * 1000
                 logger.info(f"check motion: {elapsed_in_time:.2f} ms")
@@ -390,7 +384,7 @@ class MotionDetector:
                         self.frame_log[cur_clip.name].append((frame_start, frame_counter))
                         self.stop_video_saving()
 
-            if self.is_check_time(frame_counter, fps):
+            if utils.is_check_time(frame_counter, fps):
                 end_time=time.time()
                 elapsed_time = (end_time - start_time) * 1000
                 logger.info(f"Time elapsed: {elapsed_time:.2f} ms")
