@@ -38,22 +38,9 @@ ${ORGID}/${SITE_NAME}/${DEVICE_ID_*}/motion_vids/${ORGID}-${SITE_NAME}-${DEVICE_
 ${ORGID}/${SITE_NAME}/${DEVICE_ID_*}/cont_vids/${ORGID}-${SITE_NAME}-${DEVICE_ID_*}_<yyyymmdd>_<hhmmss>_C.mp4
 ```
 
-Create a `.env` file here with the following:
+Copy `template.env` to `.env` and populate the file.
 ```
-# utils/pi/services/.env
-IMAGE_REPO_HOST=<image_repo_host>
-TAG=latest-bookworm
-DRIVE=/media/hdd
-USERNAME=<pi_username>
-HOST_UID=1000
-HOST_GID=1000
-ORGID=<orgid>
-SITE_NAME=<site_name>
-BUCKET=<bucket>
-RTSP_URL=rtsp://<rtsp-url>
-FPS=10
-FLAGS=--orin --algo CNT
-DEVICE_ID=--device-id jetson-0
+cp template.env .env
 ```
 
 Change the `jetson-0` in `DEVICE_ID` to the same name and number as ending
@@ -128,6 +115,22 @@ If you installed through pip, the command is simply `docker-compose` instead.
 !! We have also discovered corruption errors that could occur when ingesting
 the camera streams with older Raspberry Pis, so it may be beneficial to use
 newer Raspberry Pis from the get-go.
+
+### Healthchecks for HDD
+
+Setup an extra healthchecks for the external harddrive mounting:
+
+```bash
+crontab -e
+```
+
+Put the following (Replace the URL with the correct ping address):
+
+```
+* * * * * df -h | grep media && curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>
+```
+
+This assumes the external drive is mounted to `/media/hdd`.
 
 ### Remote Docker Commands
 
