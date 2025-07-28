@@ -31,6 +31,19 @@ Add the user to the docker group:
 sudo usermod -aG docker <username>
 ```
 
+## Caveat: Offline device Date/Time issue
+
+By default, the Jetson does not have a CMOS/RTC battery. This is necessary for the Jetson to hold
+an internal local clock before it gets onsite. These batteries can be purchased and installed
+separately to the Jetson, which may be desirable for an offline site.
+
+Setting the time can be done as such:
+
+```bash
+sudo timedatectl set-ntp 0
+sudo date -s '2025-07-25 12:34:56'
+```
+
 ## Tailscale
 
 Tailscale is a remote connection software. Once setup, any client that's also
