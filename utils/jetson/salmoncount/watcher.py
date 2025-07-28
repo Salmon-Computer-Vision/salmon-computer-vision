@@ -180,7 +180,7 @@ def main(args):
     #observer.join()
 
     logger.info("Waiting a little before ending...")
-    t = utils.ping_in_background(self.ping_url)
+    t = utils.ping_in_background(args.url)
     rootlogger.handlers[0].flush()
     time.sleep(30)
     logger.info("Ending...")
