@@ -16,6 +16,7 @@ from watchdog.events import FileSystemEventHandler
 
 from pysalmcount.videoloader import VideoLoader
 from pysalmcount.salmon_counter import SalmonCounter
+from pysalmcount import utils
 
 # Set up logging
 class BufferedHandler(logging.Handler):
@@ -179,10 +180,12 @@ def main(args):
     #observer.join()
 
     logger.info("Waiting a little before ending...")
+    t = utils.ping_in_background(self.ping_url)
     rootlogger.handlers[0].flush()
     time.sleep(30)
     logger.info("Ending...")
     rootlogger.handlers[0].flush()
+    t.join() # Make sure ping thread finishes
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
