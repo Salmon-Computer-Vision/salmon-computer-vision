@@ -75,6 +75,10 @@ class VideoLoader(DataLoader):
         if self.vid_fps <= 0 or self.vid_fps > 1000:
             logger.warning(f"Invalid FPS reported ({self.vid_fps}), estimating manually...")
             self.vid_fps = self._estimate_fps(self.cap)
+
+        if self.vid_fps <= 0:
+            # Still can't get FPS
+            raise VideoCaptureError(f"Error: Cannot determine FPS")
         logger.info(f"Stream or video FPS: {self.vid_fps}")
 
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
