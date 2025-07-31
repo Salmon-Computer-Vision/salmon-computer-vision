@@ -208,7 +208,7 @@ To automatically mount the NFS share of the harddrive attached to a different
 device install NFS client and autofs:
 
 ```bash
-sudo apt update && sudo apt install cifs-utils autofs
+sudo apt update && sudo apt install cifs-utils
 ```
 
 Create mount dir:
@@ -216,36 +216,21 @@ Create mount dir:
 sudo mkdir -p /media/hdd
 ```
 
-Edit `/etc/auto.master`:
+Edit `/etc/fstab` with the following:
 ```bash
-sudoedit /etc/auto.master
+//192.168.1.5/HDD   /media/hdd   cifs   _netdev,nofail,x-systemd.automount,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777   0  0
 ```
-
-Add the following to the bottom:
-```bash
-/- /etc/auto_static.smb --timeout=60
-```
-
-Create a new file:
-```bash
-sudoedit /etc/auto_static.smb
-```
-
-with the following:
-```bash
-/media/hdd  -fstype=cifs,rw,guest,uid=1000,gid=1000,file_mode=0777,dir_mode=0777  ://<raspi_ip>/HDD
-```
-Replace `<raspi_ip>` with the static IP address of the Raspberry Pi that is mounting
+Replace `192.168.1.5` with the static IP address of the Raspberry Pi that is directly mounting
 the external drive.
 
 \[!\] Note if the device's uid/gid is different, change it the current device's
 uid/gid. Run the command `id` to view. The filesystem may be slower than normal
 if this is not done correctly.
 
-Restart and enable the autofs service:
+Reload the daemon and restart remote-fs:
 ```bash
-sudo systemctl restart autofs
-sudo systemctl enable autofs
+sudo systemctl daemon-reload
+sudo systemctl restart remote-fs.target
 ```
 
 Check if it is properly mounted by listing or running `df`:
