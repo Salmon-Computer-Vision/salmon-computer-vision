@@ -40,24 +40,7 @@ and place it in the `config` folder. Then, copy it to the device's home folder:
 cp -r config ~/
 ```
 
-Create an `.env` file in the `salmoncount` with the following:
-```bash
-IMAGE_REPO_HOST=<image_repo_host>
-TAG=latest-jetson-jetpack4
-DRIVE=network-drive
-NETWORK_DRIVE_SHARE=//192.168.1.5/HDD
-USERNAME=<device-username>
-WEIGHTS=/app/config/<salmoncount_weights>.engine
-
-# FLAGS
-
-# Drop bounding boxes (optional): Uncomment and set "--drop-bbox" to remove
-# top-view bounding boxes on the bottom half of each frame for cameras with a
-# mirror displaying both top and side view
-# when calculating the counts.
-
-#FLAGS=--drop-bbox
-```
+Copy `template.env` to `.env` file in the `salmoncount` folder and edit the entries in `.env` as appropriate.
 
 !! Change 192.168.1.5 to the proper static IP of the device that is mounting the
 harddrive. If the Jetson is mounting the external harddrive change `DRIVE` to `DRIVE=/media/hdd`
