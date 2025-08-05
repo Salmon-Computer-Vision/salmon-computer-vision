@@ -12,6 +12,7 @@ services:
     user: ${HOST_UID}:${HOST_GID}
     volumes:
       - ${DRIVE}:${DRIVE}
+      - /logs:/tools/logs
       - /home/${USERNAME}/2024_test_vids:/app/2024_test_vids
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro

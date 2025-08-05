@@ -20,7 +20,7 @@ rootlogger.addHandler(console_handler)
 
 logger = logging.getLogger(__name__)
 
-LOGS_DIR_PATH = "logs/salmonmd_logs"
+LOGS_DIR_PATH = "/tools/logs/salmonmd_logs"
 
 def read_rtsp_url(file_path):
     """Read RTSP URL from the specified file."""
@@ -48,7 +48,7 @@ def main(args):
 
     site_save_path.mkdir(exist_ok=True, parents=True)
 
-    logs_dir = site_save_path / LOGS_DIR_PATH
+    logs_dir = Path(LOGS_DIR_PATH)
     logs_dir.mkdir(exist_ok=True, parents=True)
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
