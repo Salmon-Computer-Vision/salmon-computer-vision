@@ -9,7 +9,6 @@ services:
     container_name: salmonmd-jetson
     network_mode: host
     privileged: true
-    user: ${HOST_UID}:${HOST_GID}
     volumes:
       - ${DRIVE}:${DRIVE}
       - /logs:/tools/logs
