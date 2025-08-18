@@ -88,6 +88,26 @@ FLAGS=--raspi --gstreamer --algo CNT
 Sometimes the RTSP stream fails to open with gstreamer. If so, turn off
 gstreamer decoding by removing the `--gstreamer` flag.
 
+To periodically sync logs to the external harddrive, copy the script to your local bin:
+```bash
+sudo cp sync_logs.sh /usr/local/bin/
+sudo chmod +x /usr/local/bin/sync_logs.sh
+```
+
+You can change the `SRC_ROOT` and `DST_ROOT` folder as necessary.
+
+Edit crontab:
+```bash
+sudo crontab -e
+```
+
+Add the following to the bottom:
+```
+0 */2 * * * /usr/local/bin/sync_logs.sh >> /var/log/sync_logs.log 2>&1
+```
+
+This will sync to the external harddrive every 2 hours.
+
 Spin up docker containers and run them:
 ```bash
 docker compose up -d

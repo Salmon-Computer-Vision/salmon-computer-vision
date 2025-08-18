@@ -20,6 +20,7 @@ rootlogger.addHandler(console_handler)
 
 logger = logging.getLogger(__name__)
 
+LOCAL_DIR_PATH = "/media/local_hdd"
 LOGS_DIR_PATH = "logs/salmonmd_logs"
 
 def read_rtsp_url(file_path):
@@ -39,16 +40,16 @@ def main(args):
     save_prefix = None
     if args.test:
         site_save_path = Path(args.save_folder)
+        logs_dir = Path(LOCAL_DIR_PATH)
     else:
         orgid, site_name, device_id = get_orgid_and_site_name(os.uname()[1])
         if args.device_id is not None:
             device_id = args.device_id
             save_prefix = f"{orgid}-{site_name}-{args.device_id}"
         site_save_path = Path(args.save_folder) / orgid / site_name / device_id
+        logs_dir = Path(LOCAL_DIR_PATH) / orgid / site_name / device_id / LOGS_DIR_PATH
 
     site_save_path.mkdir(exist_ok=True, parents=True)
-
-    logs_dir = site_save_path / LOGS_DIR_PATH
     logs_dir.mkdir(exist_ok=True, parents=True)
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
