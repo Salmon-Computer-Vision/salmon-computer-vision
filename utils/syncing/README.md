@@ -1,5 +1,9 @@
 # Syncing Data
 
+- `syncing` uses rclone to copy and upload to the `aws` configuration only the motion detected videos and metadata
+- `syncing-detects` is the same as `syncing` but only uploads the YOLO format with track ID detection `.txt` files
+- `syncing-counts` is the same as `syncing` but only uploads the counts `.csv` files for each video
+
 This uses rclone to sync to AWS
 
 Create a `.env` file here with the following:
