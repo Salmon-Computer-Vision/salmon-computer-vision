@@ -11,7 +11,7 @@ services:
     privileged: true
     volumes:
       - ${DRIVE}:${DRIVE}
-      - /logs:/tools/logs
+      - /media/local_hdd:/media/local_hdd
       - /home/${USERNAME}/2024_test_vids:/app/2024_test_vids
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
