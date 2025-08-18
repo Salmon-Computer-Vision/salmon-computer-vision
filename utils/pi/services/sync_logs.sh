@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SRC_ROOT="/media/local_hdd"
-DST_ROOT="/media/hdd"
+SRC_ROOT="/media/local_hdd/"
+DST_ROOT="/media/hdd/"
 
 # Safety check: destination must be mounted
 if ! mountpoint -q "$DST_ROOT"; then
