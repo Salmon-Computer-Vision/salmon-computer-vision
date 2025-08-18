@@ -1,16 +1,12 @@
 # Raspberry Pi Services
 
-These services outlined in `docker-compose.yml` will perform motion detection,
-and uploading to the cloud. For a Raspberry Pi 5, the potential maximum is two
-simultaneous streams, and even then that may be too much considering all of the
-other tasks the Raspberry Pi needs to do.
+The services outlined in `docker-compose.yml` will record continuous video
+separated by 2 hours and perform motion detection, creating motion detected
+clips at a maximum of 2 minutes.
 
-There are currently four services that spin up their own docker container to perform tasks:
+There are currently one service that spin up their own docker container to perform tasks:
 
 - `salmonmd-jetson` does the main work of motion detection and saving to the external harddrive
-- `syncing` uses rclone to copy and upload to the `aws` configuration only the motion detected videos and metadata
-- `syncing-detects` is the same as `syncing` but only uploads the YOLO format with track ID detection `.txt` files
-- `syncing-counts` is the same as `syncing` but only uploads the counts `.csv` files for each video
 
 First, move to this folder:
 ```bash
