@@ -1,8 +1,8 @@
 # Raspberry Pi Services
 
 The services outlined in `docker-compose.yml` will record continuous video
-separated by 2 hours and perform motion detection, creating motion detected
-clips at a maximum of 2 minutes.
+separated by 2 hours each and perform motion detection, creating motion detected
+clips at a maximum of 2 minutes each.
 
 There are currently one service that spin up their own docker container to perform tasks:
 
