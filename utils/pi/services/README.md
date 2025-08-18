@@ -88,10 +88,10 @@ FLAGS=--raspi --gstreamer --algo CNT
 Sometimes the RTSP stream fails to open with gstreamer. If so, turn off
 gstreamer decoding by removing the `--gstreamer` flag.
 
-To periodically move logs to the external harddrive, copy the script to your local bin:
+To periodically sync logs to the external harddrive, copy the script to your local bin:
 ```bash
-sudo cp move_logs.sh /usr/local/bin/
-sudo chmod +x /usr/local/bin/move_logs.sh
+sudo cp sync_logs.sh /usr/local/bin/
+sudo chmod +x /usr/local/bin/sync_logs.sh
 ```
 
 You can change the `SRC_ROOT` and `DST_ROOT` folder as necessary.
@@ -103,10 +103,10 @@ sudo crontab -e
 
 Add the following to the bottom:
 ```
-0 1,13 * * * /usr/local/bin/move_logs.sh >> /var/log/move_logs.log 2>&1
+0 */2 * * * /usr/local/bin/sync_logs.sh >> /var/log/sync_logs.log 2>&1
 ```
 
-This check twice daily and move 2 day old logs from the local directory to the harddrive.
+This will sync to the external harddrive every 2 hours.
 
 Spin up docker containers and run them:
 ```bash
