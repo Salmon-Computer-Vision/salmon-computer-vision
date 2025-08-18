@@ -91,6 +91,7 @@ gstreamer decoding by removing the `--gstreamer` flag.
 To periodically move logs to the external harddrive, copy the script to your local bin:
 ```bash
 sudo cp move_logs.sh /usr/local/bin/
+sudo chmod +x /usr/local/bin/move_logs.sh
 ```
 
 You can change the `SRC_ROOT` and `DST_ROOT` folder as necessary.
