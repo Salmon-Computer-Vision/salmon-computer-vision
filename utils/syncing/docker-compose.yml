@@ -32,3 +32,13 @@ services:
     entrypoint: /bin/sh
     command: |
       /app/syncing-counts.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
+  syncing-logs:
+    image: rclone/rclone
+    container_name: syncing-logs
+    volumes:
+      - ${DRIVE}:${DRIVE}
+      - /home/${USERNAME}/.config/rclone/:/config/rclone/
+    restart: always
+    entrypoint: /bin/sh
+    command: |
+      -c 'rclone copy --bwlimit=0 --buffer-size=128M --transfers=2 --include "/${SITE_NAME}/*/logs/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
