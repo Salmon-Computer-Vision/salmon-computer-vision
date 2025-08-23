@@ -2,10 +2,9 @@
 set -euo pipefail
 
 MNT="${SMB_MNT:-/app/drive/hdd}"
-FALLBACK="/app/drive/fallback"
+FALLBACK="/app/drive/local_hdd"
 SHARE="${SMB_SHARE:?//server/share is required}"
 OPTS="${SMB_OPTS:-rw,vers=3.0,soft,timeo=5,retrans=3,uid=1000,gid=1000,file_mode=0664,dir_mode=0775}"
-CRED_FILE="${SMB_CRED_FILE:-/run/secrets/smbcred}"  # optional
 
 mkdir -p "$MNT" "$FALLBACK"
 
