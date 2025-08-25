@@ -2,9 +2,10 @@
 set -euo pipefail
 
 MNT="${SMB_MNT:-/app/drive/hdd}"
-FALLBACK="/app/drive/local_hdd"
+FALLBACK="${FALLBACK_SHARE}"
 SHARE="${SMB_SHARE:?//server/share is required}"
-OPTS="${SMB_OPTS:-rw,vers=3.0,soft,timeo=5,retrans=3,uid=1000,gid=1000,file_mode=0664,dir_mode=0775}"
+OPTS="${SMB_OPTS:-rw,soft,timeo=5,retrans=3,uid=1000,gid=1000,file_mode=0777,dir_mode=0777}"
+CRED_FILE="${SMB_CRED_FILE:-/run/secrets/smbcred}"  # optional
 
 mkdir -p "$MNT" "$FALLBACK"
 
@@ -53,7 +54,7 @@ if ! sh -c "touch ${MNT}/.rw_test.$$ 2>/dev/null && rm -f ${MNT}/.rw_test.$$" \
   exit 1
 fi
 
-# Run your app (it can prioritize $MNT when mounted; else use $FALLBACK)
+# Run app (Prioritize $MNT when mounted; else use $FALLBACK)
 export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libstdc++.so.6
 exec python3 watcher.py --weights "${WEIGHTS}" ${FLAGS:-}
 
