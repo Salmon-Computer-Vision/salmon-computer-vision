@@ -6,20 +6,22 @@ services:
     container_name: salmon_counter
     environment:
       - HOSTNAME
+      - SMB_SHARE=${NETWORK_DRIVE_SHARE} # //server/share
+      - FALLBACK_SHARE=/app/drive/local_hdd
+      - WEIGHTS=${WEIGHTS}
+      - FLAGS=${FLAGS}
     env_file:
       - ./.env
     volumes:
       - ${DRIVE}:/app/drive/hdd
+      - /media/local_hdd:/app/drive/local_hdd
       - /home/${USERNAME}/config:/app/config
     network_mode: host
     runtime: nvidia
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
     restart: always
     working_dir: /app
-    command: bash -c 'export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libstdc++.so.6; python3 watcher.py --weights ${WEIGHTS} ${FLAGS}'
+    command: ["/app/entrypoint.sh"]
 
-volumes:
-  network-drive:
-    driver_opts:
-      type: cifs
-      o: rw,sec=none,uid=1000,gid=1000,file_mode=0777,dir_mode=0777
-      device: ${NETWORK_DRIVE_SHARE}
