@@ -8,13 +8,18 @@ services:
       - HOSTNAME
       - SMB_SHARE=${NETWORK_DRIVE_SHARE} # //server/share
       - FALLBACK_SHARE=/app/drive/local_hdd
+      - WEIGHTS=${WEIGHTS}
     env_file:
       - ./.env
     volumes:
-      - /media/local_hdd:${FALLBACK_SHARE}
+      - ${DRIVE}:/app/drive/hdd
+      - /media/local_hdd:/app/drive/local_hdd
       - /home/${USERNAME}/config:/app/config
     network_mode: host
     runtime: nvidia
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
     restart: always
     working_dir: /app
     command: ["/app/entrypoint.sh"]

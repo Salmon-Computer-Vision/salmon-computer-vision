@@ -1,11 +1,10 @@
 FROM oceanaid/oceanaid-public:latest-jetpack6-opencv
 
 # Install dependencies
-RUN python3 -m pip install -U pip
-RUN python3 -m pip install -U setuptools wheel check-wheel-contents packaging
-
-RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y ffmpeg
-RUN python3 -m pip install watchdog lapx ffmpeg-python
+RUN python3 -m pip install -U pip && \
+    python3 -m pip install -U setuptools wheel check-wheel-contents packaging \
+    watchdog lapx ffmpeg-python && \
+    apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y ffmpeg cifs-utils
 
 #RUN python3 -m pip uninstall -y torchvision && python3 -m pip install torchvision --index-url https://download.pytorch.org/whl/cu126
 
@@ -16,9 +15,9 @@ RUN git clone --branch ${BRANCH} --depth 1 https://github.com/${USER}/${REPO}.gi
 RUN python3 -m pip install -e /tools/training/pysalmcount
 
 COPY watcher.py /app/watcher.py
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 WORKDIR /app
 
-# Start the watcher script
-CMD ["python3", "watcher.py"]
-
+ENTRYPOINT ["/app/entrypoint.sh"]
