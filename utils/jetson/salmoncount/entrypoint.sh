@@ -63,5 +63,5 @@ fi
 
 # Run app (Prioritize $MNT when mounted; else use $FALLBACK)
 export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libstdc++.so.6
-exec python3 watcher.py --weights "${WEIGHTS}" ${FLAGS:-}
+exec python3 watcher.py --weights "${WEIGHTS}" ${FLAGS}
 

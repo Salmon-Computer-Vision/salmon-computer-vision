@@ -9,6 +9,7 @@ services:
       - SMB_SHARE=${NETWORK_DRIVE_SHARE} # //server/share
       - FALLBACK_SHARE=/app/drive/local_hdd
       - WEIGHTS=${WEIGHTS}
+      - FLAGS=${FLAGS}
     env_file:
       - ./.env
     volumes:
