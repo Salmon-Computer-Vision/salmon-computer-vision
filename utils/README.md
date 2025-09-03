@@ -2,6 +2,26 @@
 
 ## Troubleshooting
 
+### Harddrive disconnects
+
+This issue happens often with the Marlin Boxes where the harddrive would
+disconnect and can be temporarily brought back by restarting the
+microcontroller.
+
+Someone needs to be physically on-site to replug the harddrive. It may be
+simply turning the orientation of the cable upside down and checking if the
+waterproof port is properly screwed in.
+
+Once the harddrive plugged in and mounted, run the following to check the harddrive.
+```bash
+lsusb -t
+```
+
+Look for the one that says `Class=Mass Storage` and check the number at the
+end. It should say either 5000M or 10000M when it is mounted properly. If not,
+try a different orientation or connection method such as through the USB-A port
+not using the waterproof cables.
+
 ### Slowness in SD Card-powered microcontrollers
 
 If a microcontroller that relies on SD cards become slow, this could be due to
