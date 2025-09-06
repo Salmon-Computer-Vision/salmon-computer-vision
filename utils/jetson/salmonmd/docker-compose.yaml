@@ -8,9 +8,12 @@ services:
       - ./.env
     container_name: salmonmd
     network_mode: host
-    privileged: true
     volumes:
-      - ${DRIVE}:${DRIVE}
+      - type: bind
+        source: ${DRIVE}
+        target: ${DRIVE}
+        bind:
+          propagation: rslave
       - /media/local_hdd:/media/local_hdd
       - /home/${USERNAME}/2024_test_vids:/app/2024_test_vids
     runtime: nvidia
