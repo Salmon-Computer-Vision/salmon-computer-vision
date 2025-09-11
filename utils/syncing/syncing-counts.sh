@@ -8,7 +8,7 @@ rclone_copy() {
     src="$4"
     dst="$5"
     
-    rclone copy --bwlimit=0 --buffer-size=128M --transfers=1 --include "$include" \
+    rclone copy --bwlimit=0 --buffer-size=128M --transfers=2 --include "$include" \
         "$src" "$dst" --config "$config" --log-level INFO
 }
 
@@ -51,21 +51,6 @@ fi
 # Define paths
 REMOTE_PATH="aws:${BUCKET}/${ORGID}"
 LOCAL_PATH="${DRIVE}/${ORGID}"
-
-echo "Download from remote..."
-rclone_copy "$SITE_NAME" "$CONFIG" "/${SITE_NAME}/*/counts/**" "$REMOTE_PATH" "$LOCAL_PATH"
-
-# Concatenate CSV files separately within each subfolder
-for dir in "${LOCAL_PATH}/${SITE_NAME}"/*/counts; do
-    if [ -d "$dir" ]; then
-        parent_dir=$(dirname "$dir")
-        base_dir=$(basename "$parent_dir")
-        summary_csv_name="${ORGID}-${SITE_NAME}-${base_dir}_summary_salmon_counts.csv"
-        output_file="${parent_dir}/${summary_csv_name}"
-        concatenate_csv_in_directory "$dir" "$output_file"
-	rclone_copy "$SITE_NAME" "$CONFIG" "/${SITE_NAME}/*/${summary_csv_name}" "$LOCAL_PATH" "$REMOTE_PATH"
-    fi
-done
 
 # Upload to remote
 echo "Upload to remote..."
