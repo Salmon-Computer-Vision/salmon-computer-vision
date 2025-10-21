@@ -18,3 +18,18 @@ BUCKET=<bucket_name>
 Create or edit `~/.config/rclone/rclone.conf` and add the contents of
 `rclone.conf` in this folder to it.
 
+Start the syncing services with the following:
+```
+docker compose up -d
+```
+
+When updating, be sure to build the containers as some may be built at runtime:
+```
+docker compose build
+```
+
+This uses the latest `rclone` image, so if desired, one can update the image:
+```
+docker compose pull
+docker compose up -d
+```
