@@ -67,7 +67,7 @@ class VideoSaver(Process):
             match = re.search(r'(\d{8}_\d{6})', self.filename)
             if match:
                 timestr = match.group(1)
-                base_time = datetime.strptime(timestr, "%Y%m%d_%H%M%S")
+                base_time = datetime.datetime.strptime(timestr, "%Y%m%d_%H%M%S")
 
                 # compute elapsed time
                 elapsed_seconds = self.frame_count / self.fps
