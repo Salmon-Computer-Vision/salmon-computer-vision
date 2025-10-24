@@ -435,7 +435,8 @@ class MotionDetector:
                 self.stop_video_saving()
 
             logger.info("Joining video saver process in case it has not exited")
-            video_saver.join()
+            if video_saver and video_saver.is_alive():
+                video_saver.join()
         except Exception as e:
             logger.error(e)
             pass
