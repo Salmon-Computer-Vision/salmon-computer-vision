@@ -290,7 +290,7 @@ class MotionDetector:
         count_delay = 0
 
         video_saver = None
-        frame_counter = MAX_CONTINUOUS_FRAMES
+        frame_counter = MAX_CONTINUOUS_FRAMES if self.save_cont_video else 0
         vid_counter = 0
         self.motion_counter = 0
         num_motion_events = 0
