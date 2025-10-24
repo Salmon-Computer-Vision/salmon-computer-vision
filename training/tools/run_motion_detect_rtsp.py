@@ -37,6 +37,9 @@ def get_orgid_and_site_name(name):
 
 
 def main(args):
+    save_cont_video = not args.no_cont if args.no_cont is not None else True
+    is_video = args.video if args.video is not None else False
+
     save_prefix = None
     if args.test:
         site_save_path = Path(args.save_folder)
@@ -75,13 +78,14 @@ def main(args):
     vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*int(args.fps), target_fps=int(args.fps))
 
     logger.info(f"save_prefix: {save_prefix}")
-    det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url)
+    det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url, save_cont_video=save_cont_video, is_video=is_video)
     det.run(fps=int(args.fps), algo=args.algo, orin=args.orin, raspi=args.raspi)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
     parser.add_argument("input", help="The input string. Normally an RTSP URL starting with rtsp:// of a camera. If it is a video path, set the --video flag.")
     parser.add_argument("save_folder", help="Folder where video clips will be saved")
+    parser.add_argument("--video", action='store_true', help="Set this flag for videos, and it will use the filename to determine clip filenames")
     parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from input")
     parser.add_argument("--test", action='store_true', help="Set this flag to not use the hostname to create the save paths")
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
@@ -91,6 +95,7 @@ if __name__ == "__main__":
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
     parser.add_argument("--algo", default="MOG2", choices=["MOG2", "CNT"], help="Set algorithm for motion detection")
     parser.add_argument("--url", default='https://google.com', help="Healthchecks URL to ping. This could be from healthchecks.io or another healthchecks service")
+    parser.add_argument("--no-cont", action='store_true', help="Set this flag to not save continuous video")
     args = parser.parse_args()
 
     main(args)

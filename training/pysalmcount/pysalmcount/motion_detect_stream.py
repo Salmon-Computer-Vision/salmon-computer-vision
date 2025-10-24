@@ -16,6 +16,7 @@ import time
 from pathlib import Path
 import json
 from dataclasses import asdict
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -26,13 +27,13 @@ VIDEO_ENCODER = 'avc1'
 
 class VideoSaver(Process):
     def __init__(self, shm_name, frame_shape, head: Value, tail: Value, buffer_length, folder, stop_event, lock_head, lock_tail, condition, fps=10.0,
-            orin=False, raspi=False, save_prefix=None):
+            orin=False, raspi=False, save_prefix=None, is_video=False, filename=None, frame_count=0):
         super().__init__()
         self.frame_shape = frame_shape
         self.head = head
         self.tail = tail
         self.buffer_length = buffer_length
-        self.folder = folder
+        self.folder = Path(folder)
         self.stop_event = stop_event  # This will signal when to stop recording
         self.lock_head = lock_head  # Locks the head value
         self.lock_tail = lock_tail  # Locks the tail value
@@ -43,6 +44,12 @@ class VideoSaver(Process):
         self.orin = orin
         self.raspi = raspi
         self.save_prefix = save_prefix
+        self.is_video = is_video
+        self.filename = filename
+        self.frame_count = frame_count
+
+        if is_video and filename is None:
+            logger.warn("Filename is empty. Will fallback on timestampped name")
 
         # Attach to shared memory
         self.shared_frames = np.ndarray(
@@ -51,12 +58,35 @@ class VideoSaver(Process):
             buffer=shm_name,
         )
 
+    def _get_md_filename(self, folder, suffix='_M', save_prefix=None):
+        if not self.is_video or self.filename is None:
+            filename = VideoSaver.get_output_filename(self.folder, save_prefix=self.save_prefix)
+        else:
+            new_timestr = self.filename
+            # Extract timestamp
+            match = re.search(r'(\d{8}_\d{6})', self.filename)
+            if match:
+                timestr = match.group(1)
+                base_time = datetime.strptime(timestr, "%Y%m%d_%H%M%S")
+
+                # compute elapsed time
+				elapsed_seconds = self.frame_count / self.fps
+				new_time = base_time + timedelta(seconds=elapsed_seconds)
+
+				# reformat for filename
+				new_timestr = new_time.strftime("%Y%m%d_%H%M%S")
+
+            filename = folder / f"{save_prefix}_{new_timestr}{suffix}.mp4"
+
+        return filename
+
     @staticmethod
     def get_output_filename(folder, suffix='_M', save_prefix=None):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         if save_prefix is None:
             save_prefix = os.uname()[1]
-        filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mp4")
+        filename = folder / f"{save_prefix}_{timestamp}{suffix}.mp4"
+
         return filename
 
     @staticmethod
@@ -80,7 +110,7 @@ class VideoSaver(Process):
         return frame
 
     def run(self):
-        filename = VideoSaver.get_output_filename(self.folder, save_prefix=self.save_prefix)
+        filename = self._get_md_filename(self.folder, save_prefix=self.save_prefix)
 
         logger.info(f"Writing motion video to {filename}")
         if self.orin:
@@ -133,14 +163,16 @@ class VideoSaver(Process):
 class MotionDetector:
     FILENAME = 'filename'
     CLIPS = 'clips'
-    def __init__(self, dataloader: DataLoader, save_folder, save_video=True, save_prefix=None, ping_url='https://google.com'):
+    def __init__(self, dataloader: DataLoader, save_folder, save_video=True, save_cont_video=True, is_video=False, save_prefix=None, ping_url='https://google.com'):
         self.dataloader = dataloader
         self.save_folder = save_folder
         self.frame_log = {}
         self.save_prefix = save_prefix
         self.ping_url = ping_url
 
+        self.is_video = is_video
         self.save_video = save_video
+        self.save_cont_video = save_cont_video
         self.motion_counter = 0
         self.motion_detected = False
 
@@ -258,6 +290,7 @@ class MotionDetector:
 
         video_saver = None
         frame_counter = MAX_CONTINUOUS_FRAMES
+        vid_counter = 0
         self.motion_counter = 0
         num_motion_events = 0
         frame_start = 0
@@ -270,7 +303,7 @@ class MotionDetector:
                 frame = cv2.imread(frame)
             frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
 
-            if self.save_video:
+            if self.save_cont_video:
                 if frame_counter >= MAX_CONTINUOUS_FRAMES:
                     cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
                     logger.info(f"Writing continuous video to {cont_filename}")
@@ -368,7 +401,7 @@ class MotionDetector:
                                 shm_name=raw, frame_shape=frame.shape, head=head, tail=tail, 
                                 buffer_length=buffer_length, folder=motion_dir, 
                                 stop_event=self.stop_event, lock_head=self.lock_head, lock_tail=self.lock_tail, condition=self.condition, fps=fps, 
-                                orin=orin, raspi=raspi, save_prefix=self.save_prefix)
+                                orin=orin, raspi=raspi, save_prefix=self.save_prefix, is_video=self.is_video, filename=cur_clip.name, frame_count=frame_counter)
                         video_saver.start()
                 elif self.motion_counter > MAX_FRAMES_CLIP:
                     logger.info("Max clip length exceeded")
