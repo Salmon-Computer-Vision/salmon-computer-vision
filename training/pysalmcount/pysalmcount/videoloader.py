@@ -160,6 +160,7 @@ class VideoLoader(DataLoader):
                 self.frame_buffer.put(frame, block=True)
 
                 if count % final_fps == 0:
+                    logger.info(f"{final_fps}")
                     end_time=time.time()
                     elapsed_time = (end_time - start_time) * 1000
                     logger.info(f"Retrieval time: {elapsed_time:.2f} ms")
