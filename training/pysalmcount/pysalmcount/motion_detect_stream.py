@@ -78,7 +78,7 @@ class VideoSaver(Process):
 
             filename = self.folder / f"{save_prefix}_{new_timestr}{suffix}.mp4"
 
-        return filename
+        return str(filename)
 
     @staticmethod
     def get_output_filename(folder: str, suffix='_M', save_prefix=None):
