@@ -71,6 +71,7 @@ class VideoSaver(Process):
 
                 # compute elapsed time
                 elapsed_seconds = self.frame_count / self.fps
+                logger.info("Elapsed seconds before clip: {elapsed_seconds}")
                 new_time = base_time + datetime.timedelta(seconds=elapsed_seconds)
 
                 # reformat for filename
