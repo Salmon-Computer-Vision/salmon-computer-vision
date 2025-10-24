@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import contextlib, os, time, json, subprocess
+import contextlib, os, shlex, time, json, subprocess
 from pathlib import Path
 
 VIDEO_DIR = Path("/media/hdd/ADFG/chignik/")
@@ -34,10 +34,17 @@ def mark_status(p: Path, status: str, note: str = ""):
     os.replace(tmp, meta_path)  # atomic
 
 def process_video(vid: Path, flags, device_id, fps, drive):
-    cmd = [
-        "python3", "training/tools/run_motion_detect_rtsp.py",
-        flags, device_id, "--fps", fps, str(vid), drive
-    ]
+    cmd = ["python3", "training/tools/run_motion_detect_rtsp.py"]
+    # expand the FLAGS string into individual args
+    if flags:
+        cmd += shlex.split(FLAGS)
+    if device_id:
+        cmd += shlex.split(DEVICE_ID)
+    if fps:
+        cmd += ["--fps", FPS]
+    # positionals must come last: input, save_folder
+    cmd += [str(vid), DRIVE]
+
     subprocess.run(cmd, check=True)
 
 def run_all(flags="", device_id="", fps="30", drive="/media/local_hdd"):
