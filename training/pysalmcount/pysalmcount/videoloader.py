@@ -128,10 +128,13 @@ class VideoLoader(DataLoader):
         count = 0
         overflow_elapsed = 0
         skip_frame_target = None
+        final_fps = self.vid_fps
         if self.target_fps is not None and self.target_fps < self.vid_fps:
             skip_frame_target = self.vid_fps / (self.vid_fps - self.target_fps)
             cur_frame_target = math.trunc(skip_frame_target)
             remainder_frame = skip_frame_target % 1
+
+            final_fps = self.target_fps
         #target_time_elapse = 1. / self.target_fps
         while not self.stop_thread:
             if count % self.vid_fps == 0:
@@ -156,7 +159,7 @@ class VideoLoader(DataLoader):
                         continue
                 self.frame_buffer.put(frame, block=True)
 
-                if count % self.vid_fps == 0:
+                if count % final_fps == 0:
                     end_time=time.time()
                     elapsed_time = (end_time - start_time) * 1000
                     logger.info(f"Retrieval time: {elapsed_time:.2f} ms")

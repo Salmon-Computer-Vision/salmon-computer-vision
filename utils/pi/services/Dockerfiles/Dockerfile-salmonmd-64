@@ -10,6 +10,8 @@ RUN git clone --branch ${BRANCH} --depth 1 https://github.com/${USER}/${REPO}.gi
 
 RUN python3 -m pip install -e /tools/training/pysalmcount
 
+COPY run_all_videos.py /app/run_all_videos.py
+
 # Set working directory
 WORKDIR /tools
 
