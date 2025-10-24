@@ -71,7 +71,7 @@ class VideoSaver(Process):
 
                 # compute elapsed time
                 elapsed_seconds = self.frame_count / self.fps
-                new_time = base_time + timedelta(seconds=elapsed_seconds)
+                new_time = base_time + datetime.timedelta(seconds=elapsed_seconds)
 
                 # reformat for filename
                 new_timestr = new_time.strftime("%Y%m%d_%H%M%S")
