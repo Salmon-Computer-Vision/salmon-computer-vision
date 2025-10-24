@@ -70,11 +70,11 @@ class VideoSaver(Process):
                 base_time = datetime.strptime(timestr, "%Y%m%d_%H%M%S")
 
                 # compute elapsed time
-				elapsed_seconds = self.frame_count / self.fps
-				new_time = base_time + timedelta(seconds=elapsed_seconds)
+                elapsed_seconds = self.frame_count / self.fps
+                new_time = base_time + timedelta(seconds=elapsed_seconds)
 
-				# reformat for filename
-				new_timestr = new_time.strftime("%Y%m%d_%H%M%S")
+                # reformat for filename
+                new_timestr = new_time.strftime("%Y%m%d_%H%M%S")
 
             filename = folder / f"{save_prefix}_{new_timestr}{suffix}.mp4"
 
