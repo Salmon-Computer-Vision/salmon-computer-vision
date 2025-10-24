@@ -126,6 +126,7 @@ class VideoLoader(DataLoader):
 
         prev_time = 0
         count = 0
+        skip_count = 0
         overflow_elapsed = 0
         skip_frame_target = None
         final_fps = self.vid_fps
@@ -133,7 +134,7 @@ class VideoLoader(DataLoader):
             skip_frame_target = self.vid_fps / (self.vid_fps - self.target_fps)
             cur_frame_target = math.trunc(skip_frame_target)
             remainder_frame = skip_frame_target % 1
-            logger.info(f"Target FPS is lower than video FPS. Will skip every {skip_frame_target} frames")
+            logger.info(f"Target FPS is lower than video FPS. Will skip every {cur_frame_target} frames")
 
             final_fps = self.target_fps
         #target_time_elapse = 1. / self.target_fps
@@ -152,22 +153,22 @@ class VideoLoader(DataLoader):
                     #else:
                     #    overflow_elapsed = time_elapsed - target_time_elapse
                     #    prev_time = time.time()
-                    if skip_frame_target is not None and count >= cur_frame_target:
+                    if skip_frame_target is not None and skip_count >= cur_frame_target:
                         cur_frame_target = skip_frame_target + remainder_frame
                         remainder_frame = cur_frame_target % 1
                         cur_frame_target = math.trunc(cur_frame_target)
-                        count = 0
+                        skip_count = 0
                         continue
                 self.frame_buffer.put(frame, block=True)
 
                 if count % final_fps == 0:
-                    logger.info(f"{cur_frame_target}, {skip_frame_target}, count: {count}, fps: {final_fps}")
                     end_time=time.time()
                     elapsed_time = (end_time - start_time) * 1000
                     logger.info(f"Retrieval time: {elapsed_time:.2f} ms")
-                    if skip_frame_target is None:
-                        count = 0
+                    count = 0
+
                 count += 1
+                skip_count += 0
             else:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
                 self.stop_thread = True
