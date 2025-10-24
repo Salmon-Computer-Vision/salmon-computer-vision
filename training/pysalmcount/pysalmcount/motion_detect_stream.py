@@ -380,7 +380,8 @@ class MotionDetector:
             with self.condition:
                 self.condition.notify() # Signal the VideoSaver thread that a new frame is available
 
-            self.motion_counter += 1
+            if self.motion_detected:
+                self.motion_counter += 1
 
             # TESTING ONLY
             #if self.motion_counter >= 100:
