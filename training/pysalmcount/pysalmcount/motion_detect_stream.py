@@ -58,7 +58,7 @@ class VideoSaver(Process):
             buffer=shm_name,
         )
 
-    def _get_md_filename(self, folder, suffix='_M', save_prefix=None):
+    def _get_md_filename(self, suffix='_M', save_prefix=None):
         if not self.is_video or self.filename is None:
             filename = VideoSaver.get_output_filename(self.folder, save_prefix=self.save_prefix)
         else:
@@ -76,16 +76,16 @@ class VideoSaver(Process):
                 # reformat for filename
                 new_timestr = new_time.strftime("%Y%m%d_%H%M%S")
 
-            filename = folder / f"{save_prefix}_{new_timestr}{suffix}.mp4"
+            filename = self.folder / f"{save_prefix}_{new_timestr}{suffix}.mp4"
 
         return filename
 
     @staticmethod
-    def get_output_filename(folder, suffix='_M', save_prefix=None):
+    def get_output_filename(folder: str, suffix='_M', save_prefix=None):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         if save_prefix is None:
             save_prefix = os.uname()[1]
-        filename = folder / f"{save_prefix}_{timestamp}{suffix}.mp4"
+        filename = os.path.join(folder, f"{save_prefix}_{timestamp}{suffix}.mp4")
 
         return filename
 
@@ -110,7 +110,7 @@ class VideoSaver(Process):
         return frame
 
     def run(self):
-        filename = self._get_md_filename(self.folder, save_prefix=self.save_prefix)
+        filename = self._get_md_filename(save_prefix=self.save_prefix)
 
         logger.info(f"Writing motion video to {filename}")
         if self.orin:
