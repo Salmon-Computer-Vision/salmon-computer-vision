@@ -3,7 +3,7 @@
 import contextlib, os, shlex, time, json, subprocess
 from pathlib import Path
 
-VIDEO_DIR = Path("/media/hdd/ADFG/chignik/raw")
+VIDEO_DIR = Path("/media/hdd/ADFG/chignik/raw/")
 #VIDEO_DIR = Path("/app/2024_test_vids")
 STATE_DIR = VIDEO_DIR / ".state"   # keep markers together
 STATE_DIR.mkdir(exist_ok=True)

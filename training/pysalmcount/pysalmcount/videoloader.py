@@ -191,7 +191,7 @@ class VideoLoader(DataLoader):
                         raise
 
             count += 1
-            if count % self.vid_fps == 0:
+            if count % math.ceil(self.vid_fps) == 0:
                 avg_elapsed_time = ((time.monotonic() - start_time) * 1000) / self.vid_fps
                 logger.info(f"Avg Retrieval time: {avg_elapsed_time:.2f} ms")
                 start_time = time.monotonic()
