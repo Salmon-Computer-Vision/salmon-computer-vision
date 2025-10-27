@@ -149,7 +149,7 @@ class VideoLoader(DataLoader):
         if not keep_all:
             # Accumulator ratio: how many frames to KEEP per decoded frame
             # e.g., 30->10 fps: ratio = 10/30 = 0.333...
-            ratio = (tgt_fps / vid_fps) if (not keep_all and vid_fps > 0) else 1.0
+            ratio = (self.target_fps / self.vid_fps) if (not keep_all and self.vid_fps > 0) else 1.0
             accum = 0.0  # stays in [0,1)
 
             logger.info(f"Target FPS is lower than video FPS. Will keep every {ratio:.2f} ratio of frames")
