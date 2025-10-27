@@ -147,8 +147,12 @@ class VideoLoader(DataLoader):
         i = 0
 
         if not keep_all:
-            step = float(self.vid_fps) / float(self.target_fps)  # e.g. 30/10 = 3.0
-            logger.info(f"Target FPS is lower than video FPS. Will keep every {step} frames")
+            # Accumulator ratio: how many frames to KEEP per decoded frame
+            # e.g., 30->10 fps: ratio = 10/30 = 0.333...
+            ratio = (tgt_fps / vid_fps) if (not keep_all and vid_fps > 0) else 1.0
+            accum = 0.0  # stays in [0,1)
+
+            logger.info(f"Target FPS is lower than video FPS. Will keep every {ratio:.2f} ratio of frames")
 
         count = 0
         start_time = time.monotonic()
@@ -164,11 +168,12 @@ class VideoLoader(DataLoader):
 
             keep = True
             if not keep_all:
-                # keep frames when we cross the next_keep boundary
-                keep = (i + 0.000001) >= next_keep
-                if keep:
-                    next_keep += step
-                i += 1
+                # Accumulate fractional keeps; emit only when we cross 1.0
+                accum += ratio
+                if accum >= 1.0:
+                    accum -= 1.0
+                else:
+                    keep = False
 
             if keep:
                 try:
@@ -187,8 +192,8 @@ class VideoLoader(DataLoader):
 
             count += 1
             if count % self.vid_fps == 0:
-                elapsed_time = (time.monotonic() - start_time) * 1000
-                logger.info(f"Retrieval time: {elapsed_time:.2f} ms")
+                avg_elapsed_time = ((time.monotonic() - start_time) * 1000) / self.vid_fps
+                logger.info(f"Avg Retrieval time: {avg_elapsed_time:.2f} ms")
                 start_time = time.monotonic()
                 count = 0
 
