@@ -185,6 +185,7 @@ class VideoLoader(DataLoader):
                     else:
                         raise
 
+            count += 1
             if count % self.vid_fps == 0:
                 elapsed_time = (time.monotonic() - start_time) * 1000
                 logger.info(f"Retrieval time: {elapsed_time:.2f} ms")
