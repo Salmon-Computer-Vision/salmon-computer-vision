@@ -1,4 +1,5 @@
 from .dataloader import DataLoader, Item
+from pysalmcount import utils
 
 import cv2
 from pathlib import Path
@@ -156,6 +157,7 @@ class VideoLoader(DataLoader):
 
         count = 0
         start_time = time.monotonic()
+        whole_vid_fps = math.ceil(self.vid_fps)
 
         while not self.stop_thread:
             ret, frame = self.cap.read()
@@ -191,7 +193,7 @@ class VideoLoader(DataLoader):
                         raise
 
             count += 1
-            if count % math.ceil(self.vid_fps) == 0:
+            if utils.is_check_time(count, whole_vid_fps):
                 avg_elapsed_time = ((time.monotonic() - start_time) * 1000) / self.vid_fps
                 logger.info(f"Avg Retrieval time: {avg_elapsed_time:.2f} ms")
                 start_time = time.monotonic()
