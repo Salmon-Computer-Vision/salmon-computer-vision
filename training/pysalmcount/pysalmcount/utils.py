@@ -13,6 +13,8 @@ from typing import Union
 
 logger = logging.getLogger(__name__)
 
+HEALTH_CHECKS_LEN = 30 # Frequency of healthchecks in seconds
+
 @dataclass
 class VideoMetadata:
     duration: float
@@ -83,8 +85,6 @@ def get_video_metadata(video_filepath: Path) -> Union[None, VideoMetadata]:
         return None
 
 def is_check_time(frame_counter, fps):
-    HEALTH_CHECKS_LEN = 30 # Frequency of healthchecks in seconds
-
     return frame_counter % (fps * HEALTH_CHECKS_LEN) == 0
 
 def send_ping(url):

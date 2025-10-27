@@ -194,7 +194,7 @@ class VideoLoader(DataLoader):
 
             count += 1
             if utils.is_check_time(count, whole_vid_fps):
-                avg_elapsed_time = ((time.monotonic() - start_time) * 1000) / self.vid_fps
+                avg_elapsed_time = ((time.monotonic() - start_time) * 1000) / (self.vid_fps * utils.HEALTH_CHECKS_LEN)
                 logger.info(f"Avg Retrieval time: {avg_elapsed_time:.2f} ms")
                 start_time = time.monotonic()
                 count = 0
