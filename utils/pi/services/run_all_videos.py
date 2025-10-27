@@ -48,7 +48,7 @@ def process_video(vid: Path, flags, device_id, fps, drive):
     subprocess.run(cmd, check=True)
 
 def run_all(flags="", device_id="", fps="30", drive="/media/local_hdd"):
-    vids = sorted(VIDEO_DIR.rglob("Far.*.mp4"))
+    vids = sorted(VIDEO_DIR.rglob("Near.*.mp4"))
     for vid in vids:
         meta_path, lock_path = marker_paths(vid)
 

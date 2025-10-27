@@ -7,6 +7,7 @@ from threading import Thread
 from queue import Queue
 import time
 import math
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,7 @@ class VideoLoader(DataLoader):
         logger.info(f"Stream or video FPS: {self.vid_fps}")
 
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.is_video = self._detect_source_type(raw_clip)
 
         # Start a new thread to read frames
         self.stop_thread = False
@@ -90,6 +92,18 @@ class VideoLoader(DataLoader):
         self.thread.start()
 
         return self.cur_clip
+
+    def _detect_source_type(self, src):
+        try:
+            fc = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            if fc > 0:
+                return True  # file
+        except Exception:
+            pass
+        if isinstance(src, str) and re.search(r"\.(mp4|avi|mov|mkv|mpg|mpeg|wmv)$", src, re.I):
+            return True
+        return False
+
 
     def _estimate_fps(self, cap, sample_frames=30, min_duration=0.5):
         """
@@ -124,56 +138,58 @@ class VideoLoader(DataLoader):
         Reads frames from the video capture in a separate thread and stores them in a deque.
         """
 
-        prev_time = 0
+        keep_all = self.target_fps is None or self.target_fps >= self.vid_fps
+        if not math.isfinite(self.vid_fps) or self.vid_fps <= 0:
+            keep_all = True # fallback
+
+        step = None
+        next_keep = 0.0
+        i = 0
+
+        if not keep_all:
+            step = float(self.vid_fps) / float(self.target_fps)  # e.g. 30/10 = 3.0
+            logger.info(f"Target FPS is lower than video FPS. Will keep every {step} frames")
+
         count = 0
-        skip_count = 0
-        overflow_elapsed = 0
-        skip_frame_target = None
-        final_fps = self.vid_fps
-        if self.target_fps is not None and self.target_fps < self.vid_fps:
-            skip_frame_target = self.vid_fps / (self.vid_fps - self.target_fps)
-            cur_frame_target = math.trunc(skip_frame_target)
-            remainder_frame = skip_frame_target % 1
-            logger.info(f"Target FPS is lower than video FPS. Will skip every {cur_frame_target} frames")
+        start_time = time.monotonic()
 
-            final_fps = self.target_fps
-        #target_time_elapse = 1. / self.target_fps
         while not self.stop_thread:
-            if count % self.vid_fps == 0:
-                start_time=time.time()
-
-            #if self.target_fps is not None and self.target_fps < self.vid_fps:
-            #    time_elapsed = time.time() - prev_time + overflow_elapsed
-
             ret, frame = self.cap.read()
-            if ret:
-                if self.target_fps is not None:
-                    #if self.target_fps < self.vid_fps and time_elapsed < target_time_elapse:
-                    #    continue
-                    #else:
-                    #    overflow_elapsed = time_elapsed - target_time_elapse
-                    #    prev_time = time.time()
-                    if skip_frame_target is not None and skip_count >= cur_frame_target:
-                        cur_frame_target = skip_frame_target + remainder_frame
-                        remainder_frame = cur_frame_target % 1
-                        cur_frame_target = math.trunc(cur_frame_target)
-                        skip_count = 0
-                        continue
-                self.frame_buffer.put(frame, block=True)
 
-                if count % self.vid_fps == 0:
-                    end_time=time.time()
-                    elapsed_time = (end_time - start_time) * 1000
-                    logger.info(f"Retrieval time: {elapsed_time:.2f} ms")
-                    count = 0
-
-                count += 1
-                skip_count += 0
-            else:
+            if not ret:
                 logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
                 self.stop_thread = True
                 self.frame_buffer.put(None)  # Sentinel value to signal end of stream
                 break
+
+            keep = True
+            if not keep_all:
+                # keep frames when we cross the next_keep boundary
+                keep = (i + 0.000001) >= next_keep
+                if keep:
+                    next_keep += step
+                i += 1
+
+            if keep:
+                try:
+                    if self.is_video:
+                        # For video files: block so you don't drop any frames
+                        self.frame_buffer.put(frame, block=True)
+                    else:
+                        # For live streams: drop if the queue is full
+                        self.frame_buffer.put(frame, block=False)
+                except queue.Full:
+                    if not self.is_video:
+                        # only log for streams
+                        logger.info("Queue full; dropped frame.")
+                    else:
+                        raise
+
+            if count % self.vid_fps == 0:
+                elapsed_time = (time.monotonic() - start_time) * 1000
+                logger.info(f"Retrieval time: {elapsed_time:.2f} ms")
+                start_time = time.monotonic()
+                count = 0
 
     def items(self):
         if self.cur_clip is None:
