@@ -3,7 +3,8 @@
 import contextlib, os, shlex, time, json, subprocess
 from pathlib import Path
 
-VIDEO_DIR = Path("/media/hdd/ADFG/chignik/")
+VIDEO_DIR = Path("/media/hdd/ADFG/chignik/raw")
+#VIDEO_DIR = Path("/app/2024_test_vids")
 STATE_DIR = VIDEO_DIR / ".state"   # keep markers together
 STATE_DIR.mkdir(exist_ok=True)
 
@@ -49,6 +50,7 @@ def process_video(vid: Path, flags, device_id, fps, drive):
 
 def run_all(flags="", device_id="", fps="30", drive="/media/local_hdd"):
     vids = sorted(VIDEO_DIR.rglob("Near.*.mp4"))
+    #vids = sorted(VIDEO_DIR.rglob("*.mp4"))
     for vid in vids:
         meta_path, lock_path = marker_paths(vid)
 
