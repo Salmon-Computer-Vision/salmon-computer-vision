@@ -58,7 +58,8 @@ def main(args):
     timestamp = datetime.datetime.now().strftime("%Y%m%d")
     log_file = logs_dir / f"salmonmd_logs_{timestamp}.txt"
     file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging.INFO)
+    rootlogger.setLevel(args.loglevel)
+    file_handler.setLevel(args.loglevel)
     file_handler.setFormatter(formatter)
     rootlogger.addHandler(file_handler)
 
@@ -96,6 +97,13 @@ if __name__ == "__main__":
     parser.add_argument("--algo", default="MOG2", choices=["MOG2", "CNT"], help="Set algorithm for motion detection")
     parser.add_argument("--url", default='https://google.com', help="Healthchecks URL to ping. This could be from healthchecks.io or another healthchecks service")
     parser.add_argument("--no-cont", action='store_true', help="Set this flag to not save continuous video")
+    parser.add_argument(
+        '-d', '--debug',
+        help="Print lots of debugging statements",
+        action="store_const", dest="loglevel", const=logging.DEBUG,
+        default=logging.INFO,
+    )
+
     args = parser.parse_args()
 
     main(args)
