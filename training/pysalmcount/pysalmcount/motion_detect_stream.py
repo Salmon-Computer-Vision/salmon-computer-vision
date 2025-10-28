@@ -381,8 +381,7 @@ class MotionDetector:
                 # Wait until saver consumes a frame
                 with self.condition:
                     self.condition.wait_for(
-                        lambda: (head.value + 1) % buffer_length != tail.value or self.stop_event.is_set(),
-                        timeout=0.05,
+                        lambda: (head.value + 1) % buffer_length != tail.value or self.stop_event.is_set()
                     )
             elif buf_full:
                 logger.debug("Buffer full! Overwriting old frames.")
