@@ -374,7 +374,7 @@ class MotionDetector:
                 logger.debug(f"Frame index: {frame_idx}, Head: {head.value}, Buffer length: {buffer_length}")
 
                 with self.lock_tail:
-                    buf_full = (head.value + 1) % buffer_length == tail.value:
+                    buf_full = (head.value + 1) % buffer_length == tail.value
 
             # Check if head is overtaking tail (buffer full)
             if buf_full and self.motion_detected:
