@@ -20,6 +20,10 @@ class DataLoader(ABC):
         pass
 
     @abstractmethod
+    def is_video(self):
+        pass
+
+    @abstractmethod
     def close(self):
         pass
 

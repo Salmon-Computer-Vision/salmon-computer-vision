@@ -226,6 +226,9 @@ class VideoLoader(DataLoader):
         timestamp = f'{int(seconds // 3600):02d}:{int((seconds % 3600) // 60):02d}:{int(seconds % 60):02d}'
         return timestamp
 
+    def is_video(self):
+        return self.is_video
+
     def classes(self) -> dict:
         """
         returns: Returns the custom classes dict. May return None if not initialized.

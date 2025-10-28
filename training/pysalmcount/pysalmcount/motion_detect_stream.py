@@ -108,6 +108,9 @@ class VideoSaver(Process):
             frame = self.shared_frames[frame_idx]
             self.tail.value = (self.tail.value + 1) % self.buffer_length
 
+        with self.condition:
+            self.condition.notify() # Signal to Producer to stop blocking
+
         return frame
 
     def run(self):
@@ -150,6 +153,9 @@ class VideoSaver(Process):
             c += 1
 
         out.release()
+
+        with self.condition:
+            self.condition.notify_all() # Signal to Producer to stop blocking
 
         metadata = utils.get_video_metadata(filename)
         if metadata is not None:
@@ -368,12 +374,23 @@ class MotionDetector:
                 logger.debug(f"Frame index: {frame_idx}, Head: {head.value}, Buffer length: {buffer_length}")
 
                 with self.lock_tail:
-                    # Check if head is overtaking tail (buffer full)
-                    if (head.value + 1) % buffer_length == tail.value:
-                        logger.debug("Buffer full! Overwriting old frames.")
-                        # Advance the tail to the next frame to make space
-                        tail.value = (tail.value + 1) % buffer_length
+                    buf_full = (head.value + 1) % buffer_length == tail.value:
 
+            # Check if head is overtaking tail (buffer full)
+            if buf_full and self.motion_detected:
+                # Wait until saver consumes a frame
+                with self.condition:
+                    self.condition.wait_for(
+                        lambda: (head.value + 1) % buffer_length != tail.value or self.stop_event.is_set(),
+                        timeout=0.05,
+                    )
+            elif buf_full:
+                logger.debug("Buffer full! Overwriting old frames.")
+                with self.lock_tail:
+                    # Advance the tail to the next frame to make space
+                    tail.value = (tail.value + 1) % buffer_length
+
+            with self.lock_head:
                 shared_frames[frame_idx] = frame
                 head.value = (head.value + 1) % buffer_length
 
