@@ -129,7 +129,7 @@ class SalmonCounter:
 
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
-                boxes = results[0].boxes.xywh.cpu()
+                boxes = results[0].boxes.xywhn.cpu()
                 id_items = results[0].boxes.id
                 
                 if id_items is not None:
@@ -143,7 +143,7 @@ class SalmonCounter:
                 input_boxes = None
                 if item.boxes.any():
                     boxes_obj = Boxes(item.boxes, item.orig_shape)
-                    boxes = boxes_obj.xywh
+                    boxes = boxes_obj.xywhn
                     input_boxes = boxes_obj.data
                     track_ids = boxes_obj.id.tolist()
                     cls_ids = boxes_obj.cls.tolist()
