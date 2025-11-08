@@ -6,8 +6,6 @@ def main():
     vids = sorted(run_all_videos.VIDEO_DIR.rglob("Near.*.mp4"))
 
     for vid in vids:
-        meta_path, lock_path = marker_paths(vid)
-
         if is_done(vid):
             try:
                 vid.unlink()
