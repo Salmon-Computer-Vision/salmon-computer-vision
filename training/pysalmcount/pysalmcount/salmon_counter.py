@@ -195,7 +195,7 @@ class SalmonCounter:
             
             # Plot the tracks
             for box, track_id, cls_id, conf in zip(boxes, track_ids, cls_ids, confs):
-                x, y, w, h = box
+                x, y, w, h = box.numpy()
                 if not (drop_bounding_boxes and y > bound_line):
                     track = self.track_history[track_id]
                     track.append((float(x), float(y)))  # x, y center point
