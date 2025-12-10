@@ -5,6 +5,7 @@ import cv2
 from pathlib import Path
 import logging
 from threading import Thread
+import queue
 from queue import Queue
 import time
 import math
