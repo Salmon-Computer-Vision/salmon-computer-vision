@@ -28,7 +28,10 @@ class SalmonCounter:
     FILENAME = 'filename'
     TRACK_COUNT = 'track_count'
     CLASS_VOTE = 'class_vote'
+    FRAME = 'frame'
+    CLASS_INSTANCE = 'class_instance'
     FONT = cv2.FONT_HERSHEY_SIMPLEX
+
     def __init__(self, model, dataloader: DataLoader, tracking_thresh = 10, save_dir="save_dir", ping_url='https://google.com'):
         self.model = model
         self.dataloader = dataloader
@@ -86,6 +89,8 @@ class SalmonCounter:
 
         if save_txt:
             txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem
+            det_cols = [self.FRAME, self.CLASS_INSTANCE, 'center_x', 'center_y', 'width', 'height', 'probability', 'fish_id']
+            det_df = pd.DataFrame(columns=det_cols).set_index([self.FRAME, self.CLASS_INSTANCE])
         if save_vid:
             OUTPUT_PATH = Path('output_vids')
             OUTPUT_PATH.mkdir(exist_ok=True)
@@ -104,6 +109,7 @@ class SalmonCounter:
                 start_time = time.time()
 
             boxes = []
+            boxesn = []
             track_ids = []
             cls_ids = []
             confs = []
@@ -130,6 +136,7 @@ class SalmonCounter:
                 orig_shape = results[0].orig_shape
                 # Get the boxes and track IDs
                 boxes = results[0].boxes.xywh.cpu()
+                boxesn = results[0].boxes.xywhn.cpu()
                 id_items = results[0].boxes.id
                 
                 if id_items is not None:
@@ -144,6 +151,7 @@ class SalmonCounter:
                 if item.boxes.any():
                     boxes_obj = Boxes(item.boxes, item.orig_shape)
                     boxes = boxes_obj.xywh
+                    boxesn = boxes_obj.xywhn
                     input_boxes = boxes_obj.data
                     track_ids = boxes_obj.id.tolist()
                     cls_ids = boxes_obj.cls.tolist()
@@ -187,7 +195,7 @@ class SalmonCounter:
             
             # Plot the tracks
             for box, track_id, cls_id, conf in zip(boxes, track_ids, cls_ids, confs):
-                x, y, w, h = box
+                x, y, w, h = box.numpy()
                 if not (drop_bounding_boxes and y > bound_line):
                     track = self.track_history[track_id]
                     track.append((float(x), float(y)))  # x, y center point
@@ -215,6 +223,8 @@ class SalmonCounter:
                     txt_dir.mkdir(exist_ok=True)
                     with open(str(txt_dir / f"frame_{frame_count:06d}.txt"), 'a') as f:
                         f.write(f"{cls_id} {x} {y} {w} {h} {conf} {unique_id}\n")
+
+                    det_df.loc[(frame_count, unique_id), :] = [x, y, w, h, conf, cls_id]
                 if save_vid:
                     # Draw the tracking lines
                     points = np.hstack(track).astype(np.int32).reshape((-1, 1, 2))
@@ -240,6 +250,9 @@ class SalmonCounter:
                 os.makedirs(output_csv_dir)
             output_name_path = str(Path(output_csv_dir) / Path(cur_clip.name).stem)
             self.salm_count.to_csv(f"{output_name_path}.csv")
+
+        if save_txt:
+            det_df.to_csv(f"{txt_dir}.csv")
                 
         #self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
         self.slm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes

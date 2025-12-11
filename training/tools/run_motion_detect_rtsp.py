@@ -6,6 +6,7 @@ import argparse
 import os
 import sys
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import datetime
 from pathlib import Path
 
@@ -22,6 +23,51 @@ logger = logging.getLogger(__name__)
 
 LOCAL_DIR_PATH = "/media/local_hdd"
 LOGS_DIR_PATH = "logs/salmonmd_logs"
+
+def setup_file_logging(logs_dir: Path, loglevel: int, save_prefix=None) -> Path:
+    """
+    Attach a TimedRotatingFileHandler that rolls over at midnight with UTC timezone
+    """
+
+    name = "salmonmd_log"
+    if save_prefix is not None:
+        name = f"{save_prefix}_{name}"
+
+    log_file = logs_dir / name  # base name; rotations get date suffix
+
+    file_handler = TimedRotatingFileHandler(
+        filename=log_file,
+        when="midnight",     # rotate every midnight
+        interval=1,
+        encoding="utf-8",
+        utc=True,
+    )
+
+    # Add date suffix to rotated files (e.g. salmonmd_log.20251209)
+    file_handler.suffix = "%Y%m%d"
+
+    file_handler.setLevel(loglevel)
+    file_handler.setFormatter(formatter)
+    rootlogger.addHandler(file_handler)
+
+    return log_file
+
+def install_excepthook():
+    """
+    Ensure any uncaught exceptions are logged via the root logger.
+    """
+    def handle_exception(exc_type, exc_value, exc_traceback):
+        # Let KeyboardInterrupt behave normally
+        if issubclass(exc_type, KeyboardInterrupt):
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+
+        logging.getLogger().error(
+            "Uncaught exception",
+            exc_info=(exc_type, exc_value, exc_traceback)
+        )
+
+    sys.excepthook = handle_exception
 
 def read_rtsp_url(file_path):
     """Read RTSP URL from the specified file."""
@@ -55,13 +101,7 @@ def main(args):
     site_save_path.mkdir(exist_ok=True, parents=True)
     logs_dir.mkdir(exist_ok=True, parents=True)
 
-    timestamp = datetime.datetime.now().strftime("%Y%m%d")
-    log_file = logs_dir / f"salmonmd_logs_{timestamp}.txt"
-    file_handler = logging.FileHandler(log_file)
-    rootlogger.setLevel(args.loglevel)
-    file_handler.setLevel(args.loglevel)
-    file_handler.setFormatter(formatter)
-    rootlogger.addHandler(file_handler)
+    log_file = setup_file_logging(logs_dir, args.loglevel, save_prefix)
 
     logger.info(f"Writing logs to {log_file}")
 
@@ -106,5 +146,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args)
+    install_excepthook()
+
+    try:
+        main(args)
+    except Exception:
+        # Log fatal error with full traceback
+        logger.exception("Fatal error in motion detector main()")
+        raise
 
