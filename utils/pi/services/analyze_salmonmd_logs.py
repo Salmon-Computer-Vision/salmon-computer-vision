@@ -361,7 +361,7 @@ def main() -> None:
     # CSV header handling
     output_exists = args.output_csv.exists()
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
-    args.output_csv = args.output_csv.with_suffix(str(today.year) + f".{args.output_csv.suffix}")
+    args.output_csv = args.output_csv.with_suffix(f".{today.year}" + args.output_csv.suffix)
 
     print("Start processing logs...")
     with args.output_csv.open("a", newline="", encoding="utf-8") as f_out:
