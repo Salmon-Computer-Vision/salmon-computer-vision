@@ -305,7 +305,7 @@ def main() -> None:
         "--output-csv",
         type=Path,
         required=True,
-        help="CSV file to append outage rows to.",
+        help="CSV file to append outage rows to. The year will be appended to the filename to separate seasons.",
     )
     parser.add_argument(
         "--restart-keyword",
@@ -348,6 +348,7 @@ def main() -> None:
         state_path = args.output_csv.with_suffix(args.output_csv.suffix + ".state.json")
 
     # Load (or initialize) state
+    print("Loading processor state...")
     processor_state = load_processor_state(state_path)
     processed_files = set(processor_state.get("processed_files", []))
     last_incident = int(processor_state.get("last_incident", 0))
@@ -355,12 +356,14 @@ def main() -> None:
     # Initialize streaming state
     state = StreamState(incident_counter=last_incident)
 
+    today = date.today()
+
     # CSV header handling
     output_exists = args.output_csv.exists()
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
+    args.output_csv = args.output_csv.with_suffix(today.year + f".{args.output_csv.suffix}")
 
-    today = date.today()
-
+    print("Start processing logs...")
     with args.output_csv.open("a", newline="", encoding="utf-8") as f_out:
         writer = csv.writer(f_out)
 
@@ -431,6 +434,7 @@ def main() -> None:
     save_processor_state(state_path, processor_state)
 
     print(f"Done. Last incident number: {state.incident_counter}")
+    print(f"Output CSV in: {args.output_csv}")
     print(f"Processed files tracked in: {state_path}")
 
 
