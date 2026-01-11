@@ -341,6 +341,8 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    today = date.today()
+
     # Update CSV output with year suffix
     args.output_csv = args.output_csv.with_suffix(f".{today.year}" + args.output_csv.suffix)
 
@@ -358,8 +360,6 @@ def main() -> None:
 
     # Initialize streaming state
     state = StreamState(incident_counter=last_incident)
-
-    today = date.today()
 
     # CSV header handling
     output_exists = args.output_csv.exists()
