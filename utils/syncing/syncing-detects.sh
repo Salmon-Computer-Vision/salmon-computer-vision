@@ -15,6 +15,12 @@ while getopts "s:b:o:d:c:" opt; do
     esac
 done
 
+# Check required arguments
+if [ -z "$SITE_NAME" ] || [ -z "$BUCKET" ] || [ -z "$ORGID" ] || [ -z "$DRIVE" ] || [ -z "$CONFIG" ]; then
+    echo "Usage: $0 -s SITE_NAME -b BUCKET -o ORGID -d DRIVE -c CONFIG"
+    exit 1
+fi
+
 SITE_PATH="${DRIVE}/${ORGID}/${SITE_NAME}"
 
 for device_path in "${SITE_PATH}"/* ; do
