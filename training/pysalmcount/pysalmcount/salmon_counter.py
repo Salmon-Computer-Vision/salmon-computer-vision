@@ -87,10 +87,12 @@ class SalmonCounter:
         logger.info(cur_clip.name)
         
 
+        # DataFrame to save detection and tracking boxes data
+        det_cols = [self.FRAME, self.CLASS_INSTANCE, 'center_x', 'center_y', 'width', 'height', 'probability', 'fish_id']
+        det_df = pd.DataFrame(columns=det_cols).set_index([self.FRAME, self.CLASS_INSTANCE])
+
         if save_txt:
             txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem
-            det_cols = [self.FRAME, self.CLASS_INSTANCE, 'center_x', 'center_y', 'width', 'height', 'probability', 'fish_id']
-            det_df = pd.DataFrame(columns=det_cols).set_index([self.FRAME, self.CLASS_INSTANCE])
         if save_vid:
             OUTPUT_PATH = Path('output_vids')
             OUTPUT_PATH.mkdir(exist_ok=True)
@@ -218,13 +220,13 @@ class SalmonCounter:
                         class_vote[cls_id] = 0
                     class_vote[cls_id] += self._vote_weight(conf, vote_method=vote_method)
 
+                det_df.loc[(frame_count, unique_id), :] = [x, y, w, h, conf, cls_id]
                 if save_txt:
                     unique_id = clip_track_ids[track_id]
                     txt_dir.mkdir(exist_ok=True)
                     with open(str(txt_dir / f"frame_{frame_count:06d}.txt"), 'a') as f:
                         f.write(f"{cls_id} {x} {y} {w} {h} {conf} {unique_id}\n")
 
-                    det_df.loc[(frame_count, unique_id), :] = [x, y, w, h, conf, cls_id]
                 if save_vid:
                     # Draw the tracking lines
                     points = np.hstack(track).astype(np.int32).reshape((-1, 1, 2))
@@ -251,8 +253,7 @@ class SalmonCounter:
             output_name_path = str(Path(output_csv_dir) / Path(cur_clip.name).stem)
             self.salm_count.to_csv(f"{output_name_path}.csv")
 
-        if save_txt:
-            det_df.to_csv(f"{txt_dir}.csv")
+        det_df.to_csv(f"{txt_dir}.csv")
                 
         #self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
         self.slm_count = self.salm_count.iloc[0:0] # Clear salm count for streaming purposes

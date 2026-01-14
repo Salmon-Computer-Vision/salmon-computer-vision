@@ -124,7 +124,7 @@ class VideoHandler(FileSystemEventHandler):
                 save_dir=str(self.detection_dir), ping_url=self.ping_url)
 
         out_path = self.counts_dir #/ f"{os.uname()[1]}_salmon_counts.csv"
-        counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=True, 
+        counter.count(tracker='bytetrack.yaml', use_gt=False, save_vid=False, save_txt=False, 
                 stream_write=True, output_csv_dir=str(out_path),
                 drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
 
