@@ -1,3 +1,5 @@
 FROM rclone/rclone
 
 COPY syncing-counts.sh /app/syncing-counts.sh
+COPY syncing-detects.sh /app/syncing-detects.sh
+COPY syncing.sh /app/syncing.sh
