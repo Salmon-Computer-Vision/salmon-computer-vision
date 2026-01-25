@@ -2,14 +2,13 @@
 set -e
 
 # Parse options
-while getopts "s:b:o:d:c:" opt; do
+while getopts "s:b:o:d:c:t:" opt; do
     case $opt in
         s) SITE_NAME="$OPTARG" ;;
         b) BUCKET="$OPTARG" ;;
         o) ORGID="$OPTARG" ;;
         d) DRIVE="$OPTARG" ;;
         c) CONFIG="$OPTARG" ;;
-        f) FOLDER="$OPTARG" ;;
         t) TRANSFERS="$OPTARG" ;;
         \?) echo "Invalid option -$OPTARG" >&2 ;;
     esac
@@ -27,20 +26,20 @@ for device_path in "${SITE_PATH}"/* ; do
     if [ ! -d "$device_path" ]; then
         continue
     fi
-    BACKUP="${device_path}/${FOLDER}_backup/"
-    SRC="${device_path}/${FOLDER}/"
-    DEST="aws:${BUCKET}/${ORGID}/${SITE_NAME}/${device_path##*/}/${FOLDER}/"
+    BACKUP="${device_path}/detections_backup/"
+    SRC="${device_path}/detections/"
+    DEST="aws:${BUCKET}/${ORGID}/${SITE_NAME}/${device_path##*/}/detections/"
 
     mkdir -p "$BACKUP"
     mkdir -p "$SRC"
-    #rclone copy "${device_path}/${FOLDER}/" "$BACKUP" \
+    #rclone copy "${device_path}/detections/" "$BACKUP" \
     #    --transfers=8 \
     #    --progress
 
     rclone move "$SRC" "$DEST" \
         --bwlimit=0 \
         --buffer-size=128M \
-        --transfers=8 \
+        --transfers=$TRANSFERS \
         --min-age 30m \
         --config /config/rclone/rclone.conf \
         --log-level INFO \
