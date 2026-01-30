@@ -61,12 +61,17 @@ class VideoLoader(DataLoader):
         raw_clip = next(self.clip_gen)
         self.cur_clip = Path(raw_clip)
         logger.info(f"Loading {raw_clip}")
-        if self.gstreamer_on:
-            logger.info("Loading with gstreamer")
-            self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_GSTREAMER)
+        raw_clip_str = str(raw_clip)
+        if raw_clip_str.isdigit():
+            logger.info("Loading as directly connected camera")
+            self.cap = cv2.VideoCapture(int(raw_clip))
         else:
-            logger.info("Loading not gstreamer")
-            self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_FFMPEG)
+            if self.gstreamer_on:
+                logger.info("Loading with gstreamer")
+                self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_GSTREAMER)
+            else:
+                logger.info("Loading with FFMPEG")
+                self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_FFMPEG)
 
         #self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         #self.cap.set(cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY)
