@@ -2,13 +2,14 @@
 set -e
 
 # Parse options
-while getopts "s:b:o:d:c:" opt; do
+while getopts "s:b:o:d:c:t:" opt; do
     case $opt in
         s) SITE_NAME="$OPTARG" ;;
         b) BUCKET="$OPTARG" ;;
         o) ORGID="$OPTARG" ;;
         d) DRIVE="$OPTARG" ;;
         c) CONFIG="$OPTARG" ;;
+        t) TRANSFERS="$OPTARG" ;;
         \?) echo "Invalid option -$OPTARG" >&2 ;;
     esac
 done
@@ -25,39 +26,31 @@ for device_path in "${SITE_PATH}"/* ; do
     if [ ! -d "$device_path" ]; then
         continue
     fi
-    BACKUP="${device_path}/motion_vids_backup/"
-    BACKUP_META="${device_path}/motion_vids_metadata_backup/"
-    SRC="${device_path}/motion_vids/"
-    SRC_META="${device_path}/motion_vids_metadata/"
-    DEST="aws:${BUCKET}/${ORGID}/${SITE_NAME}/${device_path##*/}/"
+    BACKUP="${device_path}/logs_backup/"
+    SRC="${device_path}/logs/"
+    DEST="aws:${BUCKET}/${ORGID}/${SITE_NAME}/${device_path##*/}/logs/"
 
-    mkdir -p "$SRC"
-    mkdir -p "$SRC_META"
     mkdir -p "$BACKUP"
-    mkdir -p "$BACKUP_META"
+    mkdir -p "$SRC"
     rclone copy "$SRC" "$BACKUP" \
-        --transfers=2 \
-        --no-traverse \
-        --progress
-
-    rclone copy "$SRC_META" "$BACKUP_META" \
         --transfers=8 \
         --no-traverse \
         --progress
 
-    rclone move "$device_path" "$DEST" \
-        --include "/motion_vids/**" \
-        --include "/motion_vids_metadata/**" \
+    rclone move "$SRC" "$DEST" \
         --bwlimit=0 \
         --buffer-size=128M \
-        --transfers=2 \
+        --transfers=$TRANSFERS \
+        --checkers 16 \
         --min-age 30m \
         --no-traverse \
+        --delete-empty-src-dirs \
         --config /config/rclone/rclone.conf \
-        --log-level INFO \
+        --log-level WARNING \
+        --stats 60s \
+        --stats-one-line \
         --s3-no-check-bucket
 done
 
 echo "Finished. Waiting some time..."
 sleep 30m
-

@@ -45,4 +45,4 @@ services:
     restart: always
     entrypoint: /bin/sh
     command: |
-      -c 'rclone copy --bwlimit=0 --buffer-size=128M --transfers=2 --include "/${SITE_NAME}/*/logs/**" ${DRIVE}/${ORGID} aws:${BUCKET}/${ORGID} --config /config/rclone/rclone.conf --log-level INFO; echo "Finished. Waiting some time..."; sleep 30m'
+      /app/syncing-logs.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf

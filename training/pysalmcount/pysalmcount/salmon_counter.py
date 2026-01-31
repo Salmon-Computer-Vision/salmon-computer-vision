@@ -252,6 +252,7 @@ class SalmonCounter:
             output_name_path = str(Path(output_csv_dir) / Path(cur_clip.name).stem)
             self.salm_count.to_csv(f"{output_name_path}.csv")
 
+        Path(self.save_dir).mkdir(exist_ok=True)
         det_df.to_csv(f"{txt_dir}.csv")
                 
         #self.full_salm_count = pd.concat([self.full_salm_count, self.salm_count])
