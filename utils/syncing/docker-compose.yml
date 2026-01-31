@@ -47,4 +47,4 @@ services:
     restart: always
     entrypoint: /bin/sh
     command: |
-      /app/syncing-logs.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
+      /app/syncing-logs.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf -t 8
