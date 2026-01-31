@@ -9,7 +9,7 @@ setup(
     author_email='masamim@sfu.ca',
     # List of dependencies
     install_requires=[
-        'numpy==1.24.2',
+        'numpy>=1.24.2,<2.0.0',
         'pandas',
         'requests',
         'ffmpeg-python',
