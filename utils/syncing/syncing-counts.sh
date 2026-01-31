@@ -11,7 +11,7 @@ rclone_copy() {
     rclone copy "$src" "$dst" \
         --bwlimit=0 \
         --buffer-size=128M \
-        --transfers=2 \ 
+        --transfers=2 \
         --min-age 30m \
         --no-traverse \
         --include "$include" \
