@@ -9,6 +9,7 @@ import pickle
 import yaml
 import logging
 import traceback
+import shutil
 from ultralytics import YOLO
 
 from watchdog.observers import Observer
@@ -53,6 +54,7 @@ logger = logging.getLogger(__name__)
 
 DRIVE_DIR = Path("/app/drive/hdd")
 MOTION_DIR_NAME = "motion_vids"
+MOTION_DIR_STAGING_NAME = "motion_vids_staging"
 DETECTION_DIR_NAME = "detections"
 COUNTS_DIR_NAME = "counts"
 LOGS_DIR_PATH = "logs/salmoncount_logs"
@@ -137,6 +139,7 @@ def main(args):
         orgid, site_name, device_id = get_orgid_and_site_name(os.uname()[1])
         site_save_path = os.path.join(DRIVE_DIR, orgid, site_name, device_id)
 
+    vids_staging_path = Path(site_save_path) / MOTION_DIR_STAGING_NAME
     vids_path = Path(site_save_path) / MOTION_DIR_NAME
     detection_dir = Path(site_save_path) / DETECTION_DIR_NAME
     counts_dir = Path(site_save_path) / COUNTS_DIR_NAME
@@ -156,13 +159,30 @@ def main(args):
     current_time = time.time()
 
     # Initial check of all existing videos
-    for video_file in vids_path.iterdir():
+    for video_file in vids_staging_path.iterdir():
         if not video_file.is_file():
             continue # Skip dirs or special files
 
         modif_time = video_file.stat().st_mtime
         if current_time - modif_time > args.time_window:
-            video_handler.process_video(video_file, drop_bounding_boxes=args.drop_bbox, bound_line_ratio=args.bound_line)
+            try:
+                video_handler.process_video(video_file, drop_bounding_boxes=args.drop_bbox, bound_line_ratio=args.bound_line)
+
+                # Compute destination path (preserve filename)
+                dest_path = vids_path / video_file.name
+                dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+                try:
+                    # Fast path: same filesystem
+                    video_file.rename(dest_path)
+                except OSError:
+                    # Fallback: cross-filesystem move
+                    shutil.move(str(video_file), str(dest_path))
+
+                logger.info(f"Moved video to upload queue: {dest_path}")
+            except Exception as e:
+                logger.exception(f"Failed to process video {video_file}: {e}")
+                # Leave file in staging so it can be retried
         else:
             logger.info(f"Ignoring recently modified video: {video_file}")
     

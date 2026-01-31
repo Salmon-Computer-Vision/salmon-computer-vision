@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 bitrate=3000000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
 gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !  v4l2h264enc extra-controls=encode,video_bitrate=3000000 ! h264parse ! qtmux ! filesink location="
+MOTION_VIDS_STAGING = 'motion_vids_staging'
 MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
 VIDEO_ENCODER = 'avc1'
 
@@ -170,6 +171,7 @@ class VideoSaver(Process):
 class MotionDetector:
     FILENAME = 'filename'
     CLIPS = 'clips'
+
     def __init__(self, dataloader: DataLoader, save_folder, save_video=True, save_cont_video=True, is_video=False, save_prefix=None, ping_url='https://google.com'):
         self.dataloader = dataloader
         self.save_folder = save_folder
@@ -238,7 +240,7 @@ class MotionDetector:
         cont_dir = os.path.join(self.save_folder, 'cont_vids')
         if not os.path.exists(cont_dir):
             os.mkdir(cont_dir) # Let exception be raised if recursive dir
-        motion_dir = os.path.join(self.save_folder, 'motion_vids')
+        motion_dir = os.path.join(self.save_folder, MOTION_VIDS_STAGING)
         if not os.path.exists(motion_dir):
             os.mkdir(motion_dir) # Let exception be raised if recursive dir
 

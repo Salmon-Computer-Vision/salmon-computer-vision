@@ -33,13 +33,15 @@ for device_path in "${SITE_PATH}"/* ; do
 
     mkdir -p "$BACKUP"
     mkdir -p "$BACKUP_META"
-    #rclone copy "$SRC" "$BACKUP" \
-    #    --transfers=2 \
-    #    --progress
+    rclone copy "$SRC" "$BACKUP" \
+        --transfers=2 \
+        --no-traverse \
+        --progress
 
-    #rclone copy "$SRC_META" "$BACKUP_META" \
-    #    --transfers=8 \
-    #    --progress
+    rclone copy "$SRC_META" "$BACKUP_META" \
+        --transfers=8 \
+        --no-traverse \
+        --progress
 
     rclone move "$device_path" "$DEST" \
         --include "/motion_vids/**" \
@@ -48,6 +50,8 @@ for device_path in "${SITE_PATH}"/* ; do
         --buffer-size=128M \
         --transfers=2 \
         --min-age 30m \
+        --no-traverse \
+        --delete-empty-src-dirs \
         --config /config/rclone/rclone.conf \
         --log-level INFO \
         --s3-no-check-bucket

@@ -8,8 +8,16 @@ rclone_copy() {
     src="$4"
     dst="$5"
     
-    rclone copy --bwlimit=0 --buffer-size=128M --transfers=2 --include "$include" \
-        "$src" "$dst" --config "$config" --log-level INFO
+    rclone copy "$src" "$dst" \
+        --bwlimit=0 \
+        --buffer-size=128M \
+        --transfers=2 \ 
+        --min-age 30m \
+        --no-traverse \
+        --include "$include" \
+        --s3-no-check-bucket \
+        --config "$config" \
+        --log-level INFO
 }
 
 # Function to concatenate CSV files in a directory

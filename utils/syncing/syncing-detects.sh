@@ -32,17 +32,23 @@ for device_path in "${SITE_PATH}"/* ; do
 
     mkdir -p "$BACKUP"
     mkdir -p "$SRC"
-    #rclone copy "${device_path}/detections/" "$BACKUP" \
-    #    --transfers=8 \
-    #    --progress
+    rclone copy "$SRC" "$BACKUP" \
+        --transfers=8 \
+        --no-traverse \
+        --progress
 
     rclone move "$SRC" "$DEST" \
         --bwlimit=0 \
         --buffer-size=128M \
         --transfers=$TRANSFERS \
+        --checkers 16 \
         --min-age 30m \
+        --no-traverse \
+        --delete-empty-src-dirs \
         --config /config/rclone/rclone.conf \
-        --log-level INFO \
+        --log-level WARNING \
+        --stats 60s \
+        --stats-one-line \
         --s3-no-check-bucket
 done
 
