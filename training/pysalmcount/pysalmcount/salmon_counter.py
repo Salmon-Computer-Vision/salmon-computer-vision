@@ -91,8 +91,7 @@ class SalmonCounter:
         det_cols = [self.FRAME, self.CLASS_INSTANCE, 'center_x', 'center_y', 'width', 'height', 'probability', 'fish_id']
         det_df = pd.DataFrame(columns=det_cols).set_index([self.FRAME, self.CLASS_INSTANCE])
 
-        if save_txt:
-            txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem
+        txt_dir = Path(self.save_dir) / Path(cur_clip.name).stem
         if save_vid:
             OUTPUT_PATH = Path('output_vids')
             OUTPUT_PATH.mkdir(exist_ok=True)
