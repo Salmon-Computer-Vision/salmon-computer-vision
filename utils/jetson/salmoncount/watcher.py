@@ -113,10 +113,7 @@ class VideoHandler(FileSystemEventHandler):
         detections_dir = self.detection_dir / video_path.stem
         if not counts_file.exists():
             logger.info(f"Processing {video_path}")
-            try:
                 self.run_salmon_counter(video_path, drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
-            except Exception as e:
-                logger.error(traceback.format_exc())
         else:
             logger.debug(f"Skipping {video_path}, already processed")
 
@@ -182,6 +179,7 @@ def main(args):
                 logger.info(f"Moved video to upload queue: {dest_path}")
             except Exception as e:
                 logger.exception(f"Failed to process video {video_file}: {e}")
+                logger.exception(traceback.format_exc())
                 # Leave file in staging so it can be retried
         else:
             logger.info(f"Ignoring recently modified video: {video_file}")
