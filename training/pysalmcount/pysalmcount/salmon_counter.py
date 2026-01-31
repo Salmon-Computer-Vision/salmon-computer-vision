@@ -220,9 +220,9 @@ class SalmonCounter:
                         class_vote[cls_id] = 0
                     class_vote[cls_id] += self._vote_weight(conf, vote_method=vote_method)
 
+                unique_id = clip_track_ids[track_id]
                 det_df.loc[(frame_count, unique_id), :] = [x, y, w, h, conf, cls_id]
                 if save_txt:
-                    unique_id = clip_track_ids[track_id]
                     txt_dir.mkdir(exist_ok=True)
                     with open(str(txt_dir / f"frame_{frame_count:06d}.txt"), 'a') as f:
                         f.write(f"{cls_id} {x} {y} {w} {h} {conf} {unique_id}\n")
