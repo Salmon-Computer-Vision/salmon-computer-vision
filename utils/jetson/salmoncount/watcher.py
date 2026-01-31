@@ -113,7 +113,7 @@ class VideoHandler(FileSystemEventHandler):
         detections_dir = self.detection_dir / video_path.stem
         if not counts_file.exists():
             logger.info(f"Processing {video_path}")
-                self.run_salmon_counter(video_path, drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
+            self.run_salmon_counter(video_path, drop_bounding_boxes=drop_bounding_boxes, bound_line_ratio=bound_line_ratio)
         else:
             logger.debug(f"Skipping {video_path}, already processed")
 
