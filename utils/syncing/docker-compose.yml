@@ -37,7 +37,9 @@ services:
     command: |
       /app/syncing-counts.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
   syncing-logs:
-    image: rclone/rclone
+    build: 
+      context: .
+      dockerfile: Dockerfile-syncing-counts
     container_name: syncing-logs
     volumes:
       - ${DRIVE}:${DRIVE}
