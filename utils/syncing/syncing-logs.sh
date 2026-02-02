@@ -26,25 +26,24 @@ for device_path in "${SITE_PATH}"/* ; do
     if [ ! -d "$device_path" ]; then
         continue
     fi
-    BACKUP="${device_path}/logs_backup/"
+    #BACKUP="${device_path}/logs_backup/"
     SRC="${device_path}/logs/"
     DEST="aws:${BUCKET}/${ORGID}/${SITE_NAME}/${device_path##*/}/logs/"
 
-    mkdir -p "$BACKUP"
-    mkdir -p "$SRC"
-    rclone copy "$SRC" "$BACKUP" \
-        --transfers=8 \
-        --no-traverse \
-        --progress
+    #mkdir -p "$BACKUP"
+    #mkdir -p "$SRC"
+    #rclone copy "$SRC" "$BACKUP" \
+    #    --transfers=8 \
+    #    --no-traverse \
+    #    --progress
 
-    rclone move "$SRC" "$DEST" \
+    rclone copy "$SRC" "$DEST" \
         --bwlimit=0 \
         --buffer-size=128M \
         --transfers=$TRANSFERS \
         --checkers 16 \
         --min-age 30m \
         --no-traverse \
-        --delete-empty-src-dirs \
         --config /config/rclone/rclone.conf \
         --log-level WARNING \
         --stats 60s \
