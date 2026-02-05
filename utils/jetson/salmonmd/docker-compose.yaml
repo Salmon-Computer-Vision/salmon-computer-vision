@@ -21,5 +21,5 @@ services:
       - /home/${USERNAME}/2024_test_vids:/app/2024_test_vids
     runtime: nvidia
     restart: always
-    command: >
+    entrypoint: >
       bash -c "cd /tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${FLAGS} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
