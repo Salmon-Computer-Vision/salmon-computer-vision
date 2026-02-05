@@ -84,6 +84,8 @@ FLAGS=--raspi --gstreamer --algo CNT
 Sometimes the RTSP stream fails to open with gstreamer. If so, turn off
 gstreamer decoding by removing the `--gstreamer` flag.
 
+### Sync local logs to harddrive
+
 To periodically sync logs to the external harddrive, copy the script to your local bin:
 ```bash
 sudo cp sync_logs.sh /usr/local/bin/
