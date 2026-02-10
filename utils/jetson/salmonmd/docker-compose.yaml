@@ -26,8 +26,15 @@ services:
 
   salmonmd-log-analyzer:
     image: ${IMAGE_REPO_HOST}/salmoncounter:${TAG}
+    container_name: salmonmd-log-analyzer
+    network_mode: host
+    volumes:
+      - type: bind
+        source: ${DRIVE}
+        target: ${DRIVE}
+        bind:
+          propagation: rslave
+      - /media/local_hdd:/media/local_hdd
     entrypoint: >
       bash -c "cd /tools && python3 utils/pi/services/analyze_salmonmd_logs.py --log-dir '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/salmonmd_logs' --pattern '*salmonmd*' --output-csv '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/outages.csv' --min-downtime-seconds 5; sleep 8h"
     restart: always
-    volumes:
-      - /media/hdd:/media/hdd
