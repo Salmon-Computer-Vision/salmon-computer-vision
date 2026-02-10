@@ -30,6 +30,6 @@ docker compose build
 
 This uses the latest `rclone` image, so if desired, one can update the image:
 ```
-docker compose pull
+docker compose build --pull
 docker compose up -d
 ```
