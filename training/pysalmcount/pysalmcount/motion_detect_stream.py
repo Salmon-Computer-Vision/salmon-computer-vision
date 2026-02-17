@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 gst_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert ! video/x-raw,format=BGRx ! nvvidconv ! nvv4l2h264enc vbv-size=200000 bitrate=3000000 insert-vui=1 ! h264parse ! mp4mux ! filesink location="
 gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !  v4l2h264enc extra-controls=encode,video_bitrate=3000000 ! h264parse ! qtmux ! filesink location="
+MOTION_VIDS = 'motion_vids'
 MOTION_VIDS_STAGING = 'motion_vids_staging'
 MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
 VIDEO_ENCODER = 'avc1'
@@ -217,7 +218,7 @@ class MotionDetector:
             self.motion_detected = False
 
 
-    def run(self, algo='MOG2', fps: int=None, orin=False, raspi=False):
+    def run(self, algo='MOG2', fps: int=None, orin=False, raspi=False, staging=False):
         # Motion Detection Params
         bgsub_threshold = 50
         bgsub_min_pixelstability = 1
@@ -240,7 +241,11 @@ class MotionDetector:
         cont_dir = os.path.join(self.save_folder, 'cont_vids')
         if not os.path.exists(cont_dir):
             os.mkdir(cont_dir) # Let exception be raised if recursive dir
-        motion_dir = os.path.join(self.save_folder, MOTION_VIDS_STAGING)
+
+        if staging:
+            motion_dir = os.path.join(self.save_folder, MOTION_VIDS_STAGING)
+        else:
+            motion_dir = os.path.join(self.save_folder, MOTION_VIDS)
         if not os.path.exists(motion_dir):
             os.mkdir(motion_dir) # Let exception be raised if recursive dir
 

@@ -120,7 +120,7 @@ def main(args):
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url, save_cont_video=save_cont_video, is_video=is_video)
-    det.run(fps=int(args.fps), algo=args.algo, orin=args.orin, raspi=args.raspi)
+    det.run(fps=int(args.fps), algo=args.algo, orin=args.orin, raspi=args.raspi, staging=args.staging)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
@@ -137,6 +137,7 @@ if __name__ == "__main__":
     parser.add_argument("--algo", default="MOG2", choices=["MOG2", "CNT"], help="Set algorithm for motion detection")
     parser.add_argument("--url", default='https://google.com', help="Healthchecks URL to ping. This could be from healthchecks.io or another healthchecks service")
     parser.add_argument("--no-cont", action='store_true', help="Set this flag to not save continuous video")
+    parser.add_argument("--staging", action='store_true', help="Set this flag to save to a staging folder for edge salmon counting processing")
     parser.add_argument(
         '-d', '--debug',
         help="Print lots of debugging statements",
