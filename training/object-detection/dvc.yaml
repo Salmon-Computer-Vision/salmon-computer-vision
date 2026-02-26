@@ -1,0 +1,12 @@
+stages:
+  update_raw:
+    cmd: >-
+      rclone sync 
+      -P
+      --filter "- /salm_dataset*/**"
+      --filter "+ *.json"
+      --filter "- *.zip"
+      aws:salmonvision-ml-datasets/rgb/model_input/
+      01_raw
+    outs:
+    - 01_raw

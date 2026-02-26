@@ -1,0 +1,11 @@
+schema: '2.0'
+stages:
+  update_raw:
+    cmd: rclone sync  -P --filter "- /salm_dataset*/**" --filter "+ *.json" 
+      --filter "- *.zip" aws:salmonvision-ml-datasets/rgb/model_input/ 01_raw
+    outs:
+    - path: 01_raw
+      hash: md5
+      md5: 3c9068cdaacbf2d8934c76a2e98c945d.dir
+      size: 372865559
+      nfiles: 50
