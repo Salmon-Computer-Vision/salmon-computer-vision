@@ -10,6 +10,12 @@ stages:
       data/01_raw/labelstudio_annos
     outs:
       - data/01_raw/labelstudio_annos
+  build_model_input:
+    cmd: >-
+      uv run python scripts/yolo_converter_ls_video.py
+    deps:
+      - scripts/yolo_converter_ls_video.py
+      - data/01_raw/labelstudio_annos
   split_data:
     cmd: >-
       sleep 1
