@@ -10,3 +10,19 @@ stages:
       md5: 3c9068cdaacbf2d8934c76a2e98c945d.dir
       size: 372865559
       nfiles: 50
+  split_data:
+    cmd: sleep 1
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/01_raw/sv_water_conditions
+      hash: md5
+      md5: 44403010d10d741a8e00e52c93be6c39.dir
+      size: 195622
+      nfiles: 10

@@ -1,0 +1,6 @@
+outs:
+- md5: 44403010d10d741a8e00e52c93be6c39.dir
+  size: 195622
+  nfiles: 10
+  hash: md5
+  path: sv_water_conditions

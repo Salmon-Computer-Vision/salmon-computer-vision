@@ -10,3 +10,10 @@ stages:
       data/01_raw/labelstudio_annos
     outs:
       - data/01_raw/labelstudio_annos
+  split_data:
+    cmd: >-
+      sleep 1
+    deps:
+      - data/01_raw/salmon_vid_counts.csv
+      - data/01_raw/salmon_vid_counts_summary.csv
+      - data/01_raw/sv_water_conditions
