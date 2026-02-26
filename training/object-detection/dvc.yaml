@@ -7,6 +7,6 @@ stages:
       --filter "+ *.json"
       --filter "- *.zip"
       aws:salmonvision-ml-datasets/rgb/model_input/
-      01_raw
+      data/01_raw/labelstudio_annos
     outs:
-    - 01_raw
+      - data/01_raw/labelstudio_annos
