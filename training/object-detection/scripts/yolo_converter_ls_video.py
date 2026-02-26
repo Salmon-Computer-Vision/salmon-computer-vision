@@ -254,6 +254,7 @@ class YoloConverterLSVideo:
         to_name: Optional[str] = None,    # e.g., "video"; if None accept any
         coord_mode: str = "auto",         # "auto", "percent", "normalized", "pixel"
         error_log_path: Optional[Path] = None,
+        include_sites: Optional[list[str]] = None,
     ):
         """
         :param coord_mode:
@@ -276,6 +277,7 @@ class YoloConverterLSVideo:
         self.error_log_path = (
             Path(error_log_path) if error_log_path else (self.output_dir / "ls_to_yolo_errors.log")
         )
+        self.include_sites = include_sites
 
     # ---- public API ----
 
@@ -341,6 +343,12 @@ class YoloConverterLSVideo:
         stats = ConvertStats()
 
         data = item.get("data") or {}
+        site = data.get("metadata_file_site_reference_string") or ""
+        if self.include_sites is not None:
+            if site not in self.include_sites:
+                # Not in included sites
+                return stats
+
         video_uri = data.get("metadata_file_filename") or data.get("video") or "unknown.mp4"
         video_stem = Path(video_uri).stem
         vid_w = int(_safe_float(data.get("metadata_video_width"), 0))
@@ -432,6 +440,7 @@ if __name__ == "__main__":
     parser.add_argument("--from-name", default=None, help="Filter by result.from_name (e.g., 'box')")
     parser.add_argument("--to-name", default=None, help="Filter by result.to_name (e.g., 'video')")
     parser.add_argument("--coord-mode", default="percent", help='Set the coordinates mode: "auto", "percent", "normalized", "pixel"')
+    parser.add_argument("--include-sites", nargs="*", default=None, help='Only include videos of these sites')
     args = parser.parse_args()
 
     data_yaml_path = Path(args.data_yaml)
@@ -445,6 +454,7 @@ if __name__ == "__main__":
         from_name=args.from_name,
         to_name=args.to_name,
         coord_mode=args.coord_mode,
+        include_sites=args.include_sites,
     )
 
     inp = Path(args.input)

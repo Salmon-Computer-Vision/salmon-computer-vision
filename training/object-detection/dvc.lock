@@ -2,13 +2,19 @@ schema: '2.0'
 stages:
   update_raw:
     cmd: rclone sync  -P --filter "- /salm_dataset*/**" --filter "+ *.json" 
-      --filter "- *.zip" aws:salmonvision-ml-datasets/rgb/model_input/ 
+      --filter "- *.zip" aws:salmonvision-ml-datasets/rgb/raw/ 
       data/01_raw/labelstudio_annos
+    deps:
+    - path: s3://salmonvision-ml-datasets/rgb/raw
+      hash: md5
+      md5: 9aab20758f57f39971a38c9a676dad27.dir
+      size: 720238505
+      nfiles: 65
     outs:
     - path: data/01_raw/labelstudio_annos
       hash: md5
-      md5: 3c9068cdaacbf2d8934c76a2e98c945d.dir
-      size: 372865559
+      md5: 188b71c31be326fe36d209cc52c23337.dir
+      size: 379352848
       nfiles: 50
   split_data:
     cmd: sleep 1

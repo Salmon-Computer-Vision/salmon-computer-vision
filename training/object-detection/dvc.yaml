@@ -6,16 +6,25 @@ stages:
       --filter "- /salm_dataset*/**"
       --filter "+ *.json"
       --filter "- *.zip"
-      aws:salmonvision-ml-datasets/rgb/model_input/
+      aws:salmonvision-ml-datasets/rgb/raw/
       data/01_raw/labelstudio_annos
+    deps:
+      - s3://salmonvision-ml-datasets/rgb/raw
     outs:
       - data/01_raw/labelstudio_annos
   build_model_input:
     cmd: >-
       uv run python scripts/yolo_converter_ls_video.py
+      ../salmon-computer-vision/training/annotation_webapp_alt/
+      --data-yaml batch_upload/salmon_yolo.yaml
+      --out data/02_interim/yolo_annos
+      --pattern '**/*.json'
+      --include-sites tankeeah kitwanga bear
     deps:
       - scripts/yolo_converter_ls_video.py
       - data/01_raw/labelstudio_annos
+    outs:
+      - data/02_interim/yolo_annos
   split_data:
     cmd: >-
       sleep 1
