@@ -12,6 +12,7 @@ stages:
       - s3://salmonvision-ml-datasets/rgb/raw
     outs:
       - data/01_raw/labelstudio_annos
+    frozen: true
   build_model_input:
     cmd: >-
       scripts/yolo_converter_ls_video.py
@@ -30,6 +31,13 @@ stages:
       - config/salmon_yolo.yaml
     outs:
       - data/02_interim/yolo_annos
+  unpack_annos:
+    cmd: >-
+      scripts/unpack_annos.sh
+      data/02_interim/yolo_annos
+      data/02_interim/yolo_annos_unpacked
+    deps:
+      - data/02_interim/yolo_annos
   split_data:
     cmd: >-
       sleep 1
@@ -37,3 +45,4 @@ stages:
       - data/01_raw/salmon_vid_counts.csv
       - data/01_raw/salmon_vid_counts_summary.csv
       - data/01_raw/sv_water_conditions
+      - data/02_interim/yolo_annos_unpacked
