@@ -32,3 +32,27 @@ stages:
       md5: 44403010d10d741a8e00e52c93be6c39.dir
       size: 195622
       nfiles: 10
+  build_model_input:
+    cmd: scripts/yolo_converter_ls_video.py data/01_raw/labelstudio_annos 
+      --data-yaml config/salmon_yolo.yaml --out data/02_interim/yolo_annos 
+      --pattern '**/*.json' --include-sites tankeeah kitwanga bear
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/01_raw/labelstudio_annos
+      hash: md5
+      md5: 188b71c31be326fe36d209cc52c23337.dir
+      size: 379352848
+      nfiles: 50
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: cca7398b0bf1053184009452ae7cdaaf
+      size: 16599
+    outs:
+    - path: data/02_interim/yolo_annos
+      hash: md5
+      md5: 58944a7c76dff71dbb220f78e59ed9d9.dir
+      size: 40115388
+      nfiles: 782981

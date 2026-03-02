@@ -1,6 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.8"
+# dependencies = [
+#     "pyyaml>=6.0.3",
+# ]
+# [tool.uv]
+# exclude-newer = "2026-03-02T18:41:13Z"
+# ///
 
-import yaml  # requires PyYAML: pip install pyyaml
+import yaml
 import json
 import traceback
 from dataclasses import dataclass
@@ -254,7 +262,7 @@ class YoloConverterLSVideo:
         to_name: Optional[str] = None,    # e.g., "video"; if None accept any
         coord_mode: str = "auto",         # "auto", "percent", "normalized", "pixel"
         error_log_path: Optional[Path] = None,
-        include_sites: Optional[list[str]] = None,
+        include_sites: List[str] = [],
     ):
         """
         :param coord_mode:
@@ -344,7 +352,7 @@ class YoloConverterLSVideo:
 
         data = item.get("data") or {}
         site = data.get("metadata_file_site_reference_string") or ""
-        if self.include_sites is not None:
+        if len(self.include_sites) > 0:
             if site not in self.include_sites:
                 # Not in included sites
                 return stats
@@ -440,7 +448,7 @@ if __name__ == "__main__":
     parser.add_argument("--from-name", default=None, help="Filter by result.from_name (e.g., 'box')")
     parser.add_argument("--to-name", default=None, help="Filter by result.to_name (e.g., 'video')")
     parser.add_argument("--coord-mode", default="percent", help='Set the coordinates mode: "auto", "percent", "normalized", "pixel"')
-    parser.add_argument("--include-sites", nargs="*", default=None, help='Only include videos of these sites')
+    parser.add_argument("--include-sites", nargs="*", default=[], help='Only include videos of these sites')
     args = parser.parse_args()
 
     data_yaml_path = Path(args.data_yaml)
@@ -459,6 +467,8 @@ if __name__ == "__main__":
 
     inp = Path(args.input)
     if inp.is_dir():
+        print(f"Converting labels in folder {inp}")
+
         s = conv.convert_folder(inp, pattern=args.pattern)
     else:
         s = conv.convert_file(inp)
