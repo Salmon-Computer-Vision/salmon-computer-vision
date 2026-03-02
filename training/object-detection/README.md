@@ -1,8 +1,15 @@
 # Object Detection
 
-Install uv
+Training pipeline to train the SalmonVision object detection model.
+
+Install uv:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Install DVC:
+```bash
+uv tool install dvc
 ```
 
 Check dvc.yaml for the full pipeline.

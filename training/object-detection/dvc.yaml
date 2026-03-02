@@ -22,6 +22,8 @@ stages:
       --shard-size 100000
       --pattern '**/*.json'
       --include-sites tankeeah kitwanga bear
+      --frame-stride 3
+      --frame-offset-mode video_hash
     deps:
       - scripts/yolo_converter_ls_video.py
       - data/01_raw/labelstudio_annos

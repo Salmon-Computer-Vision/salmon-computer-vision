@@ -36,7 +36,8 @@ stages:
     cmd: scripts/yolo_converter_ls_video.py data/01_raw/labelstudio_annos 
       --data-yaml config/salmon_yolo.yaml --out data/02_interim/yolo_annos 
       --out-shards data/02_interim/yolo_annos --shard-size 100000 --pattern 
-      '**/*.json' --include-sites tankeeah kitwanga bear
+      '**/*.json' --include-sites tankeeah kitwanga bear --frame-stride 3 
+      --frame-offset-mode video_hash
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -49,8 +50,8 @@ stages:
       nfiles: 50
     - path: scripts/yolo_converter_ls_video.py
       hash: md5
-      md5: 36a7224d1eea0b6e300d421a7907c411
-      size: 18877
+      md5: c076aef67ddd95232ad60c90a0acb3d4
+      size: 20426
     outs:
     - path: data/02_interim/yolo_annos
       hash: md5
