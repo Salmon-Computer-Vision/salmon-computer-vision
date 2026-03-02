@@ -16,6 +16,47 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, Any
 from collections import defaultdict
 from datetime import datetime
+import io
+import tarfile
+
+class TarShardWriter:
+    def __init__(self, out_dir: Path, shard_size: int = 10000, prefix: str = "yolo_annos"):
+        self.out_dir = Path(out_dir)
+        self.out_dir.mkdir(parents=True, exist_ok=True)
+        self.shard_size = int(shard_size)
+        self.prefix = prefix
+
+        self._shard_idx = 0
+        self._n_in_shard = 0
+        self._tar = None  # tarfile.TarFile
+
+        self._open_new()
+
+    def _open_new(self):
+        if self._tar is not None:
+            self._tar.close()
+        shard_name = f"{self.prefix}-{self._shard_idx:06d}.tar"
+        self._tar_path = self.out_dir / shard_name
+        self._tar = tarfile.open(self._tar_path, mode="w")  # uncompressed tar
+        self._n_in_shard = 0
+        self._shard_idx += 1
+
+    def write_text(self, rel_path: str, text: str):
+        # rotate shard if needed
+        if self._n_in_shard >= self.shard_size:
+            self._open_new()
+
+        data = text.encode("utf-8")
+        ti = tarfile.TarInfo(name=rel_path)
+        ti.size = len(data)
+        self._tar.addfile(ti, io.BytesIO(data))
+
+        self._n_in_shard += 1
+
+    def close(self):
+        if self._tar is not None:
+            self._tar.close()
+            self._tar = None
 
 def load_class_map_from_yolo_yaml(yaml_path: Path) -> Dict[str, int]:
     """
@@ -263,6 +304,8 @@ class YoloConverterLSVideo:
         coord_mode: str = "auto",         # "auto", "percent", "normalized", "pixel"
         error_log_path: Optional[Path] = None,
         include_sites: List[str] = [],
+        shard_dir: Optional[Path] = None,
+        shard_size: int = 10000,
     ):
         """
         :param coord_mode:
@@ -286,6 +329,9 @@ class YoloConverterLSVideo:
             Path(error_log_path) if error_log_path else (self.output_dir / "ls_to_yolo_errors.log")
         )
         self.include_sites = include_sites
+        self.shard_dir = Path(shard_dir) if shard_dir else None
+        self.shard_size = int(shard_size)
+        self._sharder = TarShardWriter(self.shard_dir, shard_size=self.shard_size) if self.shard_dir else None
 
     # ---- public API ----
 
@@ -379,22 +425,10 @@ class YoloConverterLSVideo:
                     continue
                 results.append(r)
 
-        vid_dir = self.output_dir / video_stem
-        if not results:
-            stats.videos_without_boxes += 1
-            if self.empty_list_path:
-                self.empty_list_path.parent.mkdir(parents=True, exist_ok=True)
-                with self.empty_list_path.open("a") as f:
-                    f.write(f"{video_uri}\n")
-            return stats
-
-        if vid_dir.exists() and not self.overwrite_video_dir:
-            # skip existing video dir to avoid mixing runs
-            return stats
-        vid_dir.mkdir(parents=True, exist_ok=True)
-
         wrote_any = False
 
+        # Collect lines per frame
+        frame_lines: Dict[int, List[str]] = defaultdict(list)
         for r in results:
             value = r.get("value") or {}
             labels: List[str] = value.get("labels") or []
@@ -410,19 +444,16 @@ class YoloConverterLSVideo:
             frame_boxes = _interpolate_sequence(seq)  # frame -> [(x,y,w,h), ...]
 
             for frame_idx, boxes in frame_boxes.items():
-                label_path = vid_dir / f"frame_{frame_idx:06d}.txt"
-                with label_path.open("a") as f:
-                    for (x, y, w, h) in boxes:
-                        xc, yc, wn, hn = _to_yolo(
-                            x, y, w, h,
-                            vid_w=vid_w,
-                            vid_h=vid_h,
-                            forced_mode=self.coord_mode,
-                        )
-                        line = f"{cls_id} {xc:.6f} {yc:.6f} {wn:.6f} {hn:.6f}"
-                        f.write(line + "\n")
-                        stats.label_files_written += 1
-                        wrote_any = True
+                for (x, y, w, h) in boxes:
+                    xc, yc, wn, hn = _to_yolo(
+                        x, y, w, h,
+                        vid_w=vid_w,
+                        vid_h=vid_h,
+                        forced_mode=self.coord_mode,
+                    )
+                    frame_lines[frame_idx].append(f"{cls_id} {xc:.6f} {yc:.6f} {wn:.6f} {hn:.6f}")
+                    stats.label_files_written += 1
+                    wrote_any = True
 
         if wrote_any:
             stats.videos_with_boxes += 1
@@ -431,6 +462,25 @@ class YoloConverterLSVideo:
             if self.empty_list_path:
                 with self.empty_list_path.open("a") as f:
                     f.write(f"{video_uri}\n")
+
+        if self._sharder:
+            # write into shards: <video_stem>/frame_000123.txt
+            for frame_idx, lines in frame_lines.items():
+                rel_path = f"{video_stem}/frame_{frame_idx:06d}.txt"
+                self._sharder.write_text(rel_path, "\n".join(lines) + "\n")
+        else:
+            # current behavior: write to filesystem
+            vid_dir = self.output_dir / video_stem
+
+            if vid_dir.exists() and not self.overwrite_video_dir:
+                # skip existing video dir to avoid mixing runs
+                return stats
+            vid_dir.mkdir(parents=True, exist_ok=True)
+
+            for frame_idx, lines in frame_lines.items():
+                label_path = vid_dir / f"frame_{frame_idx:06d}.txt"
+                label_path.parent.mkdir(parents=True, exist_ok=True)
+                label_path.write_text("\n".join(lines) + "\n")
 
         return stats
 
@@ -449,6 +499,8 @@ if __name__ == "__main__":
     parser.add_argument("--to-name", default=None, help="Filter by result.to_name (e.g., 'video')")
     parser.add_argument("--coord-mode", default="percent", help='Set the coordinates mode: "auto", "percent", "normalized", "pixel"')
     parser.add_argument("--include-sites", nargs="*", default=[], help='Only include videos of these sites')
+    parser.add_argument("--out-shards", default=None, help="Directory to write TAR shards (instead of many files)")
+    parser.add_argument("--shard-size", type=int, default=10000, help="Number of frame label files per shard")
     args = parser.parse_args()
 
     data_yaml_path = Path(args.data_yaml)
@@ -463,15 +515,20 @@ if __name__ == "__main__":
         to_name=args.to_name,
         coord_mode=args.coord_mode,
         include_sites=args.include_sites,
+        shard_dir=Path(args.out_shards) if args.out_shards else None,
+        shard_size=args.shard_size,
     )
 
     inp = Path(args.input)
     if inp.is_dir():
-        print(f"Converting labels in folder {inp}")
+        print(f"Converting labels from {inp}")
 
         s = conv.convert_folder(inp, pattern=args.pattern)
     else:
         s = conv.convert_file(inp)
+
+    if getattr(conv, "_sharder", None):
+        conv._sharder.close()
 
     print(
         f"Done. with_boxes={s.videos_with_boxes} without_boxes={s.videos_without_boxes} "

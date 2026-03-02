@@ -18,6 +18,8 @@ stages:
       data/01_raw/labelstudio_annos
       --data-yaml config/salmon_yolo.yaml
       --out data/02_interim/yolo_annos
+      --out-shards data/02_interim/yolo_annos
+      --shard-size 100000
       --pattern '**/*.json'
       --include-sites tankeeah kitwanga bear
     deps:
