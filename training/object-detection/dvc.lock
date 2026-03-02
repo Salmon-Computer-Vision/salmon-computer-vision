@@ -58,3 +58,12 @@ stages:
       md5: 978efd3dca7ac11abcb153db010c39ae.dir
       size: 880998400
       nfiles: 9
+  unpack_annos:
+    cmd: scripts/unpack_annos.sh data/02_interim/yolo_annos 
+      data/02_interim/yolo_annos_unpacked
+    deps:
+    - path: data/02_interim/yolo_annos
+      hash: md5
+      md5: 978efd3dca7ac11abcb153db010c39ae.dir
+      size: 880998400
+      nfiles: 9
