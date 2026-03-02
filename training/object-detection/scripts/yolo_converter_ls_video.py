@@ -18,6 +18,7 @@ from collections import defaultdict
 from datetime import datetime
 import io
 import tarfile
+import zlib
 
 class TarShardWriter:
     def __init__(self, out_dir: Path, shard_size: int = 10000, prefix: str = "yolo_annos"):
@@ -98,82 +99,6 @@ def load_class_map_from_yolo_yaml(yaml_path: Path) -> Dict[str, int]:
         raise ValueError(f"Unsupported 'names' structure in {yaml_path}: {type(names)}")
 
     return class_map
-
-def _interpolate_sequence(seq: Iterable[dict]) -> Dict[int, List[Tuple[float, float, float, float]]]:
-    """
-    Given a Label Studio 'sequence' (list of keyframes) like:
-
-      {
-        "frame": 47, "x": 0, "y": 62.8, "width": 15.9, "height": 15.1, "enabled": true
-      },
-      ...
-
-    Produce: frame_index -> list of (x, y, w, h) in the SAME units as input.
-
-    Semantics:
-    - Every keyframe (enabled or not) produces a box at its own frame.
-    - If a keyframe has enabled=True, we linearly interpolate boxes for the frames
-      *between it and the next keyframe* (f0+1 .. f1-1).
-    - If a keyframe has enabled=False, we do NOT interpolate forward from it,
-      but we still keep its own box at that frame.
-    - A disabled keyframe can still be the *end* of an interpolation that started
-      from a previous enabled keyframe (since that interpolation uses the previous
-      keyframe's enabled flag).
-    """
-    # Sort keyframes by frame
-    kfs = sorted(seq, key=lambda k: int(_safe_float(k.get("frame"), 0)))
-    frames_boxes: Dict[int, List[Tuple[float, float, float, float]]] = {}
-
-    if not kfs:
-        return frames_boxes
-
-    # 1) Add all keyframes as boxes at their exact frames
-    for k in kfs:
-        f = int(_safe_float(k.get("frame"), -1))
-        if f < 0:
-            continue
-
-        x = _safe_float(k.get("x"))
-        y = _safe_float(k.get("y"))
-        w = _safe_float(k.get("width"))
-        h = _safe_float(k.get("height"))
-        frames_boxes.setdefault(f, []).append((x, y, w, h))
-
-    # 2) Interpolate between consecutive keyframes when the *start* keyframe is enabled
-    for i in range(len(kfs) - 1):
-        k0 = kfs[i]
-        k1 = kfs[i + 1]
-
-        f0 = int(_safe_float(k0.get("frame"), -1))
-        f1 = int(_safe_float(k1.get("frame"), -1))
-        if f0 < 0 or f1 <= f0:
-            continue
-
-        enabled0 = bool(k0.get("enabled", True))
-        if not enabled0:
-            # Do not interpolate forward from a disabled keyframe
-            continue
-
-        x0 = _safe_float(k0.get("x"))
-        y0 = _safe_float(k0.get("y"))
-        w0 = _safe_float(k0.get("width"))
-        h0 = _safe_float(k0.get("height"))
-
-        x1 = _safe_float(k1.get("x"))
-        y1 = _safe_float(k1.get("y"))
-        w1 = _safe_float(k1.get("width"))
-        h1 = _safe_float(k1.get("height"))
-
-        # Fill in strictly between endpoints; endpoints themselves are already added
-        for f in range(f0 + 1, f1):
-            t = (f - f0) / float(f1 - f0)
-            x = x0 + (x1 - x0) * t
-            y = y0 + (y1 - y0) * t
-            w = w0 + (w1 - w0) * t
-            h = h0 + (h1 - h0) * t
-            frames_boxes.setdefault(f, []).append((x, y, w, h))
-
-    return frames_boxes
 
 @dataclass
 class ConvertStats:
@@ -306,6 +231,9 @@ class YoloConverterLSVideo:
         include_sites: List[str] = [],
         shard_dir: Optional[Path] = None,
         shard_size: int = 10000,
+        frame_stride: int = 1,
+        frame_offset_mode: str = "fixed",
+        frame_offset: int = 0,
     ):
         """
         :param coord_mode:
@@ -332,6 +260,9 @@ class YoloConverterLSVideo:
         self.shard_dir = Path(shard_dir) if shard_dir else None
         self.shard_size = int(shard_size)
         self._sharder = TarShardWriter(self.shard_dir, shard_size=self.shard_size) if self.shard_dir else None
+        self.frame_stride = max(1, int(frame_stride))
+        self.frame_offset_mode = frame_offset_mode
+        self.frame_offset = int(frame_offset)
 
     # ---- public API ----
 
@@ -378,6 +309,94 @@ class YoloConverterLSVideo:
         return stats
 
     # ---- internals ----
+
+    def _stride_offset(self, video_stem: str) -> int:
+        if self.frame_stride <= 1:
+            return 0
+        if self.frame_offset_mode == "fixed":
+            return int(self.frame_offset) % self.frame_stride
+        if self.frame_offset_mode == "video_hash":
+            # deterministic across runs + platforms
+            return zlib.crc32(video_stem.encode("utf-8")) % self.frame_stride
+
+        raise ValueError("Invalid frame offset mode")
+
+    @staticmethod
+    def _interpolate_sequence(seq: Iterable[dict]) -> Dict[int, List[Tuple[float, float, float, float]]]:
+        """
+        Given a Label Studio 'sequence' (list of keyframes) like:
+
+          {
+            "frame": 47, "x": 0, "y": 62.8, "width": 15.9, "height": 15.1, "enabled": true
+          },
+          ...
+
+        Produce: frame_index -> list of (x, y, w, h) in the SAME units as input.
+
+        Semantics:
+        - Every keyframe (enabled or not) produces a box at its own frame.
+        - If a keyframe has enabled=True, we linearly interpolate boxes for the frames
+          *between it and the next keyframe* (f0+1 .. f1-1).
+        - If a keyframe has enabled=False, we do NOT interpolate forward from it,
+          but we still keep its own box at that frame.
+        - A disabled keyframe can still be the *end* of an interpolation that started
+          from a previous enabled keyframe (since that interpolation uses the previous
+          keyframe's enabled flag).
+        """
+        # Sort keyframes by frame
+        kfs = sorted(seq, key=lambda k: int(_safe_float(k.get("frame"), 0)))
+        frames_boxes: Dict[int, List[Tuple[float, float, float, float]]] = {}
+
+        if not kfs:
+            return frames_boxes
+
+        # 1) Add all keyframes as boxes at their exact frames
+        for k in kfs:
+            f = int(_safe_float(k.get("frame"), -1))
+            if f < 0:
+                continue
+
+            x = _safe_float(k.get("x"))
+            y = _safe_float(k.get("y"))
+            w = _safe_float(k.get("width"))
+            h = _safe_float(k.get("height"))
+            frames_boxes.setdefault(f, []).append((x, y, w, h))
+
+        # 2) Interpolate between consecutive keyframes when the *start* keyframe is enabled
+        for i in range(len(kfs) - 1):
+            k0 = kfs[i]
+            k1 = kfs[i + 1]
+
+            f0 = int(_safe_float(k0.get("frame"), -1))
+            f1 = int(_safe_float(k1.get("frame"), -1))
+            if f0 < 0 or f1 <= f0:
+                continue
+
+            enabled0 = bool(k0.get("enabled", True))
+            if not enabled0:
+                # Do not interpolate forward from a disabled keyframe
+                continue
+
+            x0 = _safe_float(k0.get("x"))
+            y0 = _safe_float(k0.get("y"))
+            w0 = _safe_float(k0.get("width"))
+            h0 = _safe_float(k0.get("height"))
+
+            x1 = _safe_float(k1.get("x"))
+            y1 = _safe_float(k1.get("y"))
+            w1 = _safe_float(k1.get("width"))
+            h1 = _safe_float(k1.get("height"))
+
+            # Fill in strictly between endpoints; endpoints themselves are already added
+            for f in range(f0 + 1, f1):
+                t = (f - f0) / float(f1 - f0)
+                x = x0 + (x1 - x0) * t
+                y = y0 + (y1 - y0) * t
+                w = w0 + (w1 - w0) * t
+                h = h0 + (h1 - h0) * t
+                frames_boxes.setdefault(f, []).append((x, y, w, h))
+
+        return frames_boxes
 
     def _log_error(self, context: str, exc: Exception):
         try:
@@ -441,7 +460,7 @@ class YoloConverterLSVideo:
             cls_id = self.class_map[cls_name]
 
             seq: Iterable[dict] = value.get("sequence") or []
-            frame_boxes = _interpolate_sequence(seq)  # frame -> [(x,y,w,h), ...]
+            frame_boxes = self._interpolate_sequence(seq)  # frame -> [(x,y,w,h), ...]
 
             for frame_idx, boxes in frame_boxes.items():
                 for (x, y, w, h) in boxes:
@@ -501,6 +520,12 @@ if __name__ == "__main__":
     parser.add_argument("--include-sites", nargs="*", default=[], help='Only include videos of these sites')
     parser.add_argument("--out-shards", default=None, help="Directory to write TAR shards (instead of many files)")
     parser.add_argument("--shard-size", type=int, default=10000, help="Number of frame label files per shard")
+    parser.add_argument("--frame-stride", type=int, default=1,
+                    help="Keep every Nth frame (1 keeps all)")
+    parser.add_argument("--frame-offset-mode", choices=["fixed", "video_hash"], default="video_hash",
+                        help="How to choose offset within stride")
+    parser.add_argument("--frame-offset", type=int, default=0,
+                        help="Offset for fixed mode (0..stride-1)")
     args = parser.parse_args()
 
     data_yaml_path = Path(args.data_yaml)
@@ -517,6 +542,9 @@ if __name__ == "__main__":
         include_sites=args.include_sites,
         shard_dir=Path(args.out_shards) if args.out_shards else None,
         shard_size=args.shard_size,
+        frame_stride=args.frame_stride,
+        frame_offset_mode=args.frame_offset_mode,
+        frame_offset=args.frame_offset,
     )
 
     inp = Path(args.input)
