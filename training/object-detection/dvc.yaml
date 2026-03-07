@@ -33,6 +33,7 @@ stages:
       - data/02_interim/yolo_annos
   unpack_annos:
     cmd: >-
+      rm -r data/02_interim/yolo_annos_unpacked ||
       scripts/unpack_annos.sh
       data/02_interim/yolo_annos
       data/02_interim/yolo_annos_unpacked

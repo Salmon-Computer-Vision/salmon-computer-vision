@@ -33,11 +33,11 @@ stages:
       size: 195622
       nfiles: 10
   build_model_input:
-    cmd: scripts/yolo_converter_ls_video.py data/01_raw/labelstudio_annos 
-      --data-yaml config/salmon_yolo.yaml --out data/02_interim/yolo_annos 
-      --out-shards data/02_interim/yolo_annos --shard-size 100000 --pattern 
-      '**/*.json' --include-sites tankeeah kitwanga bear --frame-stride 3 
-      --frame-offset-mode video_hash
+    cmd: rm -r data/02_interim/yolo_annos || scripts/yolo_converter_ls_video.py 
+      data/01_raw/labelstudio_annos --data-yaml config/salmon_yolo.yaml --out 
+      data/02_interim/yolo_annos --out-shards data/02_interim/yolo_annos 
+      --shard-size 100000 --pattern '**/*.json' --include-sites tankeeah 
+      kitwanga bear --frame-stride 3 --frame-offset-mode video_hash
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -50,20 +50,20 @@ stages:
       nfiles: 50
     - path: scripts/yolo_converter_ls_video.py
       hash: md5
-      md5: c076aef67ddd95232ad60c90a0acb3d4
-      size: 20426
+      md5: ae7fb35f80b387294b652e733c3ba500
+      size: 20699
     outs:
     - path: data/02_interim/yolo_annos
       hash: md5
-      md5: 978efd3dca7ac11abcb153db010c39ae.dir
-      size: 880998400
-      nfiles: 9
+      md5: 473a8eedf5fd4cc5d5b8b6d1f80681e7.dir
+      size: 293713920
+      nfiles: 3
   unpack_annos:
-    cmd: scripts/unpack_annos.sh data/02_interim/yolo_annos 
-      data/02_interim/yolo_annos_unpacked
+    cmd: rm -r data/02_interim/yolo_annos_unpacked || scripts/unpack_annos.sh 
+      data/02_interim/yolo_annos data/02_interim/yolo_annos_unpacked
     deps:
     - path: data/02_interim/yolo_annos
       hash: md5
-      md5: 978efd3dca7ac11abcb153db010c39ae.dir
-      size: 880998400
-      nfiles: 9
+      md5: 473a8eedf5fd4cc5d5b8b6d1f80681e7.dir
+      size: 293713920
+      nfiles: 3
