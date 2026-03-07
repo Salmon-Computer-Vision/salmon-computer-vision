@@ -471,7 +471,6 @@ class YoloConverterLSVideo:
                         forced_mode=self.coord_mode,
                     )
                     frame_lines[frame_idx].append(f"{cls_id} {xc:.6f} {yc:.6f} {wn:.6f} {hn:.6f}")
-                    stats.label_files_written += 1
                     wrote_any = True
 
         if wrote_any:
@@ -481,6 +480,13 @@ class YoloConverterLSVideo:
             if self.empty_list_path:
                 with self.empty_list_path.open("a") as f:
                     f.write(f"{video_uri}\n")
+
+        # Apply frame sampling
+        if self.frame_stride > 1 and frame_lines:
+            off = self._stride_offset(video_stem)
+            frame_lines = {f: lines for f, lines in frame_lines.items()
+                           if (f % self.frame_stride) == off}
+            stats.label_files_written += len(frame_lines)
 
         if self._sharder:
             # write into shards: <video_stem>/frame_000123.txt
