@@ -486,8 +486,8 @@ class YoloConverterLSVideo:
             off = self._stride_offset(video_stem)
             frame_lines = {f: lines for f, lines in frame_lines.items()
                            if (f % self.frame_stride) == off}
-            stats.label_files_written += len(frame_lines)
 
+        stats.label_files_written += len(frame_lines)
         if self._sharder:
             # write into shards: <video_stem>/frame_000123.txt
             for frame_idx, lines in frame_lines.items():
