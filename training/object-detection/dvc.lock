@@ -17,7 +17,10 @@ stages:
       size: 379352848
       nfiles: 50
   split_data:
-    cmd: sleep 1
+    cmd: scripts/make_splits.py --labels-root 
+      data/02_interim/yolo_annos_unpacked --out-dir 
+      data/03_processed/splits_baseline --sites tankeeah kitwanga bear --seed 42
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
     deps:
     - path: data/01_raw/salmon_vid_counts.csv
       hash: md5
@@ -32,6 +35,12 @@ stages:
       md5: 44403010d10d741a8e00e52c93be6c39.dir
       size: 195622
       nfiles: 10
+    outs:
+    - path: data/03_processed/splits_baseline
+      hash: md5
+      md5: 1d0a2f30f86add043a7980159a4e8669.dir
+      size: 15264480
+      nfiles: 5
   build_model_input:
     cmd: rm -r data/02_interim/yolo_annos || scripts/yolo_converter_ls_video.py 
       data/01_raw/labelstudio_annos --data-yaml config/salmon_yolo.yaml --out 

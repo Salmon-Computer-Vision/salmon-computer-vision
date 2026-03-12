@@ -41,9 +41,15 @@ stages:
       - data/02_interim/yolo_annos
   split_data:
     cmd: >-
-      sleep 1
+      scripts/make_splits.py
+      --labels-root data/02_interim/yolo_annos_unpacked
+      --out-dir data/03_processed/splits_baseline
+      --sites tankeeah kitwanga bear
+      --seed 42
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
     deps:
       - data/01_raw/salmon_vid_counts.csv
       - data/01_raw/salmon_vid_counts_summary.csv
       - data/01_raw/sv_water_conditions
-      - data/02_interim/yolo_annos_unpacked
+    outs:
+      - data/03_processed/splits_baseline

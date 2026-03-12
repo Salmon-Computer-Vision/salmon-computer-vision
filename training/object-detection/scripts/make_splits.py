@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+
 """
 make_splits.py
 
@@ -17,7 +18,7 @@ Group-wise stratified-ish split for unpacked YOLO label files.
     out_dir/group_assignments.csv
     out_dir/split_report.json
 
-Split unit (to prevent leakage): group_id = site + device + date(YYYYMMDD)
+Split unit: group_id = site + device + date(YYYYMMDD)
 Balancing objectives (soft): class counts, time-of-day, density bins, box area bins.
 """
 
@@ -214,7 +215,7 @@ def parse_frame_idx(filename: str) -> Optional[int]:
         return None
 
 
-def read_yolo_label(path: Path) -> Tuple[int, Counter, Counter]:
+def read_yolo_label(path: Path) -> Tuple[int, Counter, Counter, Counter]:
     """
     Returns:
       n_boxes,
@@ -224,6 +225,7 @@ def read_yolo_label(path: Path) -> Tuple[int, Counter, Counter]:
     n_boxes = 0
     class_counts: Counter = Counter()
     area_counts: Counter = Counter()
+    ar_counts: Counter = Counter()
 
     try:
         txt = path.read_text().strip()
@@ -247,6 +249,7 @@ def read_yolo_label(path: Path) -> Tuple[int, Counter, Counter]:
         n_boxes += 1
         class_counts[cls_id] += 1
         area_counts[area_bin(w * h)] += 1
+        ar_counts[ar_bin(w, h)] += 1
 
     return n_boxes, class_counts, area_counts
 
@@ -445,7 +448,7 @@ def split_groups_greedy(
     train = SplitState("train", train_frac)
     val = SplitState("val", val_frac)
     test = SplitState("test", test_frac)
-    splits = [train, val, test]
+    splits = [test, val, train]
 
     # precompute target frame counts
     target_frames = {
