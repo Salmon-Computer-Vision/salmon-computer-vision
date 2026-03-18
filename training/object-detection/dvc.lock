@@ -67,8 +67,8 @@ stages:
       nfiles: 50
     - path: scripts/yolo_converter_ls_video.py
       hash: md5
-      md5: ca3d64988d96ee8f3c4125d2d01600d0
-      size: 28147
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
     outs:
     - path: data/02_interim/yolo_annos
       hash: md5
