@@ -11,13 +11,14 @@
 import yaml
 import json
 import traceback
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, Any
 from collections import defaultdict
 from datetime import datetime
 import io
 import tarfile
+import random
 import zlib
 
 class TarShardWriter:
@@ -104,8 +105,17 @@ def load_class_map_from_yolo_yaml(yaml_path: Path) -> Dict[str, int]:
 class ConvertStats:
     videos_with_boxes: int = 0
     videos_without_boxes: int = 0
-    label_files_written: int = 0
+    label_lines_written: int = 0      # box lines
+    label_files_written: int = 0      # positive frame txt files
+    negative_files_written: int = 0   # negative frame txt files
+    total_candidate_negative_frames: int = 0   # total candidate negative frames
     errors: int = 0
+
+@dataclass
+class NegativeVideoCandidate:
+    video_stem: str
+    video_uri: str
+    total_frames: int
 
 def _safe_float(v: Any, default: float = 0.0) -> float:
     try:
@@ -234,6 +244,10 @@ class YoloConverterLSVideo:
         frame_stride: int = 1,
         frame_offset_mode: str = "fixed",
         frame_offset: int = 0,
+        include_negatives: bool = False,
+        negative_ratio: float = 0.10,
+        negatives_per_video: int = 6,
+        negative_seed: int = 42,
     ):
         """
         :param coord_mode:
@@ -263,6 +277,15 @@ class YoloConverterLSVideo:
         self.frame_stride = max(1, int(frame_stride))
         self.frame_offset_mode = frame_offset_mode
         self.frame_offset = int(frame_offset)
+
+        self.include_negatives = include_negatives
+        self.negative_ratio = float(negative_ratio)
+        self.negatives_per_video = int(negatives_per_video)
+        self.negative_seed = int(negative_seed)
+
+        self._positive_frame_files_written = 0
+        self._negative_frame_files_written = 0
+        self._negative_candidates: List[NegativeVideoCandidate] = []
 
     # ---- public API ----
 
@@ -308,6 +331,72 @@ class YoloConverterLSVideo:
                 self._log_error(f"_convert_item(id={item_id}, src={json_path})", e)
         return stats
 
+    def materialize_negatives(self) -> (int, int):
+        """
+        Sample negatives globally so negatives are at most self.negative_ratio
+        of the final dataset. Returns number of negative files written.
+        """
+        if not self.include_negatives:
+            return 0
+
+        pos = self._positive_frame_files_written
+        if pos <= 0:
+            return 0
+
+        r = self.negative_ratio
+        if r <= 0:
+            return 0
+        if r >= 1:
+            max_neg = sum(
+                min(self.negatives_per_video, len(self._eligible_frames_for_video(c.video_stem, c.total_frames)))
+                for c in self._negative_candidates
+            )
+        else:
+            max_neg = int((r / (1.0 - r)) * pos)
+
+        if max_neg <= 0:
+            return 0
+
+        # Build all candidates at the video level first
+        per_video_samples: Dict[str, List[int]] = {}
+        total_candidate_frames = 0
+
+        for c in self._negative_candidates:
+            eligible = self._eligible_frames_for_video(c.video_stem, c.total_frames)
+            if not eligible:
+                continue
+
+            k = min(self.negatives_per_video, len(eligible))
+            sampled = self._sample_negative_frames_for_video(c.video_stem, c.total_frames, k)
+            if sampled:
+                per_video_samples[c.video_stem] = sampled
+                total_candidate_frames += len(sampled)
+
+        if total_candidate_frames == 0:
+            return 0
+
+        # Flatten candidates, then globally subsample if needed
+        flat: List[Tuple[str, int]] = []
+        for video_stem, frames in per_video_samples.items():
+            for frame_idx in frames:
+                flat.append((video_stem, frame_idx))
+
+        # Deterministic global shuffle
+        flat.sort()
+        rng = random.Random(self.negative_seed)
+        rng.shuffle(flat)
+
+        flat = flat[:max_neg]
+
+        # Write empty labels
+        wrote = 0
+        for video_stem, frame_idx in sorted(flat):
+            self._write_label(video_stem, frame_idx, "")
+            wrote += 1
+
+        self._negative_frame_files_written += wrote
+        return wrote, total_candidate_frames
+
     # ---- internals ----
 
     def _stride_offset(self, video_stem: str) -> int:
@@ -320,6 +409,103 @@ class YoloConverterLSVideo:
             return zlib.crc32(video_stem.encode("utf-8")) % self.frame_stride
 
         raise ValueError("Invalid frame offset mode")
+
+    @staticmethod
+    def _parse_ffmpeg_rate(rate: Any) -> float:
+        """
+        Parse strings like '10/1' or '30000/1001' into float.
+        """
+        if rate is None:
+            return 0.0
+        if isinstance(rate, (int, float)):
+            return float(rate)
+
+        s = str(rate).strip()
+        if "/" in s:
+            a, b = s.split("/", 1)
+            try:
+                num = float(a)
+                den = float(b)
+                return num / den if den else 0.0
+            except Exception:
+                return 0.0
+        try:
+            return float(s)
+        except Exception:
+            return 0.0
+
+
+    def _infer_total_frames(self, item: dict, results: Optional[List[dict]] = None) -> int:
+        """
+        Prefer metadata_video_nb_frames. Fall back to framesCount in result.value,
+        then duration * fps.
+        """
+        data = item.get("data") or {}
+
+        # 1) Best source
+        n = int(_safe_float(data.get("metadata_video_nb_frames"), 0))
+        if n > 0:
+            return n
+
+        # 2) From result.value.framesCount
+        if results:
+            for r in results:
+                value = r.get("value") or {}
+                n = int(_safe_float(value.get("framesCount"), 0))
+                if n > 0:
+                    return n
+
+        # 3) duration * fps
+        duration = _safe_float(
+            data.get("metadata_video_duration",
+                     data.get("duration", 0.0)),
+            0.0
+        )
+
+        fps = _safe_float(data.get("frames_per_second"), 0.0)
+        if fps <= 0:
+            fps = self._parse_ffmpeg_rate(data.get("metadata_video_r_frame_rate"))
+        if fps <= 0:
+            fps = self._parse_ffmpeg_rate(data.get("metadata_video_avg_frame_rate"))
+
+        if duration > 0 and fps > 0:
+            return int(round(duration * fps))
+
+        return 0
+
+
+    def _eligible_frames_for_video(self, video_stem: str, total_frames: int) -> List[int]:
+        off = self._stride_offset(video_stem)
+        return [f for f in range(total_frames) if (f % self.frame_stride) == off]
+
+
+    def _write_empty_label(self, path: Path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if not path.exists():
+            path.write_text("")
+
+    def _write_label(self, video_stem: str, frame_idx: int, text: str):
+        rel_path = f"{video_stem}/frame_{frame_idx:06d}.txt"
+
+        if self._sharder is not None:
+            self._sharder.write_text(rel_path, text)
+        else:
+            label_path = self.output_dir / rel_path
+            label_path.parent.mkdir(parents=True, exist_ok=True)
+            label_path.write_text(text)
+
+    def _sample_negative_frames_for_video(self, video_stem: str, total_frames: int, k: int) -> List[int]:
+        eligible = self._eligible_frames_for_video(video_stem, total_frames)
+        if not eligible or k <= 0:
+            return []
+
+        seed = zlib.crc32(f"{video_stem}|{self.negative_seed}".encode("utf-8"))
+        rng = random.Random(seed)
+
+        if k >= len(eligible):
+            return sorted(eligible)
+
+        return sorted(rng.sample(eligible, k))
 
     @staticmethod
     def _interpolate_sequence(seq: Iterable[dict]) -> Dict[int, List[Tuple[float, float, float, float]]]:
@@ -478,8 +664,20 @@ class YoloConverterLSVideo:
         else:
             stats.videos_without_boxes += 1
             if self.empty_list_path:
+                self.empty_list_path.parent.mkdir(parents=True, exist_ok=True)
                 with self.empty_list_path.open("a") as f:
                     f.write(f"{video_uri}\n")
+
+            if self.include_negatives:
+                total_frames = self._infer_total_frames(item, results=None)
+                if total_frames > 0:
+                    self._negative_candidates.append(
+                        NegativeVideoCandidate(
+                            video_stem=video_stem,
+                            video_uri=video_uri,
+                            total_frames=total_frames,
+                        )
+                    )
 
         # Apply frame sampling
         if self.frame_stride > 1 and frame_lines:
@@ -488,13 +686,9 @@ class YoloConverterLSVideo:
                            if (f % self.frame_stride) == off}
 
         stats.label_files_written += len(frame_lines)
-        if self._sharder:
-            # write into shards: <video_stem>/frame_000123.txt
-            for frame_idx, lines in frame_lines.items():
-                rel_path = f"{video_stem}/frame_{frame_idx:06d}.txt"
-                self._sharder.write_text(rel_path, "\n".join(lines) + "\n")
-        else:
-            # current behavior: write to filesystem
+        self._positive_frame_files_written += len(frame_lines)
+        if self._sharder is None:
+            # write to filesystem
             vid_dir = self.output_dir / video_stem
 
             if vid_dir.exists() and not self.overwrite_video_dir:
@@ -502,10 +696,8 @@ class YoloConverterLSVideo:
                 return stats
             vid_dir.mkdir(parents=True, exist_ok=True)
 
-            for frame_idx, lines in frame_lines.items():
-                label_path = vid_dir / f"frame_{frame_idx:06d}.txt"
-                label_path.parent.mkdir(parents=True, exist_ok=True)
-                label_path.write_text("\n".join(lines) + "\n")
+        for frame_idx, lines in frame_lines.items():
+            self._write_label(video_stem, frame_idx, "\n".join(lines) + "\n")
 
         return stats
 
@@ -532,6 +724,14 @@ if __name__ == "__main__":
                         help="How to choose offset within stride")
     parser.add_argument("--frame-offset", type=int, default=0,
                         help="Offset for fixed mode (0..stride-1)")
+    parser.add_argument("--include-negatives", action="store_true",
+                    help="Add negative frames from videos with no annotations")
+    parser.add_argument("--negative-ratio", type=float, default=0.10,
+                        help="Max negatives as fraction of final dataset")
+    parser.add_argument("--negatives-per-video", type=int, default=6,
+                        help="Max sampled negative frames per empty video")
+    parser.add_argument("--negative-seed", type=int, default=42,
+                        help="Seed for deterministic negative sampling")
     args = parser.parse_args()
 
     data_yaml_path = Path(args.data_yaml)
@@ -551,6 +751,10 @@ if __name__ == "__main__":
         frame_stride=args.frame_stride,
         frame_offset_mode=args.frame_offset_mode,
         frame_offset=args.frame_offset,
+        include_negatives=args.include_negatives,
+        negative_ratio=args.negative_ratio,
+        negatives_per_video=args.negatives_per_video,
+        negative_seed=args.negative_seed,
     )
 
     inp = Path(args.input)
@@ -561,10 +765,17 @@ if __name__ == "__main__":
     else:
         s = conv.convert_file(inp)
 
+    neg_written, total_candidate_frames = conv.materialize_negatives()
+    s.negative_files_written += neg_written
+    s.total_candidate_negative_frames += total_candidate_frames
+
     if getattr(conv, "_sharder", None):
         conv._sharder.close()
 
     print(
         f"Done. with_boxes={s.videos_with_boxes} without_boxes={s.videos_without_boxes} "
-        f"labels_written={s.label_files_written} errors={s.errors}"
+        f"positive_label_files={s.label_files_written} "
+        f"negative_label_files={s.negative_files_written} "
+        f"total_candidate_negative_frames={s.total_candidate_negative_frames} "
+        f"errors={s.errors}"
     )
