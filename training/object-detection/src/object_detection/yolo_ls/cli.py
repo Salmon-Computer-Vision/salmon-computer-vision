@@ -1,11 +1,10 @@
-import yaml
 import argparse
 from pathlib import Path
 
 from object_detection.yolo_ls.converter import YoloConverterLSVideo
 from object_detection.yolo_ls.parsing import load_class_map_from_yolo_yaml
 
-def build_parser():
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Convert Label Studio video JSON to YOLO frame labels")
     parser.add_argument("input", help="JSON file or directory containing Label Studio JSON")
     parser.add_argument("--data-yaml", required=True, help="Path to YOLO data.yaml (with 'names:' mapping)")
@@ -36,7 +35,7 @@ def build_parser():
 
     return parser
 
-def main():
+def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 

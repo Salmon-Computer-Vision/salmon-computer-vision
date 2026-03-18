@@ -175,7 +175,7 @@ class YoloConverterLSVideo:
                 self._log_error(f"_convert_item(id={item_id}, src={json_path})", e)
         return stats
 
-    def materialize_negatives(self) -> (int, int):
+    def materialize_negatives(self) -> Tuple[int, int]:
         """
         Sample negatives globally so negatives are at most self.negative_ratio
         of the final dataset. Returns number of negative files written.
