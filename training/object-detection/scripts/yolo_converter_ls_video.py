@@ -238,7 +238,7 @@ class YoloConverterLSVideo:
         to_name: Optional[str] = None,    # e.g., "video"; if None accept any
         coord_mode: str = "auto",         # "auto", "percent", "normalized", "pixel"
         error_log_path: Optional[Path] = None,
-        include_sites: List[str] = [],
+        include_sites: Optional[List[str]] = None,
         shard_dir: Optional[Path] = None,
         shard_size: int = 10000,
         frame_stride: int = 1,
@@ -270,7 +270,7 @@ class YoloConverterLSVideo:
         self.error_log_path = (
             Path(error_log_path) if error_log_path else (self.output_dir / "ls_to_yolo_errors.log")
         )
-        self.include_sites = include_sites
+        self.include_sites = include_sites or []
         self.shard_dir = Path(shard_dir) if shard_dir else None
         self.shard_size = int(shard_size)
         self._sharder = TarShardWriter(self.shard_dir, shard_size=self.shard_size) if self.shard_dir else None
