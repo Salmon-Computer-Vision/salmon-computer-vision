@@ -5,3 +5,8 @@ description = "SalmonVision object detector training"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]

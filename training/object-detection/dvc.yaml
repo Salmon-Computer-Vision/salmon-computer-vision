@@ -20,27 +20,27 @@ stages:
       --data-yaml config/salmon_yolo.yaml
       --out data/02_interim/yolo_annos
       --out-shards data/02_interim/yolo_annos
+      --empty-list data/02_interim/yolo_annos/empty_vids.txt
       --shard-size 100000
       --pattern '**/*.json'
       --include-sites tankeeah kitwanga bear
       --frame-stride 3
       --frame-offset-mode video_hash
+      --include-negatives
+      --negative-ratio 0.10
+      --negatives-per-video 10
     deps:
       - scripts/yolo_converter_ls_video.py
       - data/01_raw/labelstudio_annos
       - config/salmon_yolo.yaml
     outs:
       - data/02_interim/yolo_annos
-  unpack_annos:
+  split_data:
     cmd: >-
       rm -r data/02_interim/yolo_annos_unpacked ||
       scripts/unpack_annos.sh
       data/02_interim/yolo_annos
-      data/02_interim/yolo_annos_unpacked
-    deps:
-      - data/02_interim/yolo_annos
-  split_data:
-    cmd: >-
+      data/02_interim/yolo_annos_unpacked &&
       scripts/make_splits.py
       --labels-root data/02_interim/yolo_annos_unpacked
       --out-dir data/03_processed/splits_baseline
@@ -48,6 +48,7 @@ stages:
       --seed 42
       --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
     deps:
+      - data/02_interim/yolo_annos
       - data/01_raw/salmon_vid_counts.csv
       - data/01_raw/salmon_vid_counts_summary.csv
       - data/01_raw/sv_water_conditions
