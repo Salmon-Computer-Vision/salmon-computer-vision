@@ -45,6 +45,11 @@ stages:
       hash: md5
       md5: 3921729fec8a5aa6c1eb25c54196a658
       size: 650
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 8ca8d1d4f2962a0e27f6fd50da90a8d2.dir
+      size: 35847
+      nfiles: 6
     outs:
     - path: data/03_processed/splits_baseline
       hash: md5
@@ -73,6 +78,11 @@ stages:
       hash: md5
       md5: 95696514ec77c20c6491c5af2ccb46a5
       size: 118
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: f1b6f977a5c7acd7e5d66ca2fec33d69.dir
+      size: 52048
+      nfiles: 10
     outs:
     - path: data/02_interim/yolo_annos
       hash: md5

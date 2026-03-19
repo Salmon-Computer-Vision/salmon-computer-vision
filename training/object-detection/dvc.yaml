@@ -31,6 +31,7 @@ stages:
       --negatives-per-video 10
     deps:
       - scripts/yolo_converter_ls_video.py
+      - src/object_detection/yolo_ls
       - data/01_raw/labelstudio_annos
       - config/salmon_yolo.yaml
     outs:
@@ -49,6 +50,7 @@ stages:
       --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
     deps:
       - scripts/make_splits.py
+      - src/object_detection/splits
       - data/02_interim/yolo_annos
       - data/01_raw/salmon_vid_counts.csv
       - data/01_raw/salmon_vid_counts_summary.csv

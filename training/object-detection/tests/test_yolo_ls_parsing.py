@@ -5,7 +5,6 @@ import pytest
 from object_detection.yolo_ls.parsing import (
     coord_mode,
     load_class_map_from_yolo_yaml,
-    safe_float,
     to_yolo,
 )
 
@@ -41,18 +40,6 @@ def test_load_class_map_from_yolo_yaml_bad_type(tmp_path: Path):
     with pytest.raises(ValueError, match="Unsupported 'names' structure"):
         load_class_map_from_yolo_yaml(yaml_path)
 
-
-@pytest.mark.parametrize(
-    ("value", "default", "expected"),
-    [
-        ("1.5", 0.0, 1.5),
-        (2, 0.0, 2.0),
-        (None, 7.0, 7.0),
-        ("abc", -1.0, -1.0),
-    ],
-)
-def test_safe_float(value, default, expected):
-    assert safe_float(value, default) == expected
 
 
 def test_coord_mode_normalized():

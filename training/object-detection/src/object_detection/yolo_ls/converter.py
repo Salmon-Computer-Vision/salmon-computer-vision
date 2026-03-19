@@ -11,9 +11,9 @@ import zlib
 from object_detection.yolo_ls.shards import TarShardWriter
 from object_detection.yolo_ls.parsing import (
     coord_mode,
-    safe_float,
     to_yolo,
 )
+from object_detection.utils.utils import safe_float
 
 @dataclass
 class ConvertStats:
