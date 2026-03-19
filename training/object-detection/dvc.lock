@@ -17,7 +17,7 @@ stages:
       size: 379352848
       nfiles: 50
   split_data:
-    cmd: rm -r data/02_interim/yolo_annos_unpacked || scripts/unpack_annos.sh 
+    cmd: rm -r data/02_interim/yolo_annos_unpacked; scripts/unpack_annos.sh 
       data/02_interim/yolo_annos data/02_interim/yolo_annos_unpacked && 
       scripts/make_splits.py --labels-root data/02_interim/yolo_annos_unpacked 
       --out-dir data/03_processed/splits_baseline --sites tankeeah kitwanga bear
@@ -41,11 +41,15 @@ stages:
       md5: a65beddacd3a0ceefa39225176c78f6c.dir
       size: 307039754
       nfiles: 5
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
     outs:
     - path: data/03_processed/splits_baseline
       hash: md5
-      md5: b0af0cfdde2f5164decf4a9b15baeb9c.dir
-      size: 16780574
+      md5: c1535b54178c37a23abf827b656afa19.dir
+      size: 16780687
       nfiles: 5
   build_model_input:
     cmd: scripts/yolo_converter_ls_video.py data/01_raw/labelstudio_annos 
