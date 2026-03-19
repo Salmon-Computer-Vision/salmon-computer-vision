@@ -18,7 +18,7 @@ stages:
       scripts/yolo_converter_ls_video.py
       data/01_raw/labelstudio_annos
       --data-yaml config/salmon_yolo.yaml
-      --out data/02_interim/yolo_annos
+      --out data/02_interim/yolo_annos_fs
       --out-shards data/02_interim/yolo_annos
       --empty-list data/02_interim/yolo_annos/empty_vids.txt
       --shard-size 100000
