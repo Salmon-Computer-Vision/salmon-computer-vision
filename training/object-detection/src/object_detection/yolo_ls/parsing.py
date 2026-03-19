@@ -2,12 +2,6 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple, Any
 import yaml
 
-def safe_float(v: Any, default: float = 0.0) -> float:
-    try:
-        return float(v)
-    except Exception:
-        return default
-
 def coord_mode(x: float, y: float, w: float, h: float) -> str:
     """
     Infer coordinate mode for Label Studio:

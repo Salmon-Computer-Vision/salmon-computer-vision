@@ -7,7 +7,6 @@ from object_detection.splits.parsing import (
     parse_frame_idx,
     parse_video_stem,
     read_yolo_label,
-    safe_float,
     time_bucket,
 )
 
@@ -58,12 +57,6 @@ def test_area_bin():
     assert area_bin(0.02) == "0.01-0.04"
     assert area_bin(0.10) == "0.04-0.16"
     assert area_bin(0.20) == ">=0.16"
-
-
-def test_safe_float():
-    assert safe_float("1.25") == 1.25
-    assert safe_float("bad", 7.0) == 7.0
-
 
 def test_parse_frame_idx():
     assert parse_frame_idx("frame_000123.txt") == 123

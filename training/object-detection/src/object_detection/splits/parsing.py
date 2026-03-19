@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict, Tuple, Optional
 from collections import Counter
 
+from object_detection.utils.utils import safe_float
 
 _STEM_RE = re.compile(
     r"""
@@ -108,13 +109,6 @@ def area_bin(area: float) -> str:
     if area < 0.16:
         return "0.04-0.16"
     return ">=0.16"
-
-
-def safe_float(x: str, default: float = 0.0) -> float:
-    try:
-        return float(x)
-    except Exception:
-        return default
 
 def parse_frame_idx(filename: str) -> Optional[int]:
     # frame_000123.txt
