@@ -37,7 +37,7 @@ stages:
       - data/02_interim/yolo_annos
   split_data:
     cmd: >-
-      rm -r data/02_interim/yolo_annos_unpacked ||
+      rm -r data/02_interim/yolo_annos_unpacked;
       scripts/unpack_annos.sh
       data/02_interim/yolo_annos
       data/02_interim/yolo_annos_unpacked &&
@@ -48,6 +48,7 @@ stages:
       --seed 42
       --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
     deps:
+      - scripts/make_splits.py
       - data/02_interim/yolo_annos
       - data/01_raw/salmon_vid_counts.csv
       - data/01_raw/salmon_vid_counts_summary.csv
