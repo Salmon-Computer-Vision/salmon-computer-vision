@@ -145,6 +145,9 @@ class YoloConverterLSVideo:
                 stats.videos_with_boxes += s.videos_with_boxes
                 stats.videos_without_boxes += s.videos_without_boxes
                 stats.label_files_written += s.label_files_written
+                stats.label_lines_written += s.label_lines_written
+                stats.negative_files_written += s.negative_files_written
+                stats.total_candidate_negative_frames += s.total_candidate_negative_frames
             except Exception as e:
                 stats.errors += 1
                 self._log_error(f"convert_file({p})", e)
@@ -173,6 +176,9 @@ class YoloConverterLSVideo:
                 stats.videos_with_boxes += s.videos_with_boxes
                 stats.videos_without_boxes += s.videos_without_boxes
                 stats.label_files_written += s.label_files_written
+                stats.label_lines_written += s.label_lines_written
+                stats.negative_files_written += s.negative_files_written
+                stats.total_candidate_negative_frames += s.total_candidate_negative_frames
             except Exception as e:
                 stats.errors += 1
                 item_id = item.get("id", "unknown")
