@@ -74,6 +74,11 @@ def make_label_file(root: Path, video_stem: str, frame_idx: int, lines: str) -> 
 
 
 @pytest.fixture
+def make_label_file_fixture():
+    return make_label_file
+
+
+@pytest.fixture
 def sample_item():
     return make_ls_item()
 

@@ -18,22 +18,22 @@ from object_detection.splits.splitter import (
 )
 
 
-def test_iter_label_files(tmp_path: Path, make_label_file):
-    make_label_file(tmp_path, "HIRMD-tankeeah-jetson-0_20250714_012827_M", 10, "0 0.5 0.5 0.1 0.2\n")
-    make_label_file(tmp_path, "HIRMD-tankeeah-jetson-0_20250714_012827_M", 11, "0 0.5 0.5 0.1 0.2\n")
+def test_iter_label_files(tmp_path: Path, make_label_file_fixture):
+    make_label_file_fixture(tmp_path, "HIRMD-tankeeah-jetson-0_20250714_012827_M", 10, "0 0.5 0.5 0.1 0.2\n")
+    make_label_file_fixture(tmp_path, "HIRMD-tankeeah-jetson-0_20250714_012827_M", 11, "0 0.5 0.5 0.1 0.2\n")
     files = sorted(iter_label_files(tmp_path))
     assert len(files) == 2
     assert files[0].name == "frame_000010.txt"
 
 
-def test_build_groups_filters_sites(tmp_path: Path, make_label_file):
-    make_label_file(
+def test_build_groups_filters_sites(tmp_path: Path, make_label_file_fixture):
+    make_label_file_fixture(
         tmp_path,
         "HIRMD-tankeeah-jetson-0_20250714_012827_M",
         10,
         "0 0.5 0.5 0.1 0.2\n",
     )
-    make_label_file(
+    make_label_file_fixture(
         tmp_path,
         "HIRMD-bear-jetsonnx-0_20250912_011859_M",
         20,
@@ -47,10 +47,10 @@ def test_build_groups_filters_sites(tmp_path: Path, make_label_file):
     assert gid.startswith("tankeeah|")
 
 
-def test_build_groups_aggregates_frames(tmp_path: Path, make_label_file):
+def test_build_groups_aggregates_frames(tmp_path: Path, make_label_file_fixture):
     video = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
-    make_label_file(tmp_path, video, 10, "0 0.5 0.5 0.1 0.2\n")
-    make_label_file(tmp_path, video, 11, "0 0.5 0.5 0.1 0.2\n1 0.5 0.5 0.2 0.2\n")
+    make_label_file_fixture(tmp_path, video, 10, "0 0.5 0.5 0.1 0.2\n")
+    make_label_file_fixture(tmp_path, video, 11, "0 0.5 0.5 0.1 0.2\n1 0.5 0.5 0.2 0.2\n")
 
     groups = build_groups(tmp_path, sites_keep={"tankeeah"}, seed=42)
     g = next(iter(groups.values()))
@@ -73,11 +73,11 @@ def test_l1_dist():
     assert l1_dist(p, q, ["a", "b"]) == pytest.approx(1.0)
 
 
-def test_compute_global_targets(tmp_path: Path, make_label_file):
+def test_compute_global_targets(tmp_path: Path, make_label_file_fixture):
     video1 = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
     video2 = "HIRMD-bear-jetsonnx-0_20250912_011859_M"
-    make_label_file(tmp_path, video1, 10, "0 0.5 0.5 0.1 0.2\n")
-    make_label_file(tmp_path, video2, 20, "1 0.5 0.5 0.2 0.2\n")
+    make_label_file_fixture(tmp_path, video1, 10, "0 0.5 0.5 0.1 0.2\n")
+    make_label_file_fixture(tmp_path, video2, 20, "1 0.5 0.5 0.2 0.2\n")
 
     groups = build_groups(tmp_path, sites_keep={"tankeeah", "bear"}, seed=42)
     targets = compute_global_targets(list(groups.values()))
@@ -87,16 +87,16 @@ def test_compute_global_targets(tmp_path: Path, make_label_file):
     assert pytest.approx(sum(targets["class_dist"].values())) == 1.0
 
 
-def test_rarity_score_positive(tmp_path: Path, make_label_file):
+def test_rarity_score_positive(tmp_path: Path, make_label_file_fixture):
     video = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
-    make_label_file(tmp_path, video, 10, "0 0.5 0.5 0.1 0.2\n")
+    make_label_file_fixture(tmp_path, video, 10, "0 0.5 0.5 0.1 0.2\n")
     groups = build_groups(tmp_path, sites_keep={"tankeeah"}, seed=42)
     g = next(iter(groups.values()))
     score = rarity_score(g, {0: 1.0})
     assert score > 0
 
 
-def test_split_groups_greedy_assigns_all_groups(tmp_path: Path, make_label_file):
+def test_split_groups_greedy_assigns_all_groups(tmp_path: Path, make_label_file_fixture):
     videos = [
         "HIRMD-tankeeah-jetson-0_20250714_012827_M",
         "HIRMD-tankeeah-jetson-0_20250715_012827_M",
@@ -104,7 +104,7 @@ def test_split_groups_greedy_assigns_all_groups(tmp_path: Path, make_label_file)
         "SFC-bear-jetsonnx-0_20250912_011859_M",
     ]
     for i, video in enumerate(videos):
-        make_label_file(tmp_path, video, 10, f"{i % 2} 0.5 0.5 0.1 0.2\n")
+        make_label_file_fixture(tmp_path, video, 10, f"{i % 2} 0.5 0.5 0.1 0.2\n")
 
     groups = build_groups(tmp_path, sites_keep={"tankeeah", "kitwanga", "bear"}, seed=42)
     train, val, test, report = split_groups_greedy(
@@ -113,7 +113,7 @@ def test_split_groups_greedy_assigns_all_groups(tmp_path: Path, make_label_file)
         train_frac=0.8,
         val_frac=0.1,
         test_frac=0.1,
-        weights={"class": 4.0, "tod": 1.0, "density": 1.0, "area": 1.0, "size": 2.0},
+        weights={"class": 4.0, "tod": 1.0, "density": 1.0, "area": 1.0, "ar": 1.0, "size": 2.0},
     )
 
     assigned = set(train.group_ids) | set(val.group_ids) | set(test.group_ids)
@@ -122,9 +122,9 @@ def test_split_groups_greedy_assigns_all_groups(tmp_path: Path, make_label_file)
     assert train.n_frames + val.n_frames + test.n_frames == 4
 
 
-def test_summarize_split(tmp_path: Path, make_label_file):
+def test_summarize_split(tmp_path: Path, make_label_file_fixture):
     video = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
-    make_label_file(tmp_path, video, 10, "0 0.5 0.5 0.1 0.2\n")
+    make_label_file_fixture(tmp_path, video, 10, "0 0.5 0.5 0.1 0.2\n")
     groups = build_groups(tmp_path, sites_keep={"tankeeah"}, seed=42)
     g = next(iter(groups.values()))
 

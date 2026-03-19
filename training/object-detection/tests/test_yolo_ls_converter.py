@@ -351,6 +351,7 @@ def test_materialize_negatives_writes_empty_files(tmp_path: Path, sample_item):
 
     conv._convert_item(sample_item)
 
+    # No positives, so no negatives
     empty_item = {
         "id": 2,
         "data": {
@@ -369,7 +370,7 @@ def test_materialize_negatives_writes_empty_files(tmp_path: Path, sample_item):
 
     wrote, total_candidate_frames = conv.materialize_negatives()
     assert wrote == 0
-    assert total_candidate_frames > 0
+    assert total_candidate_frames == 0
 
 
 def test_materialize_negatives_with_enough_positives(tmp_path: Path, sample_item):
@@ -410,12 +411,12 @@ def test_materialize_negatives_with_enough_positives(tmp_path: Path, sample_item
 
     wrote, total_candidate_frames = conv.materialize_negatives()
 
-    assert wrote == 4
-    assert total_candidate_frames >= 4
-    assert conv._negative_frame_files_written == 4
+    assert wrote == 2
+    assert total_candidate_frames == 6
+    assert conv._negative_frame_files_written == 2
 
     txt_files = list((tmp_path / "out").rglob("frame_*.txt"))
-    assert len(txt_files) >= 12 + 4
+    assert len(txt_files) == 8 + 2
 
 
 def test_materialize_negatives_writes_to_shards(tmp_path: Path, sample_item):
@@ -434,7 +435,9 @@ def test_materialize_negatives_writes_to_shards(tmp_path: Path, sample_item):
         item["id"] = i + 1
         item["data"]["metadata_file_filename"] = f"HIRMD-tankeeah-jetson-0_20240704_05570{i}_M.mp4"
         item["data"]["video"] = f"s3://bucket/HIRMD-tankeeah-jetson-0_20240704_05570{i}_M.mp4"
-        conv._convert_item(item)
+        s = conv._convert_item(item)
+
+    assert s.label_files_written == 3
 
     empty_item = {
         "id": 3,

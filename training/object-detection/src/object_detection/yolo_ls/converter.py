@@ -185,15 +185,15 @@ class YoloConverterLSVideo:
         of the final dataset. Returns number of negative files written.
         """
         if not self.include_negatives:
-            return 0
+            return 0, 0
 
         pos = self._positive_frame_files_written
         if pos <= 0:
-            return 0
+            return 0, 0
 
         r = self.negative_ratio
         if r <= 0:
-            return 0
+            return 0, 0
         if r >= 1:
             max_neg = sum(
                 min(self.negatives_per_video, len(self._eligible_frames_for_video(c.video_stem, c.total_frames)))
@@ -203,7 +203,7 @@ class YoloConverterLSVideo:
             max_neg = int((r / (1.0 - r)) * pos)
 
         if max_neg <= 0:
-            return 0
+            return 0, 0
 
         # Build all candidates at the video level first
         per_video_samples: Dict[str, List[int]] = {}
@@ -220,8 +220,8 @@ class YoloConverterLSVideo:
                 per_video_samples[c.video_stem] = sampled
                 total_candidate_frames += len(sampled)
 
-        if total_candidate_frames == 0:
-            return 0
+        if total_candidate_frames <= 0:
+            return 0, total_candidate_frames
 
         # Flatten candidates, then globally subsample if needed
         flat: List[Tuple[str, int]] = []
