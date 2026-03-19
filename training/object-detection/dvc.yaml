@@ -32,6 +32,7 @@ stages:
     deps:
       - scripts/yolo_converter_ls_video.py
       - src/object_detection/yolo_ls
+      - src/object_detection/utils
       - data/01_raw/labelstudio_annos
       - config/salmon_yolo.yaml
     outs:
@@ -51,6 +52,7 @@ stages:
     deps:
       - scripts/make_splits.py
       - src/object_detection/splits
+      - src/object_detection/utils
       - data/02_interim/yolo_annos
       - data/01_raw/salmon_vid_counts.csv
       - data/01_raw/salmon_vid_counts_summary.csv
