@@ -70,7 +70,7 @@ def main() -> None:
     else:
         s = conv.convert_file(inp)
 
-    neg_written, total_candidate_frames = conv.materialize_negatives()
+    neg_written, max_neg, total_candidate_frames = conv.materialize_negatives()
     s.negative_files_written += neg_written
     s.total_candidate_negative_frames += total_candidate_frames
 
@@ -82,5 +82,6 @@ def main() -> None:
         f"positive_label_files={s.label_files_written} "
         f"negative_label_files={s.negative_files_written} "
         f"total_candidate_negative_frames={s.total_candidate_negative_frames} "
+        f"max_neg={max_neg} "
         f"errors={s.errors}"
     )
