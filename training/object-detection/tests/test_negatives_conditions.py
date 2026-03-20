@@ -563,7 +563,24 @@ def test_create_condition_negative_shards_handles_missing_s3_object(tmp_path: Pa
                 "Box above water": "0",
                 "Notes:": "",
                 "Image Link:": "",
-            }
+            },
+            {
+                "Project": "HIRMD",
+                "Site": "tankeeah",
+                "Camera": "jetson-1",
+                "Filename": "1233088",
+                "Date": "2025-06-04",
+                "Time": "8:22:39",
+                "Turbidity (1-5)": "2",
+                "Debris (buildup within box 1-5)": "1",
+                "Algae (buildup on plexiglass (1-5))": "1",
+                "Lighting (1-5)": "1",
+                "Tidal (0/1)": "0",
+                "Camera orientation (Normal, vertical, horizontal) (0/1)": "Normal",
+                "Box above water": "0",
+                "Notes:": "",
+                "Image Link:": "",
+            },
         ],
     )
 
@@ -581,7 +598,7 @@ def test_create_condition_negative_shards_handles_missing_s3_object(tmp_path: Pa
     )
 
     assert summary["written_videos"] == 0
-    assert len(summary["failures"]) == 1
+    assert len(summary["failures"]) == 2
     assert (out_dir / "condition_negative_summary.json").exists()
 
 
@@ -605,7 +622,24 @@ def test_create_condition_negative_shards_respects_from_to_name(tmp_path: Path, 
                 "Box above water": "0",
                 "Notes:": "",
                 "Image Link:": "",
-            }
+            },
+            {
+                "Project": "HIRMD",
+                "Site": "tankeeah",
+                "Camera": "jetson-1",
+                "Filename": "1233088",
+                "Date": "2025-06-04",
+                "Time": "8:22:39",
+                "Turbidity (1-5)": "2",
+                "Debris (buildup within box 1-5)": "1",
+                "Algae (buildup on plexiglass (1-5))": "1",
+                "Lighting (1-5)": "1",
+                "Tidal (0/1)": "0",
+                "Camera orientation (Normal, vertical, horizontal) (0/1)": "Normal",
+                "Box above water": "0",
+                "Notes:": "",
+                "Image Link:": "",
+            },
         ],
     )
 
@@ -614,14 +648,23 @@ def test_create_condition_negative_shards_respects_from_to_name(tmp_path: Path, 
     item["annotations"][0]["result"] = [
         {
             "type": "videorectangle",
-            "from_name": "other",
+            "from_name": "other",   # intentionally filtered out
             "to_name": "video",
-            "value": {"labels": ["Sockeye"], "sequence": [{"enabled": True, "frame": 9, "x": 10, "y": 20, "width": 30, "height": 40}]},
+            "value": {
+                "labels": ["Sockeye"],
+                "sequence": [
+                    {"enabled": True, "frame": 9, "x": 10, "y": 20, "width": 30, "height": 40}
+                ],
+            },
         }
     ]
 
+    video_stem_2 = "HIRMD-tankeeah-jetson-1_20250604_082239_M"
+    item2 = make_task_item(filename=f"{video_stem_2}.mp4", total_frames=30, sequence=[])
+
     objects = {
-        f"HIRMD/tankeeah/jetson-0/labelstudio_tasks/{video_stem}.json": [item]
+        f"HIRMD/tankeeah/jetson-0/labelstudio_tasks/{video_stem}.json": [item],
+        f"HIRMD/tankeeah/jetson-1/labelstudio_tasks/{video_stem_2}.json": [item2],
     }
 
     import object_detection.negatives.conditions as cond_mod
@@ -640,5 +683,5 @@ def test_create_condition_negative_shards_respects_from_to_name(tmp_path: Path, 
     )
 
     # Since the only annotation is filtered out, all stride-compatible frames are eligible negatives
-    assert summary["written_videos"] == 1
-    assert summary["written_negative_frames"] == 3
+    assert summary["written_videos"] == 2
+    assert summary["written_negative_frames"] == 6
