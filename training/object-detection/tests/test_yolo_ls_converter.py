@@ -368,9 +368,10 @@ def test_materialize_negatives_writes_empty_files(tmp_path: Path, sample_item):
     }
     conv._convert_item(empty_item)
 
-    wrote, total_candidate_frames = conv.materialize_negatives()
+    wrote, max_neg, total_candidate_frames = conv.materialize_negatives()
     assert wrote == 0
     assert total_candidate_frames == 0
+    assert max_neg == 0
 
 
 def test_materialize_negatives_with_enough_positives(tmp_path: Path, sample_item):
@@ -409,9 +410,10 @@ def test_materialize_negatives_with_enough_positives(tmp_path: Path, sample_item
         }
         conv._convert_item(empty_item)
 
-    wrote, total_candidate_frames = conv.materialize_negatives()
+    wrote, max_neg, total_candidate_frames = conv.materialize_negatives()
 
     assert wrote == 2
+    assert max_neg == 2
     assert total_candidate_frames == 6
     assert conv._negative_frame_files_written == 2
 
@@ -455,7 +457,7 @@ def test_materialize_negatives_writes_to_shards(tmp_path: Path, sample_item):
     }
     conv._convert_item(empty_item)
 
-    wrote, _ = conv.materialize_negatives()
+    wrote, _, _ = conv.materialize_negatives()
     conv._sharder.close()
 
     assert wrote == 2
