@@ -92,8 +92,8 @@ stages:
       nfiles: 4
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: dc5c6c05b7e13684e00009e7f4d213a0.dir
-      size: 52733
+      md5: 80ca7160d1912861bbc2a013a45ac5d5.dir
+      size: 52757
       nfiles: 10
     outs:
     - path: data/02_interim/yolo_annos
