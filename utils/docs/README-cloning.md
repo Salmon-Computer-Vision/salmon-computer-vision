@@ -148,7 +148,17 @@ Click "(edit...)" and Update the name to be same as the new hostname determined
 above and also click on the "Use Suggested" button to also update the "Slug"
 and then Save.
 
+Adjust the schedule on healthchecks.io to how long the
+Starlink/Internet connectivity is up using cron expressions, determining which
+hours the Starlink should be on. This is because most sites do not have enough
+power to run Starlink for the full 24 hours, so it is usually scheduled to turn
+off at certain night time hours.
+
 Then, click on "Copy URL" to copy the URL to ping for healthchecks.
+
+Updated software has a `--url` flag to put a healtchecks URL to ping to.
+
+### ***Old healthchecks ping***
 
 Login or SSH back to the Jetson.
 
@@ -171,12 +181,6 @@ what was copied:
 ```
 
 This will then send a ping every minute to healthchecks.io.
-
-Finally, adjust the schedule on healthchecks.io to how long the
-Starlink/Internet connectivity is up using cron expressions, determining which
-hours the Starlink should be on. This is because most sites do not have enough
-power to run Starlink for the full 24 hours, so it is usually scheduled to turn
-off at certain night time hours.
 
 ## Mount Samba Share
 
@@ -221,6 +225,10 @@ for a new site or device:
 - salmon-computer-vision/utils/jetson/salmonmd/.env
 - salmon-computer-vision/utils/syncing/.env
 
+Copy the `template.env` to `.env` at these locations to get a base to start from:
+```
+cp template.env .env
+```
 
 `salmoncount/.env`
 
@@ -275,10 +283,10 @@ ORGID=HIRMD
 SITE_NAME=koeye
 
 # Comment if finished testing
-BUCKET=dev-...
+BUCKET=dev-salmonvision-edge-assets-labelstudio-source
 
 # Uncomment if set to production
-#BUCKET=prod-...
+#BUCKET=prod-salmonvision-edge-assets-labelstudio-source
 ```
 
 Another part is updating the access key ID and secret for rclone to the ORGID
@@ -352,10 +360,10 @@ To check the logs when they are in this detached state, go to the desired folder
 and run
 
 ```
-docker compose logs --tail 10 -f
+docker compose logs --tail 100 -f
 ```
 
-The docker compose logs are also saved to the drive in
+The logs are also saved to the drive in
 `/media/hdd/ORGID/sitename/device-id/logs`
 
 Once everything seems to be running correctly, shut down the devices:
