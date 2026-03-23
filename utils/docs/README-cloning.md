@@ -158,7 +158,7 @@ Then, click on "Copy URL" to copy the URL to ping for healthchecks.
 
 Updated software has a `--url` flag to put a healtchecks URL to ping to.
 
-### ***Old healthchecks ping***
+### ***Old healthchecks ping (Deprecated)***
 
 Login or SSH back to the Jetson.
 
