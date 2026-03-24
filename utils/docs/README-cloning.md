@@ -182,6 +182,10 @@ what was copied:
 
 This will then send a ping every minute to healthchecks.io.
 
+## Sync local logs
+
+Check [`utils/pi/services README.md`](https://github.com/Salmon-Computer-Vision/salmon-computer-vision/tree/master/utils/pi/services#sync-local-logs-to-harddrive)
+
 ## Mount Samba Share
 
 This is only necessary if this site has more than one camera and this is the
