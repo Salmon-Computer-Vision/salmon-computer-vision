@@ -344,7 +344,7 @@ def main() -> None:
     today = date.today()
 
     # Update CSV output with year suffix
-    args.output_csv = args.output_csv.with_suffix(f".{today.year}" + args.output_csv.suffix)
+    args.output_csv = args.output_csv.with_suffix(f"_{today.year}" + args.output_csv.suffix)
 
     # Determine state file path
     if args.state_file is not None:

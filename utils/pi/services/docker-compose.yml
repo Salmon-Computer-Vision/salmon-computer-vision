@@ -24,7 +24,28 @@ services:
     restart: always
     command: >
       bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} --device-id ${DEVICE_ID} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
-
+  log-sync:
+    build: 
+      context: .
+      dockerfile: Dockerfiles/Dockerfile-log-sync
+    init: true
+    environment:
+      - HOSTNAME
+    env_file:
+      - ./.env
+    container_name: salmonmd-log-sync
+    volumes:
+      - type: bind
+        source: ${DRIVE}
+        target: ${DRIVE}
+        bind:
+          propagation: rslave
+      - /media/local_hdd:/media/local_hdd
+      - /home/${USERNAME}/.config/rclone/:/config/rclone/
+    restart: always
+    entrypoint: /bin/sh
+    command: |
+      /app/copy_logs.sh -o "${ORGID}" -s "${SITE_NAME}" -i "${DEVICE_ID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
   salmonmd-log-analyzer:
     image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
     container_name: salmonmd-log-analyzer
@@ -37,5 +58,5 @@ services:
           propagation: rslave
       - /media/local_hdd:/media/local_hdd
     command: >
-      bash -c "python3 utils/pi/services/analyze_salmonmd_logs.py --log-dir '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/salmonmd_logs' --pattern '*salmonmd*' --output-csv '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/outages.csv' --min-downtime-seconds 5; sleep 8h"
+      bash -c "python3 utils/pi/services/analyze_salmonmd_logs.py --log-dir '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/salmonmd_logs' --pattern '*salmonmd*' --output-csv '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/${ORGID}-${SITE_NAME}-${DEVICE_ID}_parsed_logs_outages.csv' --min-downtime-seconds 5; sleep 8h"
     restart: always

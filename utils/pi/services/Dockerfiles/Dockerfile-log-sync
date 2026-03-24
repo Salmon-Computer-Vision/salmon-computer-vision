@@ -1,0 +1,3 @@
+FROM rclone/rclone
+
+COPY copy_logs.sh /app/copy_logs.sh
