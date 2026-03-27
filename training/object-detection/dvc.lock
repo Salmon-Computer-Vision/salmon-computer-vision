@@ -1,0 +1,143 @@
+schema: '2.0'
+stages:
+  update_raw:
+    cmd: rclone sync  -P --filter "- /salm_dataset*/**" --filter "+ *.json" 
+      --filter "- *.zip" aws:salmonvision-ml-datasets/rgb/raw/ 
+      data/01_raw/labelstudio_annos
+    deps:
+    - path: s3://salmonvision-ml-datasets/rgb/raw
+      hash: md5
+      md5: 9aab20758f57f39971a38c9a676dad27.dir
+      size: 720238505
+      nfiles: 65
+    outs:
+    - path: data/01_raw/labelstudio_annos
+      hash: md5
+      md5: 188b71c31be326fe36d209cc52c23337.dir
+      size: 379352848
+      nfiles: 50
+  split_data:
+    cmd: rm -rf data/02_interim/yolo_annos_unpacked && scripts/unpack_annos.sh 
+      data/02_interim/yolo_annos data/02_interim/yolo_annos_unpacked && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/02_interim/yolo_annos_unpacked && scripts/make_splits.py 
+      --labels-root data/02_interim/yolo_annos_unpacked --out-dir 
+      data/03_processed/splits_baseline --sites tankeeah kitwanga bear --seed 42
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/yolo_annos
+      hash: md5
+      md5: 88551957fa5e19f676175f29606a613a.dir
+      size: 308350474
+      nfiles: 5
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: c3505d079516f38874bdb42d2182cb46.dir
+      size: 338928
+      nfiles: 3
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 8ca8d1d4f2962a0e27f6fd50da90a8d2.dir
+      size: 35847
+      nfiles: 6
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 5828afbf8a25f11a0f8e5bbc6c0065bf.dir
+      size: 762
+      nfiles: 4
+    outs:
+    - path: data/03_processed/splits_baseline
+      hash: md5
+      md5: e821f72b0bf42a09afafb688ce927ac4.dir
+      size: 16966114
+      nfiles: 5
+  build_model_input:
+    cmd: scripts/yolo_converter_ls_video.py data/01_raw/labelstudio_annos 
+      --data-yaml config/salmon_yolo.yaml --out data/02_interim/yolo_annos_fs 
+      --out-shards data/02_interim/yolo_annos --empty-list 
+      data/02_interim/yolo_annos/empty_vids.txt --shard-size 100000 --pattern 
+      '**/*.json' --include-sites tankeeah kitwanga bear --frame-stride 3 
+      --frame-offset-mode video_hash --include-negatives --negative-ratio 0.10 
+      --negatives-per-video 11
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/01_raw/labelstudio_annos
+      hash: md5
+      md5: 188b71c31be326fe36d209cc52c23337.dir
+      size: 379352848
+      nfiles: 50
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 5828afbf8a25f11a0f8e5bbc6c0065bf.dir
+      size: 762
+      nfiles: 4
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 80ca7160d1912861bbc2a013a45ac5d5.dir
+      size: 52757
+      nfiles: 10
+    outs:
+    - path: data/02_interim/yolo_annos
+      hash: md5
+      md5: 88551957fa5e19f676175f29606a613a.dir
+      size: 308350474
+      nfiles: 5
+  unpack_annos:
+    cmd: rm -r data/02_interim/yolo_annos_unpacked || scripts/unpack_annos.sh 
+      data/02_interim/yolo_annos data/02_interim/yolo_annos_unpacked
+    deps:
+    - path: data/02_interim/yolo_annos
+      hash: md5
+      md5: 473a8eedf5fd4cc5d5b8b6d1f80681e7.dir
+      size: 293713920
+      nfiles: 3
+  build_condition_negatives:
+    cmd: scripts/create_condition_negatives.py --conditions-csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv 
+      --out-dir data/02_interim/yolo_condition_negatives --frames-per-video 20 
+      --frame-stride 3 --frame-offset-mode video_hash --shard-size 100000
+    deps:
+    - path: data/01_raw/sv_water_conditions
+      hash: md5
+      md5: 717ade5c2fd57a763609ab55d66bf351.dir
+      size: 199437
+      nfiles: 10
+    - path: src/object_detection/negatives/cli.py
+      hash: md5
+      md5: d04fcc8b316529ebefeec2830b288197
+      size: 2142
+    - path: src/object_detection/negatives/conditions.py
+      hash: md5
+      md5: f037be2028fead4a5a9e88f95799254a
+      size: 18950
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: 9a1e97420b95c978e10ec236c2645337
+      size: 1266
+    outs:
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: c3505d079516f38874bdb42d2182cb46.dir
+      size: 338928
+      nfiles: 3

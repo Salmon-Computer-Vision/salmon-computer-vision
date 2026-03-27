@@ -1,0 +1,82 @@
+stages:
+  update_raw:
+    cmd: >-
+      rclone sync 
+      -P
+      --filter "- /salm_dataset*/**"
+      --filter "+ *.json"
+      --filter "- *.zip"
+      aws:salmonvision-ml-datasets/rgb/raw/
+      data/01_raw/labelstudio_annos
+    deps:
+      - s3://salmonvision-ml-datasets/rgb/raw
+    outs:
+      - data/01_raw/labelstudio_annos
+    frozen: true
+  build_model_input:
+    cmd: >-
+      scripts/yolo_converter_ls_video.py
+      data/01_raw/labelstudio_annos
+      --data-yaml config/salmon_yolo.yaml
+      --out data/02_interim/yolo_annos_fs
+      --out-shards data/02_interim/yolo_annos
+      --empty-list data/02_interim/yolo_annos/empty_vids.txt
+      --shard-size 100000
+      --pattern '**/*.json'
+      --include-sites tankeeah kitwanga bear
+      --frame-stride 3
+      --frame-offset-mode video_hash
+      --include-negatives
+      --negative-ratio 0.10
+      --negatives-per-video 11
+    deps:
+      - scripts/yolo_converter_ls_video.py
+      - src/object_detection/yolo_ls
+      - src/object_detection/utils
+      - data/01_raw/labelstudio_annos
+      - config/salmon_yolo.yaml
+    outs:
+      - data/02_interim/yolo_annos
+  build_condition_negatives:
+    cmd: >-
+      scripts/create_condition_negatives.py
+      --conditions-csv data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
+      --out-dir data/02_interim/yolo_condition_negatives
+      --frames-per-video 20
+      --frame-stride 3
+      --frame-offset-mode video_hash
+      --shard-size 100000
+    deps:
+      - src/object_detection/negatives/conditions.py
+      - src/object_detection/negatives/cli.py
+      - src/object_detection/yolo_ls/shards.py
+      - data/01_raw/sv_water_conditions
+    outs:
+      - data/02_interim/yolo_condition_negatives
+  split_data:
+    cmd: >-
+      rm -rf data/02_interim/yolo_annos_unpacked &&
+      scripts/unpack_annos.sh
+      data/02_interim/yolo_annos
+      data/02_interim/yolo_annos_unpacked &&
+      scripts/unpack_annos.sh
+      data/02_interim/yolo_condition_negatives
+      data/02_interim/yolo_annos_unpacked &&
+      scripts/make_splits.py
+      --labels-root data/02_interim/yolo_annos_unpacked
+      --out-dir data/03_processed/splits_baseline
+      --sites tankeeah kitwanga bear
+      --seed 42
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
+    deps:
+      - scripts/make_splits.py
+      - src/object_detection/splits
+      - src/object_detection/utils
+      - data/02_interim/yolo_annos
+      - data/02_interim/yolo_condition_negatives
+      - data/01_raw/salmon_vid_counts.csv
+      - data/01_raw/salmon_vid_counts_summary.csv
+    outs:
+      - data/03_processed/splits_baseline

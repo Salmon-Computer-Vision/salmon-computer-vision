@@ -1,0 +1,26 @@
+[project]
+name = "object-detection"
+version = "0.1.0"
+description = "SalmonVision object detector training"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "boto3>=1.37.38",
+    "pyyaml>=6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
