@@ -24,6 +24,27 @@ logger = logging.getLogger(__name__)
 LOCAL_DIR_PATH = "/media/local_hdd"
 LOGS_DIR_PATH = "logs/salmonmd_logs"
 
+class CustomTimedRotatingFileHandler(TimedRotatingFileHandler):
+    """
+    Rename rotated files from:
+        <name>.YYYYMMDD
+    to:
+        <name>_YYYYMMDD.txt
+    """
+
+    def rotation_filename(self, default_name: str) -> str:
+        path = Path(default_name)
+
+        # Example:
+        #   default_name = "/path/to/motion_detection_logs.20251209"
+        #   path.stem     = "motion_detection_logs"
+        #   path.suffix   = ".20251209"
+        date_part = path.suffix.lstrip(".")
+        base_name = path.stem
+
+        new_name = f"{base_name}_{date_part}.txt"
+        return str(path.with_name(new_name))
+
 def setup_file_logging(logs_dir: Path, loglevel: int, save_prefix=None) -> Path:
     """
     Attach a TimedRotatingFileHandler that rolls over at midnight with UTC timezone
@@ -35,7 +56,7 @@ def setup_file_logging(logs_dir: Path, loglevel: int, save_prefix=None) -> Path:
 
     log_file = logs_dir / name  # base name; rotations get date suffix
 
-    file_handler = TimedRotatingFileHandler(
+    file_handler = CustomTimedRotatingFileHandler(
         filename=log_file,
         when="midnight",     # rotate every midnight
         interval=1,
