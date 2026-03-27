@@ -50,7 +50,7 @@ def setup_file_logging(logs_dir: Path, loglevel: int, save_prefix=None) -> Path:
     Attach a TimedRotatingFileHandler that rolls over at midnight with UTC timezone
     """
 
-    name = "salmonmd_log"
+    name = "motion_detection_logs"
     if save_prefix is not None:
         name = f"{save_prefix}_{name}"
 
