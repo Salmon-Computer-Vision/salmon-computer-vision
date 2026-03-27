@@ -19,8 +19,9 @@ if [ -z "$SITE_NAME" ] || [ -z "$ORGID" ] || [ -z "$DEVICE_ID" ] || [ -z "$DRIVE
 fi
 
 rclone copy \
-    --include='${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/**' \
+    --include="${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/**" \
     --progress \
+    -c "$CONFIG" \
     /media/local_hdd "${DRIVE}"
 
 sleep 2h
