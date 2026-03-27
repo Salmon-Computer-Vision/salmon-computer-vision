@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 # Parse options
 while getopts "s:o:i:d:c:" opt; do
@@ -21,7 +22,6 @@ fi
 rclone copy \
     --include="${ORGID}/${SITE_NAME}/${DEVICE_ID}/logs/**" \
     --progress \
-    -c "$CONFIG" \
     /media/local_hdd "${DRIVE}"
 
 sleep 2h
