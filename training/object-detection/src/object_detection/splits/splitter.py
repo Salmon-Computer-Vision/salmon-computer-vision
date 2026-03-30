@@ -5,12 +5,12 @@ from typing import Dict, List, Tuple, Optional, Iterable, Any
 from collections import Counter
 
 from object_detection.splits.parsing import (
-        parse_video_stem,
         time_bucket,
         density_bin,
         parse_frame_idx,
         read_yolo_label,
 )
+from object_detection.utils.utils import parse_video_stem
 
 # -----------------------------
 # Data structures

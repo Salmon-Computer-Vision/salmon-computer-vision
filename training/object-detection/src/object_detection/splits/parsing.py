@@ -5,47 +5,6 @@ from collections import Counter
 
 from object_detection.utils.utils import safe_float
 
-_STEM_RE = re.compile(
-    r"""
-    ^
-    (?P<prefix>.+?)                 # ORG-site-device-id (up to first underscore)
-    _
-    (?P<date>\d{8})                 # YYYYMMDD
-    _
-    (?P<time>\d{6})                 # HHMMSS
-    _
-    (?P<suffix>.+)                  # M / etc
-    $
-    """,
-    re.VERBOSE,
-)
-
-def parse_video_stem(video_stem: str) -> Optional[Dict[str, str]]:
-    """
-    Parse:
-      HIRMD-tankeeah-jetson-0_20250714_012827_M
-    into:
-      org="HIRMD", site="tankeeah", device="jetson-0", date="20250714", time="012827"
-    """
-    m = _STEM_RE.match(video_stem)
-    if not m:
-        return None
-
-    prefix = m.group("prefix")
-    date = m.group("date")
-    time = m.group("time")
-
-    parts = prefix.split("-")
-    if len(parts) < 3:
-        return None
-
-    org = parts[0]
-    site = parts[1]
-    device = "-".join(parts[2:])  # includes jetson-0, jetsonorin-1, etc.
-
-    return {"org": org, "site": site, "device": device, "date": date, "time": time}
-
-
 def time_bucket(hhmmss: str) -> str:
     """Coarse time-of-day buckets based on HH."""
     try:
