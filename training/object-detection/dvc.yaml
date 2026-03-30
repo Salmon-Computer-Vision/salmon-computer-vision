@@ -80,3 +80,34 @@ stages:
       - data/01_raw/salmon_vid_counts_summary.csv
     outs:
       - data/03_processed/splits_baseline
+  build_video_metadata_index:
+    cmd: >-
+      scripts/build_video_metadata_index.py
+      --json-dir data/01_raw/labelstudio_annos
+      --out-csv data/02_interim/video_metadata_index.csv
+    deps:
+      - src/object_detection/metadata/index.py
+      - src/object_detection/metadata/cli.py
+      - data/01_raw/labelstudio_annos
+    outs:
+      - data/02_interim/video_metadata_index.csv
+  extract_split_images:
+    cmd: >-
+      scripts/extract_split_frames.py
+      --splits-dir data/03_processed/splits_baseline
+      --images-root /mnt/harukassd4tb/masamim/salmon_dataset/images
+      --temp-video-dir /mnt/harukassd4tb/masamim/salmon_dataset/tmp_videos
+      --bucket prod-salmonvision-edge-assets-labelstudio-source
+      --fps 10.0
+      --image-ext .jpg
+      --manifest-csv data/03_processed/frame_extraction_manifest.csv
+      --splits train val test
+    deps:
+      - scripts/extract_split_frames.py
+      - src/object_detection/frames/parsing.py
+      - src/object_detection/frames/extractor.py
+      - src/object_detection/frames/cli.py
+      - data/03_processed/splits_baseline
+    outs:
+      - /mnt/harukassd4tb/masamim/salmon_dataset/images
+      - data/03_processed/frame_extraction_manifest.csv
