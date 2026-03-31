@@ -21,6 +21,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--from-name", default=None)
     p.add_argument("--to-name", default=None)
     p.add_argument("--aws-profile", default=None)
+    p.add_argument("--cache-task-json-dir", default=None)
     return p
 
 
@@ -41,6 +42,7 @@ def main() -> None:
         from_name=args.from_name,
         to_name=args.to_name,
         aws_profile=args.aws_profile,
+        cache_task_json_dir=Path(args.cache_task_json_dir) if args.cache_task_json_dir else None,
     )
 
     print(

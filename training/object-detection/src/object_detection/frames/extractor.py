@@ -22,6 +22,13 @@ class ExtractionStats:
     frames_requested: int = 0
     frames_written: int = 0
 
+def load_video_metadata_index(path: Path) -> Dict[str, Dict[str, str]]:
+    import csv
+    out = {}
+    with path.open("r", newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            out[row["video_stem"]] = row
+    return out
 
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
@@ -135,7 +142,7 @@ def extract_split_dataset_images(
     images_root: Path,
     temp_video_dir: Path,
     bucket: str,
-    fps: float = 10.0,
+    metadata_csv: str,
     image_ext: str = ".jpg",
     overwrite: bool = False,
     cleanup_video: bool = True,
@@ -158,6 +165,8 @@ def extract_split_dataset_images(
 
     manifest_rows: List[Dict[str, str]] = []
 
+    metadata_index = load_video_metadata_index(metadata_csv)
+
     for split, by_video in split_requests.items():
         for video_stem, frame_indices in by_video.items():
             stats.videos_seen += 1
@@ -166,7 +175,15 @@ def extract_split_dataset_images(
             local_video = temp_video_dir / f"{video_stem}.mp4"
             s3_key = ""
             try:
-                s3_key = video_stem_to_s3_key(video_stem)
+                video_meta = metadata_index.get(video_stem)
+                if not video_meta:
+                    raise KeyError(f"Missing metadata for {video_stem}")
+
+                fps = float(video_meta["fps"])
+                if fps <= 0:
+                    raise ValueError(f"Invalid fps for {video_stem}: {video_meta['fps']}")
+
+                s3_key = video_meta["s3_key"] or video_stem_to_s3_key(video_stem)
                 output_dir = images_root / split / video_stem
 
                 download_s3_video(bucket=bucket, s3_key=s3_key, local_video_path=local_video)

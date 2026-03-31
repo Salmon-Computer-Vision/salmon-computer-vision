@@ -3,9 +3,8 @@ from __future__ import annotations
 import csv
 import json
 import random
-import re
-from collections import Counter, defaultdict
-from dataclasses import dataclass
+from collections import Counter
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
@@ -53,6 +52,21 @@ class VideoNegativeSample:
     positive_frames: int
     eligible_negative_frames: int
     conditions: Dict[str, str]
+    source_csv: str
+
+
+@dataclass
+class VideoMetadataRecord:
+    video_stem: str
+    s3_key: str
+    fps: float
+    nb_frames: int
+    duration: float
+    width: int
+    height: int
+    org: str
+    site: str
+    device: str
     source_csv: str
 
 
@@ -267,6 +281,58 @@ def parse_ffmpeg_rate(rate: Any) -> float:
         return 0.0
 
 
+def infer_fps(data: Dict[str, Any]) -> float:
+    fps = safe_float(data.get("frames_per_second"), 0.0)
+    if fps > 0:
+        return fps
+
+    fps = parse_ffmpeg_rate(data.get("metadata_video_r_frame_rate"))
+    if fps > 0:
+        return fps
+
+    fps = parse_ffmpeg_rate(data.get("metadata_video_avg_frame_rate"))
+    if fps > 0:
+        return fps
+
+    duration = safe_float(data.get("metadata_video_duration", data.get("duration", 0.0)), 0.0)
+    nb_frames = int(safe_float(data.get("metadata_video_nb_frames"), 0))
+    if duration > 0 and nb_frames > 0:
+        return nb_frames / duration
+
+    return 0.0
+
+
+def extract_video_metadata_record(
+    item: dict,
+    *,
+    video_stem: str,
+    s3_key: str,
+    source_csv: str,
+) -> VideoMetadataRecord:
+    data = item.get("data") or {}
+
+    return VideoMetadataRecord(
+        video_stem=video_stem,
+        s3_key=s3_key,
+        fps=infer_fps(data),
+        nb_frames=int(safe_float(data.get("metadata_video_nb_frames"), 0)),
+        duration=safe_float(data.get("metadata_video_duration", data.get("duration", 0.0)), 0.0),
+        width=int(safe_float(data.get("metadata_video_width"), 0)),
+        height=int(safe_float(data.get("metadata_video_height"), 0)),
+        org=str(data.get("metadata_file_organization_reference_string", "")),
+        site=str(data.get("metadata_file_site_reference_string", "")),
+        device=str(data.get("metadata_file_camera_reference_string", "")),
+        source_csv=source_csv,
+    )
+
+
+def cache_task_json(task_json: Any, cache_root: Path, s3_key: str) -> Path:
+    out_path = cache_root / s3_key
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(task_json, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return out_path
+
+
 def interpolate_sequence(seq: Iterable[dict]) -> Dict[int, List[Tuple[float, float, float, float]]]:
     kfs = sorted(seq, key=lambda k: int(safe_float(k.get("frame"), 0)))
     frames_boxes: Dict[int, List[Tuple[float, float, float, float]]] = {}
@@ -458,10 +524,14 @@ def create_condition_negative_shards(
     from_name: Optional[str] = None,
     to_name: Optional[str] = None,
     aws_profile: Optional[str] = None,
+    cache_task_json_dir: Optional[Path] = None,
 ) -> Dict[str, Any]:
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_csv = out_dir / "condition_negative_manifest.csv"
     summary_json = out_dir / "condition_negative_summary.json"
+    metadata_csv = out_dir / "condition_negative_video_metadata.csv"
+    if cache_task_json_dir is not None:
+        cache_task_json_dir.mkdir(parents=True, exist_ok=True)
 
     session = boto3.Session(profile_name=aws_profile) if aws_profile else boto3.Session()
     s3_client = session.client("s3")
@@ -475,11 +545,25 @@ def create_condition_negative_shards(
 
     samples: List[VideoNegativeSample] = []
     failures: List[Dict[str, str]] = []
+    metadata_records: List[VideoMetadataRecord] = []
 
     for row in selected_rows:
         try:
             task_json = fetch_task_json(s3_client, bucket, row.s3_key)
+
+            if cache_task_json_dir is not None:
+                cache_task_json(task_json, cache_task_json_dir, row.s3_key)
+
             item = extract_task_item(task_json, row.video_stem)
+
+            metadata_records.append(
+                extract_video_metadata_record(
+                    item,
+                    video_stem=row.video_stem,
+                    s3_key=row.s3_key,
+                    source_csv=row.source_csv,
+                )
+            )
 
             results = extract_latest_results(
                 item,
@@ -563,6 +647,25 @@ def create_condition_negative_shards(
                 row[col] = s.conditions.get(col, "")
             w.writerow(row)
 
+    with metadata_csv.open("w", newline="", encoding="utf-8") as f:
+        fieldnames = [
+            "video_stem",
+            "s3_key",
+            "fps",
+            "nb_frames",
+            "duration",
+            "width",
+            "height",
+            "org",
+            "site",
+            "device",
+            "source_csv",
+        ]
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        for rec in metadata_records:
+            w.writerow(asdict(rec))
+
     selected_condition_counts: Dict[str, Counter] = {}
     for col in condition_columns:
         c = Counter()
@@ -583,6 +686,9 @@ def create_condition_negative_shards(
         "frame_stride": frame_stride,
         "frame_offset_mode": frame_offset_mode,
         "frame_offset": frame_offset,
+        "metadata_csv": str(metadata_csv),
+        "cached_task_json_dir": str(cache_task_json_dir) if cache_task_json_dir is not None else "",
+        "metadata_records_written": len(metadata_records),
         "targets_by_condition": {
             col: {val: targets[(col, val)] for val in per_col_counts.get(col, {})}
             for col in condition_columns
