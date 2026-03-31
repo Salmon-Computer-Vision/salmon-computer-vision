@@ -98,7 +98,7 @@ stages:
       --images-root /mnt/harukassd4tb/masamim/salmon_dataset/images
       --temp-video-dir /mnt/harukassd4tb/masamim/salmon_dataset/tmp_videos
       --bucket prod-salmonvision-edge-assets-labelstudio-source
-      --fps 10.0
+      --metadata-csv data/02_interim/video_metadata_index.csv
       --image-ext .jpg
       --manifest-csv data/03_processed/frame_extraction_manifest.csv
       --splits train val test
@@ -108,6 +108,7 @@ stages:
       - src/object_detection/frames/extractor.py
       - src/object_detection/frames/cli.py
       - data/03_processed/splits_baseline
+      - data/02_interim/video_metadata_index.csv
     outs:
       - /mnt/harukassd4tb/masamim/salmon_dataset/images
       - data/03_processed/frame_extraction_manifest.csv

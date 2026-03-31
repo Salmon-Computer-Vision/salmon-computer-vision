@@ -11,8 +11,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--splits-dir", required=True, help="Directory containing train.txt / val.txt / test.txt")
     p.add_argument("--images-root", required=True, help="Output images root")
     p.add_argument("--temp-video-dir", required=True, help="Temporary directory for downloaded videos")
-    p.add_argument("--bucket", default="prod-salmonvision-edge-assets-labelstudio-source")
-    p.add_argument("--fps", type=float, default=10.0)
+    p.add_argument("--bucket", required=True, help="S3 bucket where videos are kept")
+    p.add_argument("--metadata-csv", required=True, help="Metadata CSV of videos especially FPS")
     p.add_argument("--image-ext", default=".jpg", choices=[".jpg", ".png"])
     p.add_argument("--overwrite", action="store_true")
     p.add_argument("--keep-videos", action="store_true")
@@ -29,7 +29,7 @@ def main() -> None:
         images_root=Path(args.images_root),
         temp_video_dir=Path(args.temp_video_dir),
         bucket=args.bucket,
-        fps=args.fps,
+        metadata_csv=args.metadata_csv,
         image_ext=args.image_ext,
         overwrite=args.overwrite,
         cleanup_video=not args.keep_videos,
