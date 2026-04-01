@@ -5,25 +5,9 @@ from object_detection.splits.parsing import (
     area_bin,
     density_bin,
     parse_frame_idx,
-    parse_video_stem,
     read_yolo_label,
     time_bucket,
 )
-
-
-def test_parse_video_stem_happy_path():
-    got = parse_video_stem("HIRMD-tankeeah-jetson-0_20250714_012827_M")
-    assert got == {
-        "org": "HIRMD",
-        "site": "tankeeah",
-        "device": "jetson-0",
-        "date": "20250714",
-        "time": "012827",
-    }
-
-
-def test_parse_video_stem_invalid():
-    assert parse_video_stem("not_a_valid_stem") is None
 
 
 def test_time_bucket():

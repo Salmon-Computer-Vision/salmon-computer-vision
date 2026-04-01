@@ -99,6 +99,7 @@ stages:
       --temp-video-dir /mnt/harukassd4tb/masamim/salmon_dataset/tmp_videos
       --bucket prod-salmonvision-edge-assets-labelstudio-source
       --metadata-csv data/02_interim/video_metadata_index.csv
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       --image-ext .jpg
       --manifest-csv data/03_processed/frame_extraction_manifest.csv
       --splits train val test
@@ -109,6 +110,7 @@ stages:
       - src/object_detection/frames/cli.py
       - data/03_processed/splits_baseline
       - data/02_interim/video_metadata_index.csv
+      - data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
     outs:
       - /mnt/harukassd4tb/masamim/salmon_dataset/images
       - data/03_processed/frame_extraction_manifest.csv
