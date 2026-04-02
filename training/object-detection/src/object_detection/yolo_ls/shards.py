@@ -25,15 +25,15 @@ class TarShardWriter:
         self._shard_idx += 1
 
     def write_text(self, rel_path: str, text: str):
-        # rotate shard if needed
+        self.write_bytes(rel_path, text.encode("utf-8"))
+
+    def write_bytes(self, rel_path: str, data: bytes):
         if self._n_in_shard >= self.shard_size:
             self._open_new()
 
-        data = text.encode("utf-8")
         ti = tarfile.TarInfo(name=rel_path)
         ti.size = len(data)
         self._tar.addfile(ti, io.BytesIO(data))
-
         self._n_in_shard += 1
 
     def close(self):
