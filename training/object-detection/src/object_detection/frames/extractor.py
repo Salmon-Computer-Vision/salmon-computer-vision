@@ -5,10 +5,13 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set
+import io
+import tarfile
 
+from object_detection.yolo_ls.shards import TarShardWriter
 from object_detection.frames.parsing import (
-    label_relpath_to_image_relpath,
     parse_manifest_relpath,
+    split_label_relpath_to_packed_paths,
     video_stem_to_s3_key,
 )
 
@@ -23,6 +26,7 @@ class ExtractionStats:
     videos_failed: int = 0
     frames_requested: int = 0
     frames_written: int = 0
+    labels_written: int = 0
 
 def load_video_metadata_index(path: Path) -> Dict[str, Dict[str, str]]:
     out: Dict[str, Dict[str, str]] = {}
@@ -68,6 +72,35 @@ def read_split_manifest(path: Path) -> List[str]:
     return lines
 
 
+def write_split_manifests(
+    manifests_root: Path,
+    split_to_image_relpaths: Dict[str, List[str]],
+) -> None:
+    ensure_dir(manifests_root)
+    for split, relpaths in split_to_image_relpaths.items():
+        out_path = manifests_root / f"{split}.txt"
+        relpaths = sorted(relpaths)
+        out_path.write_text("\n".join(relpaths) + ("\n" if relpaths else ""), encoding="utf-8")
+
+
+def write_data_yaml(
+    manifests_root: Path,
+    class_names: List[str],
+) -> None:
+    """
+    Writes a YOLO-style data.yaml that uses split manifest files.
+    """
+    lines = [
+        f"train: {str((manifests_root / 'train.txt').resolve())}",
+        f"val: {str((manifests_root / 'val.txt').resolve())}",
+        f"test: {str((manifests_root / 'test.txt').resolve())}",
+        "names:",
+    ]
+    for idx, name in enumerate(class_names):
+        lines.append(f"  {idx}: {name}")
+    (manifests_root / "data.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def load_split_requests(splits_dir: Path, split_names: Iterable[str]) -> Dict[str, Dict[str, List[int]]]:
     """
     Returns:
@@ -106,6 +139,42 @@ def download_s3_video(bucket: str, s3_key: str, local_video_path: Path) -> None:
     subprocess.run(cmd, check=True)
 
 
+def read_label_text(labels_root: Path, relpath: str) -> str:
+    path = labels_root / relpath
+    return path.read_text(encoding="utf-8")
+
+
+def extract_frame_bytes_ffmpeg(
+    video_path: Path,
+    frame_idx: int,
+    fps: float,
+    image_ext: str = ".jpg",
+) -> bytes:
+    """
+    Extract one frame and return the encoded image bytes.
+    """
+    timestamp = frame_idx / float(fps)
+
+    if image_ext == ".jpg":
+        codec_args = ["-f", "image2", "-vcodec", "mjpeg"]
+    elif image_ext == ".png":
+        codec_args = ["-f", "image2", "-vcodec", "png"]
+    else:
+        raise ValueError(f"Unsupported image_ext: {image_ext}")
+
+    cmd = [
+        "ffmpeg",
+        "-hide_banner",
+        "-loglevel", "error",
+        "-ss", f"{timestamp:.6f}",
+        "-i", str(video_path),
+        "-frames:v", "1",
+    ] + codec_args + ["pipe:1"]
+
+    result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE)
+    return result.stdout
+
+
 def extract_frame_ffmpeg(
     video_path: Path,
     frame_idx: int,
@@ -137,76 +206,63 @@ def extract_frame_ffmpeg(
     return True
 
 
-def extract_video_frames_for_split(
-    video_path: Path,
-    frame_indices: Iterable[int],
-    output_dir: Path,
-    fps: float,
-    image_ext: str = ".jpg",
-    overwrite: bool = False,
-) -> int:
-    written = 0
-    for frame_idx in sorted(set(frame_indices)):
-        out_path = output_dir / f"frame_{frame_idx:06d}"
-        out_path = out_path.with_suffix(image_ext)
-
-        did_write = extract_frame_ffmpeg(
-            video_path=video_path,
-            frame_idx=frame_idx,
-            fps=fps,
-            output_path=out_path,
-            overwrite=overwrite,
-        )
-        if did_write or out_path.exists():
-            written += 1
-    return written
-
-
-def extract_split_dataset_images(
+def pack_split_dataset_shards(
     splits_dir: Path,
-    images_root: Path,
+    labels_root: Path,
+    shards_root: Path,
+    manifests_root: Path,
     temp_video_dir: Path,
     metadata_csv_paths: Iterable[Path],
-    bucket: str = "",
+    class_names: List[str],
+    bucket: str,
     image_ext: str = ".jpg",
-    overwrite: bool = False,
     cleanup_video: bool = True,
     split_names: Iterable[str] = ("train", "val", "test"),
     manifest_csv: Optional[Path] = None,
+    shard_size: int = 100000,
 ) -> ExtractionStats:
     """
-    Reads split manifests:
-      splits_dir/train.txt
-      splits_dir/val.txt
-      splits_dir/test.txt
+    Reads split manifests containing label relpaths, e.g.
+      HIRMD-.../frame_000123.txt
 
-    Writes:
-      images_root/train/<video_stem>/frame_XXXXXX.jpg
-      images_root/val/<video_stem>/frame_XXXXXX.jpg
-      images_root/test/<video_stem>/frame_XXXXXX.jpg
+    Produces sharded paired dataset:
+      train/<video_stem>/frame_000123.jpg
+      train/<video_stem>/frame_000123.txt
+      ...
+
+    Also writes fresh split manifests that point to image relpaths inside the packed layout:
+      train/HIRMD-.../frame_000123.jpg
     """
     split_requests = load_split_requests(splits_dir, split_names)
     stats = ExtractionStats(splits_seen=len(split_requests))
     metadata_index = merge_video_metadata_csvs(metadata_csv_paths)
 
+    ensure_dir(shards_root)
+    ensure_dir(manifests_root)
+
+    shard_writers: Dict[str, TarShardWriter] = {}
+    for split in split_requests.keys():
+        shard_writers[split] = TarShardWriter(
+            shards_root,
+            shard_size=shard_size,
+            prefix=split,
+        )
+
+    split_to_image_relpaths: Dict[str, List[str]] = {split: [] for split in split_requests.keys()}
     manifest_rows: List[Dict[str, str]] = []
 
     for split, by_video in split_requests.items():
+        writer = shard_writers[split]
+
         for video_stem, frame_indices in by_video.items():
             stats.videos_seen += 1
             stats.frames_requested += len(frame_indices)
 
             local_video = temp_video_dir / f"{video_stem}.mp4"
             s3_key = ""
+            fps = 0.0
+
             try:
-                video_meta = metadata_index.get(video_stem)
-                if not video_meta:
-                    raise KeyError(f"Missing metadata for {video_stem}")
-
-                fps = float(video_meta["fps"])
-                if fps <= 0:
-                    raise ValueError(f"Invalid fps for {video_stem}: {video_meta['fps']}")
-
                 meta = metadata_index.get(video_stem)
                 if meta is None:
                     raise KeyError(f"Missing metadata for video_stem={video_stem}")
@@ -218,28 +274,36 @@ def extract_split_dataset_images(
                 s3_key = (meta.get("s3_key") or "").strip()
                 if not s3_key:
                     if not bucket:
-                        raise ValueError(f"Missing s3_key for video_stem={video_stem} and no bucket fallback available")
+                        raise ValueError(f"Missing s3_key for video_stem={video_stem}")
                     s3_key = video_stem_to_s3_key(video_stem)
 
-                # If s3_key already contains bucket-like prefix, keep bucket only for aws cli command construction.
-                output_dir = images_root / split / video_stem
+                download_s3_video(bucket=bucket, s3_key=s3_key, local_video_path=local_video)
 
-                # If caller did not pass bucket explicitly, infer it from known default in your project usage.
-                effective_bucket = bucket or "prod-salmonvision-edge-assets-labelstudio-source"
+                for frame_idx in frame_indices:
+                    label_relpath = f"{video_stem}/frame_{frame_idx:06d}.txt"
+                    image_relpath, packed_label_relpath = split_label_relpath_to_packed_paths(
+                        split=split,
+                        relpath=label_relpath,
+                        image_ext=image_ext,
+                    )
 
-                download_s3_video(bucket=effective_bucket, s3_key=s3_key, local_video_path=local_video)
+                    image_bytes = extract_frame_bytes_ffmpeg(
+                        video_path=local_video,
+                        frame_idx=frame_idx,
+                        fps=fps,
+                        image_ext=image_ext,
+                    )
+                    label_text = read_label_text(labels_root, label_relpath)
 
-                frames_written = extract_video_frames_for_split(
-                    video_path=local_video,
-                    frame_indices=frame_indices,
-                    output_dir=output_dir,
-                    fps=fps,
-                    image_ext=image_ext,
-                    overwrite=overwrite,
-                )
+                    writer.write_bytes(str(image_relpath), image_bytes)
+                    split_to_image_relpaths[split].append(str(image_relpath))
+
+                    stats.images_written += 1
+
+                    writer.write_text(str(packed_label_relpath), label_text)
+                    stats.labels_written += 1
 
                 stats.videos_processed += 1
-                stats.frames_written += frames_written
 
                 manifest_rows.append({
                     "split": split,
@@ -247,7 +311,8 @@ def extract_split_dataset_images(
                     "s3_key": s3_key,
                     "fps": str(fps),
                     "requested_frames": str(len(frame_indices)),
-                    "written_frames": str(frames_written),
+                    "images_written": str(len(frame_indices)),
+                    "labels_written": str(len(frame_indices)),
                     "status": "ok",
                     "error": "",
                 })
@@ -258,9 +323,10 @@ def extract_split_dataset_images(
                     "split": split,
                     "video_stem": video_stem,
                     "s3_key": s3_key,
-                    "fps": str(meta.get("fps", "")) if "meta" in locals() and meta is not None else "",
+                    "fps": str(fps) if fps > 0 else "",
                     "requested_frames": str(len(frame_indices)),
-                    "written_frames": "0",
+                    "images_written": "0",
+                    "labels_written": "0",
                     "status": "error",
                     "error": repr(e),
                 })
@@ -273,6 +339,12 @@ def extract_split_dataset_images(
                     except Exception:
                         pass
 
+    for writer in shard_writers.values():
+        writer.close()
+
+    write_split_manifests(manifests_root, split_to_image_relpaths)
+    write_data_yaml(manifests_root, class_names)
+
     if manifest_csv is not None:
         ensure_dir(manifest_csv.parent)
         with manifest_csv.open("w", newline="", encoding="utf-8") as f:
@@ -284,7 +356,8 @@ def extract_split_dataset_images(
                     "s3_key",
                     "fps",
                     "requested_frames",
-                    "written_frames",
+                    "images_written",
+                    "labels_written",
                     "status",
                     "error",
                 ],

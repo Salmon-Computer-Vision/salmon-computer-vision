@@ -7,6 +7,25 @@ from typing import Dict, Optional, Tuple
 from object_detection.utils.utils import parse_video_stem
 
 
+def split_label_relpath_to_packed_paths(
+    split: str,
+    relpath: str,
+    image_ext: str = ".jpg",
+) -> Tuple[Path, Path]:
+    """
+    Convert a split manifest label entry like:
+      HIRMD-tankeeah-jetson-0_20250714_012827_M/frame_000123.txt
+
+    into packed dataset paths:
+      train/HIRMD-tankeeah-jetson-0_20250714_012827_M/frame_000123.jpg
+      train/HIRMD-tankeeah-jetson-0_20250714_012827_M/frame_000123.txt
+    """
+    p = Path(relpath.strip())
+    label_rel = Path(split) / p
+    image_rel = label_rel.with_suffix(image_ext)
+    return image_rel, label_rel
+
+
 def parse_frame_idx(label_filename: str) -> Optional[int]:
     m = re.match(r"^frame_(\d+)\.txt$", label_filename)
     if not m:
