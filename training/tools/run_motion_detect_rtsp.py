@@ -9,12 +9,14 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import datetime
 from pathlib import Path
+import time
 
 # Set up logging
 log_format = '%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s'
 rootlogger = logging.getLogger()
 rootlogger.setLevel(logging.INFO)
 formatter = logging.Formatter(log_format)
+formatter.converter = time.gmtime
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setFormatter(formatter)
 rootlogger.addHandler(console_handler)
