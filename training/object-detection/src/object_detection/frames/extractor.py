@@ -25,7 +25,7 @@ class ExtractionStats:
     videos_processed: int = 0
     videos_failed: int = 0
     frames_requested: int = 0
-    frames_written: int = 0
+    images_written: int = 0
     labels_written: int = 0
 
 def load_video_metadata_index(path: Path) -> Dict[str, Dict[str, str]]:

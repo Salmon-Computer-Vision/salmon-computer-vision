@@ -1,2 +1,2 @@
 config:
-  drive: /mnt/harukassd4tb/masamim
+  dataset: data/04_dataset
