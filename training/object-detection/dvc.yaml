@@ -96,9 +96,9 @@ stages:
       scripts/pack_split_dataset.py
       --splits-dir data/03_processed/splits_baseline
       --labels-root data/02_interim/yolo_annos_unpacked
-      --shards-root ${config.drive}/salmon_dataset/dataset_sharded/shards
-      --manifests-root ${config.drive}/salmon_dataset/dataset_sharded/manifests
-      --temp-video-dir ${config.drive}/salmon_dataset/tmp_videos
+      --shards-root ${config.dataset}/salmon_dataset/dataset_sharded/shards
+      --manifests-root ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+      --temp-video-dir ${config.dataset}/salmon_dataset/tmp_videos
       --metadata-csv data/02_interim/video_metadata_index.csv
       data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       --data-yaml config/salmon_yolo.yaml
@@ -113,30 +113,30 @@ stages:
       - src/object_detection/frames/cli.py
       - src/object_detection/yolo_ls/shards.py
       - data/03_processed/splits_baseline
-      - data/02_interim/yolo_annos_unpacked
       - data/02_interim/video_metadata_index.csv
       - data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       - config/salmon_yolo.yaml
     params:
-      - config.drive
+      - config.dataset
     outs:
-      - ${config.drive}/salmon_dataset/dataset_sharded/shards
-      - ${config.drive}/salmon_dataset/dataset_sharded/manifests
-      - data/03_processed/packed_dataset_manifest.csv
+      - ${config.dataset}/salmon_dataset/dataset_sharded/shards
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+      - ${config.dataset}/packed_dataset_manifest.csv
+    frozen: true
   unpack_split_dataset:
     cmd: >-
-      rm -rf ${config.drive}/salmon_dataset/yolo_workdir &&
-      mkdir -p ${config.drive}/salmon_dataset/yolo_workdir &&
+      rm -rf ${config.dataset}/salmon_dataset/yolo_workdir &&
+      mkdir -p ${config.dataset}/salmon_dataset/yolo_workdir &&
       scripts/unpack_annos.sh
-      ${config.drive}/salmon_dataset/dataset_sharded/shards
-      ${config.drive}/salmon_dataset/yolo_workdir &&
-      cp ${config.drive}/salmon_dataset/dataset_sharded/manifests/train.txt ${config.drive}/salmon_dataset/yolo_workdir/train.txt &&
-      cp ${config.drive}/salmon_dataset/dataset_sharded/manifests/val.txt ${config.drive}/salmon_dataset/yolo_workdir/val.txt &&
-      cp ${config.drive}/salmon_dataset/dataset_sharded/manifests/test.txt ${config.drive}/salmon_dataset/yolo_workdir/test.txt &&
-      cp ${config.drive}/salmon_dataset/dataset_sharded/manifests/data.yaml ${config.drive}/salmon_dataset/yolo_workdir/data.yaml
+      ${config.dataset}/salmon_dataset/dataset_sharded/shards
+      ${config.dataset}/salmon_dataset/yolo_workdir &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt ${config.dataset}/salmon_dataset/yolo_workdir/train.txt &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt ${config.dataset}/salmon_dataset/yolo_workdir/val.txt &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt ${config.dataset}/salmon_dataset/yolo_workdir/test.txt &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml ${config.dataset}/salmon_dataset/yolo_workdir/data.yaml
     deps:
-      - ${config.drive}/salmon_dataset/dataset_sharded/shards
-      - ${config.drive}/salmon_dataset/dataset_sharded/manifests
+      - ${config.dataset}/salmon_dataset/dataset_sharded/shards
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests
     params:
-      - config.drive
+      - config.dataset
     frozen: true

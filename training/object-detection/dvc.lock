@@ -40,22 +40,22 @@ stages:
       nfiles: 5
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
-      md5: c3505d079516f38874bdb42d2182cb46.dir
-      size: 338928
-      nfiles: 3
+      md5: c645448c45a84798e3feb20541d50c4e.dir
+      size: 346680
+      nfiles: 4
     - path: scripts/make_splits.py
       hash: md5
       md5: 3921729fec8a5aa6c1eb25c54196a658
       size: 650
     - path: src/object_detection/splits
       hash: md5
-      md5: 8ca8d1d4f2962a0e27f6fd50da90a8d2.dir
-      size: 35847
+      md5: 24a7148c9dc0162aede26acde35a410b.dir
+      size: 34036
       nfiles: 6
     - path: src/object_detection/utils
       hash: md5
-      md5: 5828afbf8a25f11a0f8e5bbc6c0065bf.dir
-      size: 762
+      md5: d50720f522cae919bb4a1f1ee90ccc72.dir
+      size: 2602
       nfiles: 4
     outs:
     - path: data/03_processed/splits_baseline
@@ -87,13 +87,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 5828afbf8a25f11a0f8e5bbc6c0065bf.dir
-      size: 762
+      md5: d50720f522cae919bb4a1f1ee90ccc72.dir
+      size: 2602
       nfiles: 4
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 80ca7160d1912861bbc2a013a45ac5d5.dir
-      size: 52757
+      md5: 6aec0f8edb9ce493ca42e4aa3e43f1e8.dir
+      size: 52971
       nfiles: 10
     outs:
     - path: data/02_interim/yolo_annos
@@ -125,19 +125,108 @@ stages:
       nfiles: 10
     - path: src/object_detection/negatives/cli.py
       hash: md5
-      md5: d04fcc8b316529ebefeec2830b288197
-      size: 2142
+      md5: ea7aad2a520f539f403dd6b3f5cf5b8c
+      size: 2298
     - path: src/object_detection/negatives/conditions.py
       hash: md5
-      md5: f037be2028fead4a5a9e88f95799254a
-      size: 18950
+      md5: be73dfa610c969c07fe19e5b5faf9b02
+      size: 22301
     - path: src/object_detection/yolo_ls/shards.py
       hash: md5
-      md5: 9a1e97420b95c978e10ec236c2645337
-      size: 1266
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
     outs:
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
-      md5: c3505d079516f38874bdb42d2182cb46.dir
-      size: 338928
-      nfiles: 3
+      md5: c645448c45a84798e3feb20541d50c4e.dir
+      size: 346680
+      nfiles: 4
+  build_video_metadata_index:
+    cmd: scripts/build_video_metadata_index.py --json-dir 
+      data/01_raw/labelstudio_annos --out-csv 
+      data/02_interim/video_metadata_index.csv
+    deps:
+    - path: data/01_raw/labelstudio_annos
+      hash: md5
+      md5: 188b71c31be326fe36d209cc52c23337.dir
+      size: 379352848
+      nfiles: 50
+    - path: src/object_detection/metadata/cli.py
+      hash: md5
+      md5: 43b9e9a0588e937ad2ef4851d3ba4949
+      size: 612
+    - path: src/object_detection/metadata/index.py
+      hash: md5
+      md5: 47e821131bd966ebc04b0a94048095a6
+      size: 3924
+    outs:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 17536b2a86eca36c0062e2fb6f6b80ae
+      size: 11008216
+  pack_split_dataset:
+    cmd: scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/splits_baseline --labels-root 
+      data/02_interim/yolo_annos_unpacked --shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/shards --manifests-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos --metadata-csv 
+      data/02_interim/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv data/03_processed/packed_dataset_manifest.csv --splits 
+      train val test --shard-size 100000
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 17536b2a86eca36c0062e2fb6f6b80ae
+      size: 11008216
+    - path: 
+        data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      hash: md5
+      md5: 88c6e2e9a8fb468da9a4656d0ab0e5fa
+      size: 7588
+    - path: data/03_processed/splits_baseline
+      hash: md5
+      md5: e821f72b0bf42a09afafb688ce927ac4.dir
+      size: 16966114
+      nfiles: 5
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: 6531c3606960b45ead7af3d32e3531fb
+      size: 3092
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: a61a24576df11ea39dabae79422bd6b9
+      size: 11694
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+    outs:
+    - path: data/04_dataset/packed_dataset_manifest.csv
+      hash: md5
+      md5: 768a36ce14bbe79f9e299be1de5287e3
+      size: 2533816
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests
+      hash: md5
+      md5: c1569d0c481a4d36b9b573c982892f2b.dir
+      size: 18418221
+      nfiles: 4
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/shards
+      hash: md5
+      md5: 0aff019b23a49d888cba75454590ba5d.dir
+      size: 13255915520
+      nfiles: 8
