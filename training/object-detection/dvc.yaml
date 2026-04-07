@@ -104,7 +104,7 @@ stages:
       --data-yaml config/salmon_yolo.yaml
       --bucket prod-salmonvision-edge-assets-labelstudio-source
       --image-ext .jpg
-      --manifest-csv data/03_processed/packed_dataset_manifest.csv
+      --manifest-csv ${config.dataset}/packed_dataset_manifest.csv
       --splits train val test
       --shard-size 100000
     deps:
@@ -120,9 +120,26 @@ stages:
       - config.dataset
     outs:
       - ${config.dataset}/salmon_dataset/dataset_sharded/shards
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
       - ${config.dataset}/packed_dataset_manifest.csv
     frozen: true
+  make_train_small:
+    cmd: >-
+      scripts/make_train_small.py
+      --train-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+      --out-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
+      --seed 42
+      --fraction 0.30
+    deps:
+      - src/object_detection/sampling/subset.py
+      - src/object_detection/sampling/cli.py
+      - scripts/make_train_small.py
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+    outs:
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
   unpack_split_dataset:
     cmd: >-
       rm -rf ${config.dataset}/salmon_dataset/yolo_workdir &&
@@ -131,12 +148,16 @@ stages:
       ${config.dataset}/salmon_dataset/dataset_sharded/shards
       ${config.dataset}/salmon_dataset/yolo_workdir &&
       cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt ${config.dataset}/salmon_dataset/yolo_workdir/train.txt &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt ${config.dataset}/salmon_dataset/yolo_workdir/train_small.txt &&
       cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt ${config.dataset}/salmon_dataset/yolo_workdir/val.txt &&
       cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt ${config.dataset}/salmon_dataset/yolo_workdir/test.txt &&
       cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml ${config.dataset}/salmon_dataset/yolo_workdir/data.yaml
     deps:
       - ${config.dataset}/salmon_dataset/dataset_sharded/shards
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
     params:
       - config.dataset
-    frozen: true
