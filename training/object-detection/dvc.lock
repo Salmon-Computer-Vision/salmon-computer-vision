@@ -175,8 +175,8 @@ stages:
       data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       --data-yaml config/salmon_yolo.yaml --bucket 
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
-      --manifest-csv data/03_processed/packed_dataset_manifest.csv --splits 
-      train val test --shard-size 100000
+      --manifest-csv data/04_dataset/packed_dataset_manifest.csv --splits train 
+      val test --shard-size 100000
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -220,6 +220,41 @@ stages:
       hash: md5
       md5: 768a36ce14bbe79f9e299be1de5287e3
       size: 2533816
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml
+      hash: md5
+      md5: 4bb7b52ba0f8fed4ed27dbb3c5843f70
+      size: 513
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt
+      hash: md5
+      md5: 4899875c26aa1bba464dc46233d84c02
+      size: 6740379
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt
+      hash: md5
+      md5: 80ef1da7d81c2025a3ccbe17a690b3bb
+      size: 8520617
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt
+      hash: md5
+      md5: dcab03f1f1b4393f41da077879a1a431
+      size: 3156712
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/shards
+      hash: md5
+      md5: 0aff019b23a49d888cba75454590ba5d.dir
+      size: 13255915520
+      nfiles: 8
+  unpack_split_dataset:
+    cmd: rm -rf data/04_dataset/salmon_dataset/yolo_workdir && mkdir -p 
+      data/04_dataset/salmon_dataset/yolo_workdir && scripts/unpack_annos.sh 
+      data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      data/04_dataset/salmon_dataset/yolo_workdir && cp 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt 
+      data/04_dataset/salmon_dataset/yolo_workdir/train.txt && cp 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt 
+      data/04_dataset/salmon_dataset/yolo_workdir/val.txt && cp 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt 
+      data/04_dataset/salmon_dataset/yolo_workdir/test.txt && cp 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml 
+      data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
+    deps:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests
       hash: md5
       md5: c1569d0c481a4d36b9b573c982892f2b.dir
@@ -230,3 +265,6 @@ stages:
       md5: 0aff019b23a49d888cba75454590ba5d.dir
       size: 13255915520
       nfiles: 8
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
