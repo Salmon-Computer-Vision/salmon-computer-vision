@@ -246,18 +246,27 @@ stages:
       data/04_dataset/salmon_dataset/yolo_workdir && scripts/unpack_annos.sh 
       data/04_dataset/salmon_dataset/dataset_sharded/shards 
       data/04_dataset/salmon_dataset/yolo_workdir && cp 
-      data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt 
-      data/04_dataset/salmon_dataset/yolo_workdir/train.txt && cp 
-      data/04_dataset/salmon_dataset/dataset_sharded/manifests/train_small.txt 
-      data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt && cp 
-      data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt 
-      data/04_dataset/salmon_dataset/yolo_workdir/val.txt && cp 
-      data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt 
-      data/04_dataset/salmon_dataset/yolo_workdir/test.txt && cp 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data.yaml && cp 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests/data_small.yaml 
-      data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml
+      data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml && 
+      scripts/rewrite_manifest_absolute.py --input-manifest 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt 
+      --output-manifest data/04_dataset/salmon_dataset/yolo_workdir/train.txt 
+      --dataset-root data/04_dataset/salmon_dataset/yolo_workdir && 
+      scripts/rewrite_manifest_absolute.py --input-manifest 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/train_small.txt 
+      --output-manifest 
+      data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt --dataset-root
+      data/04_dataset/salmon_dataset/yolo_workdir && 
+      scripts/rewrite_manifest_absolute.py --input-manifest 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt 
+      --output-manifest data/04_dataset/salmon_dataset/yolo_workdir/val.txt 
+      --dataset-root data/04_dataset/salmon_dataset/yolo_workdir && 
+      scripts/rewrite_manifest_absolute.py --input-manifest 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt 
+      --output-manifest data/04_dataset/salmon_dataset/yolo_workdir/test.txt 
+      --dataset-root data/04_dataset/salmon_dataset/yolo_workdir
     deps:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml
       hash: md5
@@ -290,6 +299,18 @@ stages:
       md5: 0aff019b23a49d888cba75454590ba5d.dir
       size: 13255915520
       nfiles: 8
+    - path: scripts/rewrite_manifest_absolute.py
+      hash: md5
+      md5: a7063d582e65e8e5284f98a1881eee86
+      size: 659
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/training/manifests.py
+      hash: md5
+      md5: 50768fb31dd55ba1f08f3dbcf199366e
+      size: 970
     params:
       params.yaml:
         config.dataset: data/04_dataset
@@ -305,20 +326,20 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
       hash: md5
-      md5: 4899875c26aa1bba464dc46233d84c02
-      size: 6740379
+      md5: be8e12d13b2c312503aff05a3207ce04
+      size: 19413760
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
       hash: md5
-      md5: 80ef1da7d81c2025a3ccbe17a690b3bb
-      size: 8520617
+      md5: dc8083da34d91cc5689fc7a979d9b603
+      size: 24249799
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
       hash: md5
-      md5: d17059c547e2b01e60ce59aea1651721
-      size: 2556161
+      md5: 175e65bf0e6b43cae5849a728ee93e2b
+      size: 7274868
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: dcab03f1f1b4393f41da077879a1a431
-      size: 3156712
+      md5: 00e14ed69e4fde704a58725e5d359a77
+      size: 9196795
   make_train_small:
     cmd: scripts/make_train_small.py --train-manifest 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt 
@@ -366,8 +387,8 @@ stages:
     deps:
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml
       hash: md5
-      md5: b14ce6ee0f7dae87cdbdf4359618a6bb
-      size: 318
+      md5: de18ed26c23c2d6dd2ae17890d550db2
+      size: 443
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
       hash: md5
       md5: d17059c547e2b01e60ce59aea1651721
@@ -399,6 +420,6 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small
       hash: md5
-      md5: 3576398dd5e1516efbcff9da83ad54cf.dir
-      size: 1052344397
-      nfiles: 285
+      md5: 3b22b41b38b2e06b6f6f831319d86be8.dir
+      size: 210865261
+      nfiles: 101
