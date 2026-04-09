@@ -35,6 +35,8 @@ You can manually perform tar extract or run the unpack step:
 dvc repro --single-item --force unpack_split_dataset
 ```
 
+This will unpack the tar files and put them in `data/04_dataset/salmon_dataset/yolo_workdir/`
+
 ### Pipeline
 
 Check dvc.yaml for the full pipeline.
