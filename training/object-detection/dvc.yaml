@@ -174,3 +174,30 @@ stages:
     params:
       - config.dataset
       - config.yolo_workdir
+  tune_yolo:
+    cmd: >-
+      scripts/tune_yolo.py
+      --data-yaml ${config.yolo_workdir}/data_small.yaml
+      --model yolov8n.pt
+      --out-dir ${config.dataset}/salmon_dataset/tuning/yolov8n_small
+      --epochs 30
+      --imgsz 640
+      --batch 32
+      --device 0
+      --workers 16
+      --patience 10
+      --iterations 40
+      --use-ray
+    deps:
+      - scripts/tune_yolo.py
+      - src/object_detection/tuning/search_space.py
+      - src/object_detection/tuning/tune.py
+      - src/object_detection/tuning/cli.py
+      - ${config.yolo_workdir}/data_small.yaml
+      - ${config.yolo_workdir}/train_small.txt
+      - ${config.yolo_workdir}/val.txt
+    params:
+      - config.dataset
+      - config.yolo_workdir
+    outs:
+      - ${config.dataset}/salmon_dataset/tuning/yolov8n_small
