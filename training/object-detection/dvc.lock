@@ -382,8 +382,8 @@ stages:
       size: 116
     - path: src/object_detection/tuning/cli.py
       hash: md5
-      md5: 5da3f44fce3603cb7d6e8ca3ee510e29
-      size: 3032
+      md5: 48811fc200c92684adf9e728c3f1f008
+      size: 3178
     - path: src/object_detection/tuning/search_space.py
       hash: md5
       md5: 930d50e19d4c1eff4cba9d24cbdb6db5
@@ -399,6 +399,6 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small
       hash: md5
-      md5: c2a320027844ee4502d24d1d618e0295.dir
-      size: 11426
-      nfiles: 1
+      md5: 3576398dd5e1516efbcff9da83ad54cf.dir
+      size: 1052344397
+      nfiles: 285
