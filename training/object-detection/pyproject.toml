@@ -7,6 +7,8 @@ requires-python = ">=3.8"
 dependencies = [
     "boto3>=1.37.38",
     "pyyaml>=6.0.3",
+    "ray[tune]>=2.36.1",
+    "ultralytics>=8.4.36",
 ]
 
 [dependency-groups]
