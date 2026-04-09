@@ -357,3 +357,48 @@ stages:
       hash: md5
       md5: d17059c547e2b01e60ce59aea1651721
       size: 2556161
+  tune_yolo:
+    cmd: scripts/tune_yolo.py --data-yaml 
+      data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml --model 
+      yolov8n.pt --out-dir data/04_dataset/salmon_dataset/tuning/yolov8n_small 
+      --epochs 30 --imgsz 640 --batch 32 --device 0 --workers 16 --patience 10 
+      --iterations 40 --use-ray
+    deps:
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml
+      hash: md5
+      md5: b14ce6ee0f7dae87cdbdf4359618a6bb
+      size: 318
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
+      hash: md5
+      md5: d17059c547e2b01e60ce59aea1651721
+      size: 2556161
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
+      hash: md5
+      md5: dcab03f1f1b4393f41da077879a1a431
+      size: 3156712
+    - path: scripts/tune_yolo.py
+      hash: md5
+      md5: 4cb4c4dc2cfdcc082d7f56b347a04c5f
+      size: 116
+    - path: src/object_detection/tuning/cli.py
+      hash: md5
+      md5: 5da3f44fce3603cb7d6e8ca3ee510e29
+      size: 3032
+    - path: src/object_detection/tuning/search_space.py
+      hash: md5
+      md5: 930d50e19d4c1eff4cba9d24cbdb6db5
+      size: 2409
+    - path: src/object_detection/tuning/tune.py
+      hash: md5
+      md5: 1947d8c60865d5ecd3a23cb42c6ef39c
+      size: 3732
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        config.yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
+    outs:
+    - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small
+      hash: md5
+      md5: c2a320027844ee4502d24d1d618e0295.dir
+      size: 11426
+      nfiles: 1

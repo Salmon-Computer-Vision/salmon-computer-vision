@@ -3,11 +3,14 @@ name = "object-detection"
 version = "0.1.0"
 description = "SalmonVision object detector training"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 dependencies = [
     "boto3>=1.37.38",
     "pyyaml>=6.0.3",
     "ray[tune]>=2.36.1",
+    "torch==2.6.0",
+    "torchaudio==2.6.0",
+    "torchvision==0.21.0",
     "ultralytics>=8.4.36",
 ]
 
@@ -22,6 +25,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[[tool.uv.index]]
+url = "https://download.pytorch.org/whl/cu124"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
