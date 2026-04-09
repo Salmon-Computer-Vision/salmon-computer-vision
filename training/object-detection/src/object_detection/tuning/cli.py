@@ -28,6 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--best-hyp-json", default=None,
                    help="Optional JSON of best hyperparameters for stage 2")
     p.add_argument("--use-ray", action="store_true")
+    p.add_argument("--ray-tmp-dir", default=None)
     p.add_argument("--close-mosaic", type=int, default=10)
     p.add_argument("--dropout", type=float, default=0.0)
     return p
@@ -43,6 +44,25 @@ def main() -> None:
         "close_mosaic": args.close_mosaic,
         "dropout": args.dropout,
     }
+
+    if args.use_ray:
+        import json
+        import ray
+
+        ray_tmp_dir = Path(args.ray_tmp_dir).resolve() if args.ray_tmp_dir else None
+        if ray_tmp_dir is not None:
+            ray_tmp_dir.mkdir(parents=True, exist_ok=True)
+            spill_dir = ray_tmp_dir / "spill"
+            spill_dir.mkdir(parents=True, exist_ok=True)
+
+            ray.init(
+                _temp_dir=str(ray_tmp_dir),
+                object_spilling_config=json.dumps({
+                    "type": "filesystem",
+                    "params": {"directory_path": str(spill_dir)}
+                }),
+                ignore_reinit_error=True,
+            )
 
     if args.stage1_iterations is not None:
         run_two_stage_tune(
