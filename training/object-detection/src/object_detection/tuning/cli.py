@@ -35,7 +35,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
-    out_dir = Path(args.out_dir)
+    out_dir = Path(args.out_dir).resolve()
+    data_yaml = str(Path(args.data_yaml).resolve())
+    model_path = str(Path(args.model).resolve()) if Path(args.model).exists() else args.model
 
     train_args = {
         "close_mosaic": args.close_mosaic,
@@ -44,8 +46,8 @@ def main() -> None:
 
     if args.stage1_iterations is not None:
         run_two_stage_tune(
-            model_path=args.model,
-            data_yaml=args.data_yaml,
+            model_path=model_path,
+            data_yaml=data_yaml,
             output_dir=out_dir,
             epochs=args.epochs,
             imgsz=args.imgsz,
@@ -63,8 +65,8 @@ def main() -> None:
     else:
         iterations = args.iterations if args.iterations is not None else 25
         run_ultralytics_tune(
-            model_path=args.model,
-            data_yaml=args.data_yaml,
+            model_path=model_path,
+            data_yaml=data_yaml,
             output_dir=out_dir,
             epochs=args.epochs,
             imgsz=args.imgsz,
