@@ -1,2 +1,3 @@
 config:
   dataset: data/04_dataset
+  yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir

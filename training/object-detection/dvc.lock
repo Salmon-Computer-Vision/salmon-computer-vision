@@ -202,8 +202,8 @@ stages:
       size: 3092
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: a61a24576df11ea39dabae79422bd6b9
-      size: 11694
+      md5: 5d08bde6990c1de6c6413fa31d80e9c1
+      size: 11577
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -222,8 +222,8 @@ stages:
       size: 2533816
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml
       hash: md5
-      md5: 4bb7b52ba0f8fed4ed27dbb3c5843f70
-      size: 513
+      md5: e6e439914481fba14b685095cbff4279
+      size: 312
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt
       hash: md5
       md5: 4899875c26aa1bba464dc46233d84c02
@@ -248,18 +248,43 @@ stages:
       data/04_dataset/salmon_dataset/yolo_workdir && cp 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt 
       data/04_dataset/salmon_dataset/yolo_workdir/train.txt && cp 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/train_small.txt 
+      data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt && cp 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt 
       data/04_dataset/salmon_dataset/yolo_workdir/val.txt && cp 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt 
       data/04_dataset/salmon_dataset/yolo_workdir/test.txt && cp 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml 
-      data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
+      data/04_dataset/salmon_dataset/yolo_workdir/data.yaml && cp 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/data_small.yaml 
+      data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml
     deps:
-    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml
       hash: md5
-      md5: c1569d0c481a4d36b9b573c982892f2b.dir
-      size: 18418221
-      nfiles: 4
+      md5: e6e439914481fba14b685095cbff4279
+      size: 312
+    - path: 
+        data/04_dataset/salmon_dataset/dataset_sharded/manifests/data_small.yaml
+      hash: md5
+      md5: b14ce6ee0f7dae87cdbdf4359618a6bb
+      size: 318
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt
+      hash: md5
+      md5: 4899875c26aa1bba464dc46233d84c02
+      size: 6740379
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt
+      hash: md5
+      md5: 80ef1da7d81c2025a3ccbe17a690b3bb
+      size: 8520617
+    - path: 
+        data/04_dataset/salmon_dataset/dataset_sharded/manifests/train_small.txt
+      hash: md5
+      md5: d17059c547e2b01e60ce59aea1651721
+      size: 2556161
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt
+      hash: md5
+      md5: dcab03f1f1b4393f41da077879a1a431
+      size: 3156712
     - path: data/04_dataset/salmon_dataset/dataset_sharded/shards
       hash: md5
       md5: 0aff019b23a49d888cba75454590ba5d.dir
@@ -268,3 +293,67 @@ stages:
     params:
       params.yaml:
         config.dataset: data/04_dataset
+        config.yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
+    outs:
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
+      hash: md5
+      md5: e6e439914481fba14b685095cbff4279
+      size: 312
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml
+      hash: md5
+      md5: b14ce6ee0f7dae87cdbdf4359618a6bb
+      size: 318
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
+      hash: md5
+      md5: 4899875c26aa1bba464dc46233d84c02
+      size: 6740379
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
+      hash: md5
+      md5: 80ef1da7d81c2025a3ccbe17a690b3bb
+      size: 8520617
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
+      hash: md5
+      md5: d17059c547e2b01e60ce59aea1651721
+      size: 2556161
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
+      hash: md5
+      md5: dcab03f1f1b4393f41da077879a1a431
+      size: 3156712
+  make_train_small:
+    cmd: scripts/make_train_small.py --train-manifest 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt 
+      --out-manifest 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/train_small.txt 
+      --base-data-yaml 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml 
+      --out-data-yaml 
+      data/04_dataset/salmon_dataset/dataset_sharded/manifests/data_small.yaml 
+      --seed 42 --fraction 0.30
+    deps:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt
+      hash: md5
+      md5: 80ef1da7d81c2025a3ccbe17a690b3bb
+      size: 8520617
+    - path: scripts/make_train_small.py
+      hash: md5
+      md5: b387575a44366a3a0a29b2c88ebd2f95
+      size: 118
+    - path: src/object_detection/sampling/cli.py
+      hash: md5
+      md5: 3895caa9b9f9b2be456cbd0e789e33c2
+      size: 2137
+    - path: src/object_detection/sampling/subset.py
+      hash: md5
+      md5: 7579a1919fbcaa2323219825e193ca98
+      size: 4590
+    outs:
+    - path: 
+        data/04_dataset/salmon_dataset/dataset_sharded/manifests/data_small.yaml
+      hash: md5
+      md5: b14ce6ee0f7dae87cdbdf4359618a6bb
+      size: 318
+    - path: 
+        data/04_dataset/salmon_dataset/dataset_sharded/manifests/train_small.txt
+      hash: md5
+      md5: d17059c547e2b01e60ce59aea1651721
+      size: 2556161

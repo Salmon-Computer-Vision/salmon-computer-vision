@@ -91,9 +91,9 @@ def write_data_yaml(
     Writes a YOLO-style data.yaml that uses split manifest files.
     """
     lines = [
-        f"train: {str((manifests_root / 'train.txt').resolve())}",
-        f"val: {str((manifests_root / 'val.txt').resolve())}",
-        f"test: {str((manifests_root / 'test.txt').resolve())}",
+        "train: train.txt",
+        "val: val.txt",
+        "test: test.txt",
         "names:",
     ]
     for idx, name in enumerate(class_names):
