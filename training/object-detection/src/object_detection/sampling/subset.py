@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import math
+import yaml
 import random
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from object_detection.utils.utils import parse_video_stem
 
@@ -22,6 +23,21 @@ def write_manifest(path: Path, relpaths: Sequence[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     relpaths = sorted(relpaths)
     path.write_text("\n".join(relpaths) + ("\n" if relpaths else ""), encoding="utf-8")
+
+
+def write_small_data_yaml(
+    base_data_yaml: Path,
+    out_data_yaml: Path,
+) -> None:
+    data: Dict[str, Any] = yaml.safe_load(base_data_yaml.read_text(encoding="utf-8"))
+
+    data["train"] = "train_small.txt"
+
+    out_data_yaml.parent.mkdir(parents=True, exist_ok=True)
+    out_data_yaml.write_text(
+        yaml.safe_dump(data, sort_keys=False),
+        encoding="utf-8",
+    )
 
 
 def extract_video_stem_from_image_relpath(relpath: str) -> str:

@@ -3,7 +3,12 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from object_detection.sampling.subset import read_manifest, sample_train_subset, write_manifest
+from object_detection.sampling.subset import (
+    read_manifest, 
+    sample_train_subset, 
+    write_manifest,
+    write_small_data_yaml,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -13,6 +18,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--fraction", type=float, default=None, help="Fraction of train set to keep, e.g. 0.1")
     p.add_argument("--num-samples", type=int, default=None, help="Exact number of samples to keep")
+    p.add_argument("--base-data-yaml", default=None, help="Existing data.yaml to copy and modify")
+    p.add_argument("--out-data-yaml", default=None, help="Output data_small.yaml")
     p.add_argument(
         "--no-preserve-site-proportions",
         action="store_true",
@@ -36,6 +43,14 @@ def main() -> None:
         preserve_site_proportions=not args.no_preserve_site_proportions,
     )
     write_manifest(out_manifest, sampled)
+
+    if args.base_data_yaml or args.out_data_yaml:
+        if not args.base_data_yaml or not args.out_data_yaml:
+            raise ValueError("Both --base-data-yaml and --out-data-yaml must be provided together")
+        write_small_data_yaml(
+            base_data_yaml=Path(args.base_data_yaml),
+            out_data_yaml=Path(args.out_data_yaml),
+        )
 
     print(
         f"Done. input={len(relpaths)} "

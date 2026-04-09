@@ -131,6 +131,8 @@ stages:
       scripts/make_train_small.py
       --train-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
       --out-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
+      --base-data-yaml ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
+      --out-data-yaml ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml
       --seed 42
       --fraction 0.30
     deps:
@@ -140,6 +142,7 @@ stages:
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
     outs:
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml
   unpack_split_dataset:
     cmd: >-
       rm -rf ${config.dataset}/salmon_dataset/yolo_workdir &&
@@ -147,17 +150,27 @@ stages:
       scripts/unpack_annos.sh
       ${config.dataset}/salmon_dataset/dataset_sharded/shards
       ${config.dataset}/salmon_dataset/yolo_workdir &&
-      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt ${config.dataset}/salmon_dataset/yolo_workdir/train.txt &&
-      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt ${config.dataset}/salmon_dataset/yolo_workdir/train_small.txt &&
-      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt ${config.dataset}/salmon_dataset/yolo_workdir/val.txt &&
-      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt ${config.dataset}/salmon_dataset/yolo_workdir/test.txt &&
-      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml ${config.dataset}/salmon_dataset/yolo_workdir/data.yaml
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt ${config.yolo_workdir}/train.txt &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt ${config.yolo_workdir}/train_small.txt &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt ${config.yolo_workdir}/val.txt &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt ${config.yolo_workdir}/test.txt &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml ${config.yolo_workdir}/data.yaml &&
+      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml ${config.yolo_workdir}/data_small.yaml
     deps:
       - ${config.dataset}/salmon_dataset/dataset_sharded/shards
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
+    outs:
+      - ${config.yolo_workdir}/data.yaml
+      - ${config.yolo_workdir}/data_small.yaml
+      - ${config.yolo_workdir}/test.txt
+      - ${config.yolo_workdir}/train.txt
+      - ${config.yolo_workdir}/train_small.txt
+      - ${config.yolo_workdir}/val.txt
     params:
       - config.dataset
+      - config.yolo_workdir
