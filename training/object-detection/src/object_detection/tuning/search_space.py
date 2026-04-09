@@ -1,62 +1,53 @@
 from __future__ import annotations
 
 from typing import Dict, Any
+from ray import tune
 
 
 def default_tune_space() -> Dict[str, Any]:
-    """
-    Conservative YOLOv8 detect search space for a baseline tuning run.
-
-    These keys are chosen to be practical for object detection and to avoid
-    blowing up training time too much.
-    """
     return {
-        # Optimizer / schedule
-        "lr0": (1e-4, 5e-2),           # initial learning rate
-        "lrf": (0.01, 0.5),            # final lr fraction
-        "momentum": (0.80, 0.98),
-        "weight_decay": (0.0, 1e-3),
-        "warmup_epochs": (0.0, 5.0),
-        "warmup_momentum": (0.0, 0.95),
+        "lr0": tune.loguniform(1e-4, 5e-2),
+        "lrf": tune.uniform(0.01, 0.5),
+        "momentum": tune.uniform(0.80, 0.98),
+        "weight_decay": tune.loguniform(1e-6, 1e-3),
+        "warmup_epochs": tune.uniform(0.0, 5.0),
+        "warmup_momentum": tune.uniform(0.0, 0.95),
 
         # Loss balance
-        "box": (5.0, 12.0),
-        "cls": (0.2, 4.0),
-        "dfl": (0.5, 2.5),
+        "box": tune.uniform(5.0, 12.0),
+        "cls": tune.uniform(0.2, 4.0),
+        "dfl": tune.uniform(0.5, 2.5),
 
-        # Color aug
-        "hsv_h": (0.0, 0.05),
-        "hsv_s": (0.0, 0.9),
-        "hsv_v": (0.0, 0.9),
+        # Colour aug
+        "hsv_h": tune.uniform(0.0, 0.05),
+        "hsv_s": tune.uniform(0.0, 0.9),
+        "hsv_v": tune.uniform(0.0, 0.9),
 
         # Geometric aug
-        "degrees": (0.0, 10.0),
-        "translate": (0.0, 0.2),
-        "scale": (0.0, 0.7),
-        "shear": (0.0, 5.0),
-        "perspective": (0.0, 0.001),
-        "flipud": (0.0, 0.5),
-        "fliplr": (0.0, 0.5),
+        "degrees": tune.uniform(0.0, 10.0),
+        "translate": tune.uniform(0.0, 0.2),
+        "scale": tune.uniform(0.0, 0.7),
+        "shear": tune.uniform(0.0, 5.0),
+        "perspective": tune.uniform(0.0, 0.001),
+        "flipud": tune.uniform(0.0, 0.0), # Disable flip up and down augmentation
+        "fliplr": tune.uniform(0.0, 0.5),
 
         # Mix aug
-        "mosaic": (0.0, 1.0),
-        "mixup": (0.0, 0.3),
-        "copy_paste": (0.0, 0.3),
+        "mosaic": tune.uniform(0.0, 1.0),
+        "mixup": tune.uniform(0.0, 0.3),
+        "copy_paste": tune.uniform(0.0, 0.3),
     }
 
 
 def narrowed_tune_space(best: Dict[str, float], frac: float = 0.35) -> Dict[str, Any]:
-    """
-    Build a narrower box around a previous best run.
-    """
     out: Dict[str, Any] = {}
     for k, v in best.items():
         if not isinstance(v, (int, float)):
             continue
+
         lo = v * (1.0 - frac)
         hi = v * (1.0 + frac)
 
-        # Keep known nonnegative params sane
         if k in {
             "lr0", "lrf", "weight_decay", "warmup_epochs",
             "box", "cls", "dfl",
@@ -67,13 +58,19 @@ def narrowed_tune_space(best: Dict[str, float], frac: float = 0.35) -> Dict[str,
         }:
             lo = max(0.0, lo)
 
-        # Cap probability-like params
-        if k in {
-            "lrf", "warmup_momentum", "hsv_h", "hsv_s", "hsv_v",
-            "translate", "scale", "perspective", "flipud", "fliplr",
-            "mosaic", "mixup", "copy_paste", "momentum",
-        }:
-            hi = min(1.0 if k != "momentum" else 0.999, hi)
+        if k in {"lr0", "weight_decay"}:
+            lo = max(lo, 1e-9)
+            hi = max(hi, lo * 1.0001)
+            out[k] = tune.loguniform(lo, hi)
+        else:
+            if k in {
+                "lrf", "warmup_momentum", "hsv_h", "hsv_s", "hsv_v",
+                "translate", "scale", "perspective", "flipud", "fliplr",
+                "mosaic", "mixup", "copy_paste",
+            }:
+                hi = min(1.0, hi)
+            if k == "momentum":
+                hi = min(0.999, hi)
+            out[k] = tune.uniform(lo, hi)
 
-        out[k] = (lo, hi)
     return out
