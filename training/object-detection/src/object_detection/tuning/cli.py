@@ -57,10 +57,12 @@ def main() -> None:
 
             ray.init(
                 _temp_dir=str(ray_tmp_dir),
-                object_spilling_config=json.dumps({
-                    "type": "filesystem",
-                    "params": {"directory_path": str(spill_dir)}
-                }),
+                _system_config={
+                    "object_spilling_config": json.dumps({
+                        "type": "filesystem",
+                        "params": {"directory_path": str(spill_dir)}
+                    }),
+                },
                 ignore_reinit_error=True,
             )
 

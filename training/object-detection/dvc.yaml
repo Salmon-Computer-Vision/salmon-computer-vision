@@ -201,7 +201,7 @@ stages:
       --epochs 30
       --imgsz 640
       --batch 32
-      --device 0
+      --device cuda
       --workers 16
       --patience 10
       --iterations 40
