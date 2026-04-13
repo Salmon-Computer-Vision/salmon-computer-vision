@@ -134,7 +134,7 @@ stages:
       --base-data-yaml ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
       --out-data-yaml ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml
       --seed 42
-      --fraction 0.30
+      --num-samples 30000
     deps:
       - src/object_detection/sampling/subset.py
       - src/object_detection/sampling/cli.py
@@ -191,9 +191,6 @@ stages:
       - config.yolo_workdir
   tune_yolo:
     cmd: >-
-      mkdir -p ${config.ray_tmp} ${config.ray_tmp}/spill ${config.dataset}/salmon_dataset/tuning/yolov8n_small &&
-      RAY_TMPDIR=${config.ray_tmp}
-      TMPDIR=${config.ray_tmp}
       scripts/tune_yolo.py
       --data-yaml ${config.yolo_workdir}/data_small.yaml
       --model yolov8n.pt
@@ -201,12 +198,11 @@ stages:
       --epochs 30
       --imgsz 640
       --batch 32
-      --device cuda
       --workers 16
       --patience 10
-      --iterations 40
+      --iterations 20
       --use-ray
-      --ray-tmp-dir ${config.ray_tmp}
+      --gpu-per-trial 4
     deps:
       - scripts/tune_yolo.py
       - src/object_detection/tuning/search_space.py

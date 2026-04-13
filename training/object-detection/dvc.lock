@@ -382,21 +382,21 @@ stages:
     cmd: scripts/tune_yolo.py --data-yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml --model 
       yolov8n.pt --out-dir data/04_dataset/salmon_dataset/tuning/yolov8n_small 
-      --epochs 30 --imgsz 640 --batch 32 --device 0 --workers 16 --patience 10 
-      --iterations 40 --use-ray
+      --epochs 30 --imgsz 640 --batch 32 --device 0,1,2,3 --workers 16 
+      --patience 10 --iterations 40 --use-ray
     deps:
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml
       hash: md5
-      md5: de18ed26c23c2d6dd2ae17890d550db2
-      size: 443
+      md5: b14ce6ee0f7dae87cdbdf4359618a6bb
+      size: 318
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
       hash: md5
-      md5: d17059c547e2b01e60ce59aea1651721
-      size: 2556161
+      md5: 175e65bf0e6b43cae5849a728ee93e2b
+      size: 7274868
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: dcab03f1f1b4393f41da077879a1a431
-      size: 3156712
+      md5: 00e14ed69e4fde704a58725e5d359a77
+      size: 9196795
     - path: scripts/tune_yolo.py
       hash: md5
       md5: 4cb4c4dc2cfdcc082d7f56b347a04c5f
@@ -416,10 +416,11 @@ stages:
     params:
       params.yaml:
         config.dataset: data/04_dataset
+        config.ray_tmp: /mnt/harukassd4tb/masamim
         config.yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
     outs:
     - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small
       hash: md5
-      md5: 3b22b41b38b2e06b6f6f831319d86be8.dir
-      size: 210865261
-      nfiles: 101
+      md5: b70989d1d4d95eb7a56aa432358cf5bd.dir
+      size: 742857039
+      nfiles: 1205

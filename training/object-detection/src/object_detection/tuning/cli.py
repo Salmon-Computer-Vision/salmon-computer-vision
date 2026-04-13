@@ -14,7 +14,6 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--epochs", type=int, default=30)
     p.add_argument("--imgsz", type=int, default=960)
     p.add_argument("--batch", type=int, default=16)
-    p.add_argument("--device", default="0")
     p.add_argument("--workers", type=int, default=8)
     p.add_argument("--patience", type=int, default=15)
     p.add_argument("--optimizer", default="auto")
@@ -27,10 +26,12 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Two-stage tuning: narrow search iterations")
     p.add_argument("--best-hyp-json", default=None,
                    help="Optional JSON of best hyperparameters for stage 2")
+    p.add_argument("--device", default=None)
     p.add_argument("--use-ray", action="store_true")
-    p.add_argument("--ray-tmp-dir", default=None)
+    p.add_argument("--gpu-per-trial", default=None)
     p.add_argument("--close-mosaic", type=int, default=10)
     p.add_argument("--dropout", type=float, default=0.0)
+    p.add_argument("--resume", action="store_true")
     return p
 
 
@@ -45,27 +46,6 @@ def main() -> None:
         "dropout": args.dropout,
     }
 
-    if args.use_ray:
-        import json
-        import ray
-
-        ray_tmp_dir = Path(args.ray_tmp_dir).resolve() if args.ray_tmp_dir else None
-        if ray_tmp_dir is not None:
-            ray_tmp_dir.mkdir(parents=True, exist_ok=True)
-            spill_dir = ray_tmp_dir / "spill"
-            spill_dir.mkdir(parents=True, exist_ok=True)
-
-            ray.init(
-                _temp_dir=str(ray_tmp_dir),
-                _system_config={
-                    "object_spilling_config": json.dumps({
-                        "type": "filesystem",
-                        "params": {"directory_path": str(spill_dir)}
-                    }),
-                },
-                ignore_reinit_error=True,
-            )
-
     if args.stage1_iterations is not None:
         run_two_stage_tune(
             model_path=model_path,
@@ -74,14 +54,16 @@ def main() -> None:
             epochs=args.epochs,
             imgsz=args.imgsz,
             batch=args.batch,
-            device=args.device,
             stage1_iterations=args.stage1_iterations,
             stage2_iterations=args.stage2_iterations,
             workers=args.workers,
             patience=args.patience,
             optimizer=args.optimizer,
+            device=args.device,
             use_ray=args.use_ray,
             best_hyp_json=Path(args.best_hyp_json) if args.best_hyp_json else None,
+            gpu_per_trial=args.gpu_per_trial,
+            resume=args.resume,
             train_args=train_args,
         )
     else:
@@ -93,11 +75,13 @@ def main() -> None:
             epochs=args.epochs,
             imgsz=args.imgsz,
             batch=args.batch,
-            device=args.device,
             iterations=iterations,
             workers=args.workers,
             patience=args.patience,
             optimizer=args.optimizer,
+            device=args.device,
             use_ray=args.use_ray,
+            gpu_per_trial=args.gpu_per_trial,
+            resume=args.resume,
             train_args=train_args,
         )
