@@ -424,3 +424,55 @@ stages:
       md5: b70989d1d4d95eb7a56aa432358cf5bd.dir
       size: 742857039
       nfiles: 1205
+  train_yolo_best:
+    cmd: scripts/train_yolo_best.py --data-yaml 
+      data/04_dataset/salmon_dataset/yolo_workdir/data.yaml --model yolov8n.pt 
+      --args-yaml 
+      data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune22/args.yaml 
+      --out-dir data/04_dataset/salmon_dataset/training/yolov8n_full --run-name 
+      tuned_full_run1 --epochs 150 --batch 256 --device 0,1,2,3 --workers 16 
+      --summary-json 
+      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
+    deps:
+    - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune22/args.yaml
+      hash: md5
+      md5: 8a23f4563e0262298437fc3bab3b9ba9
+      size: 2308
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
+      hash: md5
+      md5: e6e439914481fba14b685095cbff4279
+      size: 312
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
+      hash: md5
+      md5: dc8083da34d91cc5689fc7a979d9b603
+      size: 24249799
+    - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
+      hash: md5
+      md5: 00e14ed69e4fde704a58725e5d359a77
+      size: 9196795
+    - path: scripts/train_yolo_best.py
+      hash: md5
+      md5: b4071b24f32b11d743a2c21cd8daadbd
+      size: 118
+    - path: src/object_detection/training/cli.py
+      hash: md5
+      md5: b220ab5c3ae26693a4fa870dc878575e
+      size: 1752
+    - path: src/object_detection/training/train_best.py
+      hash: md5
+      md5: 1c76a1161c22f343e8b5da8d1b7eefe0
+      size: 2616
+    - path: yolov8n.pt
+      hash: md5
+      md5: 95a2449609c73cd69a072b09daaff0cc
+      size: 6549796
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        config.yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
+    outs:
+    - path: data/04_dataset/salmon_dataset/training/yolov8n_full
+      hash: md5
+      md5: 407b8ca0e999178948a39d4489eea348.dir
+      size: 17917959
+      nfiles: 22
