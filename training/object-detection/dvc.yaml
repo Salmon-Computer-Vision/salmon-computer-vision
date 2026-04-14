@@ -229,6 +229,7 @@ stages:
       --batch 256
       --device 0,1,2,3
       --workers 16
+      --patience 100
       --summary-json ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
     deps:
       - scripts/train_yolo_best.py
@@ -243,4 +244,31 @@ stages:
       - config.dataset
       - config.yolo_workdir
     outs:
-      - ${config.dataset}/salmon_dataset/training/yolov8n_full
+      - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1
+  evaluate:
+    cmd: >-
+      scripts/eval_yolo.py
+      --model ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+      --data-yaml ${config.yolo_workdir}/data.yaml
+      --out-dir ${config.dataset}/salmon_dataset/eval/yolov8n_full
+      --run-name tuned_full_run1_test
+      --split test
+      --imgsz 640
+      --batch 32
+      --device 0
+      --workers 8
+      --summary-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+    deps:
+      - scripts/eval_yolo.py
+      - src/object_detection/eval/evaluate.py
+      - src/object_detection/eval/cli.py
+      - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+      - ${config.yolo_workdir}/data.yaml
+      - ${config.yolo_workdir}/test.txt
+    params:
+      - config.dataset
+      - config.yolo_workdir
+    metrics:
+      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+    outs:
+      - ${config.dataset}/salmon_dataset/eval/yolov8n_full

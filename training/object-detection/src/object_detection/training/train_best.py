@@ -87,6 +87,8 @@ def train_best_yolo(
     batch: int | None = None,
     imgsz: int | None = None,
     workers: int | None = None,
+    patience: int | None = None,
+    resume: bool = False,
 ) -> Dict[str, Any]:
     overrides = extract_train_overrides(args_yaml)
 
@@ -94,6 +96,7 @@ def train_best_yolo(
     overrides["project"] = str(out_dir.resolve())
     overrides["name"] = run_name
     overrides["epochs"] = epochs
+    overrides["resume"] = resume
 
     if device is not None and device != "":
         overrides["device"] = device
@@ -107,6 +110,8 @@ def train_best_yolo(
         overrides["imgsz"] = imgsz
     if workers is not None:
         overrides["workers"] = workers
+    if patience is not None:
+        overrides["patience"] = patience
 
     model = YOLO(model_path)
     results = model.train(**overrides)
@@ -121,4 +126,6 @@ def train_best_yolo(
         "batch": overrides.get("batch", ""),
         "imgsz": overrides.get("imgsz", ""),
         "workers": overrides.get("workers", ""),
+        "patience": overrides.get("patience", ""),
+        "resume": overrides.get("resume", ""),
     }

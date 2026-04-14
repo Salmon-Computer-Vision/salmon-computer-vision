@@ -19,7 +19,9 @@ def main() -> None:
     p.add_argument("--batch", type=int, default=None)
     p.add_argument("--imgsz", type=int, default=None)
     p.add_argument("--workers", type=int, default=None)
+    p.add_argument("--patience", type=int, default=None)
     p.add_argument("--summary-json", default=None)
+    p.add_argument("--resume", action="store_true")
     args = p.parse_args()
 
     summary = train_best_yolo(
@@ -33,6 +35,8 @@ def main() -> None:
         batch=args.batch,
         imgsz=args.imgsz,
         workers=args.workers,
+        patience=args.patience,
+        resume=args.resume,
     )
 
     if args.summary_json:
