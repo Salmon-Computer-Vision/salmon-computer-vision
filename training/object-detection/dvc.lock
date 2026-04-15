@@ -87,18 +87,22 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: d50720f522cae919bb4a1f1ee90ccc72.dir
-      size: 2602
-      nfiles: 4
+      md5: 70478f28d8e9e662785ee7459af4199b.dir
+      size: 4638
+      nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 6aec0f8edb9ce493ca42e4aa3e43f1e8.dir
-      size: 52971
-      nfiles: 10
+      md5: b5a7c9189cc13c5f8fc1a6c6924ea0d4.dir
+      size: 92798
+      nfiles: 15
+    params:
+      params.yaml:
+        data:
+          sites: tankeeah kitwanga bear
     outs:
     - path: data/02_interim/yolo_annos
       hash: md5
-      md5: 88551957fa5e19f676175f29606a613a.dir
+      md5: 8329efa7f498934d8fa3eff87e8a699d.dir
       size: 308350474
       nfiles: 5
   unpack_annos:
@@ -520,3 +524,8 @@ stages:
       md5: 1f5771bbc2919f8a5a54c3e84a85ae47.dir
       size: 53238992
       nfiles: 14
+    - path: 
+        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+      hash: md5
+      md5: 9125fbdc836e2ae739538ad700f9aa18
+      size: 1548

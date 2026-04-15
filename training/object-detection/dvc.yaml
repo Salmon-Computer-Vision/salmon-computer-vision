@@ -23,12 +23,14 @@ stages:
       --empty-list data/02_interim/yolo_annos/empty_vids.txt
       --shard-size 100000
       --pattern '**/*.json'
-      --include-sites tankeeah kitwanga bear
+      --include-sites ${data.sites}
       --frame-stride 3
       --frame-offset-mode video_hash
       --include-negatives
       --negative-ratio 0.10
       --negatives-per-video 11
+    params:
+      - data
     deps:
       - scripts/yolo_converter_ls_video.py
       - src/object_detection/yolo_ls
@@ -271,4 +273,4 @@ stages:
     metrics:
       - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
     outs:
-      - ${config.dataset}/salmon_dataset/eval/yolov8n_full
+      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
