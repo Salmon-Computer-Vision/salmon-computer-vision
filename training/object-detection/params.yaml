@@ -1,9 +1,32 @@
 data:
-  sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
-train:
-  sites: tankeeah kitwanga bear
-test:
+  sites: 
+    tankeeah
+    kitwanga
+    bear
+    kitkiata
+    copper
+    kwakwa
+    Elbow
+    koeye
+    redoubt
+    chignik
 config:
   dataset: data/04_dataset
   yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
+exp:
+  train_sites:
+    tankeeah
+    kitwanga
+    bear
+  val_sites:
+    tankeeah
+    kitwanga
+    bear
+  test_sites:
+    tankeeah
+eval:
+  imgsz: 640
+  batch: 32
+  device: 0
+  workers: 8

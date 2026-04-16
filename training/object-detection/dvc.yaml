@@ -128,59 +128,98 @@ stages:
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
       - ${config.dataset}/packed_dataset_manifest.csv
     frozen: true
+  make_site_manifests:
+    cmd: >-
+      scripts/make_site_manifests.py
+      --manifests-root ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+      --out-root ${config.dataset}/salmon_dataset/site_manifests
+      --train-sites ${exp.train_sites}
+      --val-sites ${exp.val_sites}
+      --test-sites ${exp.test_sites}
+      --summary-json ${config.dataset}/salmon_dataset/site_manifests/site_manifest_summary.json
+    deps:
+      - scripts/make_site_manifests.py
+      - src/object_detection/site_splits/filter.py
+      - src/object_detection/site_splits/cli.py
+      - src/object_detection/utils
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+    params:
+      - config.dataset
+      - exp.train_sites
+      - exp.val_sites
+      - exp.test_sites
+    outs:
+      - ${config.dataset}/salmon_dataset/site_manifests/data.yaml
+      - ${config.dataset}/salmon_dataset/site_manifests/train.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/val.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/test.txt
+    metrics:
+      - ${config.dataset}/salmon_dataset/site_manifests/site_manifest_summary.json
   make_train_small:
     cmd: >-
       scripts/make_train_small.py
-      --train-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
-      --out-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
-      --base-data-yaml ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
-      --out-data-yaml ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml
+      --train-manifest ${config.dataset}/salmon_dataset/site_manifests/train.txt
+      --out-manifest ${config.dataset}/salmon_dataset/site_manifests/train_small.txt
+      --base-data-yaml ${config.dataset}/salmon_dataset/site_manifests/data.yaml
+      --out-data-yaml ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml
       --seed 42
       --num-samples 30000
     deps:
       - src/object_detection/sampling/subset.py
       - src/object_detection/sampling/cli.py
       - scripts/make_train_small.py
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/train.txt
     outs:
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml
+      - ${config.dataset}/salmon_dataset/site_manifests/train_small.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml
   unpack_split_dataset:
     cmd: >-
       rm -rf ${config.dataset}/salmon_dataset/yolo_workdir &&
       mkdir -p ${config.dataset}/salmon_dataset/yolo_workdir &&
       scripts/unpack_annos.sh
       ${config.dataset}/salmon_dataset/dataset_sharded/shards
-      ${config.dataset}/salmon_dataset/yolo_workdir &&
-      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml ${config.yolo_workdir}/data.yaml &&
-      cp ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml ${config.yolo_workdir}/data_small.yaml &&
+      ${config.yolo_workdir}
+    params:
+      - config.dataset
+      - config.yolo_workdir
+    deps:
+      - scripts/unpack_annos.sh
+      - ${config.dataset}/salmon_dataset/dataset_sharded/shards
+  rewrite_manifest:
+    cmd: >-
+      cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml &&
+      cp ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml ${config.yolo_workdir}/data_small.yaml &&
       scripts/rewrite_manifest_absolute.py
-      --input-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+      --input-manifest ${config.dataset}/salmon_dataset/site_manifests/train.txt
       --output-manifest ${config.yolo_workdir}/train.txt
       --dataset-root ${config.yolo_workdir} &&
       scripts/rewrite_manifest_absolute.py
-      --input-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
+      --input-manifest ${config.dataset}/salmon_dataset/site_manifests/train_small.txt
       --output-manifest ${config.yolo_workdir}/train_small.txt
       --dataset-root ${config.yolo_workdir} &&
       scripts/rewrite_manifest_absolute.py
-      --input-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
+      --input-manifest ${config.dataset}/salmon_dataset/site_manifests/val.txt
       --output-manifest ${config.yolo_workdir}/val.txt
       --dataset-root ${config.yolo_workdir} &&
       scripts/rewrite_manifest_absolute.py
-      --input-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+      --input-manifest ${config.dataset}/salmon_dataset/site_manifests/test.txt
       --output-manifest ${config.yolo_workdir}/test.txt
       --dataset-root ${config.yolo_workdir}
+    params:
+      - config.dataset
+      - config.yolo_workdir
     deps:
-      - scripts/unpack_annos.sh
       - scripts/rewrite_manifest_absolute.py
       - src/object_detection/training/manifests.py
-      - ${config.dataset}/salmon_dataset/dataset_sharded/shards
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data_small.yaml
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train_small.txt
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/data.yaml
+      - ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml
+      - ${config.dataset}/salmon_dataset/site_manifests/test.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/train.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/train_small.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/val.txt
     outs:
       - ${config.yolo_workdir}/data.yaml
       - ${config.yolo_workdir}/data_small.yaml
@@ -188,9 +227,6 @@ stages:
       - ${config.yolo_workdir}/train.txt
       - ${config.yolo_workdir}/train_small.txt
       - ${config.yolo_workdir}/val.txt
-    params:
-      - config.dataset
-      - config.yolo_workdir
   tune_yolo:
     cmd: >-
       scripts/tune_yolo.py
@@ -255,10 +291,10 @@ stages:
       --out-dir ${config.dataset}/salmon_dataset/eval/yolov8n_full
       --run-name tuned_full_run1_test
       --split test
-      --imgsz 640
-      --batch 32
-      --device 0
-      --workers 8
+      --imgsz ${eval.imgsz}
+      --batch ${eval.batch}
+      --device ${eval.device}
+      --workers ${eval.workers}
       --summary-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
     deps:
       - scripts/eval_yolo.py
@@ -268,6 +304,7 @@ stages:
       - ${config.yolo_workdir}/data.yaml
       - ${config.yolo_workdir}/test.txt
     params:
+      - eval
       - config.dataset
       - config.yolo_workdir
     metrics:
