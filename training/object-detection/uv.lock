@@ -1521,7 +1521,9 @@ name = "nvidia-cublas-cu12"
 version = "12.4.5.8"
 source = { registry = "https://download.pytorch.org/whl/cu124" }
 wheels = [
+    { url = "https://download.pytorch.org/whl/cu124/nvidia_cublas_cu12-12.4.5.8-py3-none-manylinux2014_aarch64.whl", hash = "sha256:0f8aa1706812e00b9f19dfe0cdb3999b092ccb8ca168c0db5b8ea712456fd9b3" },
     { url = "https://download.pytorch.org/whl/cu124/nvidia_cublas_cu12-12.4.5.8-py3-none-manylinux2014_x86_64.whl", hash = "sha256:2fc8da60df463fdefa81e323eef2e36489e1c94335b5358bcb38360adf75ac9b" },
+    { url = "https://download.pytorch.org/whl/cu124/nvidia_cublas_cu12-12.4.5.8-py3-none-win_amd64.whl", hash = "sha256:5a796786da89203a0657eda402bcdcec6180254a8ac22d72213abc42069522dc" },
 ]
 
 [[package]]
@@ -1553,7 +1555,7 @@ name = "nvidia-cudnn-cu12"
 version = "9.1.0.70"
 source = { registry = "https://download.pytorch.org/whl/cu124" }
 dependencies = [
-    { name = "nvidia-cublas-cu12", marker = "sys_platform != 'win32'" },
+    { name = "nvidia-cublas-cu12" },
 ]
 wheels = [
     { url = "https://download.pytorch.org/whl/cu124/nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl", hash = "sha256:165764f44ef8c61fcdfdfdbe769d687e06374059fbb388b6c89ecb0e28793a6f" },
@@ -1651,6 +1653,7 @@ source = { editable = "." }
 dependencies = [
     { name = "boto3" },
     { name = "dvclive" },
+    { name = "nvidia-cudnn-cu12" },
     { name = "pyyaml" },
     { name = "ray", extra = ["tune"] },
     { name = "torch" },
@@ -1668,6 +1671,7 @@ dev = [
 requires-dist = [
     { name = "boto3", specifier = ">=1.37.38" },
     { name = "dvclive", specifier = ">=3.49.0" },
+    { name = "nvidia-cudnn-cu12", specifier = ">=9.1.0.70" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "ray", extras = ["tune"], specifier = ">=2.36.1" },
     { name = "torch", specifier = "==2.6.0" },

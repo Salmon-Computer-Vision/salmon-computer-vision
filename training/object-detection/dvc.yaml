@@ -26,9 +26,9 @@ stages:
       --include-sites ${data.sites}
       --frame-stride 3
       --frame-offset-mode video_hash
-      --include-negatives
-      --negative-ratio 0.10
-      --negatives-per-video 11
+      ${data.neg}
+      --negative-ratio ${data.neg_ratio}
+      --negatives-per-video ${data.neg_per_vid}
     params:
       - data
     deps:
@@ -69,9 +69,11 @@ stages:
       scripts/make_splits.py
       --labels-root data/02_interim/yolo_annos_unpacked
       --out-dir data/03_processed/splits_baseline
-      --sites tankeeah kitwanga bear
+      --sites ${data.sites}
       --seed 42
       --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
+    params:
+      - data
     deps:
       - scripts/make_splits.py
       - src/object_detection/splits

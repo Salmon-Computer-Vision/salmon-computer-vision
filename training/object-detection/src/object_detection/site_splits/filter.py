@@ -65,9 +65,9 @@ def rewrite_data_yaml(
         raise ValueError(f"Expected mapping in YAML: {base_data_yaml}")
 
     data.pop("path", None)
-    data["train"] = str(train_manifest.resolve())
-    data["val"] = str(val_manifest.resolve())
-    data["test"] = str(test_manifest.resolve())
+    data["train"] = 'train.txt'
+    data["val"] = 'val.txt'
+    data["test"] = 'test.txt'
 
     out_data_yaml.parent.mkdir(parents=True, exist_ok=True)
     out_data_yaml.write_text(

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Dict
+import numpy as np
 
 from ultralytics import YOLO
 
@@ -49,6 +50,16 @@ def evaluate_yolo(
 
     results = model.val(**kwargs)
 
+    ap = None
+    ap50 = None
+    try:
+        print(results.box.ap_class_index)
+        print(results.box.ap50)
+        ap = dict(zip(np.array(results.box.ap_class_index).astype(int), results.box.ap))
+        ap50 = dict(zip(np.array(results.box.ap_class_index).astype(int), results.box.ap50))
+    except:
+        pass
+
     summary = {
         "model_path": str(Path(model_path).resolve()),
         "data_yaml": str(Path(data_yaml).resolve()),
@@ -61,8 +72,8 @@ def evaluate_yolo(
         "map50_95": getattr(results.box, "map", None) if hasattr(results, "box") else None,
         "mp": getattr(results.box, "mp", None) if hasattr(results, "box") else None,
         "mr": getattr(results.box, "mr", None) if hasattr(results, "box") else None,
-        "ap": dict(enumerate(getattr(results.box, "ap", None).tolist())) if hasattr(results, "box") else None,
-        "ap50": dict(enumerate(getattr(results.box, "ap50", None).tolist())) if hasattr(results, "box") else None,
+        "ap": ap,
+        "ap50": ap50,
         "fitness": getattr(results, "fitness", None),
     }
 
