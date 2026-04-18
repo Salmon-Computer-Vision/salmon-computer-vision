@@ -29,6 +29,7 @@ stages:
       ${data.neg}
       --negative-ratio ${data.neg_ratio}
       --negatives-per-video ${data.neg_per_vid}
+      --stats-dir data/02_interim/yolo_annos_stats
     params:
       - data
     deps:
@@ -39,6 +40,7 @@ stages:
       - config/salmon_yolo.yaml
     outs:
       - data/02_interim/yolo_annos
+      - data/02_interim/yolo_annos_stats
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
@@ -267,7 +269,7 @@ stages:
       --run-name tuned_full_run1
       --epochs 150
       --batch 256
-      --device 0,1,2,3
+      --device ${train.device}
       --workers 16
       --patience 100
       --summary-json ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
@@ -281,6 +283,7 @@ stages:
       - ${config.dataset}/salmon_dataset/tuning/yolov8n_small/tune22/args.yaml
       - yolov8n.pt
     params:
+      - train
       - config.dataset
       - config.yolo_workdir
     outs:

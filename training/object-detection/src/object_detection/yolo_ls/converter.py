@@ -1,6 +1,7 @@
 import json
+import csv
 import traceback
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, Any
 from collections import defaultdict
@@ -14,6 +15,18 @@ from object_detection.yolo_ls.parsing import (
     to_yolo,
 )
 from object_detection.utils.utils import safe_float
+
+
+@dataclass
+class SiteClassStats:
+    frame_counts: Dict[Tuple[str, int], int]
+    box_counts: Dict[Tuple[str, int], int]
+    site_total_frames: Dict[str, int]
+    site_total_boxes: Dict[str, int]
+    site_total_videos: Dict[str, int]
+    class_total_frames: Dict[int, int]
+    class_total_boxes: Dict[int, int]
+
 
 @dataclass
 class ConvertStats:
@@ -96,6 +109,7 @@ class YoloConverterLSVideo:
         negative_ratio: float = 0.10,
         negatives_per_video: int = 6,
         negative_seed: int = 42,
+        stats_dir: Optional[Path] = None,
     ):
         """
         :param coord_mode:
@@ -134,6 +148,16 @@ class YoloConverterLSVideo:
         self._positive_frame_files_written = 0
         self._negative_frame_files_written = 0
         self._negative_candidates: List[NegativeVideoCandidate] = []
+
+        self.stats_dir = Path(stats_dir) if stats_dir else None
+
+        self._site_class_frame_counts: Dict[Tuple[str, int], int] = defaultdict(int)
+        self._site_class_box_counts: Dict[Tuple[str, int], int] = defaultdict(int)
+        self._site_total_frames: Dict[str, int] = defaultdict(int)
+        self._site_total_boxes: Dict[str, int] = defaultdict(int)
+        self._site_total_videos: Dict[str, int] = defaultdict(int)
+        self._class_total_frames: Dict[int, int] = defaultdict(int)
+        self._class_total_boxes: Dict[int, int] = defaultdict(int)
 
     # ---- public API ----
 
@@ -250,6 +274,222 @@ class YoloConverterLSVideo:
 
         self._negative_frame_files_written += wrote
         return wrote, max_neg, total_candidate_frames
+
+    def export_stats(self) -> None:
+        if self.stats_dir is None:
+            return
+
+        self.stats_dir.mkdir(parents=True, exist_ok=True)
+
+        inv_class_map = {v: k for k, v in self.class_map.items()}
+
+        site_class_frame_csv = self.stats_dir / "site_class_frame_counts.csv"
+        site_class_box_csv = self.stats_dir / "site_class_box_counts.csv"
+        site_totals_csv = self.stats_dir / "site_totals.csv"
+        class_totals_csv = self.stats_dir / "class_totals.csv"
+        summary_json = self.stats_dir / "summary.json"
+
+        all_sites = sorted({
+            site for (site, _) in self._site_class_frame_counts.keys()
+        } | {
+            site for (site, _) in self._site_class_box_counts.keys()
+        } | set(self._site_total_videos.keys()))
+
+        all_class_ids = sorted(set(self.class_map.values()))
+
+        with site_class_frame_csv.open("w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "site",
+                    "class_id",
+                    "class_name",
+                    "frame_count",
+                    "frame_pct_within_class",
+                    "frame_pct_within_site",
+                ],
+            )
+            w.writeheader()
+            for site in all_sites:
+                for cls_id in all_class_ids:
+                    frame_count = self._site_class_frame_counts.get((site, cls_id), 0)
+                    total_class_frames = self._class_total_frames.get(cls_id, 0)
+                    total_site_frames = self._site_total_frames.get(site, 0)
+
+                    w.writerow({
+                        "site": site,
+                        "class_id": cls_id,
+                        "class_name": inv_class_map.get(cls_id, str(cls_id)),
+                        "frame_count": frame_count,
+                        "frame_pct_within_class": round(self._pct(frame_count, total_class_frames), 6),
+                        "frame_pct_within_site": round(self._pct(frame_count, total_site_frames), 6),
+                    })
+
+        with site_class_box_csv.open("w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "site",
+                    "class_id",
+                    "class_name",
+                    "box_count",
+                    "box_pct_within_class",
+                    "box_pct_within_site",
+                ],
+            )
+            w.writeheader()
+            for site in all_sites:
+                for cls_id in all_class_ids:
+                    box_count = self._site_class_box_counts.get((site, cls_id), 0)
+                    total_class_boxes = self._class_total_boxes.get(cls_id, 0)
+                    total_site_boxes = self._site_total_boxes.get(site, 0)
+
+                    w.writerow({
+                        "site": site,
+                        "class_id": cls_id,
+                        "class_name": inv_class_map.get(cls_id, str(cls_id)),
+                        "box_count": box_count,
+                        "box_pct_within_class": round(self._pct(box_count, total_class_boxes), 6),
+                        "box_pct_within_site": round(self._pct(box_count, total_site_boxes), 6),
+                    })
+
+        with site_totals_csv.open("w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "site",
+                    "total_frames_with_boxes",
+                    "total_boxes",
+                    "total_videos_with_boxes",
+                    "frame_pct_of_dataset",
+                    "box_pct_of_dataset",
+                ],
+            )
+            w.writeheader()
+
+            dataset_total_frames = sum(self._site_total_frames.values())
+            dataset_total_boxes = sum(self._site_total_boxes.values())
+
+            for site in all_sites:
+                total_frames = self._site_total_frames.get(site, 0)
+                total_boxes = self._site_total_boxes.get(site, 0)
+
+                w.writerow({
+                    "site": site,
+                    "total_frames_with_boxes": total_frames,
+                    "total_boxes": total_boxes,
+                    "total_videos_with_boxes": self._site_total_videos.get(site, 0),
+                    "frame_pct_of_dataset": round(self._pct(total_frames, dataset_total_frames), 6),
+                    "box_pct_of_dataset": round(self._pct(total_boxes, dataset_total_boxes), 6),
+                })
+
+        with class_totals_csv.open("w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "class_id",
+                    "class_name",
+                    "total_frame_count",
+                    "total_box_count",
+                    "frame_pct_of_dataset",
+                    "box_pct_of_dataset",
+                ],
+            )
+            w.writeheader()
+
+            dataset_total_frames = sum(self._class_total_frames.values())
+            dataset_total_boxes = sum(self._class_total_boxes.values())
+
+            for cls_id in all_class_ids:
+                total_frame_count = self._class_total_frames.get(cls_id, 0)
+                total_box_count = self._class_total_boxes.get(cls_id, 0)
+
+                w.writerow({
+                    "class_id": cls_id,
+                    "class_name": inv_class_map.get(cls_id, str(cls_id)),
+                    "total_frame_count": total_frame_count,
+                    "total_box_count": total_box_count,
+                    "frame_pct_of_dataset": round(self._pct(total_frame_count, dataset_total_frames), 6),
+                    "box_pct_of_dataset": round(self._pct(total_box_count, dataset_total_boxes), 6),
+                })
+
+        summary = {
+            "sites": all_sites,
+            "class_ids": all_class_ids,
+            "class_names": {str(cls_id): inv_class_map.get(cls_id, str(cls_id)) for cls_id in all_class_ids},
+            "dataset_totals": {
+                "total_frames_with_boxes": sum(self._site_total_frames.values()),
+                "total_boxes": sum(self._site_total_boxes.values()),
+                "total_videos_with_boxes": sum(self._site_total_videos.values()),
+            },
+            "site_totals": {
+                site: {
+                    "total_frames_with_boxes": self._site_total_frames.get(site, 0),
+                    "total_boxes": self._site_total_boxes.get(site, 0),
+                    "total_videos_with_boxes": self._site_total_videos.get(site, 0),
+                    "frame_pct_of_dataset": round(
+                        self._pct(
+                            self._site_total_frames.get(site, 0),
+                            sum(self._site_total_frames.values()),
+                        ),
+                        6,
+                    ),
+                    "box_pct_of_dataset": round(
+                        self._pct(
+                            self._site_total_boxes.get(site, 0),
+                            sum(self._site_total_boxes.values()),
+                        ),
+                        6,
+                    ),
+                }
+                for site in all_sites
+            },
+            "class_totals": {
+                str(cls_id): {
+                    "class_name": inv_class_map.get(cls_id, str(cls_id)),
+                    "total_frame_count": self._class_total_frames.get(cls_id, 0),
+                    "total_box_count": self._class_total_boxes.get(cls_id, 0),
+                    "frame_pct_of_dataset": round(
+                        self._pct(
+                            self._class_total_frames.get(cls_id, 0),
+                            sum(self._class_total_frames.values()),
+                        ),
+                        6,
+                    ),
+                    "box_pct_of_dataset": round(
+                        self._pct(
+                            self._class_total_boxes.get(cls_id, 0),
+                            sum(self._class_total_boxes.values()),
+                        ),
+                        6,
+                    ),
+                    "site_breakdown": {
+                        site: {
+                            "frame_count": self._site_class_frame_counts.get((site, cls_id), 0),
+                            "box_count": self._site_class_box_counts.get((site, cls_id), 0),
+                            "frame_pct_within_class": round(
+                                self._pct(
+                                    self._site_class_frame_counts.get((site, cls_id), 0),
+                                    self._class_total_frames.get(cls_id, 0),
+                                ),
+                                6,
+                            ),
+                            "box_pct_within_class": round(
+                                self._pct(
+                                    self._site_class_box_counts.get((site, cls_id), 0),
+                                    self._class_total_boxes.get(cls_id, 0),
+                                ),
+                                6,
+                            ),
+                        }
+                        for site in all_sites
+                    },
+                }
+                for cls_id in all_class_ids
+            },
+        }
+        summary_json.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
 
     # ---- internals ----
 
@@ -452,6 +692,51 @@ class YoloConverterLSVideo:
     def _parse_ts(s):
         return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
+    def _update_positive_stats(
+        self,
+        *,
+        site: str,
+        frame_lines: Dict[int, List[str]],
+        wrote_any: bool,
+    ) -> None:
+        """
+        Count:
+        - frame count per site/class: count a frame once per class present
+        - box count per site/class: count every YOLO line
+        """
+        if not wrote_any:
+            return
+
+        self._site_total_videos[site] += 1
+
+        for _, lines in frame_lines.items():
+            if not lines:
+                continue
+
+            self._site_total_frames[site] += 1
+            self._site_total_boxes[site] += len(lines)
+
+            frame_classes = set()
+            for line in lines:
+                parts = line.split()
+                if not parts:
+                    continue
+                cls_id = int(parts[0])
+
+                self._site_class_box_counts[(site, cls_id)] += 1
+                self._class_total_boxes[cls_id] += 1
+                frame_classes.add(cls_id)
+
+            for cls_id in frame_classes:
+                self._site_class_frame_counts[(site, cls_id)] += 1
+                self._class_total_frames[cls_id] += 1
+
+    @staticmethod
+    def _pct(numer: int, denom: int) -> float:
+        if denom <= 0:
+            return 0.0
+        return 100.0 * float(numer) / float(denom)
+
     def _convert_item(self, item: dict) -> ConvertStats:
         stats = ConvertStats()
 
@@ -540,7 +825,16 @@ class YoloConverterLSVideo:
                            if (f % self.frame_stride) == off}
 
         stats.label_files_written += len(frame_lines)
+        stats.label_lines_written += sum(len(lines) for lines in frame_lines.values())
         self._positive_frame_files_written += len(frame_lines)
+
+        # Update positive stats after stride sampling so counts match final dataset
+        self._update_positive_stats(
+            site=site,
+            frame_lines=frame_lines,
+            wrote_any=wrote_any,
+        )
+
         if self._sharder is None:
             # write to filesystem
             vid_dir = self.output_dir / video_stem

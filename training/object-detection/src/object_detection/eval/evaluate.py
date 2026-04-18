@@ -55,8 +55,8 @@ def evaluate_yolo(
     try:
         print(results.box.ap_class_index)
         print(results.box.ap50)
-        ap = dict(zip(np.array(results.box.ap_class_index).astype(int), results.box.ap))
-        ap50 = dict(zip(np.array(results.box.ap_class_index).astype(int), results.box.ap50))
+        ap = dict(zip([int(x) for x in results.box.ap_class_index], results.box.ap))
+        ap50 = dict(zip([int(x) for x in results.box.ap_class_index], results.box.ap50))
     except:
         pass
 

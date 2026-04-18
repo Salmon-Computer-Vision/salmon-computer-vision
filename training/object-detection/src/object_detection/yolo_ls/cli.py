@@ -32,6 +32,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Max sampled negative frames per empty video")
     parser.add_argument("--negative-seed", type=int, default=42,
                         help="Seed for deterministic negative sampling")
+    parser.add_argument("--stats-dir", default=None,
+                    help="Directory to write site/class frame and box count summaries")
 
     return parser
 
@@ -60,6 +62,7 @@ def main() -> None:
         negative_ratio=args.negative_ratio,
         negatives_per_video=args.negatives_per_video,
         negative_seed=args.negative_seed,
+        stats_dir=Path(args.stats_dir) if args.stats_dir else None,
     )
 
     inp = Path(args.input)
@@ -73,6 +76,8 @@ def main() -> None:
     neg_written, max_neg, total_candidate_frames = conv.materialize_negatives()
     s.negative_files_written += neg_written
     s.total_candidate_negative_frames += total_candidate_frames
+
+    conv.export_stats()
 
     if getattr(conv, "_sharder", None):
         conv._sharder.close()
