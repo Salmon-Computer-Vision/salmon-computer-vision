@@ -522,8 +522,8 @@ stages:
       size: 1628
     - path: src/object_detection/eval/evaluate.py
       hash: md5
-      md5: c50354665340483bcc5d90a3ac2d15ce
-      size: 2328
+      md5: e01b13a556ff8ab150445df15b6a64e0
+      size: 2318
     params:
       params.yaml:
         config.dataset: data/04_dataset
@@ -543,7 +543,7 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
       hash: md5
-      md5: fd89c7921a72b0f9556bf0bfa92d64fd
+      md5: ab6f38bbb76e16003717dd5582d8948c
       size: 1249
   make_site_manifests:
     cmd: scripts/make_site_manifests.py --manifests-root 
