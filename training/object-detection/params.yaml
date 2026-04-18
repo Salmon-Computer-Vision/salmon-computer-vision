@@ -7,6 +7,8 @@ config:
   dataset: data/04_dataset
   yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
+train:
+  device: 2,3
 exp:
   train_sites: tankeeah kitwanga bear
   val_sites: tankeeah kitwanga bear
