@@ -80,7 +80,7 @@ stages:
       '**/*.json' --include-sites tankeeah kitwanga bear kitkiata copper kwakwa 
       Elbow koeye redoubt chignik --frame-stride 3 --frame-offset-mode 
       video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
-      11
+      11 --stats-dir data/02_interim/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -102,8 +102,8 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: b5a7c9189cc13c5f8fc1a6c6924ea0d4.dir
-      size: 92798
+      md5: a8894d3b974c136802ae769249c1f654.dir
+      size: 117814
       nfiles: 15
     params:
       params.yaml:
@@ -119,6 +119,11 @@ stages:
       md5: 01c34f96c7e415c8e7d0c56a047067f3.dir
       size: 713978233
       nfiles: 9
+    - path: data/02_interim/yolo_annos_stats
+      hash: md5
+      md5: d6721190f66b5e578dee28e33a3cac94.dir
+      size: 55836
+      nfiles: 5
   unpack_annos:
     cmd: rm -r data/02_interim/yolo_annos_unpacked || scripts/unpack_annos.sh 
       data/02_interim/yolo_annos data/02_interim/yolo_annos_unpacked
