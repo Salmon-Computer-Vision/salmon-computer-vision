@@ -3,6 +3,7 @@ data:
   neg: --include-negatives
   neg_ratio: 0.10
   neg_per_vid: 11
+  bucket: prod-salmonvision-edge-assets-labelstudio-source
 config:
   dataset: data/04_dataset
   yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir

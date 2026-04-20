@@ -108,7 +108,7 @@ stages:
       --metadata-csv data/02_interim/video_metadata_index.csv
       data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       --data-yaml config/salmon_yolo.yaml
-      --bucket prod-salmonvision-edge-assets-labelstudio-source
+      --bucket ${data.bucket}
       --image-ext .jpg
       --manifest-csv ${config.dataset}/packed_dataset_manifest.csv
       --splits train val test
@@ -123,6 +123,7 @@ stages:
       - data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       - config/salmon_yolo.yaml
     params:
+      - data
       - config.dataset
     outs:
       - ${config.dataset}/salmon_dataset/dataset_sharded/shards
