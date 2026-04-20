@@ -132,7 +132,6 @@ stages:
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
       - ${config.dataset}/packed_dataset_manifest.csv
-    frozen: true
   make_site_manifests:
     cmd: >-
       scripts/make_site_manifests.py

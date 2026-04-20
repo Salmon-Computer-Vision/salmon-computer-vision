@@ -1,5 +1,5 @@
 data:
-  sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
+  sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
   neg: --include-negatives
   neg_ratio: 0.10
   neg_per_vid: 11
@@ -11,9 +11,9 @@ config:
 train:
   device: 2,3
 exp:
-  train_sites: tankeeah kitwanga bear
-  val_sites: tankeeah kitwanga bear
-  test_sites: tankeeah
+  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
+  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
+  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
 eval:
   imgsz: 640
   batch: 32
