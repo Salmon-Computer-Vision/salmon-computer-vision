@@ -1,5 +1,16 @@
 data:
   sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
+  neg_csvs:
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
   neg: --include-negatives
   neg_ratio: 0.10
   neg_per_vid: 11

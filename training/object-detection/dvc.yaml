@@ -44,14 +44,14 @@ stages:
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
-      --conditions-csv data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
+      --conditions-csv ${data.neg_csvs}
       --out-dir data/02_interim/yolo_condition_negatives
       --frames-per-video 20
       --frame-stride 3
       --frame-offset-mode video_hash
       --shard-size 100000
+    params:
+      - data
     deps:
       - src/object_detection/negatives/conditions.py
       - src/object_detection/negatives/cli.py
