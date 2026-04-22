@@ -4,12 +4,15 @@ from pysalmcount import motion_detect_stream as md
 
 import argparse
 import os
+import re
 import sys
 import logging
+import threading
 from logging.handlers import TimedRotatingFileHandler
 import datetime
 from pathlib import Path
 import time
+from typing import List, Optional, Tuple
 
 # Set up logging
 log_format = '%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s'
@@ -105,6 +108,77 @@ def get_orgid_and_site_name(name):
     return orgid, site_name, device_id
 
 
+CAM_NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+
+
+def _build_input_str(url: str, gstreamer: bool, h265: bool) -> str:
+    """Wrap a raw RTSP URL in the appropriate pipeline when gstreamer is on.
+
+    Extracted so both the single-cam and multi-cam paths build their
+    per-URL pipeline the same way.
+    """
+    if gstreamer:
+        if h265:
+            return (
+                f"rtspsrc location={url} ! decodebin ! queue ! v4l2convert "
+                "! video/x-raw,format=BGR ! appsink drop=1"
+            )
+        return (
+            f"rtspsrc location={url} ! rtph264depay ! h264parse "
+            "! v4l2h264dec ! videoconvert ! appsink"
+        )
+    return url
+
+
+def _parse_multi_camera_args(args) -> Tuple[List[str], List[str]]:
+    """Parse and validate the multi-camera CLI inputs.
+
+    Returns (urls, cam_names). Raises SystemExit (via argparse-style ValueError)
+    on invalid input.
+    """
+    urls = [u.strip() for u in args.input.split(',') if u.strip()]
+    if len(urls) < 2:
+        raise ValueError(
+            "--multi-camera requires at least 2 comma-separated RTSP URLs "
+            f"in the input argument; got {len(urls)}: {args.input!r}"
+        )
+
+    if args.cam_names:
+        cam_names = [c.strip() for c in args.cam_names.split(',')]
+        if any(not c for c in cam_names):
+            raise ValueError(
+                f"--cam-names contains empty entries: {args.cam_names!r}"
+            )
+    else:
+        cam_names = [f"cam{i+1}" for i in range(len(urls))]
+
+    if len(cam_names) != len(urls):
+        raise ValueError(
+            f"Number of --cam-names ({len(cam_names)}) does not match "
+            f"number of RTSP URLs ({len(urls)})"
+        )
+
+    for name in cam_names:
+        if not CAM_NAME_RE.match(name):
+            raise ValueError(
+                f"cam name {name!r} is invalid: must match [A-Za-z0-9_-]+"
+            )
+
+    if len(set(cam_names)) != len(cam_names):
+        raise ValueError(f"cam names must be unique; got {cam_names}")
+
+    return urls, cam_names
+
+
+def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name):
+    """Thread target that logs any crash in the cam's detector without
+    bringing down the other cams' threads."""
+    try:
+        det.run(fps=fps, algo=algo, orin=orin, raspi=raspi, staging=staging)
+    except Exception:
+        logger.exception("[%s] detector thread crashed", cam_name)
+
+
 def main(args):
     save_cont_video = not args.no_cont if args.no_cont is not None else True
     is_video = args.video if args.video is not None else False
@@ -128,22 +202,69 @@ def main(args):
 
     logger.info(f"Writing logs to {log_file}")
 
-    if args.gstreamer:
-        #input_str = f"rtspsrc location={args.input} ! rtph265depay ! h265parse ! avdec_h265 ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
-        if args.h265:
-            input_str = f"rtspsrc location={args.input} ! decodebin ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
-        else:
-            #input_str = f"rtspsrc location={args.input} ! rtph264depay ! queue ! h264parse ! v4l2h264dec ! queue ! v4l2convert ! video/x-raw,format=BGR ! appsink drop=1"
-            input_str = f"rtspsrc location={args.input} ! rtph264depay ! h264parse ! v4l2h264dec ! videoconvert ! appsink"
-    else:
-        input_str = args.input
+    fps = int(args.fps)
 
+    if args.multi_camera:
+        urls, cam_names = _parse_multi_camera_args(args)
+        logger.info(
+            "Multi-camera mode: %d cameras, names=%s", len(urls), cam_names
+        )
+
+        # Share ONE coordinator across all cam threads. Timing defaults come
+        # from the module-level constants in motion_detect_stream.py; changing
+        # those constants automatically applies to both single- and multi-cam.
+        coordinator = md.MotionEventCoordinator(cam_names)
+
+        detectors = []
+        for url, cam_name in zip(urls, cam_names):
+            input_str = _build_input_str(url, args.gstreamer, args.h265)
+            logger.info("[%s] input: %s", cam_name, input_str)
+            vidloader = vl.VideoLoader(
+                [input_str],
+                gstreamer_on=args.gstreamer,
+                buffer_size=2 * fps,
+                target_fps=fps,
+            )
+            cam_save_prefix = (
+                f"{save_prefix}_{cam_name}" if save_prefix is not None else cam_name
+            )
+            det = md.MotionDetector(
+                dataloader=vidloader,
+                save_folder=site_save_path,
+                save_prefix=cam_save_prefix,
+                ping_url=args.url,
+                save_cont_video=save_cont_video,
+                is_video=is_video,
+                coordinator=coordinator,
+                cam_name=cam_name,
+            )
+            detectors.append((det, cam_name))
+
+        threads = []
+        for det, cam_name in detectors:
+            t = threading.Thread(
+                target=_run_detector_in_thread,
+                args=(det, fps, args.algo, args.orin, args.raspi,
+                      args.staging, cam_name),
+                name=f"MotionDetector-{cam_name}",
+                daemon=False,
+            )
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
+        logger.info("All multi-camera detector threads have exited.")
+        return
+
+    # --- Single-camera path (today's behavior) ---
+    input_str = _build_input_str(args.input, args.gstreamer, args.h265)
     logger.info(input_str)
-    vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*int(args.fps), target_fps=int(args.fps))
+    vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*fps, target_fps=fps)
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url, save_cont_video=save_cont_video, is_video=is_video)
-    det.run(fps=int(args.fps), algo=args.algo, orin=args.orin, raspi=args.raspi, staging=args.staging)
+    det.run(fps=fps, algo=args.algo, orin=args.orin, raspi=args.raspi, staging=args.staging)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
@@ -162,6 +283,24 @@ if __name__ == "__main__":
     parser.add_argument("--no-cont", action='store_true', help="Set this flag to not save continuous video")
     parser.add_argument("--staging", action='store_true', help="Set this flag to save to a staging folder for edge salmon counting processing")
     parser.add_argument(
+        "--multi-camera", action='store_true', dest='multi_camera',
+        help=(
+            "Enable multi-camera mode. The positional input is then treated "
+            "as a comma-separated list of RTSP URLs (N >= 2). All cameras "
+            "share lock-step clip boundaries (same event_id, same "
+            "part_number count, same wall-clock length) via a coordinator."
+        ),
+    )
+    parser.add_argument(
+        "--cam-names", default=None, dest='cam_names',
+        help=(
+            "Comma-separated camera names used to disambiguate clips in "
+            "multi-camera mode. Each name must match [A-Za-z0-9_-]+, no "
+            "duplicates. Length must equal the number of RTSP URLs in the "
+            "positional input. Defaults to cam1,cam2,...,camN."
+        ),
+    )
+    parser.add_argument(
         '-d', '--debug',
         help="Print lots of debugging statements",
         action="store_const", dest="loglevel", const=logging.DEBUG,
@@ -169,6 +308,12 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+
+    if args.multi_camera:
+        try:
+            _parse_multi_camera_args(args)
+        except ValueError as exc:
+            parser.error(str(exc))
 
     install_excepthook()
 
