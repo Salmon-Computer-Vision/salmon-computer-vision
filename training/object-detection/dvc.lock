@@ -23,8 +23,8 @@ stages:
       data/02_interim/yolo_annos_unpacked && scripts/make_splits.py 
       --labels-root data/02_interim/yolo_annos_unpacked --out-dir 
       data/03_processed/splits_baseline --sites tankeeah kitwanga bear kitkiata 
-      copper kwakwa Elbow koeye redoubt chignik --seed 42 --train-frac 0.8 
-      --val-frac 0.1 --test-frac 0.1
+      copper kwakwa Elbow koeye redoubt chignik klukshu --seed 42 --train-frac 
+      0.8 --val-frac 0.1 --test-frac 0.1
     deps:
     - path: data/01_raw/salmon_vid_counts.csv
       hash: md5
@@ -36,13 +36,13 @@ stages:
       size: 1031
     - path: data/02_interim/yolo_annos
       hash: md5
-      md5: 01c34f96c7e415c8e7d0c56a047067f3.dir
-      size: 713978233
+      md5: cb60edfe5d09b5311c0c18812274aef2.dir
+      size: 717900200
       nfiles: 9
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
-      md5: c645448c45a84798e3feb20541d50c4e.dir
-      size: 346680
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
       nfiles: 4
     - path: scripts/make_splits.py
       hash: md5
@@ -62,15 +62,27 @@ stages:
       params.yaml:
         data:
           sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye 
-            redoubt chignik
+            redoubt chignik klukshu
+          neg_csvs: 
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
           neg: --include-negatives
           neg_ratio: 0.1
           neg_per_vid: 11
+          bucket: prod-salmonvision-edge-assets-labelstudio-source
     outs:
     - path: data/03_processed/splits_baseline
       hash: md5
-      md5: df4c762ab2c6d110a42d8bb6adc00bb3.dir
-      size: 40812359
+      md5: 79971d514eaf656b91386791a3adc645.dir
+      size: 41108486
       nfiles: 5
   build_model_input:
     cmd: scripts/yolo_converter_ls_video.py data/01_raw/labelstudio_annos 
@@ -78,7 +90,7 @@ stages:
       --out-shards data/02_interim/yolo_annos --empty-list 
       data/02_interim/yolo_annos/empty_vids.txt --shard-size 100000 --pattern 
       '**/*.json' --include-sites tankeeah kitwanga bear kitkiata copper kwakwa 
-      Elbow koeye redoubt chignik --frame-stride 3 --frame-offset-mode 
+      Elbow koeye redoubt chignik klukshu --frame-stride 3 --frame-offset-mode 
       video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
       11 --stats-dir data/02_interim/yolo_annos_stats
     deps:
@@ -109,20 +121,32 @@ stages:
       params.yaml:
         data:
           sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye 
-            redoubt chignik
+            redoubt chignik klukshu
+          neg_csvs: 
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
           neg: --include-negatives
           neg_ratio: 0.1
           neg_per_vid: 11
+          bucket: prod-salmonvision-edge-assets-labelstudio-source
     outs:
     - path: data/02_interim/yolo_annos
       hash: md5
-      md5: 01c34f96c7e415c8e7d0c56a047067f3.dir
-      size: 713978233
+      md5: cb60edfe5d09b5311c0c18812274aef2.dir
+      size: 717900200
       nfiles: 9
     - path: data/02_interim/yolo_annos_stats
       hash: md5
-      md5: d6721190f66b5e578dee28e33a3cac94.dir
-      size: 55836
+      md5: e9ca6562476bffe8df9dced5b8598ec6.dir
+      size: 60493
       nfiles: 5
   unpack_annos:
     cmd: rm -r data/02_interim/yolo_annos_unpacked || scripts/unpack_annos.sh 
@@ -138,6 +162,13 @@ stages:
       data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv 
       data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv 
       data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv 
+      data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv 
       --out-dir data/02_interim/yolo_condition_negatives --frames-per-video 20 
       --frame-stride 3 --frame-offset-mode video_hash --shard-size 100000
     deps:
@@ -158,11 +189,31 @@ stages:
       hash: md5
       md5: f1cbbdcd356139bb8d28958ee0e05be6
       size: 1309
+    params:
+      params.yaml:
+        data:
+          sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye 
+            redoubt chignik klukshu
+          neg_csvs: 
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
+          neg: --include-negatives
+          neg_ratio: 0.1
+          neg_per_vid: 11
+          bucket: prod-salmonvision-edge-assets-labelstudio-source
     outs:
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
-      md5: c645448c45a84798e3feb20541d50c4e.dir
-      size: 346680
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
       nfiles: 4
   build_video_metadata_index:
     cmd: scripts/build_video_metadata_index.py --json-dir 
@@ -212,12 +263,12 @@ stages:
     - path: 
         data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       hash: md5
-      md5: 88c6e2e9a8fb468da9a4656d0ab0e5fa
-      size: 7588
+      md5: 2f85b059d97fa9832cd3b9f5e4f6b43e
+      size: 19865
     - path: data/03_processed/splits_baseline
       hash: md5
-      md5: e821f72b0bf42a09afafb688ce927ac4.dir
-      size: 16966114
+      md5: 79971d514eaf656b91386791a3adc645.dir
+      size: 41108486
       nfiles: 5
     - path: src/object_detection/frames/cli.py
       hash: md5
@@ -238,32 +289,50 @@ stages:
     params:
       params.yaml:
         config.dataset: data/04_dataset
+        data:
+          sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye 
+            redoubt chignik klukshu
+          neg_csvs: 
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv
+            data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
+          neg: --include-negatives
+          neg_ratio: 0.1
+          neg_per_vid: 11
+          bucket: prod-salmonvision-edge-assets-labelstudio-source
     outs:
     - path: data/04_dataset/packed_dataset_manifest.csv
       hash: md5
-      md5: 768a36ce14bbe79f9e299be1de5287e3
-      size: 2533816
+      md5: 5f97189594ac215f28aa633566796e86
+      size: 8682949
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml
       hash: md5
       md5: e6e439914481fba14b685095cbff4279
       size: 312
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt
       hash: md5
-      md5: 4899875c26aa1bba464dc46233d84c02
-      size: 6740379
+      md5: b414592371e22c3289c48a392ee1b236
+      size: 8783946
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt
       hash: md5
-      md5: 80ef1da7d81c2025a3ccbe17a690b3bb
-      size: 8520617
+      md5: 1b8ee9abc7a55442a35871aabf7fc50c
+      size: 22278133
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt
       hash: md5
-      md5: dcab03f1f1b4393f41da077879a1a431
-      size: 3156712
+      md5: bfdc2b0d75dae9aae2e37c4e62c6416c
+      size: 13541277
     - path: data/04_dataset/salmon_dataset/dataset_sharded/shards
       hash: md5
-      md5: 0aff019b23a49d888cba75454590ba5d.dir
-      size: 13255915520
-      nfiles: 8
+      md5: f10c8d60920f9d99c9d2f14675ec1273.dir
+      size: 35374694400
+      nfiles: 15
   unpack_split_dataset:
     cmd: rm -rf data/04_dataset/salmon_dataset/yolo_workdir && mkdir -p 
       data/04_dataset/salmon_dataset/yolo_workdir && scripts/unpack_annos.sh 
@@ -703,3 +772,34 @@ stages:
       hash: md5
       md5: 00e14ed69e4fde704a58725e5d359a77
       size: 9196795
+  plot_site_class_stats:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/yolo_annos_stats --out-dir 
+      data/02_interim/yolo_annos_stats_plots
+    deps:
+    - path: data/02_interim/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: bbb585ea3b64de3d32f333f3a8fda379
+      size: 7687
+    - path: data/02_interim/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: f8d264f15ee85a281982b575e1d6329f
+      size: 7683
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/yolo_annos_stats_plots
+      hash: md5
+      md5: 44f84642248106b0559cb65ec182f0ae.dir
+      size: 614069
+      nfiles: 4

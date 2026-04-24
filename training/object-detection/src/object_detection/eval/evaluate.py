@@ -57,6 +57,8 @@ def evaluate_yolo(
         print(results.box.ap50)
         ap = dict(zip([int(x) for x in results.box.ap_class_index], results.box.ap))
         ap50 = dict(zip([int(x) for x in results.box.ap_class_index], results.box.ap50))
+        precision = dict(zip([int(x) for x in results.box.ap_class_index], results.box.p))
+        recall = dict(zip([int(x) for x in results.box.ap_class_index], results.box.r))
     except:
         pass
 
@@ -74,6 +76,8 @@ def evaluate_yolo(
         "mr": getattr(results.box, "mr", None) if hasattr(results, "box") else None,
         "ap": ap,
         "ap50": ap50,
+        "p": precision,
+        "r": recall,
         "fitness": getattr(results, "fitness", None),
     }
 

@@ -41,6 +41,19 @@ stages:
     outs:
       - data/02_interim/yolo_annos
       - data/02_interim/yolo_annos_stats
+  plot_site_class_stats:
+    cmd: >-
+      scripts/plot_site_class_stats.py
+      --stats-dir data/02_interim/yolo_annos_stats
+      --out-dir data/02_interim/yolo_annos_stats_plots
+    deps:
+      - scripts/plot_site_class_stats.py
+      - src/object_detection/analysis/plots.py
+      - src/object_detection/analysis/cli.py
+      - data/02_interim/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/yolo_annos_stats/site_class_box_counts.csv
+    outs:
+      - data/02_interim/yolo_annos_stats_plots
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
