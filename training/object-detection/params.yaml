@@ -21,6 +21,7 @@ config:
   ray_tmp: /mnt/harukassd4tb/masamim
 train:
   device: 2,3
+  gpu_per_trial: 2
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
   val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt

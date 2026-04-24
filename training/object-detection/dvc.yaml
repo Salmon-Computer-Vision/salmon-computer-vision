@@ -246,6 +246,7 @@ stages:
       - ${config.yolo_workdir}/val.txt
   tune_yolo:
     cmd: >-
+      CUDA_VISIBLE_DEVICES=${train.device}
       scripts/tune_yolo.py
       --data-yaml ${config.yolo_workdir}/data_small.yaml
       --model yolov8n.pt
@@ -257,7 +258,7 @@ stages:
       --patience 10
       --iterations 20
       --use-ray
-      --gpu-per-trial 4
+      --gpu-per-trial ${train.gpu_per_trial}
     deps:
       - scripts/tune_yolo.py
       - src/object_detection/tuning/search_space.py
@@ -270,6 +271,7 @@ stages:
       - config.dataset
       - config.yolo_workdir
       - config.ray_tmp
+      - train
     outs:
       - ${config.dataset}/salmon_dataset/tuning/yolov8n_small
   train_yolo_best:
