@@ -194,7 +194,9 @@ stages:
       - ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml
   unpack_split_dataset:
     cmd: >-
-      rm -rf ${config.dataset}/salmon_dataset/yolo_workdir &&
+      rm -rf ${config.dataset}/salmon_dataset/yolo_workdir/train &&
+      rm -rf ${config.dataset}/salmon_dataset/yolo_workdir/val &&
+      rm -rf ${config.dataset}/salmon_dataset/yolo_workdir/test &&
       mkdir -p ${config.dataset}/salmon_dataset/yolo_workdir &&
       scripts/unpack_annos.sh
       ${config.dataset}/salmon_dataset/dataset_sharded/shards
@@ -246,19 +248,19 @@ stages:
       - ${config.yolo_workdir}/val.txt
   tune_yolo:
     cmd: >-
-      CUDA_VISIBLE_DEVICES=${train.device}
+      CUDA_VISIBLE_DEVICES=${tune.device}
       scripts/tune_yolo.py
       --data-yaml ${config.yolo_workdir}/data_small.yaml
       --model yolov8n.pt
       --out-dir ${config.dataset}/salmon_dataset/tuning/yolov8n_small
       --epochs 30
       --imgsz 640
-      --batch 32
+      --batch ${tune.batch}
       --workers 16
       --patience 10
-      --iterations 20
+      --iterations ${tune.iterations}
       --use-ray
-      --gpu-per-trial ${train.gpu_per_trial}
+      --gpu-per-trial ${tune.gpu_per_trial}
     deps:
       - scripts/tune_yolo.py
       - src/object_detection/tuning/search_space.py
@@ -271,7 +273,7 @@ stages:
       - config.dataset
       - config.yolo_workdir
       - config.ray_tmp
-      - train
+      - tune
     outs:
       - ${config.dataset}/salmon_dataset/tuning/yolov8n_small
   train_yolo_best:
@@ -283,7 +285,7 @@ stages:
       --out-dir ${config.dataset}/salmon_dataset/training/yolov8n_full
       --run-name tuned_full_run1
       --epochs 150
-      --batch 256
+      --batch ${train.batch}
       --device ${train.device}
       --workers 16
       --patience 100
