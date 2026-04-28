@@ -7,9 +7,9 @@ Install uv:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Install DVC:
+Install DVC with S3 support:
 ```bash
-uv tool install dvc
+uv tool install "dvc[s3]"
 ```
 
 Sync uv with appropriate python packages:
