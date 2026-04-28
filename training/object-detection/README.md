@@ -12,6 +12,12 @@ Install DVC:
 uv tool install dvc
 ```
 
+Sync uv with appropriate python packages:
+```bash
+uv sync --extra cu124
+```
+Change `cu124` to `cu129` if the CUDA version is 12.9 on the system.
+
 Install the module:
 ```bash
 uv pip install -e .
