@@ -280,7 +280,7 @@ stages:
       scripts/train_yolo_best.py
       --data-yaml ${config.yolo_workdir}/data.yaml
       --model yolov8n.pt
-      --args-yaml ${config.dataset}/salmon_dataset/tuning/yolov8n_small/tune22/args.yaml
+      --args-yaml ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${tune_dir}/args.yaml
       --out-dir ${config.dataset}/salmon_dataset/training/yolov8n_full
       --run-name tuned_full_run1
       --epochs 150
@@ -296,7 +296,7 @@ stages:
       - ${config.yolo_workdir}/data.yaml
       - ${config.yolo_workdir}/train.txt
       - ${config.yolo_workdir}/val.txt
-      - ${config.dataset}/salmon_dataset/tuning/yolov8n_small/tune22/args.yaml
+      - ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${tune_dir}/args.yaml
       - yolov8n.pt
     params:
       - train
