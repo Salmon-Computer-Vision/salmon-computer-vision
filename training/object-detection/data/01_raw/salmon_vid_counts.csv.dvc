@@ -1,0 +1,5 @@
+outs:
+- md5: b6136eee30a358d7473a160197bc91be
+  size: 6465051
+  hash: md5
+  path: salmon_vid_counts.csv

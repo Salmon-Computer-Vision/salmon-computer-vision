@@ -1,0 +1,90 @@
+[project]
+name = "object-detection"
+version = "0.1.0"
+description = "SalmonVision object detector training"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.37.38",
+    "dvc-s3>=3.3.0",
+    "dvclive>=3.49.0",
+    "nvidia-cudnn-cu12>=9.1.0.70",
+    "pyyaml>=6.0.3",
+    "ray[tune]>=2.36.1",
+    "ultralytics>=8.4.36",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.optional-dependencies]
+cu124 = [
+    "torch==2.6.0",
+    "torchaudio==2.6.0",
+    "torchvision==0.21.0",
+]
+cu129 = [
+    "torch==2.8.0",
+    "torchaudio==2.8.0",
+    "torchvision==0.23.0",
+]
+cu130 = [
+    "torch==2.10.0",
+    "torchaudio==2.10.0",
+    "torchvision==0.25.0",
+]
+
+[tool.uv]
+conflicts = [
+  [
+    { extra = "cpu" },
+    { extra = "cu124" },
+    { extra = "cu129" },
+    { extra = "cu130" },
+  ],
+]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu124", extra = "cu124" },
+  { index = "pytorch-cu129", extra = "cu129" },
+  { index = "pytorch-cu130", extra = "cu130" },
+]
+torchaudio = [
+  { index = "pytorch-cu124", extra = "cu124" },
+  { index = "pytorch-cu129", extra = "cu129" },
+  { index = "pytorch-cu130", extra = "cu130" },
+]
+torchvision = [
+  { index = "pytorch-cu124", extra = "cu124" },
+  { index = "pytorch-cu129", extra = "cu129" },
+  { index = "pytorch-cu130", extra = "cu130" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu129"
+url = "https://download.pytorch.org/whl/cu129"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

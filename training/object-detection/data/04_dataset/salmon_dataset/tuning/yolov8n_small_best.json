@@ -1,0 +1,21 @@
+{
+  "best_weights": "data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/weights/best.pt",
+  "epoch": 30,
+  "lr/pg0": "0.014024",
+  "lr/pg1": "0.00467467",
+  "lr/pg2": "0.014024",
+  "metric_name": "metrics/mAP50-95(B)",
+  "metric_value": 0.34109,
+  "metrics/mAP50(B)": "0.57138",
+  "metrics/mAP50-95(B)": "0.34109",
+  "metrics/precision(B)": "0.72035",
+  "metrics/recall(B)": "0.54713",
+  "results_csv": "data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/results.csv",
+  "train/box_loss": "1.42931",
+  "train/cls_loss": "2.37382",
+  "train/dfl_loss": "0.73261",
+  "trial": "tune15",
+  "val/box_loss": "1.56976",
+  "val/cls_loss": "5.23902",
+  "val/dfl_loss": "0.73337"
+}
