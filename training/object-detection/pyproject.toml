@@ -28,14 +28,19 @@ where = ["src"]
 
 [project.optional-dependencies]
 cu124 = [
-    "torch>=2.6.0",
-    "torchaudio>=2.6.0",
-    "torchvision>=0.21.0",
+    "torch==2.6.0",
+    "torchaudio==2.6.0",
+    "torchvision==0.21.0",
 ]
 cu129 = [
-    "torch>=2.6.0",
-    "torchaudio>=2.6.0",
-    "torchvision>=0.21.0",
+    "torch==2.8.0",
+    "torchaudio==2.8.0",
+    "torchvision==0.23.0",
+]
+cu130 = [
+    "torch==2.10.0",
+    "torchaudio==2.10.0",
+    "torchvision==0.25.0",
 ]
 
 [tool.uv]
@@ -44,6 +49,7 @@ conflicts = [
     { extra = "cpu" },
     { extra = "cu124" },
     { extra = "cu129" },
+    { extra = "cu130" },
   ],
 ]
 
@@ -51,14 +57,17 @@ conflicts = [
 torch = [
   { index = "pytorch-cu124", extra = "cu124" },
   { index = "pytorch-cu129", extra = "cu129" },
+  { index = "pytorch-cu130", extra = "cu130" },
 ]
 torchaudio = [
   { index = "pytorch-cu124", extra = "cu124" },
   { index = "pytorch-cu129", extra = "cu129" },
+  { index = "pytorch-cu130", extra = "cu130" },
 ]
 torchvision = [
   { index = "pytorch-cu124", extra = "cu124" },
   { index = "pytorch-cu129", extra = "cu129" },
+  { index = "pytorch-cu130", extra = "cu130" },
 ]
 
 [[tool.uv.index]]
@@ -69,6 +78,11 @@ explicit = true
 [[tool.uv.index]]
 name = "pytorch-cu129"
 url = "https://download.pytorch.org/whl/cu129"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
 [tool.pytest.ini_options]

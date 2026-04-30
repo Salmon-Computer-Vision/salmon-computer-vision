@@ -261,6 +261,7 @@ stages:
       --iterations ${tune.iterations}
       --use-ray
       --gpu-per-trial ${tune.gpu_per_trial}
+      --resume
     deps:
       - scripts/tune_yolo.py
       - src/object_detection/tuning/search_space.py
@@ -274,8 +275,6 @@ stages:
       - config.yolo_workdir
       - config.ray_tmp
       - tune
-    outs:
-      - ${config.dataset}/salmon_dataset/tuning/yolov8n_small
   train_yolo_best:
     cmd: >-
       scripts/train_yolo_best.py

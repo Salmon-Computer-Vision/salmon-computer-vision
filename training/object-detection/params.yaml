@@ -20,12 +20,12 @@ config:
   yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
 tune:
-  device: 2,3
+  device: 0
   gpu_per_trial: 1 # Lower numbers creates more parallel trials (Can be fractional)
-  batch: 32
+  batch: 64
   iterations: 20
 train:
-  device: 2,3
+  device: 0
   batch: 256
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
