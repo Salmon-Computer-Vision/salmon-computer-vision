@@ -27,6 +27,7 @@ tune:
 train:
   device: 0
   batch: 256
+  tune_dir: tune15
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
   val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
