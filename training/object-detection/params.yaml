@@ -36,5 +36,5 @@ exp:
 eval:
   imgsz: 640
   batch: 32
-  device: 2
+  device: 0
   workers: 8
