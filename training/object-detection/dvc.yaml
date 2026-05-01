@@ -1,8 +1,7 @@
 stages:
   update_raw:
     cmd: >-
-      rclone sync 
-      -P
+      rclone sync  -P
       --filter "- /salm_dataset*/**"
       --filter "+ *.json"
       --filter "- *.zip"
@@ -209,8 +208,10 @@ stages:
       - ${config.dataset}/salmon_dataset/dataset_sharded/shards
   rewrite_manifest:
     cmd: >-
-      cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml &&
-      cp ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml ${config.yolo_workdir}/data_small.yaml &&
+      cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml
+      &&
+      cp ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml ${config.yolo_workdir}/data_small.yaml
+      &&
       scripts/rewrite_manifest_absolute.py
       --input-manifest ${config.dataset}/salmon_dataset/site_manifests/train.txt
       --output-manifest ${config.yolo_workdir}/train.txt
@@ -280,14 +281,14 @@ stages:
       scripts/train_yolo_best.py
       --data-yaml ${config.yolo_workdir}/data.yaml
       --model yolov8n.pt
-      --args-yaml ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${tune_dir}/args.yaml
+      --args-yaml ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${train.tune_dir}/args.yaml
       --out-dir ${config.dataset}/salmon_dataset/training/yolov8n_full
       --run-name tuned_full_run1
       --epochs 150
       --batch ${train.batch}
       --device ${train.device}
       --workers 16
-      --patience 100
+      --patience ${train.patience}
       --summary-json ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
     deps:
       - scripts/train_yolo_best.py
@@ -296,8 +297,7 @@ stages:
       - ${config.yolo_workdir}/data.yaml
       - ${config.yolo_workdir}/train.txt
       - ${config.yolo_workdir}/val.txt
-      - ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${tune_dir}/args.yaml
-      - yolov8n.pt
+      - ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${train.tune_dir}/args.yaml
     params:
       - train
       - config.dataset

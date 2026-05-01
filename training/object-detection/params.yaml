@@ -26,7 +26,8 @@ tune:
   iterations: 20
 train:
   device: 0
-  batch: 256
+  batch: 64
+  patience: 50
   tune_dir: tune15
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
