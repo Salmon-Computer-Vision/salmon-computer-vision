@@ -491,35 +491,36 @@ stages:
       data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
       --data-yaml data/04_dataset/salmon_dataset/yolo_workdir/data.yaml 
       --out-dir data/04_dataset/salmon_dataset/eval/yolov8n_full --run-name 
-      tuned_full_run1_test --split test --imgsz 640 --batch 32 --device 2 
+      tuned_full_run1_test --split test --imgsz 640 --batch 32 --device 0 
       --workers 8 --summary-json 
       data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
     deps:
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
       hash: md5
-      md5: d1c1ffff0644f47e1c9dc1a7aed92ccf
-      size: 6252515
+      md5: ce6f04e9198141f465faf1b54ba3a04f
+      size: 18372033
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
       hash: md5
       md5: e6e439914481fba14b685095cbff4279
       size: 312
     - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
       hash: md5
-      md5: b62e717018b515c30428bc1d98b4c264
-      size: 15041868
+      md5: 52ccf9ec79608aea509be8b106d43a28
+      size: 23353397
     - path: scripts/eval_yolo.py
       hash: md5
       md5: ff79161891fc4d99deedb2b7de2abd8f
       size: 114
+      isexec: true
     - path: src/object_detection/eval/cli.py
       hash: md5
       md5: 78cdc27bca1985ed6593535e03d2f8f0
       size: 1628
     - path: src/object_detection/eval/evaluate.py
       hash: md5
-      md5: e01b13a556ff8ab150445df15b6a64e0
-      size: 2318
+      md5: 2f391e3e1566f61949b4914f1b1149d6
+      size: 2542
     params:
       params.yaml:
         config.dataset: data/04_dataset
@@ -527,20 +528,20 @@ stages:
         eval:
           imgsz: 640
           batch: 32
-          device: 2
+          device: 0
           workers: 8
     outs:
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
       hash: md5
-      md5: c21ee9292268e15285f778e3f3053049.dir
-      size: 28772073
+      md5: 5931a56e265ace4ab455138a622881d6.dir
+      size: 165459207
       nfiles: 13
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
       hash: md5
-      md5: ab6f38bbb76e16003717dd5582d8948c
-      size: 1249
+      md5: 8680cf2f9af9e412edaeb561cbca2c66
+      size: 2731
   make_site_manifests:
     cmd: scripts/make_site_manifests.py --manifests-root 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests --out-root 
