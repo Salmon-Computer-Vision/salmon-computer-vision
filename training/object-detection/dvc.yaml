@@ -332,3 +332,11 @@ stages:
       - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
     outs:
       - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
+  plot_metrics:
+    cmd: >-
+      sleep 5
+    metrics:
+      - dvclive/metrics.json
+    plots:
+      - dvclive/plots/metrics
+      - dvclive/plots/images
