@@ -32,7 +32,7 @@ train:
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
   val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
-  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
+  test_sites: chignik
 eval:
   imgsz: 640
   batch: 32
