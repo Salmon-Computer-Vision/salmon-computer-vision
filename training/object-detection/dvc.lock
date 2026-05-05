@@ -508,8 +508,8 @@ stages:
       size: 312
     - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
       hash: md5
-      md5: cdc10e391fec2f0e676821809ae53363
-      size: 374718
+      md5: 52ccf9ec79608aea509be8b106d43a28
+      size: 23353397
     - path: scripts/eval_yolo.py
       hash: md5
       md5: ff79161891fc4d99deedb2b7de2abd8f
@@ -536,26 +536,27 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
       hash: md5
-      md5: ad460c94b27d46ff66547a7934574476.dir
-      size: 9426371
+      md5: 5931a56e265ace4ab455138a622881d6.dir
+      size: 165459207
       nfiles: 13
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
       hash: md5
-      md5: cc6229c379becde4821746cd87116121
-      size: 356
+      md5: 9f0d0ee33df8cb9bef0793cf65128854
+      size: 3499
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
       hash: md5
-      md5: bd0d04c99b4e20d17c79d08bb598c42b
-      size: 1220
+      md5: a045f235cf23e7dd95358a2bb06c25c9
+      size: 6560
   make_site_manifests:
     cmd: scripts/make_site_manifests.py --manifests-root 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests --out-root 
       data/04_dataset/salmon_dataset/site_manifests --train-sites tankeeah 
       kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt --val-sites 
       tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt 
-      --test-sites chignik --summary-json 
+      --test-sites tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye 
+      redoubt --summary-json 
       data/04_dataset/salmon_dataset/site_manifests/site_manifest_summary.json
     deps:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml
@@ -595,7 +596,8 @@ stages:
     params:
       params.yaml:
         config.dataset: data/04_dataset
-        exp.test_sites: chignik
+        exp.test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow 
+          koeye redoubt
         exp.train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow 
           koeye redoubt
         exp.val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye
@@ -608,12 +610,12 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/site_manifests/site_manifest_summary.json
       hash: md5
-      md5: e9aa7aae36ef455fd3cbd460077385ac
-      size: 73
+      md5: 47c56d9e162ba89a1dc6b31814effa87
+      size: 75
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: e92702a241668b15db37d9100d0428ab
-      size: 142956
+      md5: ab7eae06e5a68626976e6b06e7b426c9
+      size: 8624740
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
       md5: 8fb5c8c547ee90370e4573d4eb4189db
@@ -655,8 +657,8 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: e92702a241668b15db37d9100d0428ab
-      size: 142956
+      md5: ab7eae06e5a68626976e6b06e7b426c9
+      size: 8624740
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
       md5: 8fb5c8c547ee90370e4573d4eb4189db
@@ -693,8 +695,8 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
       hash: md5
-      md5: cdc10e391fec2f0e676821809ae53363
-      size: 374718
+      md5: 52ccf9ec79608aea509be8b106d43a28
+      size: 23353397
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
       hash: md5
       md5: efc9baee85f919ea55cbe5abd5d70fa8
