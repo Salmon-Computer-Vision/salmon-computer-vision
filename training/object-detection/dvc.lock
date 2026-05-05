@@ -48,16 +48,17 @@ stages:
       hash: md5
       md5: 3921729fec8a5aa6c1eb25c54196a658
       size: 650
+      isexec: true
     - path: src/object_detection/splits
       hash: md5
-      md5: b2d778f6f4d0e5b0b8d29d27b76a64d3.dir
-      size: 59810
-      nfiles: 9
+      md5: a2664d3d744a7f004ba949bdb86f3ebd.dir
+      size: 18757
+      nfiles: 3
     - path: src/object_detection/utils
       hash: md5
-      md5: 70478f28d8e9e662785ee7459af4199b.dir
-      size: 4638
-      nfiles: 6
+      md5: 6bd42cedd6adcfc1f9b8befc7f5c6a68.dir
+      size: 3074
+      nfiles: 4
     params:
       params.yaml:
         data:
@@ -107,16 +108,17 @@ stages:
       hash: md5
       md5: 95696514ec77c20c6491c5af2ccb46a5
       size: 118
+      isexec: true
     - path: src/object_detection/utils
       hash: md5
-      md5: 70478f28d8e9e662785ee7459af4199b.dir
-      size: 4638
-      nfiles: 6
+      md5: 6bd42cedd6adcfc1f9b8befc7f5c6a68.dir
+      size: 3074
+      nfiles: 4
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: a8894d3b974c136802ae769249c1f654.dir
-      size: 117814
-      nfiles: 15
+      md5: 16512212fd65b3b92ebdd013a672eb53.dir
+      size: 93893
+      nfiles: 10
     params:
       params.yaml:
         data:
@@ -334,7 +336,9 @@ stages:
       size: 35374694400
       nfiles: 15
   unpack_split_dataset:
-    cmd: rm -rf data/04_dataset/salmon_dataset/yolo_workdir && mkdir -p 
+    cmd: rm -rf data/04_dataset/salmon_dataset/yolo_workdir/train && rm -rf 
+      data/04_dataset/salmon_dataset/yolo_workdir/val && rm -rf 
+      data/04_dataset/salmon_dataset/yolo_workdir/test && mkdir -p 
       data/04_dataset/salmon_dataset/yolo_workdir && scripts/unpack_annos.sh 
       data/04_dataset/salmon_dataset/dataset_sharded/shards 
       data/04_dataset/salmon_dataset/yolo_workdir
@@ -348,6 +352,7 @@ stages:
       hash: md5
       md5: 757607d0c25666091e773251e5b66ecd
       size: 552
+      isexec: true
     params:
       params.yaml:
         config.dataset: data/04_dataset
