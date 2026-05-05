@@ -317,6 +317,7 @@ stages:
       --device ${eval.device}
       --workers ${eval.workers}
       --summary-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+      --plot-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
     deps:
       - scripts/eval_yolo.py
       - src/object_detection/eval/evaluate.py
@@ -330,5 +331,11 @@ stages:
       - config.yolo_workdir
     metrics:
       - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+    plots:
+      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json:
+          x: ap50
+          y: class_name
+          title: Per-class AP50 on test set
+          template: bar_horizontal
     outs:
       - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
