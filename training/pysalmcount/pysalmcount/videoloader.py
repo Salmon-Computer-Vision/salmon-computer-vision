@@ -251,8 +251,7 @@ class VideoLoader(DataLoader):
         kept_count = 0
         read_count = 0
         dropped_by_sampler = 0
-        start_time = time.monotonic()
-        last_health_log_time = start_time
+        last_health_log_time = time.monotonic()
         health_log_interval = 30.0  # seconds; avoids relying on bogus RTSP FPS
 
         while not self.stop_thread:
@@ -328,7 +327,7 @@ class VideoLoader(DataLoader):
             # Health logging based on real elapsed time, not self.vid_fps.
             now = time.monotonic()
             if now - last_health_log_time >= health_log_interval:
-                elapsed = now - start_time
+                elapsed = now - last_health_log_time
                 read_fps = read_count / elapsed if elapsed > 0 else 0.0
                 kept_fps = kept_count / elapsed if elapsed > 0 else 0.0
 
@@ -340,7 +339,6 @@ class VideoLoader(DataLoader):
                     f"queue_size={self.frame_buffer.qsize()}"
                 )
 
-                start_time = now
                 read_count = 0
                 kept_count = 0
                 dropped_by_sampler = 0
