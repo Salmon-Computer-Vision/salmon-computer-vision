@@ -79,18 +79,43 @@ class VideoLoader(DataLoader):
         if not self.cap.isOpened():
             raise VideoCaptureError(f"Error: Could not open video stream {raw_clip}.")
 
-        self.vid_fps = self.cap.get(cv2.CAP_PROP_FPS)
-        if self.vid_fps <= 0 or self.vid_fps > 1000:
-            logger.warning(f"Invalid FPS reported ({self.vid_fps}), estimating manually...")
-            self.vid_fps = self._estimate_fps(self.cap)
-
-        if self.vid_fps <= 0:
-            # Still can't get FPS
-            raise VideoCaptureError(f"Error: Cannot determine FPS")
-        logger.info(f"Stream or video FPS: {self.vid_fps}")
-
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.is_video = self._detect_source_type(raw_clip)
+
+        reported_fps = self.cap.get(cv2.CAP_PROP_FPS)
+
+        if self.is_video:
+            self.vid_fps = reported_fps
+
+            if self.vid_fps <= 0 or self.vid_fps > 1000:
+                logger.warning(
+                    f"Invalid FPS reported for video file ({self.vid_fps}), estimating manually..."
+                )
+                self.vid_fps = self._estimate_fps(self.cap)
+
+                # _estimate_fps() consumes frames, so reset to the beginning for files.
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+            if self.vid_fps <= 0:
+                raise VideoCaptureError("Error: Cannot determine FPS for video file")
+
+        else:
+            # RTSP/live stream:
+            # Do not estimate FPS by timing cap.read(); that measures buffer/decode speed,
+            # not the true camera FPS.
+            if reported_fps > 0 and reported_fps <= 120:
+                self.vid_fps = reported_fps
+                logger.info(f"Using reported live stream FPS: {self.vid_fps}")
+            else:
+                fallback_fps = self.target_fps if self.target_fps is not None else 10
+                logger.warning(
+                    f"Invalid FPS reported for live stream ({reported_fps}); "
+                    f"using fallback FPS={fallback_fps}. "
+                    "Live stream frame sampling will use wall-clock time."
+                )
+                self.vid_fps = fallback_fps
+
+        logger.info(f"Stream or video FPS: {self.vid_fps}")
 
         # Start a new thread to read frames
         self.stop_thread = False
@@ -138,72 +163,184 @@ class VideoLoader(DataLoader):
             return round((len(timestamps) - 1) / duration, 2)
         else:
             return 0.0
+    
+
+    def _put_live_frame_latest(self, frame):
+        """
+        Put a frame into the live-stream queue.
+
+        If the queue is full, drop the oldest queued frame and insert the newest
+        frame. This keeps latency low for RTSP/live sources.
+        """
+        try:
+            self.frame_buffer.put(frame, block=False)
+            return True
+        except queue.Full:
+            pass
+
+        # Queue is full. Drop the oldest frame, then try to enqueue the newest one.
+        try:
+            _ = self.frame_buffer.get_nowait()
+        except queue.Empty:
+            pass
+
+        try:
+            self.frame_buffer.put(frame, block=False)
+            logger.info("Queue full; dropped oldest frame and kept newest frame.")
+            return True
+        except queue.Full:
+            logger.info("Queue still full after dropping oldest frame; dropped newest frame.")
+            return False
 
 
     def _read_frames(self):
         """
-        Reads frames from the video capture in a separate thread and stores them in a deque.
+        Reads frames from the video capture in a separate thread.
+
+        Behavior:
+        - Video files: use source FPS and frame-ratio downsampling.
+        - Live streams/RTSP: use wall-clock throttling based on target_fps.
+          This avoids estimating FPS from cap.read() speed, which can be wrong
+          when FFmpeg/OpenCV drains buffered frames quickly.
         """
 
-        keep_all = self.target_fps is None or self.target_fps >= self.vid_fps
-        if not math.isfinite(self.vid_fps) or self.vid_fps <= 0:
-            keep_all = True # fallback
+        is_live_stream = not self.is_video
 
-        step = None
-        next_keep = 0.0
-        i = 0
+        # -----------------------------
+        # Video-file downsampling setup
+        # -----------------------------
+        keep_all_file_frames = True
+        ratio = 1.0
+        accum = 0.0
 
-        if not keep_all:
-            # Accumulator ratio: how many frames to KEEP per decoded frame
-            # e.g., 30->10 fps: ratio = 10/30 = 0.333...
-            ratio = (self.target_fps / self.vid_fps) if (not keep_all and self.vid_fps > 0) else 1.0
-            accum = 0.0  # stays in [0,1)
+        if self.is_video:
+            keep_all_file_frames = (
+                self.target_fps is None
+                or not math.isfinite(self.vid_fps)
+                or self.vid_fps <= 0
+                or self.target_fps >= self.vid_fps
+            )
 
-            logger.info(f"Target FPS is lower than video FPS. Will keep every {ratio:.2f} ratio of frames")
+            if not keep_all_file_frames:
+                ratio = self.target_fps / self.vid_fps
+                logger.info(
+                    f"Video file source FPS is {self.vid_fps:.2f}; "
+                    f"target FPS is {self.target_fps}. "
+                    f"Will keep {ratio:.3f} of decoded frames."
+                )
 
-        count = 0
+        # -----------------------------
+        # Live-stream wall-clock setup
+        # -----------------------------
+        if is_live_stream and self.target_fps is not None and self.target_fps > 0:
+            emit_interval = 1.0 / float(self.target_fps)
+            next_emit_time = time.monotonic()
+            logger.info(
+                f"Live stream detected. Will sample by wall clock at "
+                f"{self.target_fps} FPS, interval={emit_interval:.3f}s."
+            )
+        else:
+            emit_interval = None
+            next_emit_time = None
+            if is_live_stream:
+                logger.info("Live stream detected. No target_fps set; keeping all received frames.")
+
+        # -----------------------------
+        # Health-check logging setup
+        # -----------------------------
+        kept_count = 0
+        read_count = 0
+        dropped_by_sampler = 0
         start_time = time.monotonic()
-        whole_vid_fps = math.ceil(self.vid_fps)
+        last_health_log_time = start_time
+        health_log_interval = 30.0  # seconds; avoids relying on bogus RTSP FPS
 
         while not self.stop_thread:
             ret, frame = self.cap.read()
+            read_count += 1
 
             if not ret:
-                logger.info('No more frames or failed to retrieve frame, stopping frame reading.')
+                logger.info("No more frames or failed to retrieve frame, stopping frame reading.")
                 self.stop_thread = True
-                self.frame_buffer.put(None)  # Sentinel value to signal end of stream
+
+                # Avoid blocking forever if the queue is full.
+                try:
+                    self.frame_buffer.put(None, block=False)
+                except queue.Full:
+                    if is_live_stream:
+                        try:
+                            _ = self.frame_buffer.get_nowait()
+                        except queue.Empty:
+                            pass
+                        try:
+                            self.frame_buffer.put(None, block=False)
+                        except queue.Full:
+                            pass
+                    else:
+                        self.frame_buffer.put(None, block=True)
+
                 break
 
             keep = True
-            if not keep_all:
-                # Accumulate fractional keeps; emit only when we cross 1.0
-                accum += ratio
-                if accum >= 1.0:
-                    accum -= 1.0
-                else:
-                    keep = False
 
-            if keep:
-                try:
-                    if self.is_video:
-                        # For video files: block so you don't drop any frames
-                        self.frame_buffer.put(frame, block=True)
+            if self.is_video:
+                # For files, downsample based on source FPS.
+                if not keep_all_file_frames:
+                    accum += ratio
+                    if accum >= 1.0:
+                        accum -= 1.0
+                        keep = True
                     else:
-                        # For live streams: drop if the queue is full
-                        self.frame_buffer.put(frame, block=False)
-                except queue.Full:
-                    if not self.is_video:
-                        # only log for streams
-                        logger.info("Queue full; dropped frame.")
-                    else:
-                        raise
+                        keep = False
 
-            count += 1
-            if utils.is_check_time(count, whole_vid_fps):
-                avg_elapsed_time = ((time.monotonic() - start_time) * 1000) / (self.vid_fps * utils.HEALTH_CHECKS_LEN)
-                logger.info(f"Avg Retrieval time: {avg_elapsed_time:.2f} ms")
-                start_time = time.monotonic()
-                count = 0
+            else:
+                # For RTSP/live streams, downsample by wall-clock time.
+                if emit_interval is not None:
+                    now = time.monotonic()
+
+                    if now >= next_emit_time:
+                        keep = True
+
+                        # Schedule the next emitted frame based on the intended cadence.
+                        # This avoids drift when reads are stable.
+                        next_emit_time += emit_interval
+
+                        # If the reader was blocked/stalled and fell far behind,
+                        # resync instead of trying to "catch up" by emitting bursts.
+                        if next_emit_time < now - emit_interval:
+                            next_emit_time = now + emit_interval
+                    else:
+                        keep = False
+
+            if not keep:
+                dropped_by_sampler += 1
+                continue
+
+            if self.is_video:
+                # For files, block so no selected frames are dropped.
+                self.frame_buffer.put(frame, block=True)
+                kept_count += 1
+            else:
+                # For live streams, keep newest frames and avoid stale backlog.
+                if self._put_live_frame_latest(frame):
+                    kept_count += 1
+
+            # Health logging based on real elapsed time, not self.vid_fps.
+            now = time.monotonic()
+            if now - last_health_log_time >= health_log_interval:
+                elapsed = now - start_time
+                read_fps = read_count / elapsed if elapsed > 0 else 0.0
+                kept_fps = kept_count / elapsed if elapsed > 0 else 0.0
+
+                logger.info(
+                    f"Frame reader stats: read_fps={read_fps:.2f}, "
+                    f"kept_fps={kept_fps:.2f}, "
+                    f"read_count={read_count}, kept_count={kept_count}, "
+                    f"dropped_by_sampler={dropped_by_sampler}, "
+                    f"queue_size={self.frame_buffer.qsize()}"
+                )
+
+                last_health_log_time = now
 
     def items(self):
         if self.cur_clip is None:
