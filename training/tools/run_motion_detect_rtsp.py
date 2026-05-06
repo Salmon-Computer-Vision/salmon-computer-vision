@@ -24,7 +24,7 @@ rootlogger.addHandler(console_handler)
 logger = logging.getLogger(__name__)
 
 LOCAL_DIR_PATH = "/media/local_hdd"
-LOGS_DIR_PATH = "logs/salmonmd_logs"
+LOGS_DIR_PATH = "device_logs/raw"
 
 class CustomTimedRotatingFileHandler(TimedRotatingFileHandler):
     """
