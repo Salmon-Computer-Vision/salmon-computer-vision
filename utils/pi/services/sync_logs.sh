@@ -7,6 +7,6 @@ DST_ROOT="/media/hdd/"
 # Sync all logs while preserving structure
 rsync -av \
   --include='*/' \
-  --include='*.txt' \
+  --include='logs/**' \
   --exclude='*' \
   "$SRC_ROOT" "$DST_ROOT"
