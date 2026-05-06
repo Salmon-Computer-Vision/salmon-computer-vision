@@ -23,12 +23,13 @@ fi
 SITE_PATH="${DRIVE}/${ORGID}/${SITE_NAME}"
 
 for device_path in "${SITE_PATH}"/* ; do
-    if [ ! -d "$device_path" ]; then
-        continue
-    fi
     #BACKUP="${device_path}/logs_backup/"
     SRC="${device_path}/device_logs/"
     DEST="aws:${BUCKET}/${ORGID}/${SITE_NAME}/${device_path##*/}/device_logs/"
+
+    if [ ! -d "$SRC" ]; then
+        continue
+    fi
 
     #mkdir -p "$BACKUP"
     #mkdir -p "$SRC"
