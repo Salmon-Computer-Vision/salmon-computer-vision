@@ -340,6 +340,10 @@ class VideoLoader(DataLoader):
                     f"queue_size={self.frame_buffer.qsize()}"
                 )
 
+                start_time = now
+                read_count = 0
+                kept_count = 0
+                dropped_by_sampler = 0
                 last_health_log_time = now
 
     def items(self):
