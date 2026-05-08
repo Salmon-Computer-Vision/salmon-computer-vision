@@ -368,12 +368,13 @@ stages:
     deps:
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 8fb5c8c547ee90370e4573d4eb4189db
-      size: 21214363
+      md5: 0e6b7350563bbdc572e7458c70700542
+      size: 22088713
     - path: scripts/make_train_small.py
       hash: md5
       md5: b387575a44366a3a0a29b2c88ebd2f95
       size: 118
+      isexec: true
     - path: src/object_detection/sampling/cli.py
       hash: md5
       md5: 3895caa9b9f9b2be456cbd0e789e33c2
@@ -389,8 +390,8 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/site_manifests/train_small.txt
       hash: md5
-      md5: ff1d0c2c54cd6c564ee8395c95378746
-      size: 1905254
+      md5: 882644d4b118271a1442b84ddd5e1adf
+      size: 1909169
   tune_yolo:
     cmd: CUDA_VISIBLE_DEVICES=0 scripts/tune_yolo.py --data-yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml --model 
@@ -443,7 +444,7 @@ stages:
       --args-yaml 
       data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/args.yaml 
       --out-dir data/04_dataset/salmon_dataset/training/yolov8n_full --run-name 
-      tuned_full_run1 --epochs 150 --batch 64 --device 0 --workers 16 --patience
+      tuned_full_run1 --epochs 150 --batch 32 --device 0 --workers 16 --patience
       50 --summary-json 
       data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
     deps:
@@ -457,12 +458,12 @@ stages:
       size: 312
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
       hash: md5
-      md5: efc9baee85f919ea55cbe5abd5d70fa8
-      size: 56953861
+      md5: ee61ec5f2734ea6261dee897d3271457
+      size: 59224561
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: 5c42d4af4cce927f6bd9d213992d8dcd
-      size: 35450254
+      md5: 7607d7e483e7876e43f7871895575d68
+      size: 36905202
     - path: scripts/train_yolo_best.py
       hash: md5
       md5: b4071b24f32b11d743a2c21cd8daadbd
@@ -482,15 +483,15 @@ stages:
         config.yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
         train:
           device: 0
-          batch: 64
+          batch: 32
           patience: 50
           tune_dir: tune15
     outs:
     - path: data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1
       hash: md5
-      md5: 3fbdc7beb7c43ce254a11fe37293a18f.dir
-      size: 38099831
-      nfiles: 8
+      md5: 5298da499f62c76ac54f80c56975c3dc.dir
+      size: 18494729
+      nfiles: 21
   evaluate:
     cmd: scripts/eval_yolo.py --model 
       data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
@@ -505,16 +506,16 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
       hash: md5
-      md5: ce6f04e9198141f465faf1b54ba3a04f
-      size: 18372033
+      md5: c2695fb570f23832083bd23848aaae10
+      size: 6238634
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
       hash: md5
       md5: e6e439914481fba14b685095cbff4279
       size: 312
     - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
       hash: md5
-      md5: ed72bba0566c31ac2cad85145aa4374b
-      size: 23728115
+      md5: 52ccf9ec79608aea509be8b106d43a28
+      size: 23353397
     - path: scripts/eval_yolo.py
       hash: md5
       md5: ff79161891fc4d99deedb2b7de2abd8f
@@ -541,27 +542,27 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
       hash: md5
-      md5: fe032e3432154bf3b0ce19947acc5a5c.dir
-      size: 172021704
+      md5: 2cb48306e15d2e4d641b2cad1fa09c4d.dir
+      size: 166466772
       nfiles: 13
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
       hash: md5
-      md5: a8daf6fb4b092a591b4514c9e5e083b2
-      size: 3498
+      md5: 3771dad9216a56d57c05fe14b2d53e4f
+      size: 3504
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
       hash: md5
-      md5: a1376fc599f3f0e070b51d13a2838589
-      size: 6558
+      md5: c9e76ddb773acc9127ef6c4feea1e70d
+      size: 6569
   make_site_manifests:
     cmd: scripts/make_site_manifests.py --manifests-root 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests --out-root 
       data/04_dataset/salmon_dataset/site_manifests --train-sites tankeeah 
-      kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt --val-sites 
-      tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt 
-      --test-sites tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye 
-      redoubt chignik --summary-json 
+      kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik 
+      --val-sites tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye 
+      redoubt chignik --test-sites tankeeah kitwanga bear kitkiata copper kwakwa
+      Elbow koeye redoubt --summary-json 
       data/04_dataset/salmon_dataset/site_manifests/site_manifest_summary.json
     deps:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/data.yaml
@@ -602,11 +603,11 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         exp.test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow 
-          koeye redoubt chignik
-        exp.train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow 
           koeye redoubt
+        exp.train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow 
+          koeye redoubt chignik
         exp.val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye
-          redoubt
+          redoubt chignik
     outs:
     - path: data/04_dataset/salmon_dataset/site_manifests/data.yaml
       hash: md5
@@ -615,20 +616,20 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/site_manifests/site_manifest_summary.json
       hash: md5
-      md5: 949a08eb86c06da6eea8f294e424addb
+      md5: 15ecb7a665674037512679f2935dd0dd
       size: 75
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 3197d5e0602de32e0117aea2f452ce23
-      size: 8767696
+      md5: ab7eae06e5a68626976e6b06e7b426c9
+      size: 8624740
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 8fb5c8c547ee90370e4573d4eb4189db
-      size: 21214363
+      md5: 0e6b7350563bbdc572e7458c70700542
+      size: 22088713
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: c0dc36a0cc76a49b1d182d8962eb0988
-      size: 12962706
+      md5: 01370a4a45b6e7f0e4743ab618ccde60
+      size: 13512541
   rewrite_manifest:
     cmd: cp data/04_dataset/salmon_dataset/site_manifests/data.yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data.yaml && cp 
@@ -662,20 +663,20 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 3197d5e0602de32e0117aea2f452ce23
-      size: 8767696
+      md5: ab7eae06e5a68626976e6b06e7b426c9
+      size: 8624740
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 8fb5c8c547ee90370e4573d4eb4189db
-      size: 21214363
+      md5: 0e6b7350563bbdc572e7458c70700542
+      size: 22088713
     - path: data/04_dataset/salmon_dataset/site_manifests/train_small.txt
       hash: md5
-      md5: ff1d0c2c54cd6c564ee8395c95378746
-      size: 1905254
+      md5: 882644d4b118271a1442b84ddd5e1adf
+      size: 1909169
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: c0dc36a0cc76a49b1d182d8962eb0988
-      size: 12962706
+      md5: 01370a4a45b6e7f0e4743ab618ccde60
+      size: 13512541
     - path: scripts/rewrite_manifest_absolute.py
       hash: md5
       md5: a7063d582e65e8e5284f98a1881eee86
@@ -700,20 +701,20 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
       hash: md5
-      md5: ed72bba0566c31ac2cad85145aa4374b
-      size: 23728115
+      md5: 52ccf9ec79608aea509be8b106d43a28
+      size: 23353397
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
       hash: md5
-      md5: efc9baee85f919ea55cbe5abd5d70fa8
-      size: 56953861
+      md5: ee61ec5f2734ea6261dee897d3271457
+      size: 59224561
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
       hash: md5
-      md5: 16471adfd529d9426d2336ac40df0560
-      size: 5115254
+      md5: 14ad18c5245e36fb4479879aa56a89b7
+      size: 5119169
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: 5c42d4af4cce927f6bd9d213992d8dcd
-      size: 35450254
+      md5: 7607d7e483e7876e43f7871895575d68
+      size: 36905202
   plot_site_class_stats:
     cmd: scripts/plot_site_class_stats.py --stats-dir 
       data/02_interim/yolo_annos_stats --out-dir 
