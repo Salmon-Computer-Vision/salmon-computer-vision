@@ -23,17 +23,17 @@ config:
 tune:
   device: 0
   gpu_per_trial: 1 # Lower numbers creates more parallel trials (Can be fractional)
-  batch: 64
+  batch: 32
   iterations: 20
 train:
   device: 0
-  batch: 64
+  batch: 32
   patience: 50
   tune_dir: tune15
 exp:
-  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
-  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
-  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
+  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
+  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
+  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
 eval:
   imgsz: 640
   batch: 32
