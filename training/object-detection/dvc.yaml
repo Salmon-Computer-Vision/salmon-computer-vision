@@ -306,6 +306,7 @@ stages:
     outs:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
+    frozen: true
   evaluate:
     cmd: >-
       scripts/eval_yolo.py
