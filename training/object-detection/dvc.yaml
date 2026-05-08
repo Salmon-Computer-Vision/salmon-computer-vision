@@ -306,20 +306,21 @@ stages:
     outs:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
+    frozen: true
   evaluate:
     cmd: >-
       scripts/eval_yolo.py
       --model ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
       --data-yaml ${config.yolo_workdir}/data.yaml
       --out-dir ${config.dataset}/salmon_dataset/eval/yolov8n_full
-      --run-name ${train.run_name}_test
+      --run-name ${eval.metric_name}_test
       --split test
       --imgsz ${eval.imgsz}
       --batch ${eval.batch}
       --device ${eval.device}
       --workers ${eval.workers}
-      --summary-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_summary.json
-      --plot-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_plot.json
+      --summary-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/${eval.metric_name}_test_summary.json
+      --plot-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/${eval.metric_name}_test_plot.json
     deps:
     - scripts/eval_yolo.py
     - src/object_detection/eval/evaluate.py
@@ -333,15 +334,15 @@ stages:
     - config.dataset
     - config.yolo_workdir
     metrics:
-    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_summary.json
+    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${eval.metric_name}_test_summary.json
     plots:
-    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_plot.json:
+    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${eval.metric_name}_test_plot.json:
         x: ap50
         y: class_name
         title: Per-class AP50 on test set
         template: bar_horizontal
     outs:
-    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test
+    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${eval.metric_name}_test
 params:
 - dvclive/params.yaml
 metrics:

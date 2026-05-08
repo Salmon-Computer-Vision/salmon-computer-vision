@@ -41,3 +41,4 @@ eval:
   batch: 32
   device: 0
   workers: 8
+  metric_name: tuned_full_run1
