@@ -8,9 +8,9 @@ stages:
       aws:salmonvision-ml-datasets/rgb/raw/
       data/01_raw/labelstudio_annos
     deps:
-      - s3://salmonvision-ml-datasets/rgb/raw
+    - s3://salmonvision-ml-datasets/rgb/raw
     outs:
-      - data/01_raw/labelstudio_annos
+    - data/01_raw/labelstudio_annos
     frozen: true
   build_model_input:
     cmd: >-
@@ -30,29 +30,29 @@ stages:
       --negatives-per-video ${data.neg_per_vid}
       --stats-dir data/02_interim/yolo_annos_stats
     params:
-      - data
+    - data
     deps:
-      - scripts/yolo_converter_ls_video.py
-      - src/object_detection/yolo_ls
-      - src/object_detection/utils
-      - data/01_raw/labelstudio_annos
-      - config/salmon_yolo.yaml
+    - scripts/yolo_converter_ls_video.py
+    - src/object_detection/yolo_ls
+    - src/object_detection/utils
+    - data/01_raw/labelstudio_annos
+    - config/salmon_yolo.yaml
     outs:
-      - data/02_interim/yolo_annos
-      - data/02_interim/yolo_annos_stats
+    - data/02_interim/yolo_annos
+    - data/02_interim/yolo_annos_stats
   plot_site_class_stats:
     cmd: >-
       scripts/plot_site_class_stats.py
       --stats-dir data/02_interim/yolo_annos_stats
       --out-dir data/02_interim/yolo_annos_stats_plots
     deps:
-      - scripts/plot_site_class_stats.py
-      - src/object_detection/analysis/plots.py
-      - src/object_detection/analysis/cli.py
-      - data/02_interim/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/yolo_annos_stats/site_class_box_counts.csv
+    - scripts/plot_site_class_stats.py
+    - src/object_detection/analysis/plots.py
+    - src/object_detection/analysis/cli.py
+    - data/02_interim/yolo_annos_stats/site_class_frame_counts.csv
+    - data/02_interim/yolo_annos_stats/site_class_box_counts.csv
     outs:
-      - data/02_interim/yolo_annos_stats_plots
+    - data/02_interim/yolo_annos_stats_plots
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
@@ -63,14 +63,14 @@ stages:
       --frame-offset-mode video_hash
       --shard-size 100000
     params:
-      - data
+    - data
     deps:
-      - src/object_detection/negatives/conditions.py
-      - src/object_detection/negatives/cli.py
-      - src/object_detection/yolo_ls/shards.py
-      - data/01_raw/sv_water_conditions
+    - src/object_detection/negatives/conditions.py
+    - src/object_detection/negatives/cli.py
+    - src/object_detection/yolo_ls/shards.py
+    - data/01_raw/sv_water_conditions
     outs:
-      - data/02_interim/yolo_condition_negatives
+    - data/02_interim/yolo_condition_negatives
   split_data:
     cmd: >-
       rm -rf data/02_interim/yolo_annos_unpacked &&
@@ -87,28 +87,28 @@ stages:
       --seed 42
       --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
     params:
-      - data
+    - data
     deps:
-      - scripts/make_splits.py
-      - src/object_detection/splits
-      - src/object_detection/utils
-      - data/02_interim/yolo_annos
-      - data/02_interim/yolo_condition_negatives
-      - data/01_raw/salmon_vid_counts.csv
-      - data/01_raw/salmon_vid_counts_summary.csv
+    - scripts/make_splits.py
+    - src/object_detection/splits
+    - src/object_detection/utils
+    - data/02_interim/yolo_annos
+    - data/02_interim/yolo_condition_negatives
+    - data/01_raw/salmon_vid_counts.csv
+    - data/01_raw/salmon_vid_counts_summary.csv
     outs:
-      - data/03_processed/splits_baseline
+    - data/03_processed/splits_baseline
   build_video_metadata_index:
     cmd: >-
       scripts/build_video_metadata_index.py
       --json-dir data/01_raw/labelstudio_annos
       --out-csv data/02_interim/video_metadata_index.csv
     deps:
-      - src/object_detection/metadata/index.py
-      - src/object_detection/metadata/cli.py
-      - data/01_raw/labelstudio_annos
+    - src/object_detection/metadata/index.py
+    - src/object_detection/metadata/cli.py
+    - data/01_raw/labelstudio_annos
     outs:
-      - data/02_interim/video_metadata_index.csv
+    - data/02_interim/video_metadata_index.csv
   pack_split_dataset:
     cmd: >-
       scripts/pack_split_dataset.py
@@ -126,24 +126,24 @@ stages:
       --splits train val test
       --shard-size 100000
     deps:
-      - src/object_detection/frames/parsing.py
-      - src/object_detection/frames/extractor.py
-      - src/object_detection/frames/cli.py
-      - src/object_detection/yolo_ls/shards.py
-      - data/03_processed/splits_baseline
-      - data/02_interim/video_metadata_index.csv
-      - data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
-      - config/salmon_yolo.yaml
+    - src/object_detection/frames/parsing.py
+    - src/object_detection/frames/extractor.py
+    - src/object_detection/frames/cli.py
+    - src/object_detection/yolo_ls/shards.py
+    - data/03_processed/splits_baseline
+    - data/02_interim/video_metadata_index.csv
+    - data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+    - config/salmon_yolo.yaml
     params:
-      - data
-      - config.dataset
+    - data
+    - config.dataset
     outs:
-      - ${config.dataset}/salmon_dataset/dataset_sharded/shards
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
-      - ${config.dataset}/packed_dataset_manifest.csv
+    - ${config.dataset}/salmon_dataset/dataset_sharded/shards
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
+    - ${config.dataset}/packed_dataset_manifest.csv
   make_site_manifests:
     cmd: >-
       scripts/make_site_manifests.py
@@ -154,26 +154,26 @@ stages:
       --test-sites ${exp.test_sites}
       --summary-json ${config.dataset}/salmon_dataset/site_manifests/site_manifest_summary.json
     deps:
-      - scripts/make_site_manifests.py
-      - src/object_detection/site_splits/filter.py
-      - src/object_detection/site_splits/cli.py
-      - src/object_detection/utils
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+    - scripts/make_site_manifests.py
+    - src/object_detection/site_splits/filter.py
+    - src/object_detection/site_splits/cli.py
+    - src/object_detection/utils
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
     params:
-      - config.dataset
-      - exp.train_sites
-      - exp.val_sites
-      - exp.test_sites
+    - config.dataset
+    - exp.train_sites
+    - exp.val_sites
+    - exp.test_sites
     outs:
-      - ${config.dataset}/salmon_dataset/site_manifests/data.yaml
-      - ${config.dataset}/salmon_dataset/site_manifests/train.txt
-      - ${config.dataset}/salmon_dataset/site_manifests/val.txt
-      - ${config.dataset}/salmon_dataset/site_manifests/test.txt
+    - ${config.dataset}/salmon_dataset/site_manifests/data.yaml
+    - ${config.dataset}/salmon_dataset/site_manifests/train.txt
+    - ${config.dataset}/salmon_dataset/site_manifests/val.txt
+    - ${config.dataset}/salmon_dataset/site_manifests/test.txt
     metrics:
-      - ${config.dataset}/salmon_dataset/site_manifests/site_manifest_summary.json
+    - ${config.dataset}/salmon_dataset/site_manifests/site_manifest_summary.json
   make_train_small:
     cmd: >-
       scripts/make_train_small.py
@@ -184,13 +184,13 @@ stages:
       --seed 42
       --num-samples 30000
     deps:
-      - src/object_detection/sampling/subset.py
-      - src/object_detection/sampling/cli.py
-      - scripts/make_train_small.py
-      - ${config.dataset}/salmon_dataset/site_manifests/train.txt
+    - src/object_detection/sampling/subset.py
+    - src/object_detection/sampling/cli.py
+    - scripts/make_train_small.py
+    - ${config.dataset}/salmon_dataset/site_manifests/train.txt
     outs:
-      - ${config.dataset}/salmon_dataset/site_manifests/train_small.txt
-      - ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml
+    - ${config.dataset}/salmon_dataset/site_manifests/train_small.txt
+    - ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml
   unpack_split_dataset:
     cmd: >-
       rm -rf ${config.dataset}/salmon_dataset/yolo_workdir/train &&
@@ -201,11 +201,11 @@ stages:
       ${config.dataset}/salmon_dataset/dataset_sharded/shards
       ${config.yolo_workdir}
     params:
-      - config.dataset
-      - config.yolo_workdir
+    - config.dataset
+    - config.yolo_workdir
     deps:
-      - scripts/unpack_annos.sh
-      - ${config.dataset}/salmon_dataset/dataset_sharded/shards
+    - scripts/unpack_annos.sh
+    - ${config.dataset}/salmon_dataset/dataset_sharded/shards
   rewrite_manifest:
     cmd: >-
       cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml
@@ -229,24 +229,24 @@ stages:
       --output-manifest ${config.yolo_workdir}/test.txt
       --dataset-root ${config.yolo_workdir}
     params:
-      - config.dataset
-      - config.yolo_workdir
+    - config.dataset
+    - config.yolo_workdir
     deps:
-      - scripts/rewrite_manifest_absolute.py
-      - src/object_detection/training/manifests.py
-      - ${config.dataset}/salmon_dataset/site_manifests/data.yaml
-      - ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml
-      - ${config.dataset}/salmon_dataset/site_manifests/test.txt
-      - ${config.dataset}/salmon_dataset/site_manifests/train.txt
-      - ${config.dataset}/salmon_dataset/site_manifests/train_small.txt
-      - ${config.dataset}/salmon_dataset/site_manifests/val.txt
+    - scripts/rewrite_manifest_absolute.py
+    - src/object_detection/training/manifests.py
+    - ${config.dataset}/salmon_dataset/site_manifests/data.yaml
+    - ${config.dataset}/salmon_dataset/site_manifests/data_small.yaml
+    - ${config.dataset}/salmon_dataset/site_manifests/test.txt
+    - ${config.dataset}/salmon_dataset/site_manifests/train.txt
+    - ${config.dataset}/salmon_dataset/site_manifests/train_small.txt
+    - ${config.dataset}/salmon_dataset/site_manifests/val.txt
     outs:
-      - ${config.yolo_workdir}/data.yaml
-      - ${config.yolo_workdir}/data_small.yaml
-      - ${config.yolo_workdir}/test.txt
-      - ${config.yolo_workdir}/train.txt
-      - ${config.yolo_workdir}/train_small.txt
-      - ${config.yolo_workdir}/val.txt
+    - ${config.yolo_workdir}/data.yaml
+    - ${config.yolo_workdir}/data_small.yaml
+    - ${config.yolo_workdir}/test.txt
+    - ${config.yolo_workdir}/train.txt
+    - ${config.yolo_workdir}/train_small.txt
+    - ${config.yolo_workdir}/val.txt
   tune_yolo:
     cmd: >-
       CUDA_VISIBLE_DEVICES=${tune.device}
@@ -264,18 +264,18 @@ stages:
       --gpu-per-trial ${tune.gpu_per_trial}
       --resume
     deps:
-      - scripts/tune_yolo.py
-      - src/object_detection/tuning/search_space.py
-      - src/object_detection/tuning/tune.py
-      - src/object_detection/tuning/cli.py
-      - ${config.yolo_workdir}/data_small.yaml
-      - ${config.yolo_workdir}/train_small.txt
-      - ${config.yolo_workdir}/val.txt
+    - scripts/tune_yolo.py
+    - src/object_detection/tuning/search_space.py
+    - src/object_detection/tuning/tune.py
+    - src/object_detection/tuning/cli.py
+    - ${config.yolo_workdir}/data_small.yaml
+    - ${config.yolo_workdir}/train_small.txt
+    - ${config.yolo_workdir}/val.txt
     params:
-      - config.dataset
-      - config.yolo_workdir
-      - config.ray_tmp
-      - tune
+    - config.dataset
+    - config.yolo_workdir
+    - config.ray_tmp
+    - tune
     frozen: true
   train_yolo_best:
     cmd: >-
@@ -292,20 +292,20 @@ stages:
       --patience ${train.patience}
       --summary-json ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
     deps:
-      - scripts/train_yolo_best.py
-      - src/object_detection/training/train_best.py
-      - src/object_detection/training/cli.py
-      - ${config.yolo_workdir}/data.yaml
-      - ${config.yolo_workdir}/train.txt
-      - ${config.yolo_workdir}/val.txt
-      - ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${train.tune_dir}/args.yaml
+    - scripts/train_yolo_best.py
+    - src/object_detection/training/train_best.py
+    - src/object_detection/training/cli.py
+    - ${config.yolo_workdir}/data.yaml
+    - ${config.yolo_workdir}/train.txt
+    - ${config.yolo_workdir}/val.txt
+    - ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${train.tune_dir}/args.yaml
     params:
-      - train
-      - config.dataset
-      - config.yolo_workdir
+    - train
+    - config.dataset
+    - config.yolo_workdir
     outs:
-      - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}
-      - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
+    - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}
+    - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
   evaluate:
     cmd: >-
       scripts/eval_yolo.py
@@ -321,24 +321,43 @@ stages:
       --summary-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_summary.json
       --plot-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_plot.json
     deps:
-      - scripts/eval_yolo.py
-      - src/object_detection/eval/evaluate.py
-      - src/object_detection/eval/cli.py
-      - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
-      - ${config.yolo_workdir}/data.yaml
-      - ${config.yolo_workdir}/test.txt
+    - scripts/eval_yolo.py
+    - src/object_detection/eval/evaluate.py
+    - src/object_detection/eval/cli.py
+    - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
+    - ${config.yolo_workdir}/data.yaml
+    - ${config.yolo_workdir}/test.txt
     params:
-      - eval
-      - train.run_name
-      - config.dataset
-      - config.yolo_workdir
+    - eval
+    - train.run_name
+    - config.dataset
+    - config.yolo_workdir
     metrics:
-      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_summary.json
+    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_summary.json
     plots:
-      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_plot.json:
-          x: ap50
-          y: class_name
-          title: Per-class AP50 on test set
-          template: bar_horizontal
+    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_plot.json:
+        x: ap50
+        y: class_name
+        title: Per-class AP50 on test set
+        template: bar_horizontal
     outs:
-      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test
+    - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test
+params:
+- dvclive/params.yaml
+metrics:
+- dvclive/metrics.json
+plots:
+- dvclive/plots/metrics:
+    x: step
+- dvclive/plots/images
+- dvclive/plots/sklearn/cf.json:
+    template: confusion_normalized
+    x: actual
+    y: predicted
+    title: Confusion Matrix
+    x_label: True Label
+    y_label: Predicted Label
+artifacts:
+  best:
+    path: dvclive/artifacts/best.pt
+    type: model
