@@ -504,20 +504,20 @@ stages:
       size: 58210
   evaluate:
     cmd: scripts/eval_yolo.py --model 
-      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run_finetune_chignik/weights/best.pt
       --data-yaml data/04_dataset/salmon_dataset/yolo_workdir/data.yaml 
       --out-dir data/04_dataset/salmon_dataset/eval/yolov8n_full --run-name 
-      tuned_full_run1_test --split test --imgsz 640 --batch 32 --device 0 
-      --workers 8 --summary-json 
-      data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+      tuned_full_run_finetune_chignik_test --split test --imgsz 640 --batch 32 
+      --device 0 --workers 8 --summary-json 
+      data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run_finetune_chignik_test_summary.json
       --plot-json 
-      data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
+      data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run_finetune_chignik_test_plot.json
     deps:
     - path: 
-        data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+        data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run_finetune_chignik/weights/best.pt
       hash: md5
-      md5: ce6f04e9198141f465faf1b54ba3a04f
-      size: 18372033
+      md5: 286e4208aebbab8fcd9ea0c44fc96291
+      size: 6244778
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
       hash: md5
       md5: e6e439914481fba14b685095cbff4279
@@ -548,23 +548,24 @@ stages:
           batch: 32
           device: 0
           workers: 8
+        train.run_name: tuned_full_run_finetune_chignik
     outs:
     - path: 
-        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
+        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run_finetune_chignik_test
       hash: md5
-      md5: 5931a56e265ace4ab455138a622881d6.dir
-      size: 165459207
+      md5: a59eb315da9ea9c40b6ae33de78eca19.dir
+      size: 2309022112
       nfiles: 13
     - path: 
-        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
+        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run_finetune_chignik_test_plot.json
       hash: md5
-      md5: 9f0d0ee33df8cb9bef0793cf65128854
-      size: 3499
+      md5: 9fc49f1d01a8b532f85474965b81689b
+      size: 3534
     - path: 
-        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run_finetune_chignik_test_summary.json
       hash: md5
-      md5: a045f235cf23e7dd95358a2bb06c25c9
-      size: 6560
+      md5: 88a0e36bd9c07e0cbfb55d52ab33d96d
+      size: 6649
   make_site_manifests:
     cmd: scripts/make_site_manifests.py --manifests-root 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests --out-root 
