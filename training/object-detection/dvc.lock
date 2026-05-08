@@ -514,8 +514,8 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run_finetune_chignik/weights/best.pt
       hash: md5
-      md5: 286e4208aebbab8fcd9ea0c44fc96291
-      size: 6244778
+      md5: 3a2d431589c6564f11c4d103a2984e45
+      size: 6232106
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
       hash: md5
       md5: e6e439914481fba14b685095cbff4279
@@ -552,19 +552,19 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
       hash: md5
-      md5: b6adba978a7182dfffe69acd7efb6ce4.dir
-      size: 4453811
+      md5: b8fed6107b0e4e80f4b1e8a4fae94277.dir
+      size: 5449445
       nfiles: 13
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
       hash: md5
-      md5: f457207ed1e25af95778563bdac955ca
-      size: 379
+      md5: dc865ada2a6a95036f4e1695cbcc18ca
+      size: 381
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
       hash: md5
-      md5: 66c0c415204406a7b1f22f852161b789
-      size: 1280
+      md5: dd04aad7e361570474e7611ca0b7ccb8
+      size: 1285
   make_site_manifests:
     cmd: scripts/make_site_manifests.py --manifests-root 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests --out-root 
