@@ -26,10 +26,12 @@ tune:
   batch: 64
   iterations: 20
 train:
+  model: yolov8n.pt
   device: 0
   batch: 64
   patience: 50
   tune_dir: tune15
+  run_name: tuned_full_run1
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
   val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt

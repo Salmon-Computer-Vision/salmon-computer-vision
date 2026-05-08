@@ -281,16 +281,16 @@ stages:
     cmd: >-
       scripts/train_yolo_best.py
       --data-yaml ${config.yolo_workdir}/data.yaml
-      --model yolov8n.pt
+      --model ${train.model}
       --args-yaml ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${train.tune_dir}/args.yaml
       --out-dir ${config.dataset}/salmon_dataset/training/yolov8n_full
-      --run-name tuned_full_run1
+      --run-name ${train.run_name}
       --epochs 150
       --batch ${train.batch}
       --device ${train.device}
       --workers 16
       --patience ${train.patience}
-      --summary-json ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
+      --summary-json ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
     deps:
       - scripts/train_yolo_best.py
       - src/object_detection/training/train_best.py
@@ -304,40 +304,41 @@ stages:
       - config.dataset
       - config.yolo_workdir
     outs:
-      - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1
-    frozen: true
+      - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}
+      - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
   evaluate:
     cmd: >-
       scripts/eval_yolo.py
-      --model ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+      --model ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
       --data-yaml ${config.yolo_workdir}/data.yaml
       --out-dir ${config.dataset}/salmon_dataset/eval/yolov8n_full
-      --run-name tuned_full_run1_test
+      --run-name ${train.run_name}_test
       --split test
       --imgsz ${eval.imgsz}
       --batch ${eval.batch}
       --device ${eval.device}
       --workers ${eval.workers}
-      --summary-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
-      --plot-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
+      --summary-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_summary.json
+      --plot-json ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_plot.json
     deps:
       - scripts/eval_yolo.py
       - src/object_detection/eval/evaluate.py
       - src/object_detection/eval/cli.py
-      - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+      - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
       - ${config.yolo_workdir}/data.yaml
       - ${config.yolo_workdir}/test.txt
     params:
       - eval
+      - train.run_name
       - config.dataset
       - config.yolo_workdir
     metrics:
-      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_summary.json
     plots:
-      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json:
+      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test_plot.json:
           x: ap50
           y: class_name
           title: Per-class AP50 on test set
           template: bar_horizontal
     outs:
-      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
+      - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test
