@@ -276,6 +276,7 @@ stages:
     - config.yolo_workdir
     - config.ray_tmp
     - tune
+    frozen: true
   train_yolo_best:
     cmd: >-
       scripts/train_yolo_best.py
@@ -304,6 +305,7 @@ stages:
     - config.yolo_workdir
     outs:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1
+    frozen: true
   evaluate:
     cmd: >-
       scripts/eval_yolo.py
