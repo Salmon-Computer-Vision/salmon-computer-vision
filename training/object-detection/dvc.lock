@@ -441,12 +441,11 @@ stages:
   train_yolo_best:
     cmd: scripts/train_yolo_best.py --data-yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data.yaml --model 
-      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
-      --args-yaml 
+      data/04_dataset/best.pt --args-yaml 
       data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/args.yaml 
       --out-dir data/04_dataset/salmon_dataset/training/yolov8n_full --run-name 
       tuned_full_run_finetune_chignik --epochs 150 --batch 32 --device 0 
-      --workers 16 --patience 50 --summary-json 
+      --workers 16 --patience 100 --summary-json 
       data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run_finetune_chignik_summary.json
     deps:
     - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/args.yaml
@@ -483,25 +482,24 @@ stages:
         config.dataset: data/04_dataset
         config.yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
         train:
-          model: 
-            data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+          model: data/04_dataset/best.pt
           device: 0
           batch: 32
-          patience: 50
+          patience: 100
           tune_dir: tune15
           run_name: tuned_full_run_finetune_chignik
     outs:
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run_finetune_chignik
       hash: md5
-      md5: 07eec32c9af6acf44b6ff0fafb1f4a0c.dir
-      size: 16825521
-      nfiles: 21
+      md5: f1444860674d1575141a10d321f5196d.dir
+      size: 17721742
+      nfiles: 24
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run_finetune_chignik_summary.json
       hash: md5
-      md5: 9306ebc58d7f3a64b148f2bcac895d40
-      size: 58210
+      md5: b18c4653cbf622e50d4d7357e998feb8
+      size: 58209
   evaluate:
     cmd: scripts/eval_yolo.py --model 
       data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run_finetune_chignik/weights/best.pt
