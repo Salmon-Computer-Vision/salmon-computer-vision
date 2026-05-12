@@ -25,17 +25,8 @@ def write_manifest(path: Path, lines: Sequence[str]) -> None:
 
 
 def extract_video_stem(line: str) -> str:
-    p = Path(line)
-    parts = p.parts
-
-    # Handles:
-    #   test/VIDEO/frame_000001.jpg
-    #   /abs/.../test/VIDEO/frame_000001.jpg
-    for i, part in enumerate(parts[:-2]):
-        if part in {"train", "val", "test"}:
-            return parts[i + 1]
-
-    raise ValueError(f"Could not extract video stem from manifest line: {line}")
+    _, video_stem, _ = extract_split_video_frame(line)
+    return video_stem
 
 
 def extract_site(line: str) -> str:
@@ -46,14 +37,42 @@ def extract_site(line: str) -> str:
     return meta["site"]
 
 
-def to_abs_image_path(line: str, source_yolo_workdir: Path) -> str:
-    p = Path(line)
-    if p.is_absolute():
-        return str(p)
+def extract_split_video_frame(line: str) -> tuple[str, str, str]:
+    """
+    Extract:
+      split, video_stem, frame_filename
 
-    # line is expected like:
-    #   test/VIDEO/frame_000001.jpg
-    return str((source_yolo_workdir / p).resolve())
+    from either:
+      test/VIDEO/frame_000001.jpg
+
+    or:
+      /abs/path/.../test/VIDEO/frame_000001.jpg
+
+    This intentionally discards any leading path, including stale
+    .dvc/tmp/exps paths.
+    """
+    p = Path(line)
+    parts = p.parts
+
+    for i, part in enumerate(parts[:-2]):
+        if part in {"train", "val", "test"}:
+            split = parts[i]
+            video_stem = parts[i + 1]
+            frame_name = parts[i + 2]
+            return split, video_stem, frame_name
+
+    raise ValueError(f"Could not extract split/video/frame from manifest line: {line}")
+
+
+def to_abs_image_path(line: str, source_yolo_workdir: Path) -> str:
+    """
+    Always rebuild image path under source_yolo_workdir.
+
+    Do NOT preserve absolute input paths because DVC experiments may leave
+    stale .dvc/tmp/exps/... paths in manifests.
+    """
+    split, video_stem, frame_name = extract_split_video_frame(line)
+    return str((source_yolo_workdir / split / video_stem / frame_name).resolve())
 
 
 def rewrite_data_yaml(
