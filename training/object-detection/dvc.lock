@@ -396,8 +396,8 @@ stages:
     cmd: CUDA_VISIBLE_DEVICES=0 scripts/tune_yolo.py --data-yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml --model 
       yolov8n.pt --out-dir data/04_dataset/salmon_dataset/tuning/yolov8n_small 
-      --epochs 30 --imgsz 640 --batch 64 --workers 16 --patience 10 --iterations
-      20 --use-ray --gpu-per-trial 1 --resume
+      --epochs 30 --imgsz 640 --batch 32 --workers 16 --patience 10 --iterations
+      20 --use-ray --gpu-per-trial 1
     deps:
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml
       hash: md5
@@ -405,12 +405,12 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
       hash: md5
-      md5: 16471adfd529d9426d2336ac40df0560
-      size: 5115254
+      md5: 14ad18c5245e36fb4479879aa56a89b7
+      size: 5119169
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: 5c42d4af4cce927f6bd9d213992d8dcd
-      size: 35450254
+      md5: 7607d7e483e7876e43f7871895575d68
+      size: 36905202
     - path: scripts/tune_yolo.py
       hash: md5
       md5: 4cb4c4dc2cfdcc082d7f56b347a04c5f
@@ -436,8 +436,22 @@ stages:
         tune:
           device: 0
           gpu_per_trial: 1
-          batch: 64
+          batch: 32
           iterations: 20
+    outs:
+    - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small
+      hash: md5
+      md5: a0597b1204635a2da8773431279c3a65.dir
+      size: 1037497526
+      nfiles: 357
+    - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small_best.json
+      hash: md5
+      md5: 902da538334e47e5f866d32dba9cd4dd
+      size: 687
+    - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small_summary.csv
+      hash: md5
+      md5: ba360f92428bccbed8d8a6b3b5a8e8cc
+      size: 8161
   train_yolo_best:
     cmd: scripts/train_yolo_best.py --data-yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data.yaml --model yolov8n.pt 
