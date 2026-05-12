@@ -313,11 +313,33 @@ stages:
     outs:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1
     frozen: true
+  make_site_eval_workdir:
+    cmd: >-
+      scripts/make_site_eval_workdir.py
+      --source-yolo-workdir ${config.yolo_workdir}
+      --source-test-manifest ${config.yolo_workdir}/test.txt
+      --source-data-yaml ${config.yolo_workdir}/data.yaml
+      --out-workdir ${config.eval_workdir}
+      --test-sites "${exp.test_sites}"
+    deps:
+      - scripts/make_site_eval_workdir.py
+      - src/object_detection/utils
+      - ${config.yolo_workdir}/test.txt
+      - ${config.yolo_workdir}/data.yaml
+    params:
+      - config.yolo_workdir
+      - config.eval_workdir
+      - exp.test_sites
+    outs:
+      - ${config.eval_workdir}/test.txt:
+          cache: false
+      - ${config.eval_workdir}/data.yaml:
+          cache: false
   evaluate:
     cmd: >-
       scripts/eval_yolo.py
       --model ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
-      --data-yaml ${config.yolo_workdir}/data.yaml
+      --data-yaml ${config.eval_workdir}/data.yaml
       --out-dir ${config.dataset}/salmon_dataset/eval/yolov8n_full
       --run-name tuned_full_run1_test
       --split test
@@ -332,12 +354,12 @@ stages:
     - src/object_detection/eval/evaluate.py
     - src/object_detection/eval/cli.py
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
-    - ${config.yolo_workdir}/data.yaml
-    - ${config.yolo_workdir}/test.txt
+    - ${config.eval_workdir}/data.yaml
+    - ${config.eval_workdir}/test.txt
     params:
     - eval
     - config.dataset
-    - config.yolo_workdir
+    - config.eval_workdir
     metrics:
     - ${config.dataset}/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
     plots:
