@@ -19,6 +19,11 @@ services:
     cap_add:
       - net_admin
       - sys_module
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
     # Auto restart
     restart: always
     network_mode: host
