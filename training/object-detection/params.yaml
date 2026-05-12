@@ -19,6 +19,7 @@ data:
 config:
   dataset: data/04_dataset
   yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
+  real_yolo_workdir: /home/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/yolo_workdir
   eval_workdir: /home/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/site_eval_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
 tune:
@@ -34,7 +35,7 @@ train:
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
   val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
-  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
+  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
 eval:
   imgsz: 640
   batch: 32

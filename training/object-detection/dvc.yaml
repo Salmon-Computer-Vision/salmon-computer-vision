@@ -316,18 +316,18 @@ stages:
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py
-      --source-yolo-workdir ${config.yolo_workdir}
-      --source-test-manifest ${config.yolo_workdir}/test.txt
-      --source-data-yaml ${config.yolo_workdir}/data.yaml
+      --source-yolo-workdir ${config.real_yolo_workdir}
+      --source-test-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+      --source-data-yaml ${config.real_yolo_workdir}/data.yaml
       --out-workdir ${config.eval_workdir}
       --test-sites "${exp.test_sites}"
     deps:
       - scripts/make_site_eval_workdir.py
       - src/object_detection/utils
-      - ${config.yolo_workdir}/test.txt
-      - ${config.yolo_workdir}/data.yaml
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+      - ${config.real_yolo_workdir}/data.yaml
     params:
-      - config.yolo_workdir
+      - config.real_yolo_workdir
       - config.eval_workdir
       - exp.test_sites
     outs:
