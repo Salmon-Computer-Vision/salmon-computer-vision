@@ -33,9 +33,9 @@ train:
   patience: 50
   tune_dir: tune15
 exp:
-  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
-  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
-  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
+  train_sites: tankeeah kitkiata kwakwa koeye redoubt chignik
+  val_sites: tankeeah kitkiata kwakwa koeye redoubt chignik
+  test_sites: tankeeah kitkiata kwakwa koeye redoubt chignik
 eval:
   imgsz: 640
   batch: 32
