@@ -40,6 +40,7 @@ stages:
     outs:
     - data/02_interim/yolo_annos
     - data/02_interim/yolo_annos_stats
+    frozen: true
   plot_site_class_stats:
     cmd: >-
       scripts/plot_site_class_stats.py
@@ -98,6 +99,7 @@ stages:
     - data/01_raw/salmon_vid_counts_summary.csv
     outs:
     - data/03_processed/splits_baseline
+    frozen: true
   build_video_metadata_index:
     cmd: >-
       scripts/build_video_metadata_index.py
@@ -109,6 +111,7 @@ stages:
     - data/01_raw/labelstudio_annos
     outs:
     - data/02_interim/video_metadata_index.csv
+    frozen: true
   pack_split_dataset:
     cmd: >-
       scripts/pack_split_dataset.py
@@ -144,6 +147,7 @@ stages:
     - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
     - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
     - ${config.dataset}/packed_dataset_manifest.csv
+    frozen: true
   make_site_manifests:
     cmd: >-
       scripts/make_site_manifests.py
@@ -262,7 +266,6 @@ stages:
       --iterations ${tune.iterations}
       --use-ray
       --gpu-per-trial ${tune.gpu_per_trial}
-      --resume
     deps:
     - scripts/tune_yolo.py
     - src/object_detection/tuning/search_space.py
@@ -276,6 +279,8 @@ stages:
     - config.yolo_workdir
     - config.ray_tmp
     - tune
+    outs:
+    - ${config.dataset}/salmon_dataset/tuning/
     frozen: true
   train_yolo_best:
     cmd: >-
