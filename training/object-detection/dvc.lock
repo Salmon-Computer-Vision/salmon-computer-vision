@@ -506,6 +506,11 @@ stages:
       md5: 5298da499f62c76ac54f80c56975c3dc.dir
       size: 18494729
       nfiles: 21
+    - path: 
+        data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
+      hash: md5
+      md5: 2d541c14049ab25926a6faa41daadd39
+      size: 58253
   evaluate:
     cmd: scripts/eval_yolo.py --model 
       data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
