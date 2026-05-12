@@ -280,7 +280,9 @@ stages:
     - config.ray_tmp
     - tune
     outs:
-    - ${config.dataset}/salmon_dataset/tuning/
+    - ${config.dataset}/salmon_dataset/tuning/yolov8n_small
+    - ${config.dataset}/salmon_dataset/tuning/yolov8n_small_best.json
+    - ${config.dataset}/salmon_dataset/tuning/yolov8n_small_summary.csv
     frozen: true
   train_yolo_best:
     cmd: >-
