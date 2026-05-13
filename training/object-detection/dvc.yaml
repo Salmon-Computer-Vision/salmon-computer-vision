@@ -40,7 +40,6 @@ stages:
     outs:
     - data/02_interim/yolo_annos
     - data/02_interim/yolo_annos_stats
-    frozen: true
   plot_site_class_stats:
     cmd: >-
       scripts/plot_site_class_stats.py
@@ -99,7 +98,6 @@ stages:
     - data/01_raw/salmon_vid_counts_summary.csv
     outs:
     - data/03_processed/splits_baseline
-    frozen: true
   build_video_metadata_index:
     cmd: >-
       scripts/build_video_metadata_index.py
@@ -111,7 +109,6 @@ stages:
     - data/01_raw/labelstudio_annos
     outs:
     - data/02_interim/video_metadata_index.csv
-    frozen: true
   pack_split_dataset:
     cmd: >-
       scripts/pack_split_dataset.py
@@ -147,7 +144,6 @@ stages:
     - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
     - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
     - ${config.dataset}/packed_dataset_manifest.csv
-    frozen: true
   make_site_manifests:
     cmd: >-
       scripts/make_site_manifests.py
@@ -313,7 +309,6 @@ stages:
     outs:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
-    frozen: true
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py
@@ -323,19 +318,19 @@ stages:
       --out-workdir ${config.eval_workdir}
       --test-sites "${exp.test_sites}"
     deps:
-      - scripts/make_site_eval_workdir.py
-      - src/object_detection/utils
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
-      - ${config.real_yolo_workdir}/data.yaml
+    - scripts/make_site_eval_workdir.py
+    - src/object_detection/utils
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
+    - ${config.real_yolo_workdir}/data.yaml
     params:
-      - config.real_yolo_workdir
-      - config.eval_workdir
-      - exp.test_sites
+    - config.real_yolo_workdir
+    - config.eval_workdir
+    - exp.test_sites
     outs:
-      - ${config.eval_workdir}/test.txt:
-          cache: false
-      - ${config.eval_workdir}/data.yaml:
-          cache: false
+    - ${config.eval_workdir}/test.txt:
+        cache: false
+    - ${config.eval_workdir}/data.yaml:
+        cache: false
   evaluate:
     cmd: >-
       scripts/eval_yolo.py
