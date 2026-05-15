@@ -1,0 +1,82 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "values": "<DVC_METRIC_DATA>"
+  },
+  "title": {
+    "text": "<DVC_METRIC_TITLE>",
+    "anchor": "middle"
+  },
+  "facet": {
+    "row": {
+      "field": "rev",
+      "type": "nominal",
+      "title": null,
+      "header": {
+        "labelFontSize": 12,
+        "labelFontWeight": "bold"
+      }
+    }
+  },
+  "spec": {
+    "width": "<DVC_METRIC_PLOT_WIDTH>",
+    "height": {
+      "step": 14
+    },
+    "layer": [
+      {
+        "mark": {
+          "type": "bar"
+        },
+        "encoding": {
+          "x": {
+            "field": "<DVC_METRIC_X>",
+            "type": "quantitative",
+            "title": "<DVC_METRIC_X_LABEL>",
+            "scale": {
+              "domain": [0, 1.05]
+            }
+          },
+          "y": {
+            "field": "<DVC_METRIC_Y>",
+            "type": "nominal",
+            "title": null,
+            "sort": "-x"
+          },
+          "color": "<DVC_METRIC_COLOR>",
+          "column": "<DVC_METRIC_COLUMN>"
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "align": "left",
+          "baseline": "middle",
+          "dx": 4,
+          "fontSize": 10
+        },
+        "encoding": {
+          "x": {
+            "field": "<DVC_METRIC_X>",
+            "type": "quantitative",
+            "scale": {
+              "domain": [0, 1.05]
+            }
+          },
+          "y": {
+            "field": "<DVC_METRIC_Y>",
+            "type": "nominal",
+            "sort": "-x"
+          },
+          "text": {
+            "field": "<DVC_METRIC_X>",
+            "type": "quantitative",
+            "format": ".3f"
+          }
+        }
+      }
+    ]
+  },
+  "resolve": {"scale": {"y": "independent"}}
+}
+
