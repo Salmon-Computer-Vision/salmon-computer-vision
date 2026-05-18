@@ -314,7 +314,6 @@ stages:
     outs:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
-    frozen: true
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py
