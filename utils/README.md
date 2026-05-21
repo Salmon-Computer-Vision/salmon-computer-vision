@@ -2,11 +2,21 @@
 
 ## Troubleshooting
 
-### Network not connecting
+### Network not connecting even with correct IP address
 
 This is likely due to the device resetting back to factory date/time settings
 if it does not have a RTC (Real-Time Clock) battery which can mess up the
 software that requires network connectivity.
+
+Open the terminal through CTRL+ALT+T if not connected through SSH.
+
+Check if the date is correct:
+
+```bash
+date
+```
+
+If it's not correct and set to 1970 or 2000, run the following commands to fix it.
 
 First, turn on NTP which will update the date/time through the Internet:
 ```
