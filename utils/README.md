@@ -2,6 +2,42 @@
 
 ## Troubleshooting
 
+### Network not connecting
+
+This is likely due to the device resetting back to factory date/time settings
+if it does not have a RTC (Real-Time Clock) battery which can mess up the
+software that requires network connectivity.
+
+First, turn on NTP which will update the date/time through the Internet:
+```
+sudo timedatectl set-ntp true
+```
+
+You can set the date/time manually through this command:
+```
+sudo timedatectl set-time "YYYY-MM-DD HH:MM:SS"
+```
+
+If the device has an RTC battery, you can save the time into the hardware clock
+like this:
+
+```bash
+sudo hwclock --systohc
+```
+
+An alternative if the device does not have an RTC battery is to use the
+`fake-hwclock` service:
+
+```bash
+sudo apt update && sudo apt install fake-hwclock
+```
+
+Enable and start the service:
+```bash
+sudo systemctl enable fake-hwclock.service
+sudo systemctl start fake-hwclock.service
+```
+
 ### Harddrive disconnects
 
 This issue happens often with the Marlin Boxes where the harddrive would
