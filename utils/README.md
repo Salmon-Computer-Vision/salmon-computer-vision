@@ -48,6 +48,11 @@ sudo systemctl enable fake-hwclock.service
 sudo systemctl start fake-hwclock.service
 ```
 
+This will periodically save the current time to a file and load it up upon
+startup, so the device starts at a reasonable datetime for NTP to set the
+correct time or for offline work to still work without an incredibly old
+timestamp.
+
 ### Harddrive disconnects
 
 This issue happens often with the Marlin Boxes where the harddrive would
