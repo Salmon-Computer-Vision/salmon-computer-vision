@@ -53,6 +53,60 @@ startup, so the device starts at a reasonable datetime for NTP to set the
 correct time or for offline work to still work without an incredibly old
 timestamp.
 
+### Cannot clone the SD card as the target SD card is a different manufacturer
+
+Different manufacturers of SD cards have slightly different sizes, which makes
+cloning SD cards of the same size difficult across different manufacturers' SD
+cards.
+
+This is a step-by-step to backup the source SD card as an .img file, shrink the
+partition slightly using a script, and then write the .img file to the new SD
+card. You’ll also need at least 256 GB of extra space on your PC to hold the
+backup.
+
+There’s this [YouTube video that shows this
+step-by-step](https://youtu.be/5pdgO3Ncl6k?si=pkhHyAow0aLVPcds), but below the
+steps are outlined and instead of using a virtual machine as the video says,
+you can install WSL (Windows Subsystem for Linux) as per the steps below.
+
+[Here is another step-by-step in text
+format.](https://www.reddit.com/r/raspberry_pi/comments/1kqtk3c/windows_11_software_to_create_backup_img_from_rpi/)
+
+Here are the steps:
+
+On Windows, use Win32 Disk Imager to backup the SD card as an .img file.
+Install [link here](https://sourceforge.net/projects/win32diskimager/)
+
+You can follow the YouTube tutorial to image the SD card into an .img file.
+
+Install WSL which is a linux based commandline tool that lives inside Windows.
+1.	Hit the windows key to open the start menu
+2.	Type in “Powershell” to search
+3.	Right click “Windows Powershell” and hit “Run as administrator”
+4.	In the terminal that pops up, type in “wsl --install Ubuntu”
+5.	Follow the instructions. You may need to restart your PC after it installs
+[More info here if needed](https://learn.microsoft.com/en-us/windows/wsl/install)
+
+Go to where you kept the .img file.
+
+Click on the address bar of your folders window and type in “bash” then press Enter which will open a bash terminal.
+
+Copy and paste the following to download pishrink:
+
+```bash
+wget https://raw.githubusercontent.com/Drewsif/PiShrink/refs/heads/master/pishrink.sh -O pishrink.sh
+```
+
+Run this command to shrink the img file:
+
+```bash
+sudo bash pishrink.sh -vz name_of_img_file.img
+```
+
+Finally, use BalenaEtcher to flash the zipped file to the new SD card. You can
+zip it yourself using 7-zip as the video describes, but pishrink can zip with
+the -z flag itself which was used in the above command.
+
 ### Harddrive disconnects
 
 This issue happens often with the Marlin Boxes where the harddrive would
