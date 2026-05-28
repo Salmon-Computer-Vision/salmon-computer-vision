@@ -85,6 +85,7 @@ Install WSL which is a linux based commandline tool that lives inside Windows.
 3.	Right click “Windows Powershell” and hit “Run as administrator”
 4.	In the terminal that pops up, type in `wsl --install Ubuntu`
 5.	Follow the instructions. You may need to restart your PC after it installs
+
 [More info here if needed](https://learn.microsoft.com/en-us/windows/wsl/install)
 
 Go to where you kept the .img file.
