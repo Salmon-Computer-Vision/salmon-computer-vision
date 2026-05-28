@@ -83,13 +83,13 @@ Install WSL which is a linux based commandline tool that lives inside Windows.
 1.	Hit the windows key to open the start menu
 2.	Type in “Powershell” to search
 3.	Right click “Windows Powershell” and hit “Run as administrator”
-4.	In the terminal that pops up, type in “wsl --install Ubuntu”
+4.	In the terminal that pops up, type in `wsl --install Ubuntu`
 5.	Follow the instructions. You may need to restart your PC after it installs
 [More info here if needed](https://learn.microsoft.com/en-us/windows/wsl/install)
 
 Go to where you kept the .img file.
 
-Click on the address bar of your folders window and type in “bash” then press Enter which will open a bash terminal.
+Click on the address bar of your folders window and type in `bash` then press Enter which will open a bash terminal.
 
 Copy and paste the following to download pishrink:
 
@@ -103,9 +103,9 @@ Run this command to shrink the img file:
 sudo bash pishrink.sh -vz name_of_img_file.img
 ```
 
-Finally, use BalenaEtcher to flash the zipped file to the new SD card. You can
+Finally, use BalenaEtcher to flash the `.gz` zipped file to the new SD card. You can
 zip it yourself using 7-zip as the video describes, but pishrink can zip with
-the -z flag itself which was used in the above command.
+the `-z` flag itself which was used in the above command.
 
 ### Harddrive disconnects
 
