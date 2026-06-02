@@ -70,19 +70,103 @@ class SodaFLParsed:
     date: datetime
     index: int
 
-def probe_duration_seconds(path: Path) -> float:
+def _parse_ffmpeg_rate(rate: str) -> float:
+    if not rate:
+        return 0.0
+
+    if "/" in rate:
+        num_s, den_s = rate.split("/", 1)
+        try:
+            num = float(num_s)
+            den = float(den_s)
+            return num / den if den else 0.0
+        except Exception:
+            return 0.0
+
+    try:
+        return float(rate)
+    except Exception:
+        return 0.0
+
+
+def _run_ffprobe_json(path: Path, timeout: float) -> dict:
+    import json
+
     cmd = [
         "ffprobe",
         "-v",
         "error",
-        "-show_entries",
-        "format=duration",
-        "-of",
-        "default=noprint_wrappers=1:nokey=1",
+        "-print_format",
+        "json",
+        "-show_format",
+        "-show_streams",
         str(path),
     ]
-    result = subprocess.run(cmd, check=True, text=True, capture_output=True)
-    return float(result.stdout.strip())
+    result = subprocess.run(
+        cmd,
+        check=True,
+        text=True,
+        capture_output=True,
+        timeout=timeout,
+    )
+    return json.loads(result.stdout)
+
+
+def probe_duration_seconds(path: Path, timeout: float = 20.0) -> float:
+    """
+    Return video duration in seconds.
+
+    Tries:
+      1. format.duration
+      2. video stream duration
+      3. nb_frames / frame_rate fallback
+
+    Raises RuntimeError if duration cannot be determined.
+    """
+    try:
+        data = _run_ffprobe_json(path, timeout=timeout)
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(f"ffprobe timed out after {timeout:.1f}s") from e
+    except subprocess.CalledProcessError as e:
+        stderr = (e.stderr or "").strip()
+        raise RuntimeError(f"ffprobe failed: {stderr}") from e
+
+    fmt = data.get("format") or {}
+    duration = fmt.get("duration")
+    if duration not in (None, "", "N/A"):
+        try:
+            d = float(duration)
+            if d > 0:
+                return d
+        except Exception:
+            pass
+
+    for stream in data.get("streams", []):
+        if stream.get("codec_type") != "video":
+            continue
+
+        duration = stream.get("duration")
+        if duration not in (None, "", "N/A"):
+            try:
+                d = float(duration)
+                if d > 0:
+                    return d
+            except Exception:
+                pass
+
+        nb_frames = stream.get("nb_frames")
+        rate = stream.get("avg_frame_rate") or stream.get("r_frame_rate")
+        fps = _parse_ffmpeg_rate(str(rate or ""))
+        if nb_frames not in (None, "", "N/A") and fps > 0:
+            try:
+                n = float(nb_frames)
+                d = n / fps
+                if d > 0:
+                    return d
+            except Exception:
+                pass
+
+    raise RuntimeError("Could not determine duration from ffprobe metadata")
 
 
 def run_cmd(cmd: list[str], dry_run: bool = False) -> None:
@@ -175,6 +259,9 @@ def parse_sodafl_filename(path: Path) -> Optional[SodaFLParsed]:
 
 def build_sodafl_clips_contiguous(
     paths: list[Path],
+    *,
+    ffprobe_timeout: float = 20.0,
+    skip_bad_duration: bool = True,
 ) -> tuple[list[ClipInfo], int]:
     parsed: list[SodaFLParsed] = []
     parse_errors = 0
@@ -200,23 +287,28 @@ def build_sodafl_clips_contiguous(
         elapsed = 0.0
         for item in items:
             try:
-                duration = probe_duration_seconds(item.src_path)
-                recorded_at = date + timedelta(seconds=int(round(elapsed)))
-
-                clips.append(
-                    ClipInfo(
-                        src_path=item.src_path,
-                        recorded_at=recorded_at,
-                        label="M",
-                        duration_seconds=duration,
-                    )
-                )
-
-                elapsed += duration
+                duration = probe_duration_seconds(item.src_path, timeout=ffprobe_timeout)
 
             except Exception as e:
                 parse_errors += 1
-                print(f"[WARN] Could not probe duration for {item.src_path}: {e}", file=sys.stderr)
+                msg = f"[WARN] Could not probe duration for {item.src_path}: {e}"
+                if skip_bad_duration:
+                    print(msg + " -- skipping file", file=sys.stderr)
+                    continue
+                raise RuntimeError(msg) from e
+
+            recorded_at = date + timedelta(seconds=int(round(elapsed)))
+
+            clips.append(
+                ClipInfo(
+                    src_path=item.src_path,
+                    recorded_at=recorded_at,
+                    label="M",
+                    duration_seconds=duration,
+                )
+            )
+
+            elapsed += duration
 
     return clips, parse_errors
 
@@ -347,6 +439,25 @@ def main() -> None:
         default="auto",
         help="Filename parser to use. auto tries both legacy M/C format and SodaFL-MMDDYY-INDEX.",
     )
+    parser.add_argument(
+        "--skip-bad-duration",
+        dest="skip_bad_duration",
+        action="store_true",
+        default=True,
+        help="Skip videos whose duration cannot be probed",
+    )
+    parser.add_argument(
+        "--no-skip-bad-duration",
+        dest="skip_bad_duration",
+        action="store_false",
+        help="Fail if any video duration cannot be probed",
+    )
+    parser.add_argument(
+        "--ffprobe-timeout",
+        type=float,
+        default=20.0,
+        help="Timeout in seconds for probing each video duration",
+    )
 
     parser.add_argument(
         "--collision",
@@ -380,7 +491,11 @@ def main() -> None:
     parse_errors = 0
 
     if args.filename_format == "sodafl":
-        clips, parse_errors = build_sodafl_clips_contiguous(all_video_paths)
+        clips, parse_errors = build_sodafl_clips_contiguous(
+            all_video_paths,
+            ffprobe_timeout=args.ffprobe_timeout,
+            skip_bad_duration=args.skip_bad_duration,
+        )
 
     else:
         for path in all_video_paths:
@@ -391,14 +506,9 @@ def main() -> None:
                     clip = parse_clip_filename(path, date_order=args.date_order)
 
                 if clip is None and args.filename_format == "auto":
-                    # In auto mode, parse SodaFL individually. This cannot make a
-                    # cumulative timeline across days, so prefer --filename-format sodafl
-                    # for SodaFL datasets.
                     parsed = parse_sodafl_filename(path)
                     if parsed is not None:
-                        duration = clip.duration_seconds
-                        if duration is None:
-                            duration = probe_duration_seconds(clip.src_path)
+                        duration = probe_duration_seconds(path, timeout=args.ffprobe_timeout)
                         clip = ClipInfo(
                             src_path=path,
                             recorded_at=parsed.date,
@@ -426,7 +536,9 @@ def main() -> None:
         print(f"\n[CLIP] {clip.src_path}")
 
         try:
-            duration = probe_duration_seconds(clip.src_path)
+            duration = clip.duration_seconds
+            if duration is None:
+                duration = probe_duration_seconds(clip.src_path, timeout=args.ffprobe_timeout)
             n_segments = max(1, int((duration + args.segment_seconds - 1) // args.segment_seconds))
 
             print(f"[INFO] duration={duration:.2f}s segments={n_segments}")
