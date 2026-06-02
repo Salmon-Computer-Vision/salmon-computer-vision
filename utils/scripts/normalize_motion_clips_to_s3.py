@@ -11,6 +11,23 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterable, Optional
 
+SODAFL_RE = re.compile(
+    r"""
+    ^
+    (?P<prefix>SodaFL)
+    -
+    (?P<mm>\d{2})
+    (?P<dd>\d{2})
+    (?P<yy>\d{2})
+    -
+    (?P<index>\d{3})
+    \.
+    (?P<ext>avi|mp4|m4v|mov)
+    $
+    """,
+    re.VERBOSE | re.IGNORECASE,
+)
+
 
 MOTION_RE = re.compile(
     r"""
@@ -41,10 +58,17 @@ class ClipInfo:
     src_path: Path
     recorded_at: datetime
     label: str
+    duration_seconds: float | None = None
 
     @property
     def timestamp(self) -> str:
         return self.recorded_at.strftime("%Y%m%d_%H%M%S")
+
+@dataclass(frozen=True)
+class SodaFLParsed:
+    src_path: Path
+    date: datetime
+    index: int
 
 def probe_duration_seconds(path: Path) -> float:
     cmd = [
@@ -71,6 +95,18 @@ def run_cmd(cmd: list[str], dry_run: bool = False) -> None:
 def require_binary(name: str) -> None:
     if shutil.which(name) is None:
         raise SystemExit(f"Required executable not found in PATH: {name}")
+
+
+def parse_hhmmss(text: str) -> tuple[int, int, int]:
+    parts = text.strip().split(":")
+    if len(parts) != 3:
+        raise ValueError(f"Expected HH:MM:SS, got {text!r}")
+
+    hh, mm, ss = [int(x) for x in parts]
+    if not (0 <= hh <= 23 and 0 <= mm <= 59 and 0 <= ss <= 59):
+        raise ValueError(f"Invalid HH:MM:SS value: {text!r}")
+
+    return hh, mm, ss
 
 
 def parse_clip_filename(path: Path, *, date_order: str = "dmy") -> Optional[ClipInfo]:
@@ -110,6 +146,79 @@ def parse_clip_filename(path: Path, *, date_order: str = "dmy") -> Optional[Clip
         raise ValueError(f"Could not parse date/time from {path.name!r}: {e}") from e
 
     return ClipInfo(src_path=path, recorded_at=dt, label=label)
+
+
+def parse_sodafl_filename(path: Path) -> Optional[SodaFLParsed]:
+    """
+    Parse SodaFL-MMDDYY-INDEX.ext filenames.
+
+    Example:
+      SodaFL-010322-001.avi
+
+    Middle portion is MMDDYY. The final HHMMSS is assigned later using
+    cumulative durations within each day.
+    """
+    m = SODAFL_RE.match(path.name)
+    if not m:
+        return None
+
+    month = int(m.group("mm"))
+    day = int(m.group("dd"))
+    yy = int(m.group("yy"))
+    index = int(m.group("index"))
+
+    year = 2000 + yy
+    date = datetime(year, month, day, 0, 0, 0)
+
+    return SodaFLParsed(src_path=path, date=date, index=index)
+
+
+def build_sodafl_clips_contiguous(
+    paths: list[Path],
+) -> tuple[list[ClipInfo], int]:
+    parsed: list[SodaFLParsed] = []
+    parse_errors = 0
+
+    for path in paths:
+        try:
+            p = parse_sodafl_filename(path)
+            if p is not None:
+                parsed.append(p)
+        except Exception as e:
+            parse_errors += 1
+            print(f"[WARN] Could not parse SodaFL filename {path}: {e}", file=sys.stderr)
+
+    by_date: dict[datetime, list[SodaFLParsed]] = {}
+    for p in parsed:
+        by_date.setdefault(p.date, []).append(p)
+
+    clips: list[ClipInfo] = []
+
+    for date, items in sorted(by_date.items(), key=lambda kv: kv[0]):
+        items.sort(key=lambda x: (x.index, x.src_path.name))
+
+        elapsed = 0.0
+        for item in items:
+            try:
+                duration = probe_duration_seconds(item.src_path)
+                recorded_at = date + timedelta(seconds=int(round(elapsed)))
+
+                clips.append(
+                    ClipInfo(
+                        src_path=item.src_path,
+                        recorded_at=recorded_at,
+                        label="M",
+                        duration_seconds=duration,
+                    )
+                )
+
+                elapsed += duration
+
+            except Exception as e:
+                parse_errors += 1
+                print(f"[WARN] Could not probe duration for {item.src_path}: {e}", file=sys.stderr)
+
+    return clips, parse_errors
 
 
 def iter_video_files(root: Path, exts: set[str]) -> Iterable[Path]:
@@ -233,6 +342,13 @@ def main() -> None:
     parser.add_argument("--exts", nargs="*", default=[".m4v", ".mp4", ".mov", ".avi"])
 
     parser.add_argument(
+        "--filename-format",
+        choices=["legacy", "sodafl", "auto"],
+        default="auto",
+        help="Filename parser to use. auto tries both legacy M/C format and SodaFL-MMDDYY-INDEX.",
+    )
+
+    parser.add_argument(
         "--collision",
         choices=["skip", "overwrite", "error"],
         default="skip",
@@ -258,19 +374,45 @@ def main() -> None:
     if not input_root.exists():
         raise SystemExit(f"Input root does not exist: {input_root}")
 
+    all_video_paths = sorted(iter_video_files(input_root, exts))
+
     clips: list[ClipInfo] = []
     parse_errors = 0
 
-    for path in sorted(iter_video_files(input_root, exts)):
-        try:
-            clip = parse_clip_filename(path, date_order=args.date_order)
-        except Exception as e:
-            parse_errors += 1
-            print(f"[WARN] Could not parse {path}: {e}", file=sys.stderr)
-            continue
+    if args.filename_format == "sodafl":
+        clips, parse_errors = build_sodafl_clips_contiguous(all_video_paths)
 
-        if clip is not None:
-            clips.append(clip)
+    else:
+        for path in all_video_paths:
+            try:
+                clip = None
+
+                if args.filename_format in {"legacy", "auto"}:
+                    clip = parse_clip_filename(path, date_order=args.date_order)
+
+                if clip is None and args.filename_format == "auto":
+                    # In auto mode, parse SodaFL individually. This cannot make a
+                    # cumulative timeline across days, so prefer --filename-format sodafl
+                    # for SodaFL datasets.
+                    parsed = parse_sodafl_filename(path)
+                    if parsed is not None:
+                        duration = clip.duration_seconds
+                        if duration is None:
+                            duration = probe_duration_seconds(clip.src_path)
+                        clip = ClipInfo(
+                            src_path=path,
+                            recorded_at=parsed.date,
+                            label="M",
+                            duration_seconds=duration,
+                        )
+
+            except Exception as e:
+                parse_errors += 1
+                print(f"[WARN] Could not parse {path}: {e}", file=sys.stderr)
+                continue
+
+            if clip is not None:
+                clips.append(clip)
 
     print(f"Found {len(clips)} M-labeled clips under {input_root}")
     if parse_errors:
