@@ -344,14 +344,26 @@ def encode_clip_segment(
         "ffmpeg",
         "-hide_banner",
         "-y",
-        "-ss",
-        f"{start_seconds:.3f}",
+
+        # Helps with older AVI files with broken/missing timestamps.
+        "-fflags",
+        "+genpts",
+
+        # Input first, then -ss for accurate seek.
         "-i",
         str(src_path),
+        "-ss",
+        f"{start_seconds:.3f}",
         "-t",
         str(segment_seconds),
+
         "-map",
         "0:v:0",
+
+        # Reset timestamps after cutting.
+        "-vf",
+        "setpts=PTS-STARTPTS",
+
         "-c:v",
         "libx264",
         "-preset",
@@ -362,6 +374,11 @@ def encode_clip_segment(
         "yuv420p",
         "-movflags",
         "+faststart",
+
+        # Avoid weird negative timestamp behavior.
+        "-avoid_negative_ts",
+        "make_zero",
+
         "-an",
         str(dst_path),
     ]
