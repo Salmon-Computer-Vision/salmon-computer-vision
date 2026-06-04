@@ -46,17 +46,3 @@ services:
     entrypoint: /bin/sh
     command: |
       /app/copy_logs.sh -o "${ORGID}" -s "${SITE_NAME}" -i "${DEVICE_ID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
-  salmonmd-log-analyzer:
-    image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
-    container_name: salmonmd-log-analyzer
-    network_mode: host
-    volumes:
-      - type: bind
-        source: ${DRIVE}
-        target: ${DRIVE}
-        bind:
-          propagation: rslave
-      - /media/local_hdd:/media/local_hdd
-    command: >
-      bash -c "python3 utils/pi/services/analyze_salmonmd_logs.py --log-dir '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/device_logs/raw' --pattern '*salmonmd*' --output-csv '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/device_logs/parsed/${ORGID}-${SITE_NAME}-${DEVICE_ID}_parsed_logs_outages.csv' --min-downtime-seconds 5; sleep 8h"
-    restart: always
