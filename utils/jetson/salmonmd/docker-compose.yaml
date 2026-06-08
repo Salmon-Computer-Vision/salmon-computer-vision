@@ -23,18 +23,3 @@ services:
     restart: always
     entrypoint: >
       bash -c "cd /tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${FLAGS} --device-id ${DEVICE_ID} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
-
-  salmonmd-log-analyzer:
-    image: ${IMAGE_REPO_HOST}/salmoncounter:${TAG}
-    container_name: salmonmd-log-analyzer
-    network_mode: host
-    volumes:
-      - type: bind
-        source: ${DRIVE}
-        target: ${DRIVE}
-        bind:
-          propagation: rslave
-      - /media/local_hdd:/media/local_hdd
-    entrypoint: >
-      bash -c "cd /tools && python3 utils/pi/services/analyze_salmonmd_logs.py --log-dir '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/device_logs/raw' --pattern '*salmonmd*' --output-csv '${DRIVE}/${ORGID}/${SITE_NAME}/${DEVICE_ID}/device_logs/parsed/${ORGID}-${SITE_NAME}-${DEVICE_ID}_parsed_logs_outages.csv' --min-downtime-seconds 5; sleep 8h"
-    restart: always
