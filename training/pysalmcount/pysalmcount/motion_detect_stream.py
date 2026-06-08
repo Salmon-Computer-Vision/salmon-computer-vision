@@ -434,7 +434,7 @@ class MotionDetector:
                         video_saver = VideoSaver(
                                 shm_name=raw, frame_shape=frame.shape, head=head, tail=tail, 
                                 buffer_length=buffer_length, folder=motion_dir, 
-                                stop_event=self.stop_event, lock_head=self.lock_head, lock_tail=self.lock_tail, condition=self.condition, status_q=self.status_q fps=fps, 
+                                stop_event=self.stop_event, lock_head=self.lock_head, lock_tail=self.lock_tail, condition=self.condition, status_q=self.status_q, fps=fps, 
                                 orin=orin, raspi=raspi, save_prefix=self.save_prefix, is_video=self.is_video, filename=cur_clip.name, frame_count=frame_counter)
                         video_saver.start()
                 elif self.motion_counter > MAX_FRAMES_CLIP:
