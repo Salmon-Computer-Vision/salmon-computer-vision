@@ -10,12 +10,14 @@ import datetime
 import os
 import errno
 #from threading import Thread, Event, Lock, Condition
-from multiprocessing import shared_memory, Process, Event, Lock, Condition, Value, Array
+import queue
+from multiprocessing import shared_memory, Process, Event, Lock, Condition, Value, Array, Queue
 import logging
 import time
 from pathlib import Path
 import json
 from dataclasses import asdict
+import traceback
 import re
 
 logger = logging.getLogger(__name__)
@@ -26,9 +28,11 @@ MOTION_VIDS = 'motion_vids'
 MOTION_VIDS_STAGING = 'motion_vids_staging'
 MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
 VIDEO_ENCODER = 'avc1'
+ERROR_CODE = 1
+SUCCESS_CODE = 0
 
 class VideoSaver(Process):
-    def __init__(self, shm_name, frame_shape, head: Value, tail: Value, buffer_length, folder, stop_event, lock_head, lock_tail, condition, fps=10.0,
+    def __init__(self, shm_name, frame_shape, head: Value, tail: Value, buffer_length, folder, stop_event, lock_head, lock_tail, condition, status_q: Queue, fps=10.0,
             orin=False, raspi=False, save_prefix=None, is_video=False, filename=None, frame_count=0):
         super().__init__()
         self.frame_shape = frame_shape
@@ -40,6 +44,7 @@ class VideoSaver(Process):
         self.lock_head = lock_head  # Locks the head value
         self.lock_tail = lock_tail  # Locks the tail value
         self.condition = condition
+        self.status_q = status_q
         self.fps = fps
         self.resolution = (frame_shape[1], frame_shape[0])
         self.gst_out = 'appsrc ! videoconvert ! x264enc ! mp4mux ! filesink location='
@@ -167,7 +172,10 @@ class VideoSaver(Process):
             with open(str(metadata_filepath), 'w') as f:
                 json.dump(asdict(metadata), f)
         else:
+            tb = traceback.format_exc()
             logger.error(f"Could not generate metadata for file: {filename}")
+            logger.error(tb)
+            self.status_q.put((ERROR_CODE, ("", tb)))
 
 class MotionDetector:
     FILENAME = 'filename'
@@ -191,6 +199,7 @@ class MotionDetector:
         self.lock_head = Lock()
         self.lock_tail = Lock()
         self.condition = Condition()
+        self.status_q = Queue()
 
 
     def detect_motion(self, fg_mask, min_area=500):
@@ -425,7 +434,7 @@ class MotionDetector:
                         video_saver = VideoSaver(
                                 shm_name=raw, frame_shape=frame.shape, head=head, tail=tail, 
                                 buffer_length=buffer_length, folder=motion_dir, 
-                                stop_event=self.stop_event, lock_head=self.lock_head, lock_tail=self.lock_tail, condition=self.condition, fps=fps, 
+                                stop_event=self.stop_event, lock_head=self.lock_head, lock_tail=self.lock_tail, condition=self.condition, status_q=self.status_q fps=fps, 
                                 orin=orin, raspi=raspi, save_prefix=self.save_prefix, is_video=self.is_video, filename=cur_clip.name, frame_count=frame_counter)
                         video_saver.start()
                 elif self.motion_counter > MAX_FRAMES_CLIP:
@@ -441,6 +450,14 @@ class MotionDetector:
                         logger.info("Delay exceeded. Motion stopped.")
                         self.frame_log[cur_clip.name].append((frame_start, frame_counter))
                         self.stop_video_saving()
+
+
+            try: 
+                status, _ = self.status_q.get_nowait()
+                if status == ERROR_CODE:
+                    raise # Raise error if something happens during saving
+            except queue.Empty:
+                pass
 
             if utils.is_check_time(frame_counter, fps):
                 end_time=time.time()
@@ -462,5 +479,5 @@ class MotionDetector:
                 video_saver.join()
         except Exception as e:
             logger.error(e)
-            pass
+            raise
         return self.frame_log
