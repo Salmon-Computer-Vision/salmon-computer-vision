@@ -423,7 +423,8 @@ class MotionDetector:
             if has_motion:
                 num_motion_events += 1
                 count_delay = 0
-                if not self.motion_detected and num_motion_events >= MOTION_EVENTS_THRESH_FRAMES:
+                if video_saver is None or (not video_saver.is_alive() and 
+                        not self.motion_detected and num_motion_events >= MOTION_EVENTS_THRESH_FRAMES):
                     logger.info(f"Motion detected with {num_motion_events} events")
                     self.motion_detected = True
                     self.motion_counter = 0
