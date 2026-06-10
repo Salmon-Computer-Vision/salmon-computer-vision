@@ -456,7 +456,7 @@ class MotionDetector:
             try: 
                 status, _ = self.status_q.get_nowait()
                 if status == ERROR_CODE:
-                    raise # Raise error if something happens during saving
+                    break # Exit if something happens during saving
             except queue.Empty:
                 pass
 
