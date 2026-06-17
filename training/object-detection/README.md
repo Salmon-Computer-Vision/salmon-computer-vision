@@ -73,3 +73,26 @@ Run tests with
 ```
 uv run pytest
 ```
+
+### Plot AP50 by site
+
+To evaluate over all test sites, run the following command:
+
+```bash
+./scripts/run_site_eval_experiments.py --queue --run-queue
+```
+
+Add `--dry-run` to test the command first.
+
+They can be plotted after using
+```bash
+./scripts/plot-all-eval.sh "Full Model AP50"
+```
+
+This creates an HTML in `dvc_plots` with the plots.
+
+Run a simple http server and connect to it through SSH tunnel
+```bash
+cd dvc_plots
+python -m http.server
+```
