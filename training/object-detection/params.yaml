@@ -22,6 +22,9 @@ config:
   real_yolo_workdir: /home/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/yolo_workdir
   eval_workdir: /home/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/site_eval_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
+preprocess:
+  crop_top_half_sites: klukshu
+  crop_min_visible_frac: 0.05
 tune:
   device: 0
   gpu_per_trial: 1 # Lower numbers creates more parallel trials (Can be fractional)

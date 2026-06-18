@@ -203,12 +203,23 @@ stages:
       mkdir -p ${config.dataset}/salmon_dataset/yolo_workdir &&
       scripts/unpack_annos.sh
       ${config.dataset}/salmon_dataset/dataset_sharded/shards
-      ${config.yolo_workdir}
+      ${config.yolo_workdir} &&
+      scripts/crop_site_frames.py
+      --dataset-root ${config.yolo_workdir}
+      --sites ${preprocess.crop_top_half_sites}
+      --crop top_half
+      --min-visible-frac ${preprocess.crop_min_visible_frac}
+      --summary-json ${config.yolo_workdir}/preprocess_klukshu_top_half_summary.json
     params:
     - config.dataset
     - config.yolo_workdir
+    - preprocess.crop_top_half_sites
+    - preprocess.crop_min_visible_frac
     deps:
     - scripts/unpack_annos.sh
+    - scripts/crop_site_frames.py
+    - src/object_detection/preprocessing
+    - src/object_detection/utils
     - ${config.dataset}/salmon_dataset/dataset_sharded/shards
   rewrite_manifest:
     cmd: >-
