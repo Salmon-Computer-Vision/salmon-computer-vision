@@ -38,7 +38,7 @@ train:
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
   val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
-  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
+  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
 eval:
   imgsz: 640
   batch: 32
