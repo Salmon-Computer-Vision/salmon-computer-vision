@@ -23,3 +23,25 @@ services:
     restart: always
     entrypoint: >
       bash -c "cd /tools && python3 /tools/training/tools/run_motion_detect_rtsp.py ${FLAGS} --device-id ${DEVICE_ID} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
+  log-sync:
+    build: 
+      context: .
+      dockerfile: Dockerfiles/Dockerfile-log-sync
+    init: true
+    environment:
+      - HOSTNAME
+    env_file:
+      - ./.env
+    container_name: salmonmd-log-sync
+    volumes:
+      - type: bind
+        source: ${DRIVE}
+        target: ${DRIVE}
+        bind:
+          propagation: rslave
+      - /media/local_hdd:/media/local_hdd
+      - /home/${USERNAME}/.config/rclone/:/config/rclone/
+    restart: always
+    entrypoint: /bin/sh
+    command: |
+      /app/copy_logs.sh -o "${ORGID}" -s "${SITE_NAME}" -i "${DEVICE_ID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
