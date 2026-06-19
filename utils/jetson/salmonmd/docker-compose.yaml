@@ -26,7 +26,7 @@ services:
   log-sync:
     build: 
       context: .
-      dockerfile: Dockerfiles/Dockerfile-log-sync
+      dockerfile: Dockerfile-log-sync
     init: true
     environment:
       - HOSTNAME
