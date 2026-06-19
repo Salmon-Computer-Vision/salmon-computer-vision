@@ -26,7 +26,7 @@ for device_path in "${SITE_PATH}"/* ; do
         continue
     fi
     BACKUP="${device_path}/counts_backup/"
-    src="${device_path}/counts"
+    SRC="${device_path}/counts"
     DEST="aws:${BUCKET}/${ORGID}/${SITE_NAME}/${device_path##*/}/counts"
 
     mkdir -p "$BACKUP"
@@ -51,7 +51,7 @@ for device_path in "${SITE_PATH}"/* ; do
         --stats 60s \
         --stats-one-line \
         --s3-no-check-bucket
-done
+    
 
 echo "Finished. Waiting some time..."
 sleep 30m
