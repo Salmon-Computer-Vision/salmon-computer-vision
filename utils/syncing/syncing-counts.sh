@@ -1,43 +1,5 @@
 #!/usr/bin/env sh
 
-# Function to perform rclone operations
-rclone_copy() {
-    site_name="$1"
-    config="$2"
-    include="$3"
-    src="$4"
-    dst="$5"
-    
-    rclone copy "$src" "$dst" \
-        --bwlimit=0 \
-        --buffer-size=128M \
-        --transfers=2 \
-        --min-age 30m \
-        --no-traverse \
-        --include "$include" \
-        --s3-no-check-bucket \
-        --config "$config" \
-        --log-level INFO
-}
-
-# Function to concatenate CSV files in a directory
-concatenate_csv_in_directory() {
-    echo "Concatenating CSVs..."
-    dir="$1"
-    output_file="$2"
-    first=1
-    for file in "$dir"/*_M.csv; do
-        if [ -f "$file" ]; then
-            if [ "$first" -eq 1 ]; then
-                cat "$file" > "$output_file"
-                first=0
-            else
-                tail -n +2 "$file" >> "$output_file"
-            fi
-        fi
-    done
-}
-
 # Parse options
 while getopts "s:b:o:d:c:" opt; do
     case $opt in
@@ -57,12 +19,38 @@ if [ -z "$SITE_NAME" ] || [ -z "$BUCKET" ] || [ -z "$ORGID" ] || [ -z "$DRIVE" ]
 fi
 
 # Define paths
-REMOTE_PATH="aws:${BUCKET}/${ORGID}"
-LOCAL_PATH="${DRIVE}/${ORGID}"
+SITE_PATH="${DRIVE}/${ORGID}/${SITE_NAME}"
 
-# Upload to remote
-echo "Upload to remote..."
-rclone_copy "$SITE_NAME" "$CONFIG" "/${SITE_NAME}/*/counts/**" "$LOCAL_PATH" "$REMOTE_PATH"
+for device_path in "${SITE_PATH}"/* ; do
+    if [ ! -d "$device_path" ]; then
+        continue
+    fi
+    BACKUP="${device_path}/counts_backup/"
+    src="${device_path}/counts"
+    DEST="aws:${BUCKET}/${ORGID}/${SITE_NAME}/${device_path##*/}/counts"
+
+    mkdir -p "$BACKUP"
+    mkdir -p "$SRC"
+    rclone copy "$SRC" "$BACKUP" \
+        --transfers=8 \
+        --no-traverse \
+        --progress
+
+    # Upload to remote
+    echo "Upload to remote..."
+    rclone move "$SRC" "$DEST" \
+        --bwlimit=0 \
+        --buffer-size=128M \
+        --transfers=2 \
+        --checkers 16 \
+        --min-age 30m \
+        --no-traverse \
+        --delete-empty-src-dirs \
+        --config /config/rclone/rclone.conf \
+        --log-level WARNING \
+        --stats 60s \
+        --stats-one-line \
+        --s3-no-check-bucket
 
 echo "Finished. Waiting some time..."
 sleep 30m
