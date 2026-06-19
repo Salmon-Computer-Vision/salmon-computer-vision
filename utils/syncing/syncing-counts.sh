@@ -51,6 +51,7 @@ for device_path in "${SITE_PATH}"/* ; do
         --stats 60s \
         --stats-one-line \
         --s3-no-check-bucket
+done
 
 echo "Finished. Waiting some time..."
 sleep 30m
