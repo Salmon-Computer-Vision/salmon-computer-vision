@@ -145,7 +145,7 @@ crontab -e
 Put the following (Replace the URL with the correct ping address):
 
 ```
-* * * * * mountpoint /media/hdd && curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>
+* * * * * mountpoint /media/hdd && touch /media/hdd/.testfile && rm /media/hdd/.testfile && curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>
 ```
 
 This assumes the external drive is mounted to `/media/hdd`.
