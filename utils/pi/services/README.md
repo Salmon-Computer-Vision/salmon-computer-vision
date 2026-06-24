@@ -139,13 +139,13 @@ newer Raspberry Pis from the get-go.
 Setup an extra healthchecks for the external harddrive mounting:
 
 ```bash
-crontab -e
+sudo crontab -e
 ```
 
 Put the following (Replace the URL with the correct ping address):
 
 ```
-* * * * * mountpoint /media/hdd && touch /media/hdd/.testfile && rm /media/hdd/.testfile && curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>
+* * * * * mountpoint /media/hdd && if touch /media/hdd/.testfile && rm /media/hdd/.testfile; then curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>; else umount /media/hdd; fi
 ```
 
 This assumes the external drive is mounted to `/media/hdd`.
