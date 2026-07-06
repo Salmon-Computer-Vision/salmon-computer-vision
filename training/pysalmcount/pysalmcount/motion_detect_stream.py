@@ -284,6 +284,22 @@ class MotionEventCoordinator:
         with self._lock:
             return self._active_event_id is not None
 
+
+def build_cpu_h264_writer(filename: str, fps: float, width: int, height: int, bitrate_kbps: int = 1200) -> str:
+    return (
+        "appsrc is-live=true block=true format=time do-timestamp=true "
+        f"! video/x-raw,format=BGR,width={width},height={height},framerate={int(fps)}/1 "
+        "! queue max-size-buffers=4 leaky=downstream "
+        "! videoconvert n-threads=2 "
+        "! video/x-raw,format=I420 "
+        f"! x264enc speed-preset=ultrafast tune=zerolatency bitrate={bitrate_kbps} "
+        "key-int-max=10 threads=4 "
+        "! h264parse "
+        "! mp4mux "
+        f"! filesink location={filename}"
+    )
+
+
 class VideoSaver(Process):
     def __init__(self, shm_name, frame_shape, head: Value, tail: Value, buffer_length, folder, stop_event, lock_head, lock_tail, condition, status_q: Queue, fps=10.0,
             orin=False, raspi=False, save_prefix=None, is_video=False, filename=None, frame_count=0,
@@ -291,7 +307,10 @@ class VideoSaver(Process):
             event_start_ts: Optional[datetime.datetime] = None,
             part_number: Optional[int] = None,
             cam_name: Optional[str] = None,
-            triggered_by: Optional[str] = None):
+            triggered_by: Optional[str] = None,
+            cpu_h264=False,
+            cpu_h264_bitrate=1200,
+            ):
         super().__init__()
         self.frame_shape = frame_shape
         self.head = head
@@ -318,6 +337,8 @@ class VideoSaver(Process):
         self.part_number = part_number
         self.cam_name = cam_name
         self.triggered_by = triggered_by
+        self.cpu_h264 = cpu_h264
+        self.cpu_h264_bitrate = cpu_h264_bitrate
 
         if is_video and filename is None:
             logger.warn("Filename is empty. Will fallback on timestampped name")
@@ -401,7 +422,23 @@ class VideoSaver(Process):
         filename = self._get_md_filename(save_prefix=self.save_prefix)
 
         logger.info(f"Writing motion video to {filename}")
-        if self.orin:
+        if self.cpu_h264:
+            logger.info("Writing with CPU x264 ultrafast encoder...")
+            pipeline = build_cpu_h264_writer(
+                filename,
+                self.fps,
+                self.resolution[0],
+                self.resolution[1],
+                bitrate_kbps=self.cpu_h264_bitrate,
+            )
+            out = cv2.VideoWriter(
+                pipeline,
+                cv2.CAP_GSTREAMER,
+                0,
+                self.fps,
+                self.resolution,
+            )
+        elif self.orin:
             out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*VIDEO_ENCODER), self.fps, self.resolution)
         else:
             gst_writer = gst_writer_str
@@ -409,6 +446,14 @@ class VideoSaver(Process):
                 logger.info("Writing with raspi hardware...")
                 gst_writer = gst_raspi_writer_str
             out = cv2.VideoWriter(gst_writer + filename, cv2.CAP_GSTREAMER, 0, self.fps, self.resolution)
+
+        if not out.isOpened():
+            tb = traceback.format_exc()
+            err_msg = f"Could not generate metadata for file: {filename}"
+            logger.error(err_msg)
+            logger.error(tb)
+            self.status_q.put((ERROR_CODE, (err_msg, tb)))
+            return
         
         c = 0
         # Write the pre-motion frames
@@ -598,7 +643,9 @@ class MotionDetector:
 
     def _spawn_video_saver(self, motion_dir, raw, frame_shape, head, tail,
                            buffer_length, fps, orin, raspi, cur_clip_name,
-                           frame_counter, clip_info: Optional[ClipInfo]):
+                           frame_counter, clip_info: Optional[ClipInfo], 
+                           cpu_h264=False, cpu_h264_bitrate=1200,
+                           ):
         """Construct and start a new VideoSaver for this cam's next clip.
 
         Shared by all three multi-cam entry points (fan-out, local-open,
@@ -658,6 +705,8 @@ class MotionDetector:
             is_video=self.is_video,
             filename=cur_clip_name,
             frame_count=frame_counter,
+            cpu_h264=cpu_h264, 
+            cpu_h264_bitrate=cpu_h264_bitrate,
             **vs_kwargs,
         )
 
@@ -669,7 +718,7 @@ class MotionDetector:
         self.log.info("Started VideoSaver pid=%s", video_saver.pid)
         return video_saver
 
-    def run(self, algo='MOG2', fps: int=None, orin=False, raspi=False, staging=False):
+    def run(self, algo='MOG2', fps: int=None, orin=False, raspi=False, cpu_h264=False, staging=False, bitrate=1200):
         # Motion Detection Params
         bgsub_threshold = 50
         bgsub_min_pixelstability = 1
@@ -784,8 +833,25 @@ class MotionDetector:
                 if self.save_cont_video:
                     if frame_counter >= MAX_CONTINUOUS_FRAMES:
                         cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
+
                         self.log.info(f"Writing continuous video to {cont_filename}")
-                        if orin:
+                        if self.cpu_h264:
+                            logger.info("Writing with CPU x264 ultrafast encoder...")
+                            pipeline = build_cpu_h264_writer(
+                                cont_filename,
+                                fps,
+                                frame.shape[1],
+                                frame.shape[0],
+                                bitrate_kbps=bitrate,
+                            )
+                            out = cv2.VideoWriter(
+                                pipeline,
+                                cv2.CAP_GSTREAMER,
+                                0,
+                                fps,
+                                (frame.shape[1], frame.shape[0]),
+                            )
+                        elif orin:
                             cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*VIDEO_ENCODER),
                                     fps, (frame.shape[1], frame.shape[0]))
                         else:
@@ -899,6 +965,7 @@ class MotionDetector:
                                     motion_dir, raw, frame.shape, head, tail,
                                     buffer_length, fps, orin, raspi,
                                     cur_clip.name, frame_counter, info,
+                                    cpu_h264, bitrate,
                                 )
                             else:
                                 self.motion_detected = True
@@ -935,6 +1002,7 @@ class MotionDetector:
                                     motion_dir, raw, frame.shape, head, tail,
                                     buffer_length, fps, orin, raspi,
                                     cur_clip.name, frame_counter, info,
+                                    cpu_h264, bitrate,
                                 )
                             else:
                                 self.motion_detected = True
@@ -963,6 +1031,7 @@ class MotionDetector:
                                             head, tail, buffer_length, fps,
                                             orin, raspi, cur_clip.name,
                                             frame_counter, info,
+                                            cpu_h264, bitrate,
                                         )
                                     else:
                                         self.motion_detected = True
@@ -986,6 +1055,7 @@ class MotionDetector:
                                     motion_dir, raw, frame.shape, head, tail,
                                     buffer_length, fps, orin, raspi,
                                     cur_clip.name, frame_counter, None,
+                                    cpu_h264, bitrate,
                                 )
                         elif self.motion_counter > MAX_FRAMES_CLIP:
                             self.log.info("Max clip length exceeded")

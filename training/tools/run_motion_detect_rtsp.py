@@ -244,7 +244,7 @@ def main(args):
         for det, cam_name in detectors:
             t = threading.Thread(
                 target=_run_detector_in_thread,
-                args=(det, fps, args.algo, args.orin, args.raspi,
+                args=(det, fps, args.algo, args.orin, args.raspi, 
                       args.staging, cam_name),
                 name=f"MotionDetector-{cam_name}",
                 daemon=False,
@@ -264,7 +264,7 @@ def main(args):
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url, save_cont_video=save_cont_video, is_video=is_video)
-    det.run(fps=fps, algo=args.algo, orin=args.orin, raspi=args.raspi, staging=args.staging)
+    det.run(fps=fps, algo=args.algo, orin=args.orin, raspi=args.raspi, cpu_h264=args.cpu_h264, staging=args.staging, bitrate=args.bitrate)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
@@ -275,6 +275,8 @@ if __name__ == "__main__":
     parser.add_argument("--test", action='store_true', help="Set this flag to not use the hostname to create the save paths")
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
+    parser.add_argument("--cpu_h264", action='store_true', help="Set this flag to use CPU H264 ultra fast settings")
+    parser.add_argument("--bitrate", default=1200, help="Set the bitrate")
     parser.add_argument("--gstreamer", action='store_true', help="Set this flag to use Gstreamer capturing")
     parser.add_argument("--h265", action='store_true', help="Set this flag to use h265 decoding")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
