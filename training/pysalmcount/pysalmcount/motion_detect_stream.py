@@ -299,8 +299,17 @@ def build_cpu_h264_writer(
     block_str = "true" if appsrc_block else "false"
     leaky_str = " leaky=downstream" if queue_leaky else ""
 
+    # BGR frame size. For 1280x720 this is 2,764,800 bytes.
+    frame_bytes = int(width * height * 3)
+
+    # Let appsrc hold a few complete raw frames. The default is ~200 KB,
+    # which is smaller than one 720p BGR frame and causes immediate blocking.
+    appsrc_max_bytes = frame_bytes * max(queue_buffers, 2)
+
     return (
-        f"appsrc is-live=true block={block_str} format=time do-timestamp=true "
+        f"appsrc is-live=true block={block_str} "
+        f"max-bytes={appsrc_max_bytes} "
+        "format=time do-timestamp=true "
         f"! video/x-raw,format=BGR,width={width},height={height},framerate={int(fps)}/1 "
         f"! queue max-size-buffers={queue_buffers} max-size-time=0 max-size-bytes=0{leaky_str} "
         "! videoconvert n-threads=2 "
