@@ -833,25 +833,8 @@ class MotionDetector:
                 if self.save_cont_video:
                     if frame_counter >= MAX_CONTINUOUS_FRAMES:
                         cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
-
                         self.log.info(f"Writing continuous video to {cont_filename}")
-                        if cpu_h264:
-                            logger.info("Writing with CPU x264 ultrafast encoder...")
-                            pipeline = build_cpu_h264_writer(
-                                cont_filename,
-                                fps,
-                                frame.shape[1],
-                                frame.shape[0],
-                                bitrate_kbps=bitrate,
-                            )
-                            out = cv2.VideoWriter(
-                                pipeline,
-                                cv2.CAP_GSTREAMER,
-                                0,
-                                fps,
-                                (frame.shape[1], frame.shape[0]),
-                            )
-                        elif orin:
+                        if orin:
                             cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*VIDEO_ENCODER),
                                     fps, (frame.shape[1], frame.shape[0]))
                         else:
