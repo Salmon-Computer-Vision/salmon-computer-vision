@@ -35,6 +35,9 @@ class VideoLoader(DataLoader):
         self.stop_thread = False
         self.target_fps = int(target_fps) if target_fps is not None else target_fps
 
+        self.queue_drop_count = 0
+        self.last_queue_drop_log = time.monotonic()
+
     def __del__(self):
         self.close()
 
@@ -186,10 +189,22 @@ class VideoLoader(DataLoader):
 
         try:
             self.frame_buffer.put(frame, block=False)
-            logger.info("Queue full; dropped oldest frame and kept newest frame.")
+            self.queue_drop_count += 1
+
+            now = time.monotonic()
+            if now - self.last_queue_drop_log >= 30.0:
+                logger.warning(
+                    "Frame reader queue full; dropped %d frames in the last %.1f s; queue_size=%d",
+                    self.queue_drop_count,
+                    now - self.last_queue_drop_log,
+                    self.frame_buffer.qsize(),
+                )
+                self.queue_drop_count = 0
+                self.last_queue_drop_log = now
+
             return True
         except queue.Full:
-            logger.info("Queue still full after dropping oldest frame; dropped newest frame.")
+            self.queue_drop_count += 1
             return False
 
 

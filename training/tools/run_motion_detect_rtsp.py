@@ -222,7 +222,7 @@ def main(args):
             vidloader = vl.VideoLoader(
                 [input_str],
                 gstreamer_on=args.gstreamer,
-                buffer_size=2 * fps,
+                buffer_size=5 * fps,
                 target_fps=fps,
             )
             cam_save_prefix = (

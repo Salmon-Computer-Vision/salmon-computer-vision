@@ -2,6 +2,7 @@
 services:
   salmonmd-jetson:
     image: ${IMAGE_REPO_HOST}/salmonmd:${TAG}
+    init: true
     environment:
       - HOSTNAME
     env_file:

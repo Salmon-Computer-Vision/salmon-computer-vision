@@ -422,18 +422,22 @@ class VideoSaver(Process):
 
         c = 0
         # Continue recording until stop_event is set
-        while not self.stop_event.is_set():
+        while True:
             with self.condition:
                 # Wait for a signal that a new frame is available or stop_event is set
                 self.condition.wait_for(lambda: not self._check_empty() or self.stop_event.is_set())
 
-            if not self._check_empty():
-                frame = self._get_frame()
+            if self._check_empty():
+                if self.stop_event.is_set():
+                    break
+                continue
+
+            frame = self._get_frame()
 
             if c % 20 == 0:
-                logger.info(f'Saving... {c}')
-            out.write(frame)
+                logger.info(f"Saving... {c}")
 
+            out.write(frame)
             c += 1
 
         out.release()
@@ -486,6 +490,10 @@ class _CamLoggerAdapter(logging.LoggerAdapter):
         return f"[{self._cam_name}] {msg}", kwargs
 
 
+def _ring_is_full(head, tail, buffer_length):
+    return (head.value + 1) % buffer_length == tail.value
+
+
 class MotionDetector:
     FILENAME = 'filename'
     CLIPS = 'clips'
@@ -523,7 +531,6 @@ class MotionDetector:
         self.lock_tail = Lock()
         self.condition = Condition()
         self.status_q = Queue()
-
 
     def detect_motion(self, fg_mask, min_area=500):
         """
@@ -764,8 +771,8 @@ class MotionDetector:
                     _, fg_mask = cv2.threshold(fg_mask, threshold_value, 255, cv2.THRESH_BINARY)
 
                     # Apply morphological operations to clean up the mask
-                    fg_mask = cv2.erode(fg_mask, None, iterations=erode_iter)
-                    fg_mask = cv2.dilate(fg_mask, None, iterations=dilate_iter)
+                    fg_mask = cv2.erode(fg_mask, kernel, iterations=erode_iter)
+                    fg_mask = cv2.dilate(fg_mask, kernel, iterations=dilate_iter)
 
                     # Now detect motion
                     has_motion = self.detect_motion(fg_mask, min_area=min_contour_area)
@@ -776,29 +783,27 @@ class MotionDetector:
                     elapsed_in_time = (end_in_time - start_in_time) * 1000
                     self.log.info(f"check motion: {elapsed_in_time:.2f} ms")
 
-                with self.lock_head:
-                    frame_idx = head.value % buffer_length
-                    self.log.debug(f"Frame index: {frame_idx}, Head: {head.value}, Buffer length: {buffer_length}")
+                while True:
+                    with self.lock_head, self.lock_tail:
+                        buf_full = _ring_is_full(head, tail, buffer_length)
+                        if not buf_full:
+                            frame_idx = head.value % buffer_length
+                            shared_frames[frame_idx] = frame
+                            head.value = (head.value + 1) % buffer_length
+                            break
 
-                    with self.lock_tail:
-                        buf_full = (head.value + 1) % buffer_length == tail.value
+                        if not self.motion_detected:
+                            # Pre-roll mode: drop oldest frame to keep latest pre-roll.
+                            tail.value = (tail.value + 1) % buffer_length
+                            continue
 
-                # Check if head is overtaking tail (buffer full)
-                if buf_full and self.motion_detected:
-                    # Wait until saver consumes a frame
+                    # Recording mode: wait briefly for saver, but do not block the detector forever.
                     with self.condition:
-                        self.condition.wait_for(
-                            lambda: (head.value + 1) % buffer_length != tail.value or self.stop_event.is_set()
-                        )
-                elif buf_full:
-                    self.log.debug("Buffer full! Overwriting old frames.")
-                    with self.lock_tail:
-                        # Advance the tail to the next frame to make space
-                        tail.value = (tail.value + 1) % buffer_length
+                        self.condition.wait(timeout=0.05)
 
-                with self.lock_head:
-                    shared_frames[frame_idx] = frame
-                    head.value = (head.value + 1) % buffer_length
+                    if self.stop_event.is_set():
+                        # Recording is stopping; do not keep blocking the detector.
+                        break
 
                 with self.condition:
                     self.condition.notify() # Signal the VideoSaver thread that a new frame is available
