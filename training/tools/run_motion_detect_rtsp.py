@@ -260,7 +260,7 @@ def main(args):
     # --- Single-camera path (today's behavior) ---
     input_str = _build_input_str(args.input, args.gstreamer, args.h265)
     logger.info(input_str)
-    vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=2*fps, target_fps=fps)
+    vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=5*fps, target_fps=fps)
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url, save_cont_video=save_cont_video, is_video=is_video)
