@@ -812,6 +812,7 @@ class MotionDetector:
         count_delay = 0
 
         video_saver = None
+        cont_vid_out = None
         frame_counter = MAX_CONTINUOUS_FRAMES if self.save_cont_video else 0
         vid_counter = 0
         self.motion_counter = 0
@@ -832,19 +833,65 @@ class MotionDetector:
 
                 if self.save_cont_video:
                     if frame_counter >= MAX_CONTINUOUS_FRAMES:
-                        cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
+                        # Close the previous continuous writer before starting a new segment.
+                        if 'cont_vid_out' in locals() and cont_vid_out is not None:
+                            try:
+                                cont_vid_out.release()
+                            except Exception:
+                                self.log.exception("Failed to release previous continuous VideoWriter")
+
+                        cont_filename = VideoSaver.get_output_filename(
+                            cont_dir,
+                            '_C',
+                            save_prefix=self.save_prefix,
+                        )
                         self.log.info(f"Writing continuous video to {cont_filename}")
-                        if orin:
-                            cont_vid_out = cv2.VideoWriter(cont_filename, cv2.VideoWriter_fourcc(*VIDEO_ENCODER),
-                                    fps, (frame.shape[1], frame.shape[0]))
+
+                        resolution = (frame.shape[1], frame.shape[0])
+
+                        if cpu_h264:
+                            self.log.info("Writing continuous video with CPU x264 ultrafast encoder...")
+                            pipeline = build_cpu_h264_writer(
+                                cont_filename,
+                                fps,
+                                resolution[0],
+                                resolution[1],
+                                bitrate_kbps=bitrate,
+                            )
+                            cont_vid_out = cv2.VideoWriter(
+                                pipeline,
+                                cv2.CAP_GSTREAMER,
+                                0,
+                                fps,
+                                resolution,
+                            )
+                        elif orin:
+                            cont_vid_out = cv2.VideoWriter(
+                                cont_filename,
+                                cv2.VideoWriter_fourcc(*VIDEO_ENCODER),
+                                fps,
+                                resolution,
+                            )
                         else:
                             gst_writer = gst_writer_str
                             if raspi:
                                 self.log.info("Writing with raspi hardware...")
                                 gst_writer = gst_raspi_writer_str
-                            cont_vid_out = cv2.VideoWriter(gst_writer + cont_filename,
-                                                           cv2.CAP_GSTREAMER, 0, fps, (frame.shape[1], frame.shape[0]))
-                            self.log.info(f"Created VideoWriter to {cont_filename}")
+
+                            cont_vid_out = cv2.VideoWriter(
+                                gst_writer + cont_filename,
+                                cv2.CAP_GSTREAMER,
+                                0,
+                                fps,
+                                resolution,
+                            )
+
+                        if not cont_vid_out.isOpened():
+                            raise RuntimeError(
+                                f"Could not open continuous VideoWriter for {cont_filename}"
+                            )
+
+                        self.log.info(f"Created VideoWriter to {cont_filename}")
                         frame_counter = 0
 
                     if utils.is_check_time(frame_counter, fps):
@@ -907,7 +954,7 @@ class MotionDetector:
                     with self.condition:
                         self.condition.wait(timeout=0.05)
 
-                    if self.video_saver_stop_event.is_set():
+                    if self.video_saver_stop_event is not None and self.video_saver_stop_event.is_set():
                         # Recording is stopping; do not keep blocking the detector.
                         break
 
@@ -1096,6 +1143,11 @@ class MotionDetector:
                 except Exception:
                     self.log.exception("coordinator.leave_event raised")
 
+            if cont_vid_out is not None:
+                try:
+                    cont_vid_out.release()
+                except Exception:
+                    self.log.exception("cont_vid_out.release raised")
             self.log.info("Joining video saver process in case it has not exited")
             if video_saver and video_saver.is_alive():
                 try:
