@@ -449,7 +449,7 @@ class VideoSaver(Process):
 
         if not out.isOpened():
             tb = traceback.format_exc()
-            err_msg = f"Could not generate metadata for file: {filename}"
+            err_msg = f"Could not open VideoWriter for motion file: {filename}"
             logger.error(err_msg)
             logger.error(tb)
             self.status_q.put((ERROR_CODE, (err_msg, tb)))
@@ -1104,9 +1104,10 @@ class MotionDetector:
                                 self.stop_video_saving(final=True)
 
                 try:
-                    status, _ = self.status_q.get_nowait()
+                    status, payload = self.status_q.get_nowait()
                     if status == ERROR_CODE:
-                        break # Exit if something happens during saving
+                        self.log.error("VideoSaver reported ERROR_CODE: %r", payload)
+                        raise RuntimeError(f"VideoSaver failed: {payload!r}")
                 except queue.Empty:
                     pass
 
