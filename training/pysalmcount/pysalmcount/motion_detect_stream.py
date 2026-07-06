@@ -285,11 +285,24 @@ class MotionEventCoordinator:
             return self._active_event_id is not None
 
 
-def build_cpu_h264_writer(filename: str, fps: float, width: int, height: int, bitrate_kbps: int = 1200) -> str:
+def build_cpu_h264_writer(
+    filename: str,
+    fps: float,
+    width: int,
+    height: int,
+    bitrate_kbps: int = 1200,
+    *,
+    appsrc_block: bool = True,
+    queue_leaky: bool = False,
+    queue_buffers: int = 4,
+) -> str:
+    block_str = "true" if appsrc_block else "false"
+    leaky_str = " leaky=downstream" if queue_leaky else ""
+
     return (
-        "appsrc is-live=true block=true format=time do-timestamp=true "
+        f"appsrc is-live=true block={block_str} format=time do-timestamp=true "
         f"! video/x-raw,format=BGR,width={width},height={height},framerate={int(fps)}/1 "
-        "! queue max-size-buffers=4 leaky=downstream "
+        f"! queue max-size-buffers={queue_buffers} max-size-time=0 max-size-bytes=0{leaky_str} "
         "! videoconvert n-threads=2 "
         "! video/x-raw,format=I420 "
         f"! x264enc speed-preset=ultrafast tune=zerolatency bitrate={bitrate_kbps} "
@@ -430,6 +443,9 @@ class VideoSaver(Process):
                 self.resolution[0],
                 self.resolution[1],
                 bitrate_kbps=self.cpu_h264_bitrate,
+                appsrc_block=True,
+                queue_leaky=False,
+                queue_buffers=4,
             )
             out = cv2.VideoWriter(
                 pipeline,
@@ -857,6 +873,9 @@ class MotionDetector:
                                 resolution[0],
                                 resolution[1],
                                 bitrate_kbps=bitrate,
+                                appsrc_block=False,
+                                queue_leaky=True,
+                                queue_buffers=2,
                             )
                             cont_vid_out = cv2.VideoWriter(
                                 pipeline,
