@@ -546,7 +546,7 @@ class MotionDetector:
                 return True
         return False
 
-    def stop_video_saving(self, final: bool = True):
+    def stop_video_saving(self, final: bool = True, join_timeout: float = 10.0):
         """Stop the currently-recording VideoSaver.
 
         final=True  -> post-roll or end-of-stream; in multi-cam mode also
