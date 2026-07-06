@@ -456,6 +456,7 @@ class VideoSaver(Process):
                 queue_leaky=False,
                 queue_buffers=4,
             )
+            logger.info("GStreamer writer pipeline: %s", pipeline)
             out = cv2.VideoWriter(
                 pipeline,
                 cv2.CAP_GSTREAMER,
@@ -886,6 +887,7 @@ class MotionDetector:
                                 queue_leaky=True,
                                 queue_buffers=2,
                             )
+                            logger.info("GStreamer writer pipeline: %s", pipeline)
                             cont_vid_out = cv2.VideoWriter(
                                 pipeline,
                                 cv2.CAP_GSTREAMER,
