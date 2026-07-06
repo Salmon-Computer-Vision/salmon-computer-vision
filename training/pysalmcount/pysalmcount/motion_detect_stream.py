@@ -835,7 +835,7 @@ class MotionDetector:
                         cont_filename = VideoSaver.get_output_filename(cont_dir, '_C', save_prefix=self.save_prefix)
 
                         self.log.info(f"Writing continuous video to {cont_filename}")
-                        if self.cpu_h264:
+                        if cpu_h264:
                             logger.info("Writing with CPU x264 ultrafast encoder...")
                             pipeline = build_cpu_h264_writer(
                                 cont_filename,
