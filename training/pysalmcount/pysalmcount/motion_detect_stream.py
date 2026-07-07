@@ -365,12 +365,19 @@ class VideoSaver(Process):
         if is_video and filename is None:
             logger.warn("Filename is empty. Will fallback on timestampped name")
 
-        # Attach to shared memory
-        self.shared_frames = np.ndarray(
-            (self.buffer_length, *self.frame_shape),
-            dtype=np.uint8,
-            buffer=shm_name,
-        )
+        # Keep the multiprocessing shared buffer object.
+        # Do not create the NumPy view here when using spawn, because the Process
+        # object is pickled and the ndarray may become a private snapshot.
+        self.raw = shm_name
+        self.shared_frames = None
+
+    def _attach_shared_frames(self):
+        if self.shared_frames is None:
+            self.shared_frames = np.ndarray(
+                (self.buffer_length, *self.frame_shape),
+                dtype=np.uint8,
+                buffer=self.raw,
+            )
 
     def _get_md_filename(self, suffix='_M', save_prefix=None):
         # Multi-camera: use shared event timestamp + event hash + part number
@@ -433,9 +440,6 @@ class VideoSaver(Process):
         with self.lock_tail:
             frame_idx = self.tail.value % self.buffer_length
 
-            # Critical: copy out of the shared ring slot before advancing tail.
-            # Otherwise the producer may overwrite this slot while VideoWriter/GStreamer
-            # is still consuming the NumPy array.
             frame = self.shared_frames[frame_idx].copy()
 
             self.tail.value = (self.tail.value + 1) % self.buffer_length
@@ -446,6 +450,8 @@ class VideoSaver(Process):
         return frame
 
     def run(self):
+        self._attach_shared_frames()
+
         filename = self._get_md_filename(save_prefix=self.save_prefix)
 
         logger.info(f"Writing motion video to {filename}")
