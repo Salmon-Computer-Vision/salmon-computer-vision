@@ -490,6 +490,7 @@ class VideoSaver(Process):
             logger.error(err_msg)
             logger.error(tb)
             self.status_q.put((ERROR_CODE, (err_msg, tb)))
+            self.stop_event.set():
             return
         
         c = 0
