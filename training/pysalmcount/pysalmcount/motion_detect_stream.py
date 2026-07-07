@@ -432,11 +432,16 @@ class VideoSaver(Process):
     def _get_frame(self):
         with self.lock_tail:
             frame_idx = self.tail.value % self.buffer_length
-            frame = self.shared_frames[frame_idx]
+
+            # Critical: copy out of the shared ring slot before advancing tail.
+            # Otherwise the producer may overwrite this slot while VideoWriter/GStreamer
+            # is still consuming the NumPy array.
+            frame = self.shared_frames[frame_idx].copy()
+
             self.tail.value = (self.tail.value + 1) % self.buffer_length
 
         with self.condition:
-            self.condition.notify() # Signal to Producer to stop blocking
+            self.condition.notify_all()
 
         return frame
 
