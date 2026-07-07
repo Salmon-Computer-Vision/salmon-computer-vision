@@ -579,24 +579,6 @@ def _ring_is_full(head, tail, buffer_length):
     return (head.value + 1) % buffer_length == tail.value
 
 
-def _raise_if_video_saver_failed(self):
-    while True:
-        try:
-            status, payload = self.status_q.get_nowait()
-        except queue.Empty:
-            break
-
-        if status == ERROR_CODE:
-            self.log.error("VideoSaver reported ERROR_CODE: %r", payload)
-            raise RuntimeError(f"VideoSaver failed: {payload!r}")
-
-    if self.video_saver is not None:
-        exitcode = self.video_saver.exitcode
-        if exitcode not in (None, 0):
-            raise RuntimeError(
-                f"VideoSaver process exited with non-zero exitcode={exitcode}"
-            )
-
 
 class MotionDetector:
     FILENAME = 'filename'
@@ -636,6 +618,24 @@ class MotionDetector:
         self.lock_tail = Lock()
         self.condition = Condition()
         self.status_q = Queue()
+
+    def _raise_if_video_saver_failed(self):
+        while True:
+            try:
+                status, payload = self.status_q.get_nowait()
+            except queue.Empty:
+                break
+
+            if status == ERROR_CODE:
+                self.log.error("VideoSaver reported ERROR_CODE: %r", payload)
+                raise RuntimeError(f"VideoSaver failed: {payload!r}")
+
+        if self.video_saver is not None:
+            exitcode = self.video_saver.exitcode
+            if exitcode not in (None, 0):
+                raise RuntimeError(
+                    f"VideoSaver process exited with non-zero exitcode={exitcode}"
+                )
 
     def detect_motion(self, fg_mask, min_area=500):
         """
