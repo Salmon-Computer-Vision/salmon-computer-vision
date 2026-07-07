@@ -490,7 +490,9 @@ class VideoSaver(Process):
             logger.error(err_msg)
             logger.error(tb)
             self.status_q.put((ERROR_CODE, (err_msg, tb)))
-            self.stop_event.set():
+            self.stop_event.set()
+            with self.condition:
+                self.condition.notify_all() # Signal to Producer to stop blocking
             return
         
         c = 0
@@ -575,6 +577,25 @@ class _CamLoggerAdapter(logging.LoggerAdapter):
 
 def _ring_is_full(head, tail, buffer_length):
     return (head.value + 1) % buffer_length == tail.value
+
+
+def _raise_if_video_saver_failed(self):
+    while True:
+        try:
+            status, payload = self.status_q.get_nowait()
+        except queue.Empty:
+            break
+
+        if status == ERROR_CODE:
+            self.log.error("VideoSaver reported ERROR_CODE: %r", payload)
+            raise RuntimeError(f"VideoSaver failed: {payload!r}")
+
+    if self.video_saver is not None:
+        exitcode = self.video_saver.exitcode
+        if exitcode not in (None, 0):
+            raise RuntimeError(
+                f"VideoSaver process exited with non-zero exitcode={exitcode}"
+            )
 
 
 class MotionDetector:
@@ -861,6 +882,7 @@ class MotionDetector:
 
         try:
             for item in self.dataloader.items():
+                self._raise_if_video_saver_failed()
                 if utils.is_check_time(frame_counter, fps):
                     start_time=time.time()
 
@@ -979,6 +1001,8 @@ class MotionDetector:
                     self.log.info(f"check motion: {elapsed_in_time:.2f} ms")
 
                 while True:
+                    self._raise_if_video_saver_failed()
+
                     with self.lock_head, self.lock_tail:
                         buf_full = _ring_is_full(head, tail, buffer_length)
                         if not buf_full:
@@ -1039,6 +1063,7 @@ class MotionDetector:
                                     cur_clip.name, frame_counter, info,
                                     cpu_h264, bitrate,
                                 )
+                                self._raise_if_video_saver_failed()
                             else:
                                 self.motion_detected = True
                                 self.motion_counter = 0
@@ -1076,6 +1101,7 @@ class MotionDetector:
                                     cur_clip.name, frame_counter, info,
                                     cpu_h264, bitrate,
                                 )
+                                self._raise_if_video_saver_failed()
                             else:
                                 self.motion_detected = True
                                 self.motion_counter = 0
@@ -1105,6 +1131,7 @@ class MotionDetector:
                                             frame_counter, info,
                                             cpu_h264, bitrate,
                                         )
+                                        self._raise_if_video_saver_failed()
                                     else:
                                         self.motion_detected = True
                                         self.motion_counter = 0
@@ -1129,6 +1156,7 @@ class MotionDetector:
                                     cur_clip.name, frame_counter, None,
                                     cpu_h264, bitrate,
                                 )
+                                self._raise_if_video_saver_failed()
                         elif self.motion_counter > MAX_FRAMES_CLIP:
                             self.log.info("Max clip length exceeded")
                             self.frame_log[cur_clip.name].append((frame_start, frame_counter))
@@ -1144,14 +1172,6 @@ class MotionDetector:
                                 self.log.info("Delay exceeded. Motion stopped.")
                                 self.frame_log[cur_clip.name].append((frame_start, frame_counter))
                                 self.stop_video_saving(final=True)
-
-                try:
-                    status, payload = self.status_q.get_nowait()
-                    if status == ERROR_CODE:
-                        self.log.error("VideoSaver reported ERROR_CODE: %r", payload)
-                        raise RuntimeError(f"VideoSaver failed: {payload!r}")
-                except queue.Empty:
-                    pass
 
                 if utils.is_check_time(frame_counter, fps):
                     end_time=time.time()
