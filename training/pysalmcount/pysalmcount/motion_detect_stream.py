@@ -452,8 +452,8 @@ class VideoSaver(Process):
                 self.resolution[0],
                 self.resolution[1],
                 bitrate_kbps=self.cpu_h264_bitrate,
-                appsrc_block=False,
-                queue_leaky=True,
+                appsrc_block=True,
+                queue_leaky=False,
                 queue_buffers=4,
             )
             logger.info("GStreamer writer pipeline: %s", pipeline)
