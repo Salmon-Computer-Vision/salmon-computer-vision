@@ -13,6 +13,7 @@ import datetime
 from pathlib import Path
 import time
 from typing import List, Optional, Tuple
+import multiprocessing as mp
 
 # Set up logging
 log_format = '%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s'
@@ -320,6 +321,7 @@ if __name__ == "__main__":
     install_excepthook()
 
     try:
+        mp.set_start_method("spawn", force=True)
         main(args)
     except Exception:
         # Log fatal error with full traceback
