@@ -322,6 +322,25 @@ def build_cpu_h264_writer(
     )
 
 
+def ensure_writable_dir(path: str, label: str) -> None:
+    p = Path(path)
+    p.mkdir(parents=True, exist_ok=True)
+
+    test_file = p / f".write_test_{os.getpid()}_{int(time.time())}"
+    try:
+        with open(test_file, "wb") as f:
+            f.write(b"ok")
+            f.flush()
+            os.fsync(f.fileno())
+    except Exception as exc:
+        raise RuntimeError(f"{label} directory is not writable: {p}") from exc
+    finally:
+        try:
+            test_file.unlink()
+        except FileNotFoundError:
+            pass
+
+
 class VideoSaver(Process):
     def __init__(self, shm_name, frame_shape, head: Value, tail: Value, buffer_length, folder, stop_event, lock_head, lock_tail, condition, status_q: Queue, fps=10.0,
             orin=False, raspi=False, save_prefix=None, is_video=False, filename=None, frame_count=0,
@@ -562,6 +581,40 @@ class VideoSaver(Process):
             logger.error(f"Could not generate metadata for file: {filename}")
             logger.error(tb)
             self.status_q.put((ERROR_CODE, ("", tb)))
+
+
+class OutputFileHealth:
+    def __init__(self, path: str, label: str, fail_after_s: float = 60.0):
+        self.path = Path(path)
+        self.label = label
+        self.fail_after_s = fail_after_s
+        self.last_size = -1
+        self.last_progress = time.monotonic()
+
+    def check(self):
+        now = time.monotonic()
+
+        try:
+            size = self.path.stat().st_size
+        except FileNotFoundError as exc:
+            if now - self.last_progress > self.fail_after_s:
+                raise RuntimeError(
+                    f"{self.label} output file does not exist after "
+                    f"{self.fail_after_s:.1f}s: {self.path}"
+                ) from exc
+            return
+
+        if size > self.last_size:
+            self.last_size = size
+            self.last_progress = now
+            return
+
+        if now - self.last_progress > self.fail_after_s:
+            raise RuntimeError(
+                f"{self.label} output file is not growing after "
+                f"{self.fail_after_s:.1f}s: {self.path}; size={size}"
+            )
+
 
 class _CamLoggerAdapter(logging.LoggerAdapter):
     """Prefix every log record with [cam_name] regardless of the root
@@ -816,6 +869,9 @@ class MotionDetector:
             motion_dir = os.path.join(self.save_folder, MOTION_VIDS)
         Path(motion_dir).mkdir(parents=True, exist_ok=True)
 
+        ensure_writable_dir(cont_dir, "continuous video")
+        ensure_writable_dir(motion_dir, "motion video")
+
         cur_clip = self.dataloader.next_clip()
         self.frame_log[cur_clip.name] = []
 
@@ -872,6 +928,7 @@ class MotionDetector:
 
         video_saver = None
         cont_vid_out = None
+        cont_health = None
         frame_counter = MAX_CONTINUOUS_FRAMES if self.save_cont_video else 0
         vid_counter = 0
         self.motion_counter = 0
@@ -956,12 +1013,18 @@ class MotionDetector:
                             )
 
                         self.log.info(f"Created VideoWriter to {cont_filename}")
+                        cont_health = OutputFileHealth(cont_filename, "continuous video", fail_after_s=60.0)
                         frame_counter = 0
 
                     if utils.is_check_time(frame_counter, fps):
                         start_in_time = time.time()
+                        ensure_writable_dir(cont_dir, "continuous video")
+                        ensure_writable_dir(motion_dir, "motion video")
 
                     cont_vid_out.write(frame)
+
+                    if cont_health is not None and frame_counter % max(int(fps * 5), 1) == 0:
+                        cont_health.check()
 
                     if utils.is_check_time(frame_counter, fps):
                         end_in_time=time.time()
@@ -1057,6 +1120,7 @@ class MotionDetector:
                                 f"Rolling into part {info.part_number} of event {info.event_id}"
                             )
                             if self.save_video:
+                                ensure_writable_dir(motion_dir, "motion video")
                                 video_saver = self._spawn_video_saver(
                                     motion_dir, raw, frame.shape, head, tail,
                                     buffer_length, fps, orin, raspi,
@@ -1095,6 +1159,7 @@ class MotionDetector:
                             )
                             frame_start = frame_counter
                             if self.save_video:
+                                ensure_writable_dir(motion_dir, "motion video")
                                 video_saver = self._spawn_video_saver(
                                     motion_dir, raw, frame.shape, head, tail,
                                     buffer_length, fps, orin, raspi,
@@ -1124,6 +1189,7 @@ class MotionDetector:
                                     )
                                     frame_start = frame_counter
                                     if self.save_video:
+                                        ensure_writable_dir(motion_dir, "motion video")
                                         video_saver = self._spawn_video_saver(
                                             motion_dir, raw, frame.shape,
                                             head, tail, buffer_length, fps,
@@ -1150,6 +1216,7 @@ class MotionDetector:
                             self.motion_counter = 0
                             frame_start = frame_counter
                             if self.save_video:
+                                ensure_writable_dir(motion_dir, "motion video")
                                 video_saver = self._spawn_video_saver(
                                     motion_dir, raw, frame.shape, head, tail,
                                     buffer_length, fps, orin, raspi,
