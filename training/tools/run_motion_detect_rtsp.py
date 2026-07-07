@@ -171,11 +171,11 @@ def _parse_multi_camera_args(args) -> Tuple[List[str], List[str]]:
     return urls, cam_names
 
 
-def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name):
+def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, cpu_h264, bitrate):
     """Thread target that logs any crash in the cam's detector without
     bringing down the other cams' threads."""
     try:
-        det.run(fps=fps, algo=algo, orin=orin, raspi=raspi, staging=staging)
+        det.run(fps=fps, algo=algo, orin=orin, raspi=raspi, staging=staging, cpu_h264=cpu_h264, bitrate=bitrate)
     except Exception:
         logger.exception("[%s] detector thread crashed", cam_name)
 
@@ -246,7 +246,7 @@ def main(args):
             t = threading.Thread(
                 target=_run_detector_in_thread,
                 args=(det, fps, args.algo, args.orin, args.raspi, 
-                      args.staging, cam_name),
+                      args.staging, cam_name, args.cpu_h264, args.bitrate),
                 name=f"MotionDetector-{cam_name}",
                 daemon=False,
             )
