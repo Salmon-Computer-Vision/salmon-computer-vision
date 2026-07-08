@@ -428,23 +428,35 @@ class VideoSaver(Process):
             short = MotionEventCoordinator.event_id_short(self.event_id)
             part = self.part_number if self.part_number is not None else 1
             prefix = save_prefix if save_prefix is not None else os.uname()[1]
-            filename = self.folder / (
-                f"{prefix}_{ts}_E{short}_p{part:03d}{suffix}.mp4"
-            )
-            # Safety net: the coordinator finalizing-guard should already
-            # prevent a returning cam from reusing an event's frozen identity,
-            # so this path is not expected to collide. If it ever does, never
-            # silently overwrite an existing clip (and its metadata JSON) --
-            # log loudly and uniquify with a short random token instead.
+            base = f"{prefix}_{ts}_E{short}_p{part:03d}"
+            filename = self.folder / f"{base}{suffix}.mp4"
+            # The coordinator finalizing-guard guarantees a returning cam mints
+            # a fresh event_id instead of reusing this event's frozen identity,
+            # so this path must never collide. If the "impossible" collision
+            # ever happens, NEVER overwrite the existing clip (that would be
+            # silent data loss). Instead preserve it and write the new clip
+            # under a collision-marked name: prefix with "collision_" and append
+            # a UTC systime tag (with microseconds) before the label suffix so
+            # the file still ends in ..._M.mp4. The tag makes the name unique;
+            # a random token is added only in the astronomically unlikely event
+            # the tag itself clashes.
+            # NOTE: collision-marked names intentionally deviate from the strict
+            # cloud filename scheme, so such clips may need manual handling
+            # downstream -- acceptable because a collision signals a real bug.
             if filename.exists():
-                token = secrets.token_hex(2)
                 collided = filename
-                filename = self.folder / (
-                    f"{prefix}_{ts}_E{short}_p{part:03d}_r{token}{suffix}.mp4"
-                )
+                now_tag = datetime.datetime.now(
+                    datetime.timezone.utc
+                ).strftime("%Y%m%dT%H%M%S%fZ")
+                filename = self.folder / f"collision_{base}_{now_tag}{suffix}.mp4"
+                while filename.exists():
+                    token = secrets.token_hex(2)
+                    filename = self.folder / f"collision_{base}_{now_tag}_{token}{suffix}.mp4"
                 logger.error(
                     "Motion clip path already exists (unexpected collision): "
-                    "%s; writing to %s instead to avoid overwrite",
+                    "%s; preserving it and writing new clip to %s instead. "
+                    "This indicates event-identity reuse -- investigate the "
+                    "coordinator finalize/leave logic.",
                     str(collided), str(filename),
                 )
             return str(filename)
@@ -752,20 +764,19 @@ class MotionDetector:
         """
         self.motion_counter = 0
 
-        def _leave_event_if_final():
-            # Drop this cam from the event BEFORE the potentially long
-            # VideoSaver.join() below. If we leave only after the join, the
-            # shared event stays "active" for the whole drain, and a cam that
-            # already finished could rejoin the closing event and reuse its
-            # frozen event_id/part_number (overwriting an existing clip).
-            # Leaving early only touches coordinator bookkeeping; the outgoing
-            # VideoSaver already carries its own ClipInfo. leave_event is
-            # idempotent, so the finally-block call is still safe.
-            if final and self.coordinator is not None and self.cam_name is not None:
-                try:
-                    self.coordinator.leave_event(self.cam_name)
-                except Exception:
-                    self.log.exception("coordinator.leave_event raised")
+        # Leave the event BEFORE the potentially long VideoSaver.join() below.
+        # If we left only after draining, the shared event would stay "active"
+        # for the whole drain window, letting a cam that already finished rejoin
+        # the closing event and reuse its frozen event_id/part_number (which
+        # would overwrite an existing clip). Leaving here only updates
+        # coordinator bookkeeping; the outgoing VideoSaver already carries its
+        # own ClipInfo, so its filename is unaffected. leave_event is
+        # idempotent, so the run()-finally safety-net call remains safe.
+        if final and self.coordinator is not None and self.cam_name is not None:
+            try:
+                self.coordinator.leave_event(self.cam_name)
+            except Exception:
+                self.log.exception("coordinator.leave_event raised")
 
         if self.save_video and self.video_saver_stop_event is not None:
             if final:
@@ -777,8 +788,6 @@ class MotionDetector:
 
             with self.condition:
                 self.condition.notify_all()
-
-            _leave_event_if_final()
 
             if self.video_saver is not None and self.video_saver.is_alive():
                 self.log.info("Joining VideoSaver pid=%s", self.video_saver.pid)
@@ -799,9 +808,6 @@ class MotionDetector:
 
         elif not self.save_video:
             self.motion_detected = False
-            _leave_event_if_final()
-        else:
-            _leave_event_if_final()
 
 
     def _spawn_video_saver(self, motion_dir, raw, frame_shape, head, tail,
