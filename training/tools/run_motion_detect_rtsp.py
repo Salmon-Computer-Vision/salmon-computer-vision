@@ -265,7 +265,26 @@ def main(args):
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url, save_cont_video=save_cont_video, is_video=is_video)
-    det.run(fps=fps, algo=args.algo, orin=args.orin, raspi=args.raspi, cpu_h264=args.cpu_h264, staging=args.staging, bitrate=args.bitrate)
+    det.run(
+        fps=fps,
+        algo=args.algo,
+        orin=args.orin,
+        raspi=args.raspi,
+        cpu_h264=args.cpu_h264,
+        staging=args.staging,
+        bitrate=args.bitrate,
+        bgsub_threshold=args.bgsub_threshold,
+        cnt_min_pixel_stability=args.cnt_min_pixel_stability,
+        cnt_max_pixel_stability=args.cnt_max_pixel_stability,
+        fg_threshold=args.fg_threshold,
+        morph_kernel_size=args.morph_kernel_size,
+        erode_iter=args.erode_iter,
+        dilate_iter=args.dilate_iter,
+        min_contour_area=args.min_contour_area,
+        min_contour_area_ratio=args.min_contour_area_ratio,
+        motion_trigger_seconds=args.motion_trigger_seconds,
+        warmup_seconds=args.warmup_seconds,
+    )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
@@ -282,6 +301,17 @@ if __name__ == "__main__":
     parser.add_argument("--h265", action='store_true', help="Set this flag to use h265 decoding")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
     parser.add_argument("--algo", default="MOG2", choices=["MOG2", "CNT"], help="Set algorithm for motion detection")
+    parser.add_argument("--bgsub-threshold", type=float, default=30, help="Lower threshold means more pixels easily become the foreground")
+    parser.add_argument("--cnt-min-pixel-stability", type=int, default=1)
+    parser.add_argument("--cnt-max-pixel-stability", type=int, default=7)
+    parser.add_argument("--fg-threshold", type=int, default=244)
+    parser.add_argument("--morph-kernel-size", type=int, default=7, "Smaller kernel is more sensitive to small/thin motion")
+    parser.add_argument("--erode-iter", type=int, default=1, "More iterations takes more time but can smooth out motion better")
+    parser.add_argument("--dilate-iter", type=int, default=1, "More iterations takes more time but can increase smaller motion blobs")
+    parser.add_argument("--min-contour-area", type=int, default=5000, "Area threshold of how big the motion must be before triggering")
+    parser.add_argument("--min-contour-area-ratio", type=float, default=None, "Replaces area and determines based on ratio of the entire frame. Must be fractional")
+    parser.add_argument("--motion-trigger-seconds", type=float, default=0.2, "How many seconds before motion is triggered. Can be fractional; eg. 10 FPS, 0.2 -> 2 frames.")
+    parser.add_argument("--warmup-seconds", type=float, default=1.0, "Number of seconds to warmup at the start of the program before detecting motion. Required as the background needs to be established first.")
     parser.add_argument("--url", default='https://google.com', help="Healthchecks URL to ping. This could be from healthchecks.io or another healthchecks service")
     parser.add_argument("--no-cont", action='store_true', help="Set this flag to not save continuous video")
     parser.add_argument("--staging", action='store_true', help="Set this flag to save to a staging folder for edge salmon counting processing")

@@ -887,17 +887,54 @@ class MotionDetector:
         self.log.info("Started VideoSaver pid=%s", video_saver.pid)
         return video_saver
 
-    def run(self, algo='MOG2', fps: int=None, orin=False, raspi=False, cpu_h264=False, staging=False, bitrate=1200):
-        # Motion Detection Params
-        bgsub_threshold = 50
-        bgsub_min_pixelstability = 1
-        bgsub_max_pixelstability = 7
-        threshold_value = 244 # Increase threshold value to minimize noise
-        kernel_size = (11, 11) # Increase kernel size to ignore smaller motions
-        erode_iter = 1 # Run multiple iterations to incrementally remove smaller objects
-        dilate_iter = 1
-        min_contour_area = 10000 # Ignore contour objects smaller than this area
-        MOTION_EVENTS_THRESH = 0.4 # Ratio of seconds of motion required to trigger detection
+    def run(
+        self,
+        algo='MOG2',
+        fps: int = None,
+        orin=False,
+        raspi=False,
+        cpu_h264=False,
+        staging=False,
+        bitrate=1200,
+        bgsub_threshold: float = 30,
+        cnt_min_pixel_stability: int = 1,
+        cnt_max_pixel_stability: int = 7,
+        fg_threshold: int = 244,
+        morph_kernel_size: int = 7, # Increase kernel size to ignore smaller motions
+        erode_iter: int = 1,
+        dilate_iter: int = 1,
+        min_contour_area: int = 5000, # Ignore contour objects smaller than this area
+        min_contour_area_ratio: float = None,
+        motion_trigger_seconds: float = 0.2, # Seconds of motion required to trigger detection
+        warmup_seconds: float = 1.0,
+    ):
+
+        if morph_kernel_size < 1:
+            raise ValueError("morph_kernel_size must be >= 1")
+
+        if morph_kernel_size % 2 == 0:
+            raise ValueError("morph_kernel_size should be odd, e.g. 3, 5, 7, 11")
+
+        if erode_iter < 0 or dilate_iter < 0:
+            raise ValueError("erode_iter and dilate_iter must be >= 0")
+
+        if not (0 <= fg_threshold <= 254):
+            raise ValueError("fg_threshold must be in [0, 254]")
+
+        if min_contour_area < 1:
+            raise ValueError("min_contour_area must be >= 1")
+
+        if min_contour_area_ratio is not None and not (0 < min_contour_area_ratio < 1):
+            raise ValueError("min_contour_area_ratio must be between 0 and 1")
+
+        if motion_trigger_seconds <= 0:
+            raise ValueError("motion_trigger_seconds must be > 0")
+
+        if warmup_seconds < 0:
+            raise ValueError("warmup_seconds must be >= 0")
+
+        kernel_size = (morph_kernel_size, morph_kernel_size)
+        threshold_value = fg_threshold
 
         # Clip-timing values come from the module-level single source of truth.
         # Change MAX_CLIP_SECONDS / PRE_ROLL_SECONDS / POST_ROLL_SECONDS at the
@@ -943,16 +980,21 @@ class MotionDetector:
 
         MAX_FRAMES_CLIP = int(MAX_CLIP * fps)
         MAX_CONTINUOUS_FRAMES = int(MAX_CONTINUOUS * fps)
-        MOTION_EVENTS_THRESH_FRAMES = int(MOTION_EVENTS_THRESH * fps)
+        MOTION_EVENTS_THRESH_FRAMES = max(1, int(round(motion_trigger_seconds * fps)))
 
         if algo == 'MOG2':
             bgsub = cv2.createBackgroundSubtractorMOG2(varThreshold=bgsub_threshold, detectShadows=False)
         else:
-            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(minPixelStability=bgsub_min_pixelstability, useHistory=True, maxPixelStability=bgsub_max_pixelstability, isParallel=True)
+            bgsub = cv2.bgsegm.createBackgroundSubtractorCNT(
+                minPixelStability=cnt_min_pixel_stability,
+                useHistory=True,
+                maxPixelStability=cnt_max_pixel_stability,
+                isParallel=True,
+            )
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, kernel_size)
 
-        warm_up = fps
+        warm_up = int(round(warmup_seconds * fps))
         buffer_length = int(fps * BUFFER_LENGTH)  # Buffer to save before motion
         self.motion_detected = False
         self._awaiting_next_part = False
@@ -964,6 +1006,15 @@ class MotionDetector:
         #    frame = cv2.imread(frame)
         #frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
         frame_shape = (FRAME_RESIZE[1], FRAME_RESIZE[0], 3)
+
+        if min_contour_area_ratio is not None:
+            frame_area = frame_shape[0] * frame_shape[1]
+            min_contour_area = int(frame_area * min_contour_area_ratio)
+            self.log.info(
+                "Using min_contour_area=%d from min_contour_area_ratio=%.6f",
+                min_contour_area,
+                min_contour_area_ratio,
+            )
 
         # Create shared memory between multi processes
         dtype = np.uint8  # Frame data type
