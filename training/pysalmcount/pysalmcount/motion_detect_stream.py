@@ -108,6 +108,12 @@ class MotionEventCoordinator:
         self._current_part_start_wall: Optional[float] = None
         self._last_motion_wall: Optional[float] = None
         self._cams_recording: Set[str] = set()
+        # Set True the instant a finalize is broadcast (in tick) and cleared
+        # when the event fully closes (in leave_event) or a fresh event is
+        # minted (in enter_event). While True, enter_event refuses to (re)join
+        # the closing event so a returning cam cannot reuse the old frozen
+        # event_id/event_start_ts/part_number and overwrite an existing clip.
+        self._finalizing: bool = False
         self._max_clip_seconds = float(max_clip_seconds)
         self._post_roll_seconds = float(post_roll_seconds)
 
@@ -121,17 +127,24 @@ class MotionEventCoordinator:
         # Format is 'YYYYMMDDTHHMMSSZ_abcdef'; after the underscore is the hex.
         return event_id.rsplit('_', 1)[-1]
 
-    def enter_event(self, cam_name: str) -> ClipInfo:
+    def enter_event(self, cam_name: str) -> Optional[ClipInfo]:
         """Atomic mint-or-join.
 
         - Idle: mint (event_id, event_start_ts), record originator=cam,
           set part_number=1, set current_part_start_wall and last_motion_wall
           to now, set fan-out flags for every OTHER cam.
-        - Active: return current clip info unchanged.
+        - Active (not finalizing): return current clip info unchanged.
+        - Active AND finalizing: return None. The current event is draining
+          (finalize already broadcast) so we refuse to (re)join it; the caller
+          should defer and retry next frame, at which point the event will have
+          closed and a fresh event_id gets minted. This is what prevents a cam
+          that finished + left from rejoining a still-draining event and
+          reusing the old frozen identity (which would overwrite an existing
+          clip on disk).
 
-        In both cases: add cam_name to _cams_recording and clear this cam's
-        own fan-out flag (defense against the race where A mints and B opens
-        locally in the same instant -- B's fan-out flag would otherwise
+        In the mint/join cases: add cam_name to _cams_recording and clear this
+        cam's own fan-out flag (defense against the race where A mints and B
+        opens locally in the same instant -- B's fan-out flag would otherwise
         linger as stale state until event close).
         """
         if cam_name not in self._triggers:
@@ -151,11 +164,15 @@ class MotionEventCoordinator:
                 self._current_part_number = 1
                 self._current_part_start_wall = now_wall
                 self._last_motion_wall = now_wall
+                self._finalizing = False
                 # Fan out to every other cam. Clear this cam's own flag below.
                 for other in self._cam_names:
                     if other != cam_name:
                         self._triggers[other].set()
-            # Always join (mint branch also joins as originator).
+            elif self._finalizing:
+                # Event is draining; refuse to join. Caller defers + retries.
+                return None
+            # Join (mint branch also joins as originator).
             self._cams_recording.add(cam_name)
             self._triggers[cam_name].clear()
             return ClipInfo(
@@ -226,6 +243,9 @@ class MotionEventCoordinator:
             # post_roll_seconds.
             if (self._last_motion_wall is not None and
                     now_wall - self._last_motion_wall >= self._post_roll_seconds):
+                # Mark the event as closing so enter_event refuses new joins
+                # for the rest of the drain (see enter_event finalizing branch).
+                self._finalizing = True
                 for n in self._cam_names:
                     self._finalize_pending[n] = True
                     # Finalize wins over any stale rollover that hasn't been
@@ -275,6 +295,7 @@ class MotionEventCoordinator:
                 self._current_part_number = 0
                 self._current_part_start_wall = None
                 self._last_motion_wall = None
+                self._finalizing = False
                 for n in self._cam_names:
                     self._triggers[n].clear()
                     self._rollover_pending[n] = False
@@ -410,6 +431,22 @@ class VideoSaver(Process):
             filename = self.folder / (
                 f"{prefix}_{ts}_E{short}_p{part:03d}{suffix}.mp4"
             )
+            # Safety net: the coordinator finalizing-guard should already
+            # prevent a returning cam from reusing an event's frozen identity,
+            # so this path is not expected to collide. If it ever does, never
+            # silently overwrite an existing clip (and its metadata JSON) --
+            # log loudly and uniquify with a short random token instead.
+            if filename.exists():
+                token = secrets.token_hex(2)
+                collided = filename
+                filename = self.folder / (
+                    f"{prefix}_{ts}_E{short}_p{part:03d}_r{token}{suffix}.mp4"
+                )
+                logger.error(
+                    "Motion clip path already exists (unexpected collision): "
+                    "%s; writing to %s instead to avoid overwrite",
+                    str(collided), str(filename),
+                )
             return str(filename)
 
         if not self.is_video or self.filename is None:
@@ -715,6 +752,21 @@ class MotionDetector:
         """
         self.motion_counter = 0
 
+        def _leave_event_if_final():
+            # Drop this cam from the event BEFORE the potentially long
+            # VideoSaver.join() below. If we leave only after the join, the
+            # shared event stays "active" for the whole drain, and a cam that
+            # already finished could rejoin the closing event and reuse its
+            # frozen event_id/part_number (overwriting an existing clip).
+            # Leaving early only touches coordinator bookkeeping; the outgoing
+            # VideoSaver already carries its own ClipInfo. leave_event is
+            # idempotent, so the finally-block call is still safe.
+            if final and self.coordinator is not None and self.cam_name is not None:
+                try:
+                    self.coordinator.leave_event(self.cam_name)
+                except Exception:
+                    self.log.exception("coordinator.leave_event raised")
+
         if self.save_video and self.video_saver_stop_event is not None:
             if final:
                 self.log.info("Stopping recording.")
@@ -725,6 +777,8 @@ class MotionDetector:
 
             with self.condition:
                 self.condition.notify_all()
+
+            _leave_event_if_final()
 
             if self.video_saver is not None and self.video_saver.is_alive():
                 self.log.info("Joining VideoSaver pid=%s", self.video_saver.pid)
@@ -745,12 +799,9 @@ class MotionDetector:
 
         elif not self.save_video:
             self.motion_detected = False
-
-        if final and self.coordinator is not None and self.cam_name is not None:
-            try:
-                self.coordinator.leave_event(self.cam_name)
-            except Exception:
-                self.log.exception("coordinator.leave_event raised")
+            _leave_event_if_final()
+        else:
+            _leave_event_if_final()
 
 
     def _spawn_video_saver(self, motion_dir, raw, frame_shape, head, tail,
@@ -1152,26 +1203,35 @@ class MotionDetector:
                         if self.coordinator.take_trigger(self.cam_name):
                             # Fan-out: another cam opened an event.
                             info = self.coordinator.enter_event(self.cam_name)
-                            self.log.info(
-                                f"Fan-out trigger; joining event {info.event_id} "
-                                f"(originator={info.originator}) as part "
-                                f"{info.part_number}"
-                            )
-                            frame_start = frame_counter
-                            if self.save_video:
-                                ensure_writable_dir(motion_dir, "motion video")
-                                video_saver = self._spawn_video_saver(
-                                    motion_dir, raw, frame.shape, head, tail,
-                                    buffer_length, fps, orin, raspi,
-                                    cur_clip.name, frame_counter, info,
-                                    cpu_h264, bitrate,
+                            if info is None:
+                                # Event is draining (finalizing). Defer; the
+                                # trigger was already consumed by take_trigger,
+                                # so nothing lingers. Retry on a later frame.
+                                self.log.info(
+                                    "Fan-out trigger arrived while event is "
+                                    "finalizing; deferring join"
                                 )
-                                self._raise_if_video_saver_failed()
                             else:
-                                self.motion_detected = True
-                                self.motion_counter = 0
-                            num_motion_events = 0
-                            count_delay = 0
+                                self.log.info(
+                                    f"Fan-out trigger; joining event {info.event_id} "
+                                    f"(originator={info.originator}) as part "
+                                    f"{info.part_number}"
+                                )
+                                frame_start = frame_counter
+                                if self.save_video:
+                                    ensure_writable_dir(motion_dir, "motion video")
+                                    video_saver = self._spawn_video_saver(
+                                        motion_dir, raw, frame.shape, head, tail,
+                                        buffer_length, fps, orin, raspi,
+                                        cur_clip.name, frame_counter, info,
+                                        cpu_h264, bitrate,
+                                    )
+                                    self._raise_if_video_saver_failed()
+                                else:
+                                    self.motion_detected = True
+                                    self.motion_counter = 0
+                                num_motion_events = 0
+                                count_delay = 0
                         else:
                             # Local-motion detection path (threshold-gated).
                             # Only the bookkeeping matters while idle -- we
@@ -1182,25 +1242,38 @@ class MotionDetector:
                                 count_delay = 0
                                 if num_motion_events >= MOTION_EVENTS_THRESH_FRAMES:
                                     info = self.coordinator.enter_event(self.cam_name)
-                                    self.log.info(
-                                        f"Local motion crossed threshold; "
-                                        f"entering event {info.event_id} "
-                                        f"(originator={info.originator})"
-                                    )
-                                    frame_start = frame_counter
-                                    if self.save_video:
-                                        ensure_writable_dir(motion_dir, "motion video")
-                                        video_saver = self._spawn_video_saver(
-                                            motion_dir, raw, frame.shape,
-                                            head, tail, buffer_length, fps,
-                                            orin, raspi, cur_clip.name,
-                                            frame_counter, info,
-                                            cpu_h264, bitrate,
+                                    if info is None:
+                                        # Previous event is still draining
+                                        # (finalizing). Defer minting a fresh
+                                        # event: leave num_motion_events intact
+                                        # so we retry next frame, at which point
+                                        # the old event has closed and a new
+                                        # event_id is minted (no filename reuse).
+                                        self.log.info(
+                                            "Local motion crossed threshold "
+                                            "while previous event is "
+                                            "finalizing; deferring new event"
                                         )
-                                        self._raise_if_video_saver_failed()
                                     else:
-                                        self.motion_detected = True
-                                        self.motion_counter = 0
+                                        self.log.info(
+                                            f"Local motion crossed threshold; "
+                                            f"entering event {info.event_id} "
+                                            f"(originator={info.originator})"
+                                        )
+                                        frame_start = frame_counter
+                                        if self.save_video:
+                                            ensure_writable_dir(motion_dir, "motion video")
+                                            video_saver = self._spawn_video_saver(
+                                                motion_dir, raw, frame.shape,
+                                                head, tail, buffer_length, fps,
+                                                orin, raspi, cur_clip.name,
+                                                frame_counter, info,
+                                                cpu_h264, bitrate,
+                                            )
+                                            self._raise_if_video_saver_failed()
+                                        else:
+                                            self.motion_detected = True
+                                            self.motion_counter = 0
                             else:
                                 num_motion_events = 0
                                 if count_delay < delay:
