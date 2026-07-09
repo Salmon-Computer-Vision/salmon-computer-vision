@@ -171,11 +171,35 @@ def _parse_multi_camera_args(args) -> Tuple[List[str], List[str]]:
     return urls, cam_names
 
 
-def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, cpu_h264, bitrate):
+def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, cpu_h264, bitrate,
+        bgsub_threshold,
+        cnt_min_pixel_stability,
+        cnt_max_pixel_stability,
+        fg_threshold,
+        morph_kernel_size,
+        erode_iter,
+        dilate_iter,
+        min_contour_area,
+        min_contour_area_ratio,
+        motion_trigger_seconds,
+        warmup_seconds,
+    ):
     """Thread target that logs any crash in the cam's detector without
     bringing down the other cams' threads."""
     try:
-        det.run(fps=fps, algo=algo, orin=orin, raspi=raspi, staging=staging, cpu_h264=cpu_h264, bitrate=bitrate)
+        det.run(fps=fps, algo=algo, orin=orin, raspi=raspi, staging=staging, cpu_h264=cpu_h264, bitrate=bitrate,
+                bgsub_threshold=bgsub_threshold,
+                cnt_min_pixel_stability=cnt_min_pixel_stability,
+                cnt_max_pixel_stability=cnt_max_pixel_stability,
+                fg_threshold=fg_threshold,
+                morph_kernel_size=morph_kernel_size,
+                erode_iter=erode_iter,
+                dilate_iter=dilate_iter,
+                min_contour_area=min_contour_area,
+                min_contour_area_ratio=min_contour_area_ratio,
+                motion_trigger_seconds=motion_trigger_seconds,
+                warmup_seconds=warmup_seconds,
+                )
     except Exception:
         logger.exception("[%s] detector thread crashed", cam_name)
 
@@ -245,8 +269,21 @@ def main(args):
         for det, cam_name in detectors:
             t = threading.Thread(
                 target=_run_detector_in_thread,
-                args=(det, fps, args.algo, args.orin, args.raspi, 
-                      args.staging, cam_name, args.cpu_h264, args.bitrate),
+                args=(
+                    det, fps, args.algo, args.orin, args.raspi, 
+                    args.staging, cam_name, args.cpu_h264, args.bitrate,
+                    bgsub_threshold=args.bgsub_threshold,
+                    cnt_min_pixel_stability=args.cnt_min_pixel_stability,
+                    cnt_max_pixel_stability=args.cnt_max_pixel_stability,
+                    fg_threshold=args.fg_threshold,
+                    morph_kernel_size=args.morph_kernel_size,
+                    erode_iter=args.erode_iter,
+                    dilate_iter=args.dilate_iter,
+                    min_contour_area=args.min_contour_area,
+                    min_contour_area_ratio=args.min_contour_area_ratio,
+                    motion_trigger_seconds=args.motion_trigger_seconds,
+                    warmup_seconds=args.warmup_seconds,
+                ),
                 name=f"MotionDetector-{cam_name}",
                 daemon=False,
             )
