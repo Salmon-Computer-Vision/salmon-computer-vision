@@ -4,7 +4,7 @@ set -e
 NO_BACKUP="false"
 
 # Parse options
-while getopts "s:b:o:d:c:" opt; do
+while getopts "s:b:o:d:c:n" opt; do
     case $opt in
         s) SITE_NAME="$OPTARG" ;;
         b) BUCKET="$OPTARG" ;;
