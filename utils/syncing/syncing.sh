@@ -11,7 +11,7 @@ while getopts "s:b:o:d:c:n" opt; do
         o) ORGID="$OPTARG" ;;
         d) DRIVE="$OPTARG" ;;
         c) CONFIG="$OPTARG" ;;
-        n) NO_BACKUP="true"
+        n) NO_BACKUP="true" ;;
         \?) echo "Invalid option -$OPTARG" >&2 ;;
     esac
 done
