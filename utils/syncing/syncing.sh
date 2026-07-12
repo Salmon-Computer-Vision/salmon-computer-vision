@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 set -e
 
+NO_BACKUP="false"
+
 # Parse options
 while getopts "s:b:o:d:c:" opt; do
     case $opt in
@@ -9,6 +11,7 @@ while getopts "s:b:o:d:c:" opt; do
         o) ORGID="$OPTARG" ;;
         d) DRIVE="$OPTARG" ;;
         c) CONFIG="$OPTARG" ;;
+        n) NO_BACKUP="true"
         \?) echo "Invalid option -$OPTARG" >&2 ;;
     esac
 done
@@ -35,15 +38,18 @@ for device_path in "${SITE_PATH}"/* ; do
     mkdir -p "$SRC_META"
     mkdir -p "$BACKUP"
     mkdir -p "$BACKUP_META"
-    rclone copy "$SRC" "$BACKUP" \
-        --transfers=2 \
-        --no-traverse \
-        --progress
 
-    rclone copy "$SRC_META" "$BACKUP_META" \
-        --transfers=8 \
-        --no-traverse \
-        --progress
+    if [[ "$NO_BACKUP" != "true" ]]; then
+        rclone copy "$SRC" "$BACKUP" \
+            --transfers=2 \
+            --no-traverse \
+            --progress
+
+        rclone copy "$SRC_META" "$BACKUP_META" \
+            --transfers=8 \
+            --no-traverse \
+            --progress
+    fi
 
     rclone move "$device_path" "$DEST" \
         --include "/motion_vids/**" \
