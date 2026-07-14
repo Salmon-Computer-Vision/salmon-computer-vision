@@ -19,8 +19,8 @@ data:
 config:
   dataset: data/04_dataset
   yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
-  real_yolo_workdir: /home/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/yolo_workdir
-  eval_workdir: /home/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/site_eval_workdir
+  real_yolo_workdir: /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/yolo_workdir
+  eval_workdir: /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/site_eval_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
 preprocess:
   crop_top_half_sites: klukshu
@@ -31,13 +31,13 @@ tune:
   batch: 32
   iterations: 20
 train:
-  device: 0
-  batch: 32
+  device: 0,1
+  batch: 128
   patience: 50
   tune_dir: tune15
 exp:
-  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
-  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik
+  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
+  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
   test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
 eval:
   imgsz: 640

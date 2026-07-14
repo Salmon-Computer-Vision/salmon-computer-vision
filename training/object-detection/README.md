@@ -18,7 +18,14 @@ uv sync --extra cu124
 ```
 Change `cu124` to `cu129` if the CUDA version is 12.9 on the system.
 
-Install the module:
+After this sync, remember to always either use the `--extra cu124` flag or use
+`--no-sync`, so `uv` doesn't try to re-install torch with a newer version. Eg.
+
+```bash
+uv run --no-sync python
+```
+
+Install the object detection module in an editable state:
 ```bash
 uv pip install -e .
 ```
