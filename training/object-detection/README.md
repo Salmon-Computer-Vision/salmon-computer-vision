@@ -14,7 +14,7 @@ uv tool install "dvc[s3]"
 
 Sync uv with appropriate python packages:
 ```bash
-uv sync --extra cu124
+uv sync --extra cu124 --locked
 ```
 Change `cu124` to `cu129` if the CUDA version is 12.9 on the system.
 
@@ -86,8 +86,9 @@ uv run pytest
 To evaluate over all test sites, run the following command:
 
 ```bash
-./scripts/run_site_eval_experiments.py --queue --run-queue
+uv run --extra cuXXX ./scripts/run_site_eval_experiments.py --queue --run-queue
 ```
+Replace cuXXX with your appropriate CUDA version.
 
 Add `--dry-run` to test the command first.
 

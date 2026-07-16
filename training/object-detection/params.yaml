@@ -42,5 +42,7 @@ exp:
 eval:
   imgsz: 640
   batch: 32
-  device: 0
+  device: 1
   workers: 8
+runtime:
+  cuda: cu124
