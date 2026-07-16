@@ -471,15 +471,13 @@ stages:
       size: 8161
   train_yolo_best:
     cmd: scripts/train_yolo_best.py --data-yaml 
-      data/04_dataset/salmon_dataset/yolo_workdir/data.yaml --model 
-      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/last.pt
+      data/04_dataset/salmon_dataset/yolo_workdir/data.yaml --model yolov8n.pt 
       --args-yaml 
       data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/args.yaml 
       --out-dir data/04_dataset/salmon_dataset/training/yolov8n_full --run-name 
       tuned_full_run1 --epochs 150 --batch 128 --device 0,1 --workers 16 
       --patience 50 --summary-json 
       data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
-      --resume
     deps:
     - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/args.yaml
       hash: md5
@@ -499,8 +497,8 @@ stages:
       size: 39610845
     - path: scripts/train_yolo_best.py
       hash: md5
-      md5: ce7617cd51243d56d0ee3ca841e63cb6
-      size: 128
+      md5: b4071b24f32b11d743a2c21cd8daadbd
+      size: 118
     - path: src/object_detection/training/cli.py
       hash: md5
       md5: f1d2c85df5c199e0edd547cfe1d50385
@@ -519,6 +517,11 @@ stages:
           patience: 50
           tune_dir: tune15
     outs:
+    - path: data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1
+      hash: md5
+      md5: 0e1c457cb1fe9fbf1b6f5394895186ff.dir
+      size: 18255447
+      nfiles: 21
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
       hash: md5

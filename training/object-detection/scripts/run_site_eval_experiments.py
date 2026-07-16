@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --no-sync python
+#!/usr/bin/env -S uv run python
 from __future__ import annotations
 
 import argparse
