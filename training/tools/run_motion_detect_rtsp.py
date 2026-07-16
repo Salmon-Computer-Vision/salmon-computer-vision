@@ -347,7 +347,7 @@ if __name__ == "__main__":
     parser.add_argument("--dilate-iter", type=int, default=1, help="More iterations takes more time but can increase smaller motion blobs")
     parser.add_argument("--min-contour-area", type=int, default=5000, help="Area threshold of how big the motion must be before triggering")
     parser.add_argument("--min-contour-area-ratio", type=float, default=None, help="Replaces area and determines based on ratio of the entire frame. Must be fractional")
-    parser.add_argument("--motion-trigger-seconds", type=float, default=0.2, help="How many seconds before motion is triggered. Can be fractional; eg. 10 FPS, 0.2 -> 2 frames.")
+    parser.add_argument("--motion-trigger-seconds", type=float, default=0.4, help="How many seconds before motion is triggered. Can be fractional; eg. 10 FPS, 0.2 -> 2 frames.")
     parser.add_argument("--warmup-seconds", type=float, default=1.0, help="Number of seconds to warmup at the start of the program before detecting motion. Required as the background needs to be established first.")
     parser.add_argument("--url", default='https://google.com', help="Healthchecks URL to ping. This could be from healthchecks.io or another healthchecks service")
     parser.add_argument("--no-cont", action='store_true', help="Set this flag to not save continuous video")
