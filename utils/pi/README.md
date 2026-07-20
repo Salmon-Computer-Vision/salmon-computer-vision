@@ -72,6 +72,8 @@ Also, first install necessary packages for your HDD format such as ExFAT utils:
 sudo apt update && sudo apt install exfat-fuse exfat-utils
 ```
 
+> Note: Some Jetsons do not have `exfat-utils` without rebuilding the kernel, so you may have to reformat the drive to NTFS or ext4
+
 Copy files in the `automount` folder to their respective places:
 ```bash
 scripts_dir=automount
