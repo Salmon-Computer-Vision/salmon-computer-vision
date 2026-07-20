@@ -67,6 +67,11 @@ Create the mount folder:
 sudo mkdir -p /media/hdd
 ```
 
+Also, first install necessary packages for your HDD format such as ExFAT utils:
+```
+sudo apt update && sudo apt install exfat-fuse exfat-utils
+```
+
 Copy files in the `automount` folder to their respective places:
 ```bash
 scripts_dir=automount
