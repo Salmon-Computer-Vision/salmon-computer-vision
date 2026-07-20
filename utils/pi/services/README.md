@@ -136,19 +136,42 @@ newer Raspberry Pis from the get-go.
 
 ### Healthchecks for HDD
 
-Setup an extra healthchecks for the external harddrive mounting:
+Setup an extra healthchecks for the external harddrive mounting.
+
+Copy the following script to the `/root` folder:
+
+```
+sudo cp test_drive.sh /root
+```
+
+Edit the script to update the healthchecks URL:
+```
+sudoedit /root/test_drive.sh
+```
+
+Change the variable `HC_URL` to the appropriate HDD healtcheck URL for this device.
+
+Also, update the `DRIVE` var if the drive is mounted to a different folder.
+
+Open the root crontab:
 
 ```bash
 sudo crontab -e
 ```
+
+Put in the following at the bottom:
+
+```
+* * * * * bash /root/test_drive.sh
+```
+
+> [OLD]
 
 Put the following (Replace the URL with the correct ping address):
 
 ```
 * * * * * mountpoint /media/hdd && if touch /media/hdd/.testfile && rm /media/hdd/.testfile; then curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>; else umount /media/hdd && curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>/fail; fi
 ```
-
-This assumes the external drive is mounted to `/media/hdd`.
 
 ### Remote Docker Commands
 
