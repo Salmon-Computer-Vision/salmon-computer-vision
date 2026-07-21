@@ -91,9 +91,38 @@ Then, reload the rules:
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-This will attempt to mount all partitions of a external drive to
-a single folder, so this would only work if only one partition is
+This will attempt to mount all partitions of an external drive to
+a single folder, so this would only work if the last partition is
 non-empty.
+
+Plug in the harddrive and run the following to check if it was properly mounted:
+
+```bash
+df -h
+```
+
+Look for the line that looks like this:
+```
+...
+/dev/sda2        4.6T  661G  4.0T  15% /media/hdd
+...
+```
+
+This shows the device on the left is mounted to the folder you created and specified above.
+
+If you do not see that, you may have to troubleshoot the cables or the drive.
+
+Run the following to check all the devices:
+
+```bash
+lsblk
+```
+It should start with `sdX`. If that does not exist, it could be a cable or drive issue.
+
+You can run the script manually as such (Replace `sda2` with the device shown in the previous command):
+```bash
+sudo /root/automount.sh add sda2
+```
 
 ### Setup Samba Share
 
