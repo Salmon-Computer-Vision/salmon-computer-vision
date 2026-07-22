@@ -18,10 +18,19 @@ class VideoCaptureError(Exception):
     pass
 
 class VideoLoader(DataLoader):
-    def __init__(self, vid_sources, custom_classes=None, gstreamer_on=False, buffer_size=10, target_fps: int=None):
-        """
-        vid_source: list[string] of anything that can go in VideoCapture() including video paths and RTSP URLs
-        """
+    def __init__(
+        self,
+        vid_sources,
+        custom_classes=None,
+        gstreamer_on=False,
+        buffer_size=10,
+        target_fps: int = None,
+        camera_width: int = None,
+        camera_height: int = None,
+        camera_fps: int = None,
+        camera_fourcc: str = None,
+        camera_backend: str = "v4l2",
+    ):
         self.vid_sources = vid_sources
         self.custom_classes = custom_classes
         self.num_clips = len(vid_sources)
@@ -29,11 +38,16 @@ class VideoLoader(DataLoader):
         self.cur_clip = None
         self.gstreamer_on = gstreamer_on
 
-        buffer_size = buffer_size
         self.frame_buffer = Queue(maxsize=buffer_size)
         self.thread = None
         self.stop_thread = False
         self.target_fps = int(target_fps) if target_fps is not None else target_fps
+
+        self.camera_width = camera_width
+        self.camera_height = camera_height
+        self.camera_fps = camera_fps
+        self.camera_fourcc = camera_fourcc
+        self.camera_backend = camera_backend
 
         self.queue_drop_count = 0
         self.last_queue_drop_log = time.monotonic()
@@ -67,7 +81,7 @@ class VideoLoader(DataLoader):
         raw_clip_str = str(raw_clip)
         if raw_clip_str.isdigit():
             logger.info("Loading as directly connected camera")
-            self.cap = cv2.VideoCapture(int(raw_clip))
+            self.cap = self._open_direct_camera(int(raw_clip))
         else:
             if self.gstreamer_on:
                 logger.info("Loading with gstreamer")
@@ -127,6 +141,49 @@ class VideoLoader(DataLoader):
         self.thread.start()
 
         return self.cur_clip
+
+    def _open_direct_camera(self, camera_index: int):
+        if self.camera_backend == "v4l2":
+            cap = cv2.VideoCapture(camera_index, cv2.CAP_V4L2)
+        else:
+            cap = cv2.VideoCapture(camera_index)
+
+        if not cap.isOpened():
+            raise VideoCaptureError(f"Error: Could not open camera index {camera_index}")
+
+        # Request compressed MJPG first, because many USB capture devices only
+        # provide high FPS at high resolutions in MJPG mode.
+        if self.camera_fourcc:
+            fourcc = cv2.VideoWriter_fourcc(*self.camera_fourcc)
+            ok = cap.set(cv2.CAP_PROP_FOURCC, fourcc)
+            logger.info("Requested camera FOURCC=%s ok=%s", self.camera_fourcc, ok)
+
+        if self.camera_width is not None:
+            ok = cap.set(cv2.CAP_PROP_FRAME_WIDTH, int(self.camera_width))
+            logger.info("Requested camera width=%s ok=%s", self.camera_width, ok)
+
+        if self.camera_height is not None:
+            ok = cap.set(cv2.CAP_PROP_FRAME_HEIGHT, int(self.camera_height))
+            logger.info("Requested camera height=%s ok=%s", self.camera_height, ok)
+
+        if self.camera_fps is not None:
+            ok = cap.set(cv2.CAP_PROP_FPS, float(self.camera_fps))
+            logger.info("Requested camera FPS=%s ok=%s", self.camera_fps, ok)
+
+        actual_fourcc = int(cap.get(cv2.CAP_PROP_FOURCC))
+        actual_fourcc_str = "".join([
+            chr((actual_fourcc >> 8 * i) & 0xFF) for i in range(4)
+        ])
+
+        logger.info(
+            "Actual camera settings: width=%s height=%s fps=%s fourcc=%r",
+            cap.get(cv2.CAP_PROP_FRAME_WIDTH),
+            cap.get(cv2.CAP_PROP_FRAME_HEIGHT),
+            cap.get(cv2.CAP_PROP_FPS),
+            actual_fourcc_str,
+        )
+
+        return cap
 
     def _detect_source_type(self, src):
         try:

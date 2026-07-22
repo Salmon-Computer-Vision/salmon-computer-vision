@@ -249,6 +249,11 @@ def main(args):
                 gstreamer_on=args.gstreamer,
                 buffer_size=5 * fps,
                 target_fps=fps,
+                camera_width=args.camera_width,
+                camera_height=args.camera_height,
+                camera_fps=args.camera_fps,
+                camera_fourcc=args.camera_fourcc,
+                camera_backend=args.camera_backend,
             )
             cam_save_prefix = (
                 f"{save_prefix}_{cam_name}" if save_prefix is not None else cam_name
@@ -298,7 +303,17 @@ def main(args):
     # --- Single-camera path (today's behavior) ---
     input_str = _build_input_str(args.input, args.gstreamer, args.h265)
     logger.info(input_str)
-    vidloader = vl.VideoLoader([input_str], gstreamer_on=args.gstreamer, buffer_size=5*fps, target_fps=fps)
+    vidloader = vl.VideoLoader(
+            [input_str], 
+            gstreamer_on=args.gstreamer, 
+            buffer_size=5*fps, 
+            target_fps=fps,
+            camera_width=args.camera_width,
+            camera_height=args.camera_height,
+            camera_fps=args.camera_fps,
+            camera_fourcc=args.camera_fourcc,
+            camera_backend=args.camera_backend,
+    )
 
     logger.info(f"save_prefix: {save_prefix}")
     det = md.MotionDetector(dataloader=vidloader, save_folder=site_save_path, save_prefix=save_prefix, ping_url=args.url, save_cont_video=save_cont_video, is_video=is_video)
@@ -329,6 +344,11 @@ if __name__ == "__main__":
     parser.add_argument("save_folder", help="Folder where video clips will be saved")
     parser.add_argument("--video", action='store_true', help="Set this flag for videos, and it will use the filename to determine clip filenames")
     parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from input")
+    parser.add_argument("--camera-width", type=int, default=None, help="Works only for USB camera. Request camera width")
+    parser.add_argument("--camera-height", type=int, default=None, help="Works only for USB camera. Request camera height")
+    parser.add_argument("--camera-fps", type=int, default=None, help="Works only for USB camera. Request camera FPS. The FPS will still be clamped to target FPS")
+    parser.add_argument("--camera-fourcc", default=None, choices=["MJPG", "YUYV"], help="Works only for USB camera. Request camera fourcc format")
+    parser.add_argument("--camera-backend", default="v4l2", choices=["default", "v4l2"], help="Works only for USB camera. Request camera backend")
     parser.add_argument("--test", action='store_true', help="Set this flag to not use the hostname to create the save paths")
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
