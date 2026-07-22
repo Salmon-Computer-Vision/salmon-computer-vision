@@ -117,6 +117,16 @@ def sanitize_component(text: str) -> str:
     return text.strip("-_")
 
 
+def normalize_site_component(text: str) -> str:
+    """Normalize site names for cloud paths/filenames.
+
+    Site names are lowercased because downstream cloud processing expects
+    lowercase site IDs. Other identity components such as orgid and device keep
+    their original case unless explicitly supplied that way.
+    """
+    return sanitize_component(text).lower()
+
+
 def _parse_ffmpeg_rate(rate: str) -> float:
     if not rate:
         return 0.0
@@ -286,7 +296,7 @@ def parse_dfo_filename(
         raise ValueError(f"Could not parse date/time from {path.name!r}: {e}") from e
 
     orgid = sanitize_component(forced_orgid or m.group("orgid"))
-    site = sanitize_component(forced_site or site_raw)
+    site = normalize_site_component(forced_site or site_raw)
     device = sanitize_component(forced_device or f"{camera_device_prefix}{int(camera_raw)}")
 
     return ClipInfo(
@@ -351,7 +361,7 @@ def parse_clip_filename(
         recorded_at=dt,
         label=label,
         orgid=sanitize_component(orgid) if orgid else None,
-        site=sanitize_component(site) if site else None,
+        site=normalize_site_component(site) if site else None,
         device=sanitize_component(device) if device else None,
         remote_base=remote_base,
         remote_relpath=remote_relpath,
@@ -435,7 +445,7 @@ def build_sodafl_clips_contiguous(
                     label="M",
                     duration_seconds=duration,
                     orgid=sanitize_component(orgid) if orgid else None,
-                    site=sanitize_component(site) if site else None,
+                    site=normalize_site_component(site) if site else None,
                     device=sanitize_component(device) if device else None,
                 )
             )
@@ -618,7 +628,7 @@ def resolve_identity(clip: ClipInfo, args: argparse.Namespace) -> tuple[str, str
             + ". For DFO filenames these are parsed automatically; for legacy/SodaFL inputs pass --orgid, --site, and --device."
         )
 
-    return sanitize_component(orgid), sanitize_component(site), sanitize_component(device)
+    return sanitize_component(orgid), normalize_site_component(site), sanitize_component(device)
 
 
 def parse_candidate_path(path: Path, args: argparse.Namespace, *, remote_base: str | None = None, remote_relpath: str | None = None) -> Optional[ClipInfo]:
