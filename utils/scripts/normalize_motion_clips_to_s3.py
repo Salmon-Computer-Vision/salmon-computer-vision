@@ -224,12 +224,23 @@ def probe_duration_seconds(path: Path, timeout: float = 20.0) -> float:
     raise RuntimeError("Could not determine duration from ffprobe metadata")
 
 
-def run_cmd(cmd: list[str], dry_run: bool = False, *, capture_json: bool = False):
+def run_cmd(
+    cmd: list[str],
+    dry_run: bool = False,
+    *,
+    capture_json: bool = False,
+    run_in_dry_run: bool = False,
+):
     print("+ " + " ".join(str(x) for x in cmd), flush=True)
-    if dry_run:
+
+    # Most commands should be skipped during --dry-run, but metadata-only
+    # discovery commands such as `rclone lsjson` still need to run or the
+    # script will discover zero remote files.
+    if dry_run and not run_in_dry_run:
         if capture_json:
             return []
         return None
+
     result = subprocess.run(cmd, check=True, text=True, capture_output=capture_json)
     if capture_json:
         return json.loads(result.stdout or "[]")
@@ -476,7 +487,7 @@ def list_rclone_video_files(remote_base: str, exts: set[str], dry_run: bool) -> 
         "--files-only",
         remote_base,
     ]
-    entries = run_cmd(cmd, dry_run=dry_run, capture_json=True)
+    entries = run_cmd(cmd, dry_run=dry_run, capture_json=True, run_in_dry_run=True)
     relpaths: list[str] = []
     for entry in entries:
         if entry.get("IsDir"):
@@ -745,22 +756,34 @@ def process_clip(clip: ClipInfo, args: argparse.Namespace) -> tuple[int, int]:
     downloaded_source: Path | None = None
     source_path = clip.src_path
 
-    if clip.is_remote:
-        download_dir = args.download_dir or (args.work_dir / "_downloads")
-        downloaded_source = download_remote_clip(
-            remote_base=clip.remote_base or "",
-            remote_relpath=clip.remote_relpath or "",
-            download_dir=download_dir,
-            dry_run=args.dry_run,
-        )
-        source_path = downloaded_source
+    # In --dry-run with rclone sources, do not download and do not ffprobe the
+    # source video. Remote ffprobe requires a local copy, so duration/segment
+    # count is unknown unless a duration was already available. Still print the
+    # normalized destination that would be used for the first segment.
+    if clip.is_remote and args.dry_run:
+        print("[DRY] remote source; skipping download and duration probe")
+        duration = clip.duration_seconds
+        n_segments = 1 if duration is None else max(1, int((duration + args.segment_seconds - 1) // args.segment_seconds))
+    else:
+        if clip.is_remote:
+            download_dir = args.download_dir or (args.work_dir / "_downloads")
+            downloaded_source = download_remote_clip(
+                remote_base=clip.remote_base or "",
+                remote_relpath=clip.remote_relpath or "",
+                download_dir=download_dir,
+                dry_run=args.dry_run,
+            )
+            source_path = downloaded_source
 
-    duration = clip.duration_seconds
+        duration = clip.duration_seconds
+        if duration is None:
+            duration = probe_duration_seconds(source_path, timeout=args.ffprobe_timeout)
+        n_segments = max(1, int((duration + args.segment_seconds - 1) // args.segment_seconds))
+
     if duration is None:
-        duration = probe_duration_seconds(source_path, timeout=args.ffprobe_timeout)
-    n_segments = max(1, int((duration + args.segment_seconds - 1) // args.segment_seconds))
-
-    print(f"[INFO] duration={duration:.2f}s segments={n_segments}")
+        print("[INFO] duration=unknown in dry-run; showing first segment only")
+    else:
+        print(f"[INFO] duration={duration:.2f}s segments={n_segments}")
 
     uploaded = 0
     skipped = 0
