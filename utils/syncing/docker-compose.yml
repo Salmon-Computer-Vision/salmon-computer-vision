@@ -9,7 +9,7 @@ services:
       - ${DRIVE}:${DRIVE}
       - /home/${USERNAME}/.config/rclone/:/config/rclone/
     restart: always
-    entrypoint: /bin/sh
+    entrypoint: /bin/bash
     command: |
       /app/syncing.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf ${FLAGS}
   syncing-detects:
