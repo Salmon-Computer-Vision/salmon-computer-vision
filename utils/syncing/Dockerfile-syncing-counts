@@ -1,4 +1,5 @@
 FROM rclone/rclone
+RUN apk add --no-cache bash
 
 COPY syncing-counts.sh /app/syncing-counts.sh
 COPY syncing-detects.sh /app/syncing-detects.sh
