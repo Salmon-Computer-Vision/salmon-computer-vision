@@ -347,12 +347,23 @@ def ensure_writable_dir(path: str, label: str) -> None:
     p = Path(path)
     p.mkdir(parents=True, exist_ok=True)
 
-    test_file = p / f".write_test_{os.getpid()}_{int(time.time())}"
+    test_file = p / (
+        f".write_test_"
+        f"pid{os.getpid()}_"
+        f"tid{threading.get_ident()}_"
+        f"{time.time_ns()}_"
+        f"{secrets.token_hex(4)}"
+    )
+
     try:
-        with open(test_file, "wb") as f:
+        with open(test_file, "xb") as f:
             f.write(b"ok")
             f.flush()
             os.fsync(f.fileno())
+    except FileExistsError as exc:
+        # Extremely unlikely with the random token, but treat it separately
+        # so it is not mistaken for a storage/writeability failure.
+        raise RuntimeError(f"{label} write-test filename collision: {test_file}") from exc
     except Exception as exc:
         raise RuntimeError(f"{label} directory is not writable: {p}") from exc
     finally:
