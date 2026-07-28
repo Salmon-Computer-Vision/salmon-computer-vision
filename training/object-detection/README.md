@@ -14,11 +14,18 @@ uv tool install "dvc[s3]"
 
 Sync uv with appropriate python packages:
 ```bash
-uv sync --extra cu124
+uv sync --extra cu124 --locked
 ```
 Change `cu124` to `cu129` if the CUDA version is 12.9 on the system.
 
-Install the module:
+After this sync, remember to always either use the `--extra cu124` flag or use
+`--no-sync`, so `uv` doesn't try to re-install torch with a newer version. Eg.
+
+```bash
+uv run --no-sync python
+```
+
+Install the object detection module in an editable state:
 ```bash
 uv pip install -e .
 ```
@@ -72,4 +79,28 @@ dvc repro --single-item build_model_input
 Run tests with
 ```
 uv run pytest
+```
+
+### Plot AP50 by site
+
+To evaluate over all test sites, run the following command:
+
+```bash
+uv run --extra cuXXX ./scripts/run_site_eval_experiments.py --queue --run-queue
+```
+Replace cuXXX with your appropriate CUDA version.
+
+Add `--dry-run` to test the command first.
+
+They can be plotted after using
+```bash
+./scripts/plot-all-eval.sh "Full Model AP50"
+```
+
+This creates an HTML in `dvc_plots` with the plots.
+
+Run a simple http server and connect to it through SSH tunnel
+```bash
+cd dvc_plots
+python -m http.server
 ```

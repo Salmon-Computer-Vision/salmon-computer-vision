@@ -1,16 +1,17 @@
 data:
-  sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
-  neg_csvs:
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv
-      data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
+  sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt 
+    chignik klukshu
+  neg_csvs: 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv 
+    data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
   neg: --include-negatives
   neg_ratio: 0.10
   neg_per_vid: 11
@@ -18,21 +19,30 @@ data:
 config:
   dataset: data/04_dataset
   yolo_workdir: data/04_dataset/salmon_dataset/yolo_workdir
+  real_yolo_workdir: /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/yolo_workdir
+  eval_workdir: /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/site_eval_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
+preprocess:
+  crop_top_half_sites: klukshu
+  crop_min_visible_frac: 0.05
 tune:
   device: 0
   gpu_per_trial: 1 # Lower numbers creates more parallel trials (Can be fractional)
-  batch: 64
+  batch: 32
   iterations: 20
 train:
-  device: 0
-  batch: 256
+  device: 0,1
+  batch: 128
+  patience: 50
+  tune_dir: tune15
 exp:
-  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
-  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
-  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt
+  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
+  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
+  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
 eval:
   imgsz: 640
   batch: 32
-  device: 2
+  device: 1
   workers: 8
+runtime:
+  cuda: cu124

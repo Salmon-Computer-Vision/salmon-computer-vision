@@ -20,6 +20,7 @@ def main() -> None:
     p.add_argument("--conf", type=float, default=None)
     p.add_argument("--iou", type=float, default=None)
     p.add_argument("--summary-json", default=None)
+    p.add_argument("--plot-json", default=None)
     args = p.parse_args()
 
     summary = evaluate_yolo(
@@ -35,6 +36,7 @@ def main() -> None:
         conf=args.conf,
         iou=args.iou,
         save_json_metrics=Path(args.summary_json) if args.summary_json else None,
+        save_json_plot=Path(args.plot_json) if args.plot_json else None,
     )
 
     print(
