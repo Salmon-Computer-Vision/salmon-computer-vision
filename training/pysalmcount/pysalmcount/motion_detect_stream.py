@@ -918,6 +918,7 @@ class MotionDetector:
         min_contour_area_ratio: float = None,
         motion_trigger_seconds: float = 0.2, # Seconds of motion required to trigger detection
         warmup_seconds: float = 1.0,
+        shutdown_event=None,
     ):
 
         if morph_kernel_size < 1:
@@ -1058,6 +1059,10 @@ class MotionDetector:
 
         try:
             for item in self.dataloader.items():
+                if shutdown_event is not None and shutdown_event.is_set():
+                    self.log.info("Multi-camera shutdown requested")
+                    break
+
                 self._raise_if_video_saver_failed()
                 if utils.is_check_time(frame_counter, fps):
                     start_time=time.time()

@@ -173,7 +173,7 @@ def _parse_multi_camera_args(args) -> Tuple[List[str], List[str]]:
 
 
 def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, status_queue,
-        cpu_h264, bitrate,
+        shutdown_event, cpu_h264, bitrate,
         bgsub_threshold,
         cnt_min_pixel_stability,
         cnt_max_pixel_stability,
@@ -200,33 +200,45 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
                 min_contour_area_ratio=min_contour_area_ratio,
                 motion_trigger_seconds=motion_trigger_seconds,
                 warmup_seconds=warmup_seconds,
+                shutdown_event=shutdown_event,
                 )
     except Exception as exc:
         logger.exception("[%s] detector thread crashed", cam_name)
         status_queue.put((cam_name, exc))
     else:
-        logger.error("[%s] detector thread stopped unexpectedly", cam_name)
-        status_queue.put((cam_name, None))
+        if shutdown_event.is_set():
+            logger.info("[%s] detector stopped during multi-camera shutdown", cam_name)
+        else:
+            logger.error("[%s] detector thread stopped unexpectedly", cam_name)
+            status_queue.put((cam_name, None))
 
 
-def _exit_on_camera_termination(status_queue):
-    """Wait for the first camera to stop, then terminate for Docker restart."""
+def _shutdown_on_camera_termination(status_queue, shutdown_event, threads):
+    """Stop every camera after the first terminates, then fail the process."""
     cam_name, error = status_queue.get()
     if error is None:
         logger.critical(
-            "[%s] detector stopped unexpectedly; terminating multi-camera process",
+            "[%s] detector stopped unexpectedly; stopping all cameras",
             cam_name,
         )
     else:
         logger.critical(
-            "[%s] detector failed with %s: %s; terminating multi-camera process",
+            "[%s] detector failed with %s: %s; stopping all cameras",
             cam_name,
             type(error).__name__,
             error,
         )
 
-    logging.shutdown()
-    os._exit(1)
+    # Each detector observes this in its normal run loop and exits through the
+    # same finally block as single-camera mode. That closes its VideoLoader,
+    # stops/joins its VideoSaver, and releases its continuous VideoWriter.
+    shutdown_event.set()
+    for thread in threads:
+        thread.join()
+
+    if error is not None:
+        raise error
+    raise RuntimeError(f"[{cam_name}] detector stopped unexpectedly")
 
 
 def main(args):
@@ -265,6 +277,7 @@ def main(args):
         # those constants automatically applies to both single- and multi-cam.
         coordinator = md.MotionEventCoordinator(cam_names)
         status_queue = queue.Queue()
+        shutdown_event = threading.Event()
 
         detectors = []
         for url, cam_name in zip(urls, cam_names):
@@ -296,13 +309,14 @@ def main(args):
             )
             detectors.append((det, cam_name))
 
+        threads = []
         for det, cam_name in detectors:
             t = threading.Thread(
                 target=_run_detector_in_thread,
                 args=(
                     det, fps, args.algo, args.orin, args.raspi, 
                     args.staging, cam_name, status_queue,
-                    args.cpu_h264, args.bitrate,
+                    shutdown_event, args.cpu_h264, args.bitrate,
                     args.bgsub_threshold,
                     args.cnt_min_pixel_stability,
                     args.cnt_max_pixel_stability,
@@ -316,11 +330,12 @@ def main(args):
                     args.warmup_seconds,
                 ),
                 name=f"MotionDetector-{cam_name}",
-                daemon=True,
+                daemon=False,
             )
             t.start()
+            threads.append(t)
 
-        _exit_on_camera_termination(status_queue)
+        _shutdown_on_camera_termination(status_queue, shutdown_event, threads)
 
     # --- Single-camera path (today's behavior) ---
     input_str = _build_input_str(args.input, args.gstreamer, args.h265)
