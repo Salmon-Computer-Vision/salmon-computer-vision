@@ -325,6 +325,25 @@ stages:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
     frozen: true
+  make_tracking_test_set:
+    cmd: >-
+      uv run --extra ${runtime.cuda}
+      scripts/make_tracking_test_set.py
+      --test-manifest ${config.dataset}/salmon_dataset/site_manifests/test.txt
+      --metadata-csv data/02_interim/video_metadata_index.csv
+      --out-csv data/03_processed/tracking_eval/test_videos.csv
+      --videos-dir ${config.dataset}/salmon_dataset/tracking_eval/videos
+      --max-videos ${tracking_eval.max_videos}
+    deps:
+      - scripts/make_tracking_test_set.py
+      - src/object_detection/tracking_eval/test_set.py
+      - ${config.dataset}/salmon_dataset/site_manifests/test.txt
+      - data/02_interim/video_metadata_index.csv
+    params:
+      - config.dataset
+      - tracking_eval.max_videos
+    outs:
+      - data/03_processed/tracking_eval/test_videos.csv
   make_site_eval_workdir:
     cmd: >-
       uv run --extra ${runtime.cuda}

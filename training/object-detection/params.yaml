@@ -46,3 +46,10 @@ eval:
   workers: 8
 runtime:
   cuda: cu124
+tracking_eval:
+  tracker: bytetrack.yaml
+  conf: 0.05
+  iou: 0.7
+  imgsz: 640
+  device: 0
+  max_videos: 0   # 0 means all
