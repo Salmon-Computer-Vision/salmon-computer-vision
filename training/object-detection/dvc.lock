@@ -826,3 +826,35 @@ stages:
       hash: md5
       md5: 599e509df006d3e5daf08d2f17d40651
       size: 25451919
+  make_tracking_test_set:
+    cmd: uv run --extra cu124 scripts/make_tracking_test_set.py --test-manifest 
+      data/04_dataset/salmon_dataset/site_manifests/test.txt --metadata-csv 
+      data/02_interim/video_metadata_index.csv --out-csv 
+      data/03_processed/tracking_eval/test_videos.csv --videos-dir 
+      data/04_dataset/salmon_dataset/tracking_eval/videos --max-videos 0
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 17536b2a86eca36c0062e2fb6f6b80ae
+      size: 11008216
+    - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
+      hash: md5
+      md5: b414592371e22c3289c48a392ee1b236
+      size: 8783946
+    - path: scripts/make_tracking_test_set.py
+      hash: md5
+      md5: 7f7d95b6868106a735280512560ef119
+      size: 417
+    - path: src/object_detection/tracking_eval/test_set.py
+      hash: md5
+      md5: 0fecba1dc67a65285491c25bbda58942
+      size: 15541
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        tracking_eval.max_videos: 0
+    outs:
+    - path: data/03_processed/tracking_eval/test_videos.csv
+      hash: md5
+      md5: 3ba00dee5ab8737f730eb8297e544b83
+      size: 2728448
