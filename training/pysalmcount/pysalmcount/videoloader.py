@@ -12,6 +12,9 @@ import math
 import re
 
 logger = logging.getLogger(__name__)
+NETWORK_STREAM_RE = re.compile(r"^(?:rtsp|rtmp|https?|tcp|udp)://", re.I)
+CAPTURE_OPEN_TIMEOUT_MSEC = 5_000
+CAPTURE_READ_TIMEOUT_MSEC = 5_000
 
 class VideoCaptureError(Exception):
     """Exception raised when video capture fails to open."""
@@ -88,7 +91,7 @@ class VideoLoader(DataLoader):
                 self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_GSTREAMER)
             else:
                 logger.info("Loading with FFMPEG")
-                self.cap = cv2.VideoCapture(str(raw_clip), cv2.CAP_FFMPEG)
+                self.cap = self._open_ffmpeg_capture(str(raw_clip))
 
         #self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 3)
         #self.cap.set(cv2.CAP_PROP_HW_ACCELERATION, cv2.VIDEO_ACCELERATION_ANY)
@@ -141,6 +144,39 @@ class VideoLoader(DataLoader):
         self.thread.start()
 
         return self.cur_clip
+
+    def _open_ffmpeg_capture(self, source: str):
+        """Open a network stream with bounded FFmpeg open/read operations."""
+        if not NETWORK_STREAM_RE.match(source):
+            return cv2.VideoCapture(source, cv2.CAP_FFMPEG)
+
+        open_timeout = getattr(cv2, "CAP_PROP_OPEN_TIMEOUT_MSEC", None)
+        read_timeout = getattr(cv2, "CAP_PROP_READ_TIMEOUT_MSEC", None)
+        if open_timeout is None or read_timeout is None:
+            logger.warning(
+                "OpenCV does not expose capture timeout properties; opening "
+                "FFmpeg stream without explicit timeouts"
+            )
+            return cv2.VideoCapture(source, cv2.CAP_FFMPEG)
+
+        params = [
+            open_timeout,
+            CAPTURE_OPEN_TIMEOUT_MSEC,
+            read_timeout,
+            CAPTURE_READ_TIMEOUT_MSEC,
+        ]
+        try:
+            return cv2.VideoCapture(source, cv2.CAP_FFMPEG, params)
+        except (TypeError, cv2.error):
+            # Older Jetson OpenCV Python bindings may expose the constants but
+            # not the constructor overload. Keep those deployments working and
+            # make the missing protection visible in logs.
+            logger.warning(
+                "OpenCV does not support VideoCapture timeout parameters; "
+                "opening FFmpeg stream without explicit timeouts",
+                exc_info=True,
+            )
+            return cv2.VideoCapture(source, cv2.CAP_FFMPEG)
 
     def _open_direct_camera(self, camera_index: int):
         if self.camera_backend == "v4l2":
