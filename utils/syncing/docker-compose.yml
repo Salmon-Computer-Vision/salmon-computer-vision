@@ -12,30 +12,6 @@ services:
     entrypoint: /bin/bash
     command: |
       /app/syncing.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf ${FLAGS}
-  syncing-detects:
-    build: 
-      context: .
-      dockerfile: Dockerfile-syncing-counts
-    container_name: syncing-detects
-    volumes:
-      - ${DRIVE}:${DRIVE}
-      - /home/${USERNAME}/.config/rclone/:/config/rclone/
-    restart: always
-    entrypoint: /bin/sh
-    command: |
-      /app/syncing-detects.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf -t 8
-  syncing-counts:
-    build: 
-      context: .
-      dockerfile: Dockerfile-syncing-counts
-    container_name: syncing-counts
-    volumes:
-      - ${DRIVE}:${DRIVE}
-      - /home/${USERNAME}/.config/rclone/:/config/rclone/
-    restart: always
-    entrypoint: /bin/sh
-    command: |
-      /app/syncing-counts.sh -s "${SITE_NAME}" -b "${BUCKET}" -o "${ORGID}" -d "${DRIVE}" -c /config/rclone/rclone.conf
   syncing-logs:
     build: 
       context: .
