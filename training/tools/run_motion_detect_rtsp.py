@@ -4,6 +4,7 @@ from pysalmcount import motion_detect_stream as md
 
 import argparse
 import os
+import queue
 import re
 import sys
 import logging
@@ -171,7 +172,8 @@ def _parse_multi_camera_args(args) -> Tuple[List[str], List[str]]:
     return urls, cam_names
 
 
-def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, cpu_h264, bitrate,
+def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, status_queue,
+        shutdown_event, cpu_h264, bitrate,
         bgsub_threshold,
         cnt_min_pixel_stability,
         cnt_max_pixel_stability,
@@ -184,8 +186,7 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, cpu_
         motion_trigger_seconds,
         warmup_seconds,
     ):
-    """Thread target that logs any crash in the cam's detector without
-    bringing down the other cams' threads."""
+    """Run one camera and report exactly one terminal result."""
     try:
         det.run(fps=fps, algo=algo, orin=orin, raspi=raspi, staging=staging, cpu_h264=cpu_h264, bitrate=bitrate,
                 bgsub_threshold=bgsub_threshold,
@@ -199,9 +200,45 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, cpu_
                 min_contour_area_ratio=min_contour_area_ratio,
                 motion_trigger_seconds=motion_trigger_seconds,
                 warmup_seconds=warmup_seconds,
+                shutdown_event=shutdown_event,
                 )
-    except Exception:
+    except Exception as exc:
         logger.exception("[%s] detector thread crashed", cam_name)
+        status_queue.put((cam_name, exc))
+    else:
+        if shutdown_event.is_set():
+            logger.info("[%s] detector stopped during multi-camera shutdown", cam_name)
+        else:
+            logger.error("[%s] detector thread stopped unexpectedly", cam_name)
+            status_queue.put((cam_name, None))
+
+
+def _shutdown_on_camera_termination(status_queue, shutdown_event, threads):
+    """Stop every camera after the first terminates, then fail the process."""
+    cam_name, error = status_queue.get()
+    if error is None:
+        logger.critical(
+            "[%s] detector stopped unexpectedly; stopping all cameras",
+            cam_name,
+        )
+    else:
+        logger.critical(
+            "[%s] detector failed with %s: %s; stopping all cameras",
+            cam_name,
+            type(error).__name__,
+            error,
+        )
+
+    # Each detector observes this in its normal run loop and exits through the
+    # same finally block as single-camera mode. That closes its VideoLoader,
+    # stops/joins its VideoSaver, and releases its continuous VideoWriter.
+    shutdown_event.set()
+    for thread in threads:
+        thread.join()
+
+    if error is not None:
+        raise error
+    raise RuntimeError(f"[{cam_name}] detector stopped unexpectedly")
 
 
 def main(args):
@@ -239,6 +276,8 @@ def main(args):
         # from the module-level constants in motion_detect_stream.py; changing
         # those constants automatically applies to both single- and multi-cam.
         coordinator = md.MotionEventCoordinator(cam_names)
+        status_queue = queue.Queue()
+        shutdown_event = threading.Event()
 
         detectors = []
         for url, cam_name in zip(urls, cam_names):
@@ -276,7 +315,8 @@ def main(args):
                 target=_run_detector_in_thread,
                 args=(
                     det, fps, args.algo, args.orin, args.raspi, 
-                    args.staging, cam_name, args.cpu_h264, args.bitrate,
+                    args.staging, cam_name, status_queue,
+                    shutdown_event, args.cpu_h264, args.bitrate,
                     args.bgsub_threshold,
                     args.cnt_min_pixel_stability,
                     args.cnt_max_pixel_stability,
@@ -295,10 +335,7 @@ def main(args):
             t.start()
             threads.append(t)
 
-        for t in threads:
-            t.join()
-        logger.info("All multi-camera detector threads have exited.")
-        return
+        _shutdown_on_camera_termination(status_queue, shutdown_event, threads)
 
     # --- Single-camera path (today's behavior) ---
     input_str = _build_input_str(args.input, args.gstreamer, args.h265)
@@ -414,4 +451,3 @@ if __name__ == "__main__":
         # Log fatal error with full traceback
         logger.exception("Fatal error in motion detector main()")
         raise
-
