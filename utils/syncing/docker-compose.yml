@@ -4,6 +4,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile-syncing-counts
+      network: host
     container_name: syncing
     volumes:
       - ${DRIVE}:${DRIVE}
@@ -16,6 +17,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile-syncing-counts
+      network: host
     container_name: syncing-logs
     volumes:
       - ${DRIVE}:${DRIVE}
