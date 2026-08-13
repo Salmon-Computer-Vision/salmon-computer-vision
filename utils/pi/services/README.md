@@ -173,6 +173,39 @@ Put the following (Replace the URL with the correct ping address):
 * * * * * mountpoint /media/hdd && if touch /media/hdd/.testfile && rm /media/hdd/.testfile; then curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>; else umount /media/hdd && curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/<destination_address>/fail; fi
 ```
 
+
+### Multiple Separate Camera Sites on Same Device
+
+If you want to run motion detection on another instance of a camera through the
+same device, provided it has enough resources available, it can be done be
+specifying a different `.env` file and project during the docker compose
+command.
+
+Copy the first camera's `.env` file to something like `.env-cam2`:
+
+```bash
+cp .env .env-cam2
+```
+
+Edit the `RTSP_URL` to point to the second camera and update the `DEVICE_ID`
+incrementing the number such as from `jetson-0` to `jetson-1`.
+
+Run the following command to spin up a duplicate service for the second camera:
+
+```bash
+docker compose --env-file .env-cam2 -p cam2 up -d
+```
+
+This will create another docker container service to run motion detection on
+the second camera and save to a different folder as long as the `.env-cam2` has
+the correct configs set.
+
+View its logs similarly:
+
+```bash
+docker compose --env-file .env-cam2 -p cam2 logs --tail 100 -f
+```
+
 ### Remote Docker Commands
 
 Docker contexts are very convenient to run docker commands over ssh.

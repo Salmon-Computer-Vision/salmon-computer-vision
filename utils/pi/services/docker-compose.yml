@@ -7,7 +7,6 @@ services:
       - HOSTNAME
     env_file:
       - ./.env
-    container_name: salmonmd-jetson
     network_mode: host
     privileged: true
     devices:
@@ -34,7 +33,6 @@ services:
       - HOSTNAME
     env_file:
       - ./.env
-    container_name: salmonmd-log-sync
     volumes:
       - type: bind
         source: ${DRIVE}
