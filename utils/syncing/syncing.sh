@@ -153,16 +153,10 @@ for device_path in "${SITE_PATH}"/* ; do
             --transfers=2 \
             --no-traverse \
             --progress
-
-        rclone copy "$SRC_META" "$BACKUP_META" \
-            --transfers=8 \
-            --no-traverse \
-            --progress
     fi
 
     rclone move "$device_path" "$DEST" \
         --include "/motion_vids/**" \
-        --include "/motion_vids_metadata/**" \
         --bwlimit=0 \
         --buffer-size=128M \
         --transfers=2 \
