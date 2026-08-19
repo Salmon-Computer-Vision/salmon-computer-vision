@@ -157,6 +157,7 @@ for device_path in "${SITE_PATH}"/* ; do
 
     rclone move "$device_path" "$DEST" \
         --include "/motion_vids/**" \
+        --include "/device_settings/**" \
         --bwlimit=0 \
         --buffer-size=128M \
         --transfers=2 \
