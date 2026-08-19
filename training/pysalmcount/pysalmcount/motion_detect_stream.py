@@ -31,6 +31,21 @@ gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !
 MOTION_VIDS = 'motion_vids'
 MOTION_VIDS_STAGING = 'motion_vids_staging'
 MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
+DEVICE_SETTINGS_DIR = 'device_settings'
+
+# Placeholder settings used by downstream sonar processing. A same-stem JSON
+# file is written into DEVICE_SETTINGS_DIR for each completed motion clip when
+# MotionDetector.run(sonar=True).
+SONAR_DEVICE_SETTINGS = {
+    "length_conversion_unit": "cm",
+    "length_conversion": [
+        {
+            "y_percent": 100.0,
+            "factor": 1.55,
+        }
+    ],
+}
+
 VIDEO_ENCODER = 'avc1'
 ERROR_CODE = 1
 SUCCESS_CODE = 0
@@ -383,6 +398,7 @@ class VideoSaver(Process):
             triggered_by: Optional[str] = None,
             cpu_h264=False,
             cpu_h264_bitrate=1200,
+            sonar=False,
             ):
         super().__init__()
         self.frame_shape = frame_shape
@@ -412,6 +428,7 @@ class VideoSaver(Process):
         self.triggered_by = triggered_by
         self.cpu_h264 = cpu_h264
         self.cpu_h264_bitrate = cpu_h264_bitrate
+        self.sonar = sonar
 
         if is_video and filename is None:
             logger.warn("Filename is empty. Will fallback on timestampped name")
@@ -508,6 +525,12 @@ class VideoSaver(Process):
         metadata_dir = filename.parent.parent / MOTION_VIDS_METADATA_DIR
         metadata_dir.mkdir(exist_ok=True)
         return metadata_dir / f"{filename.stem}.json"
+
+    @staticmethod
+    def filename_to_device_settings_filepath(filename: Path) -> Path:
+        settings_dir = filename.parent.parent / DEVICE_SETTINGS_DIR
+        settings_dir.mkdir(exist_ok=True)
+        return settings_dir / f"{filename.stem}.json"
 
     def _check_empty(self):
         with self.lock_head, self.lock_tail:
@@ -608,6 +631,31 @@ class VideoSaver(Process):
 
         with self.condition:
             self.condition.notify_all() # Signal to Producer to stop blocking
+
+        # Sonar deployments need a small per-clip settings file to trigger
+        # downstream sonar processing. Keep the same stem as the motion clip and
+        # place it at the device level under device_settings/.
+        if self.sonar:
+            try:
+                settings_filepath = VideoSaver.filename_to_device_settings_filepath(
+                    Path(filename)
+                )
+                logger.info(
+                    "Saving sonar device settings file to harddrive: %s",
+                    str(settings_filepath),
+                )
+                with open(settings_filepath, "w") as f:
+                    json.dump(SONAR_DEVICE_SETTINGS, f, indent=4)
+            except Exception:
+                tb = traceback.format_exc()
+                err_msg = (
+                    f"Could not save sonar device settings file for motion clip: "
+                    f"{filename}"
+                )
+                logger.error(err_msg)
+                logger.error(tb)
+                self.status_q.put((ERROR_CODE, (err_msg, tb)))
+                return
 
         metadata = utils.get_video_metadata(filename)
         if metadata is None:
@@ -887,6 +935,7 @@ class MotionDetector:
             frame_count=frame_counter,
             cpu_h264=cpu_h264, 
             cpu_h264_bitrate=cpu_h264_bitrate,
+            sonar=getattr(self, "sonar", False),
             **vs_kwargs,
         )
 
@@ -918,8 +967,12 @@ class MotionDetector:
         min_contour_area_ratio: float = None,
         motion_trigger_seconds: float = 0.2, # Seconds of motion required to trigger detection
         warmup_seconds: float = 1.0,
+        sonar: bool = False,
         shutdown_event=None,
     ):
+        # When enabled, each completed motion clip gets a matching JSON file in
+        # <device_root>/device_settings/ for downstream sonar processing.
+        self.sonar = bool(sonar)
 
         if morph_kernel_size < 1:
             raise ValueError("morph_kernel_size must be >= 1")
