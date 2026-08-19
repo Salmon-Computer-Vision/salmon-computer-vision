@@ -185,6 +185,7 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
         min_contour_area_ratio,
         motion_trigger_seconds,
         warmup_seconds,
+        sonar,
     ):
     """Run one camera and report exactly one terminal result."""
     try:
@@ -201,6 +202,7 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
                 motion_trigger_seconds=motion_trigger_seconds,
                 warmup_seconds=warmup_seconds,
                 shutdown_event=shutdown_event,
+                sonar=sonar,
                 )
     except Exception as exc:
         logger.exception("[%s] detector thread crashed", cam_name)
@@ -328,6 +330,7 @@ def main(args):
                     args.min_contour_area_ratio,
                     args.motion_trigger_seconds,
                     args.warmup_seconds,
+                    args.sonar,
                 ),
                 name=f"MotionDetector-{cam_name}",
                 daemon=False,
@@ -373,6 +376,7 @@ def main(args):
         min_contour_area_ratio=args.min_contour_area_ratio,
         motion_trigger_seconds=args.motion_trigger_seconds,
         warmup_seconds=args.warmup_seconds,
+        sonar=args.sonar,
     )
 
 if __name__ == "__main__":
@@ -409,6 +413,11 @@ if __name__ == "__main__":
     parser.add_argument("--url", default='https://google.com', help="Healthchecks URL to ping. This could be from healthchecks.io or another healthchecks service")
     parser.add_argument("--no-cont", action='store_true', help="Set this flag to not save continuous video")
     parser.add_argument("--staging", action='store_true', help="Set this flag to save to a staging folder for edge salmon counting processing")
+    parser.add_argument(
+        "--sonar",
+        action="store_true",
+        help="Generate per-motion-clip sonar device_settings JSON files",
+    )
     parser.add_argument(
         "--multi-camera", action='store_true', dest='multi_camera',
         help=(
