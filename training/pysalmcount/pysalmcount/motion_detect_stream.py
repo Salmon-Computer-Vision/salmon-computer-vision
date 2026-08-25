@@ -367,11 +367,6 @@ class MotionEventCoordinator:
                 "MotionEventCoordinator compositing settings were not configured"
             )
 
-        present_pre_roll = [
-            int(result["pre_roll_frames"])
-            for result in pending.results.values()
-        ]
-        missing_pre_roll = min(present_pre_roll, default=0)
         sources = []
         for cam_name in self._cam_names:
             result = pending.results.get(cam_name)
@@ -379,13 +374,11 @@ class MotionEventCoordinator:
                 sources.append(CompositeSource(
                     cam_name=cam_name,
                     path=None,
-                    pre_roll_frames=missing_pre_roll,
                 ))
             else:
                 sources.append(CompositeSource(
                     cam_name=cam_name,
                     path=Path(result["path"]),
-                    pre_roll_frames=int(result["pre_roll_frames"]),
                 ))
         return CompositeJob(
             event_id=pending.clip_info.event_id,

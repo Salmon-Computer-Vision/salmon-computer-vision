@@ -33,7 +33,6 @@ PART_TAIL_RE = re.compile(
 class CompositeSource:
     cam_name: str
     path: Optional[Path]
-    pre_roll_frames: int
 
 
 @dataclass(frozen=True)
@@ -46,6 +45,15 @@ class CompositeJob:
     save_prefix: str
     fps: float
     sonar: bool
+
+
+@dataclass(frozen=True)
+class EndAlignment:
+    """Frame counts and leading trims needed to align source endings."""
+
+    source_frame_counts: List[Optional[int]]
+    start_frame_trims: List[int]
+    aligned_frame_count: int
 
 
 def composite_output_path(job: CompositeJob) -> Path:
@@ -78,41 +86,62 @@ def composite_output_path(job: CompositeJob) -> Path:
     return filename
 
 
-def _effective_source_duration(source: CompositeSource, trim_frames: int, fps: float) -> float:
-    if source.path is None:
-        return 0.0
-    metadata = utils.get_video_metadata(source.path)
-    if metadata is None:
-        raise RuntimeError(f"Could not probe composite source: {source.path}")
-    return max(0.0, metadata.duration - (trim_frames / fps))
+def calculate_end_alignment(job: CompositeJob) -> EndAlignment:
+    """Calculate leading trims so every present source ends together."""
+    if not job.sources:
+        raise ValueError("CompositeJob.sources must not be empty")
+
+    source_frame_counts: List[Optional[int]] = []
+    for source in job.sources:
+        if source.path is None:
+            source_frame_counts.append(None)
+            continue
+        metadata = utils.get_video_metadata(source.path)
+        if metadata is None:
+            raise RuntimeError(f"Could not probe composite source: {source.path}")
+        if metadata.nb_frames <= 0:
+            raise RuntimeError(
+                f"Composite source has no frames: {source.path}"
+            )
+        source_frame_counts.append(metadata.nb_frames)
+
+    present_frame_counts = [
+        frame_count
+        for frame_count in source_frame_counts
+        if frame_count is not None
+    ]
+    if not present_frame_counts:
+        raise ValueError("At least one composite source must be present")
+
+    aligned_frame_count = min(present_frame_counts)
+    start_frame_trims = [
+        frame_count - aligned_frame_count
+        if frame_count is not None else 0
+        for frame_count in source_frame_counts
+    ]
+    return EndAlignment(
+        source_frame_counts=source_frame_counts,
+        start_frame_trims=start_frame_trims,
+        aligned_frame_count=aligned_frame_count,
+    )
 
 
-def build_ffmpeg_cmd(job: CompositeJob, out_path: Path) -> List[str]:
-    """Build the ffmpeg command for a frame-aligned vertical composition."""
+def build_ffmpeg_cmd(
+    job: CompositeJob,
+    out_path: Path,
+    alignment: Optional[EndAlignment] = None,
+) -> List[str]:
+    """Build an ffmpeg command that aligns all source clips by their ends."""
     if not job.sources:
         raise ValueError("CompositeJob.sources must not be empty")
     if job.fps <= 0:
         raise ValueError(f"CompositeJob.fps must be positive, got {job.fps}")
 
-    present = [source for source in job.sources if source.path is not None]
-    if not present:
-        raise ValueError("At least one composite source must be present")
-
-    p_min = min(source.pre_roll_frames for source in present)
-    trims = [
-        max(0, source.pre_roll_frames - p_min) if source.path is not None else 0
-        for source in job.sources
-    ]
-    durations = [
-        _effective_source_duration(source, trim, job.fps)
-        for source, trim in zip(job.sources, trims)
-        if source.path is not None
-    ]
-    max_duration = max(durations)
-    if max_duration <= 0:
-        raise RuntimeError("Composite sources have no video after pre-roll trimming")
+    if alignment is None:
+        alignment = calculate_end_alignment(job)
 
     fps_str = f"{job.fps:g}"
+    aligned_duration = alignment.aligned_frame_count / job.fps
     cmd = ["ffmpeg", "-hide_banner", "-y", "-fflags", "+genpts"]
     for source in job.sources:
         if source.path is None:
@@ -120,7 +149,7 @@ def build_ffmpeg_cmd(job: CompositeJob, out_path: Path) -> List[str]:
                 "-f",
                 "lavfi",
                 "-t",
-                f"{max_duration:.6f}",
+                f"{aligned_duration:.6f}",
                 "-i",
                 f"color=c=black:s=1280x720:r={fps_str}",
             ])
@@ -128,13 +157,24 @@ def build_ffmpeg_cmd(job: CompositeJob, out_path: Path) -> List[str]:
             cmd.extend(["-i", str(source.path)])
 
     filters = []
-    for index, trim in enumerate(trims):
+    for index, (trim, frame_count) in enumerate(zip(
+        alignment.start_frame_trims,
+        alignment.source_frame_counts,
+    )):
+        end_frame = (
+            frame_count
+            if frame_count is not None
+            else alignment.aligned_frame_count
+        )
         filters.append(
-            f"[{index}:v]trim=start_frame={trim},setpts=PTS-STARTPTS,"
+            f"[{index}:v]trim=start_frame={trim}:end_frame={end_frame},"
+            "setpts=PTS-STARTPTS,"
             f"scale=1280:-2,setsar=1,fps={fps_str}[v{index}]"
         )
     inputs = "".join(f"[v{index}]" for index in range(len(job.sources)))
-    filters.append(f"{inputs}vstack=inputs={len(job.sources)}[outv]")
+    filters.append(
+        f"{inputs}vstack=inputs={len(job.sources)}:shortest=1[outv]"
+    )
 
     cmd.extend([
         "-filter_complex",
@@ -156,6 +196,8 @@ def build_ffmpeg_cmd(job: CompositeJob, out_path: Path) -> List[str]:
         "make_zero",
         "-threads",
         "2",
+        "-frames:v",
+        str(alignment.aligned_frame_count),
         str(out_path),
     ])
     return cmd
@@ -180,7 +222,8 @@ def run_composite(job: CompositeJob) -> Path:
     job.out_dir.mkdir(parents=True, exist_ok=True)
     out_path = composite_output_path(job)
     tmp_path = out_path.with_name(f".{out_path.stem}.tmp.mp4")
-    cmd = build_ffmpeg_cmd(job, tmp_path)
+    alignment = calculate_end_alignment(job)
+    cmd = build_ffmpeg_cmd(job, tmp_path, alignment=alignment)
 
     logger.info(
         "Compositing event=%s part=%d cameras=%s to %s",
@@ -208,11 +251,6 @@ def run_composite(job: CompositeJob) -> Path:
         raise RuntimeError(f"Could not probe completed composite: {out_path}")
 
     present = [source for source in job.sources if source.path is not None]
-    p_min = min(source.pre_roll_frames for source in present)
-    pre_roll_trim = [
-        max(0, source.pre_roll_frames - p_min) if source.path is not None else 0
-        for source in job.sources
-    ]
     payload = asdict(metadata)
     payload.update({
         "event_id": job.event_id,
@@ -224,7 +262,10 @@ def run_composite(job: CompositeJob) -> Path:
             str(source.path) if source.path is not None else None
             for source in job.sources
         ],
-        "pre_roll_trim": pre_roll_trim,
+        "frame_alignment": "end",
+        "source_frame_counts": alignment.source_frame_counts,
+        "start_frame_trim": alignment.start_frame_trims,
+        "aligned_frame_count": alignment.aligned_frame_count,
     })
     metadata_path = (
         out_path.parent.parent / MOTION_VIDS_METADATA_DIR / f"{out_path.stem}.json"
@@ -320,7 +361,6 @@ def find_stale_composite_jobs(
 
         event_id = None
         part_start_ts = None
-        pre_roll_frames = 0
         metadata_path = _parts_metadata_path(path)
         try:
             with open(metadata_path) as file_obj:
@@ -328,14 +368,12 @@ def find_stale_composite_jobs(
             event_id = str(metadata["event_id"])
             part_number = int(metadata["part_number"])
             part_start_ts = datetime.datetime.fromisoformat(metadata["part_start_ts"])
-            pre_roll_frames = int(metadata["pre_roll_frames"])
         except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
             event_id = None
             part_start_ts = None
-            pre_roll_frames = 0
             logger.warning(
                 "Recovering stale composite part without usable metadata; "
-                "pre-roll trim defaults to zero: %s",
+                "event identity falls back to its filename: %s",
                 path,
             )
         else:
@@ -371,7 +409,6 @@ def find_stale_composite_jobs(
         group["sources"][cam_name] = CompositeSource(
             cam_name=cam_name,
             path=path,
-            pre_roll_frames=pre_roll_frames,
         )
         group["mtimes"].append(path.stat().st_mtime)
 
@@ -397,15 +434,10 @@ def find_stale_composite_jobs(
         part_start_ts = group["part_start_ts"] or datetime.datetime.strptime(
             f"{tail_date}_{tail_time}", "%Y%m%d_%H%M%S"
         ).astimezone().astimezone(datetime.timezone.utc)
-        present_sources = list(group["sources"].values())
-        missing_pre_roll = min(
-            (source.pre_roll_frames for source in present_sources),
-            default=0,
-        )
         sources = [
             group["sources"].get(
                 cam_name,
-                CompositeSource(cam_name, None, missing_pre_roll),
+                CompositeSource(cam_name, None),
             )
             for cam_name in cam_names
         ]

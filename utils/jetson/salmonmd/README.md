@@ -33,6 +33,12 @@ For three 1280x720 rows, the output is a 1280x2160 H.264 MP4 named:
 {orgid}-{site}-{device}_{YYYYMMDD_HHMMSS}_M.mp4
 ```
 
+Before stacking, the compositor probes each available source's frame count and
+aligns the clip endings. The shortest source determines the common output frame
+count, and excess frames are removed from the beginning of longer sources. A
+missing camera retains its configured row as black video for that common
+duration.
+
 Only the final file under `motion_vids/` follows the normal cloud sync path;
 the intermediate directories are not uploaded. Use `--no-composite` to retain
 separate per-camera motion clips instead.
