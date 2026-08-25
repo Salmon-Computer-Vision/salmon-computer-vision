@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pysalmcount import videoloader as vl
 from pysalmcount import motion_detect_stream as md
+from pysalmcount import clip_compositor as cc
 
 import argparse
 import os
@@ -186,6 +187,7 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
         motion_trigger_seconds,
         warmup_seconds,
         sonar,
+        composite,
     ):
     """Run one camera and report exactly one terminal result."""
     try:
@@ -203,6 +205,7 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
                 warmup_seconds=warmup_seconds,
                 shutdown_event=shutdown_event,
                 sonar=sonar,
+                composite=composite,
                 )
     except Exception as exc:
         logger.exception("[%s] detector thread crashed", cam_name)
@@ -215,28 +218,69 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
             status_queue.put((cam_name, None))
 
 
-def _shutdown_on_camera_termination(status_queue, shutdown_event, threads):
-    """Stop every camera after the first terminates, then fail the process."""
-    cam_name, error = status_queue.get()
-    if error is None:
-        logger.critical(
-            "[%s] detector stopped unexpectedly; stopping all cameras",
-            cam_name,
-        )
-    else:
-        logger.critical(
-            "[%s] detector failed with %s: %s; stopping all cameras",
-            cam_name,
-            type(error).__name__,
-            error,
-        )
+def _stop_compositor(coordinator, composite_queue, compositor_worker):
+    if compositor_worker is None or composite_queue is None:
+        return
+    if compositor_worker.pid is None:
+        return
+    if not compositor_worker.is_alive():
+        compositor_worker.join(timeout=0)
+        return
 
-    # Each detector observes this in its normal run loop and exits through the
-    # same finally block as single-camera mode. That closes its VideoLoader,
-    # stops/joins its VideoSaver, and releases its continuous VideoWriter.
-    shutdown_event.set()
-    for thread in threads:
-        thread.join()
+    if coordinator is not None:
+        for job in coordinator.reap_stale_parts(force=True):
+            logger.warning(
+                "Flushing incomplete event=%s part=%d during shutdown",
+                job.event_id,
+                job.part_number,
+            )
+            composite_queue.put(job)
+    composite_queue.put(None)
+    compositor_worker.join(timeout=md.COMPOSITE_TIMEOUT_SECONDS)
+    if compositor_worker.is_alive():
+        logger.error(
+            "Compositor did not drain within %.1fs; terminating worker. "
+            "Unprocessed source clips remain recoverable in %s/",
+            md.COMPOSITE_TIMEOUT_SECONDS,
+            md.MOTION_VIDS_PARTS,
+        )
+        compositor_worker.terminate()
+        compositor_worker.join(timeout=5)
+
+
+def _shutdown_on_camera_termination(
+    status_queue,
+    shutdown_event,
+    threads,
+    coordinator=None,
+    composite_queue=None,
+    compositor_worker=None,
+):
+    """Stop every camera after the first terminates, then fail the process."""
+    cam_name = None
+    error = None
+    try:
+        cam_name, error = status_queue.get()
+        if error is None:
+            logger.critical(
+                "[%s] detector stopped unexpectedly; stopping all cameras",
+                cam_name,
+            )
+        else:
+            logger.critical(
+                "[%s] detector failed with %s: %s; stopping all cameras",
+                cam_name,
+                type(error).__name__,
+                error,
+            )
+    finally:
+        # Each detector observes this in its normal run loop and exits through
+        # the same finally block as single-camera mode. That closes its loader,
+        # stops/joins its saver, and releases its continuous writer.
+        shutdown_event.set()
+        for thread in threads:
+            thread.join()
+        _stop_compositor(coordinator, composite_queue, compositor_worker)
 
     if error is not None:
         raise error
@@ -270,14 +314,67 @@ def main(args):
 
     if args.multi_camera:
         urls, cam_names = _parse_multi_camera_args(args)
+        composite = not args.no_composite
         logger.info(
-            "Multi-camera mode: %d cameras, names=%s", len(urls), cam_names
+            "Multi-camera mode: %d cameras, names=%s, composite=%s",
+            len(urls),
+            cam_names,
+            composite,
         )
+
+        canonical_save_prefix = save_prefix or os.uname()[1]
+        composite_queue = None
+        compositor_worker = None
+        if composite:
+            if args.sonar:
+                logger.warning(
+                    "Sonar calibration is not meaningful on vertically stacked "
+                    "multi-camera frames because y_percent spans multiple views"
+                )
+            parts_dir = site_save_path / md.MOTION_VIDS_PARTS
+            output_dir = site_save_path / (
+                md.MOTION_VIDS_STAGING if args.staging else md.MOTION_VIDS
+            )
+            parts_dir.mkdir(parents=True, exist_ok=True)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            md.ensure_writable_dir(parts_dir, "motion video parts")
+            md.ensure_writable_dir(output_dir, "composite motion video")
+
+            composite_queue = mp.Queue()
+            recovered_jobs = cc.find_stale_composite_jobs(
+                parts_dir=parts_dir,
+                cam_names=cam_names,
+                out_dir=output_dir,
+                save_prefix=canonical_save_prefix,
+                fps=fps,
+                sonar=args.sonar,
+                stale_after_seconds=md.COMPOSITE_TIMEOUT_SECONDS,
+            )
+            for job in recovered_jobs:
+                logger.warning(
+                    "Queueing recovered event=%s part=%d from %s/",
+                    job.event_id,
+                    job.part_number,
+                    md.MOTION_VIDS_PARTS,
+                )
+                composite_queue.put(job)
+            compositor_worker = cc.CompositorWorker(composite_queue)
 
         # Share ONE coordinator across all cam threads. Timing defaults come
         # from the module-level constants in motion_detect_stream.py; changing
         # those constants automatically applies to both single- and multi-cam.
-        coordinator = md.MotionEventCoordinator(cam_names)
+        coordinator = md.MotionEventCoordinator(
+            cam_names,
+            composite_out_dir=(
+                site_save_path / (
+                    md.MOTION_VIDS_STAGING if args.staging else md.MOTION_VIDS
+                )
+                if composite else None
+            ),
+            composite_save_prefix=(canonical_save_prefix if composite else None),
+            composite_fps=(fps if composite else None),
+            composite_sonar=args.sonar,
+        )
         status_queue = queue.Queue()
         shutdown_event = threading.Event()
 
@@ -297,7 +394,8 @@ def main(args):
                 camera_backend=args.camera_backend,
             )
             cam_save_prefix = (
-                f"{save_prefix}_{cam_name}" if save_prefix is not None else cam_name
+                f"{save_prefix}_{cam_name}"
+                if save_prefix is not None else cam_name
             )
             det = md.MotionDetector(
                 dataloader=vidloader,
@@ -308,37 +406,58 @@ def main(args):
                 is_video=is_video,
                 coordinator=coordinator,
                 cam_name=cam_name,
+                composite=composite,
+                composite_queue=composite_queue,
             )
             detectors.append((det, cam_name))
 
         threads = []
-        for det, cam_name in detectors:
-            t = threading.Thread(
-                target=_run_detector_in_thread,
-                args=(
-                    det, fps, args.algo, args.orin, args.raspi, 
-                    args.staging, cam_name, status_queue,
-                    shutdown_event, args.cpu_h264, args.bitrate,
-                    args.bgsub_threshold,
-                    args.cnt_min_pixel_stability,
-                    args.cnt_max_pixel_stability,
-                    args.fg_threshold,
-                    args.morph_kernel_size,
-                    args.erode_iter,
-                    args.dilate_iter,
-                    args.min_contour_area,
-                    args.min_contour_area_ratio,
-                    args.motion_trigger_seconds,
-                    args.warmup_seconds,
-                    args.sonar,
-                ),
-                name=f"MotionDetector-{cam_name}",
-                daemon=False,
-            )
-            t.start()
-            threads.append(t)
+        try:
+            if compositor_worker is not None:
+                compositor_worker.start()
 
-        _shutdown_on_camera_termination(status_queue, shutdown_event, threads)
+            for det, cam_name in detectors:
+                t = threading.Thread(
+                    target=_run_detector_in_thread,
+                    args=(
+                        det, fps, args.algo, args.orin, args.raspi,
+                        args.staging, cam_name, status_queue,
+                        shutdown_event, args.cpu_h264, args.bitrate,
+                        args.bgsub_threshold,
+                        args.cnt_min_pixel_stability,
+                        args.cnt_max_pixel_stability,
+                        args.fg_threshold,
+                        args.morph_kernel_size,
+                        args.erode_iter,
+                        args.dilate_iter,
+                        args.min_contour_area,
+                        args.min_contour_area_ratio,
+                        args.motion_trigger_seconds,
+                        args.warmup_seconds,
+                        args.sonar,
+                        composite,
+                    ),
+                    name=f"MotionDetector-{cam_name}",
+                    daemon=False,
+                )
+                t.start()
+                threads.append(t)
+
+            _shutdown_on_camera_termination(
+                status_queue,
+                shutdown_event,
+                threads,
+                coordinator=coordinator,
+                composite_queue=composite_queue,
+                compositor_worker=compositor_worker,
+            )
+        except BaseException:
+            shutdown_event.set()
+            for thread in threads:
+                if thread.is_alive():
+                    thread.join()
+            _stop_compositor(coordinator, composite_queue, compositor_worker)
+            raise
 
     # --- Single-camera path (today's behavior) ---
     input_str = _build_input_str(args.input, args.gstreamer, args.h265)
@@ -424,16 +543,25 @@ if __name__ == "__main__":
             "Enable multi-camera mode. The positional input is then treated "
             "as a comma-separated list of RTSP URLs (N >= 2). All cameras "
             "share lock-step clip boundaries (same event_id, same "
-            "part_number count, same wall-clock length) via a coordinator."
+            "part_number count, same wall-clock length) via a coordinator "
+            "and are vertically composited by default."
         ),
     )
     parser.add_argument(
         "--cam-names", default=None, dest='cam_names',
         help=(
-            "Comma-separated camera names used to disambiguate clips in "
-            "multi-camera mode. Each name must match [A-Za-z0-9_-]+, no "
-            "duplicates. Length must equal the number of RTSP URLs in the "
-            "positional input. Defaults to cam1,cam2,...,camN."
+            "Comma-separated camera names in top-to-bottom composite order. "
+            "Each name must match [A-Za-z0-9_-]+, no duplicates. Length must "
+            "equal the number of RTSP URLs in the positional input. Defaults "
+            "to cam1,cam2,...,camN."
+        ),
+    )
+    parser.add_argument(
+        "--no-composite",
+        action="store_true",
+        help=(
+            "In multi-camera mode, retain separate per-camera motion clips "
+            "instead of vertically stacking them"
         ),
     )
     parser.add_argument(

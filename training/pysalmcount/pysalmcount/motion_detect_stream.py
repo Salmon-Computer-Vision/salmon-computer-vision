@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from .dataloader import DataLoader
+from .clip_compositor import CompositeJob, CompositeSource
 from pysalmcount import utils
 
 import cv2
@@ -31,7 +32,10 @@ gst_raspi_writer_str = "appsrc ! video/x-raw,format=BGR ! queue ! videoconvert !
 MOTION_VIDS = 'motion_vids'
 MOTION_VIDS_STAGING = 'motion_vids_staging'
 MOTION_VIDS_METADATA_DIR = 'motion_vids_metadata'
+MOTION_VIDS_PARTS = 'motion_vids_parts'
+MOTION_VIDS_PARTS_METADATA = 'motion_vids_parts_metadata'
 DEVICE_SETTINGS_DIR = 'device_settings'
+COMPOSITE_TIMEOUT_SECONDS = 180.0
 
 # Placeholder settings used by downstream sonar processing. A same-stem JSON
 # file is written into DEVICE_SETTINGS_DIR for each completed motion clip when
@@ -76,6 +80,14 @@ class ClipInfo:
     event_start_ts: datetime.datetime
     part_number: int
     originator: str
+    part_start_ts: Optional[datetime.datetime] = None
+
+
+@dataclass
+class _PendingPart:
+    clip_info: ClipInfo
+    first_report_wall: float
+    results: Dict[str, dict]
 
 
 class MotionEventCoordinator:
@@ -94,7 +106,13 @@ class MotionEventCoordinator:
 
     def __init__(self, cam_names: List[str],
                  max_clip_seconds: float = MAX_CLIP_SECONDS,
-                 post_roll_seconds: float = POST_ROLL_SECONDS):
+                 post_roll_seconds: float = POST_ROLL_SECONDS,
+                 *,
+                 composite_out_dir: Optional[Path] = None,
+                 composite_save_prefix: Optional[str] = None,
+                 composite_fps: Optional[float] = None,
+                 composite_sonar: bool = False,
+                 composite_timeout_seconds: float = COMPOSITE_TIMEOUT_SECONDS):
         if len(cam_names) < 2:
             raise ValueError(
                 "MotionEventCoordinator requires N >= 2 cameras, got "
@@ -121,6 +139,7 @@ class MotionEventCoordinator:
         self._current_part_number: int = 0
         # time.monotonic() timestamps for drift-free shared timing.
         self._current_part_start_wall: Optional[float] = None
+        self._current_part_start_utc: Optional[datetime.datetime] = None
         self._last_motion_wall: Optional[float] = None
         self._cams_recording: Set[str] = set()
         # Set True the instant a finalize is broadcast (in tick) and cleared
@@ -131,6 +150,19 @@ class MotionEventCoordinator:
         self._finalizing: bool = False
         self._max_clip_seconds = float(max_clip_seconds)
         self._post_roll_seconds = float(post_roll_seconds)
+        self._composite_out_dir = (
+            Path(composite_out_dir) if composite_out_dir is not None else None
+        )
+        self._composite_save_prefix = composite_save_prefix
+        self._composite_fps = (
+            float(composite_fps) if composite_fps is not None else None
+        )
+        self._composite_sonar = bool(composite_sonar)
+        self._composite_timeout_seconds = float(composite_timeout_seconds)
+        # Completed clips arrive after leave_event(), so this barrier is kept
+        # independent from the active recording set.
+        self._pending_parts: Dict[Tuple[str, int], _PendingPart] = {}
+        self._emitted_parts: Set[Tuple[str, int]] = set()
 
     @staticmethod
     def _mint_event_id(now_utc: datetime.datetime) -> str:
@@ -168,7 +200,7 @@ class MotionEventCoordinator:
             if self._active_event_id is None:
                 # Mint.
                 now_wall = time.monotonic()
-                now_utc = datetime.datetime.utcnow()
+                now_utc = datetime.datetime.now(datetime.timezone.utc)
                 assert cam_name not in self._cams_recording, (
                     f"enter_event mint called but {cam_name} is already "
                     f"recording (coordinator state corrupted?)"
@@ -178,6 +210,7 @@ class MotionEventCoordinator:
                 self._event_originator = cam_name
                 self._current_part_number = 1
                 self._current_part_start_wall = now_wall
+                self._current_part_start_utc = now_utc
                 self._last_motion_wall = now_wall
                 self._finalizing = False
                 # Fan out to every other cam. Clear this cam's own flag below.
@@ -194,6 +227,7 @@ class MotionEventCoordinator:
                 event_id=self._active_event_id,
                 event_start_ts=self._active_event_start,
                 part_number=self._current_part_number,
+                part_start_ts=self._current_part_start_utc,
                 originator=self._event_originator,
             )
 
@@ -210,6 +244,7 @@ class MotionEventCoordinator:
                 event_id=self._active_event_id,
                 event_start_ts=self._active_event_start,
                 part_number=self._current_part_number,
+                part_start_ts=self._current_part_start_utc,
                 originator=self._event_originator,
             )
 
@@ -275,6 +310,9 @@ class MotionEventCoordinator:
                     now_wall - self._current_part_start_wall >= self._max_clip_seconds):
                 self._current_part_number += 1
                 self._current_part_start_wall = now_wall
+                self._current_part_start_utc = datetime.datetime.now(
+                    datetime.timezone.utc
+                )
                 for n in self._cam_names:
                     self._rollover_pending[n] = True
                 # Consume this cam's bit immediately.
@@ -309,6 +347,7 @@ class MotionEventCoordinator:
                 self._event_originator = None
                 self._current_part_number = 0
                 self._current_part_start_wall = None
+                self._current_part_start_utc = None
                 self._last_motion_wall = None
                 self._finalizing = False
                 for n in self._cam_names:
@@ -319,6 +358,96 @@ class MotionEventCoordinator:
     def is_event_active(self) -> bool:
         with self._lock:
             return self._active_event_id is not None
+
+    def _build_composite_job(self, pending: _PendingPart) -> CompositeJob:
+        if (self._composite_out_dir is None or
+                self._composite_save_prefix is None or
+                self._composite_fps is None):
+            raise RuntimeError(
+                "MotionEventCoordinator compositing settings were not configured"
+            )
+
+        sources = []
+        for cam_name in self._cam_names:
+            result = pending.results.get(cam_name)
+            if result is None:
+                sources.append(CompositeSource(
+                    cam_name=cam_name,
+                    path=None,
+                ))
+            else:
+                sources.append(CompositeSource(
+                    cam_name=cam_name,
+                    path=Path(result["path"]),
+                ))
+        return CompositeJob(
+            event_id=pending.clip_info.event_id,
+            part_number=pending.clip_info.part_number,
+            part_start_ts=(
+                pending.clip_info.part_start_ts
+                or pending.clip_info.event_start_ts
+            ),
+            sources=sources,
+            out_dir=self._composite_out_dir,
+            save_prefix=self._composite_save_prefix,
+            fps=self._composite_fps,
+            sonar=self._composite_sonar,
+        )
+
+    def report_part_finished(
+        self,
+        cam_name: str,
+        clip_info: ClipInfo,
+        result: dict,
+    ) -> Optional[CompositeJob]:
+        """Add one finished camera clip and emit when the part is complete."""
+        if cam_name not in self._cam_names:
+            raise ValueError(f"Unknown cam_name: {cam_name!r}")
+        key = (clip_info.event_id, clip_info.part_number)
+        with self._lock:
+            if key in self._emitted_parts:
+                logger.warning(
+                    "Ignoring late/duplicate clip report for event=%s part=%d cam=%s",
+                    clip_info.event_id,
+                    clip_info.part_number,
+                    cam_name,
+                )
+                return None
+            pending = self._pending_parts.get(key)
+            if pending is None:
+                pending = _PendingPart(
+                    clip_info=clip_info,
+                    first_report_wall=time.monotonic(),
+                    results={},
+                )
+                self._pending_parts[key] = pending
+            pending.results[cam_name] = dict(result)
+            if len(pending.results) < len(self._cam_names):
+                return None
+
+            job = self._build_composite_job(pending)
+            del self._pending_parts[key]
+            self._emitted_parts.add(key)
+            return job
+
+    def reap_stale_parts(self, force: bool = False) -> List[CompositeJob]:
+        """Emit timed-out partial groups with black rows for missing cameras."""
+        now_wall = time.monotonic()
+        jobs = []
+        with self._lock:
+            stale_keys = [
+                key
+                for key, pending in self._pending_parts.items()
+                if force or (
+                    now_wall - pending.first_report_wall
+                    >= self._composite_timeout_seconds
+                )
+            ]
+            for key in stale_keys:
+                pending = self._pending_parts.pop(key)
+                jobs.append(self._build_composite_job(pending))
+                self._emitted_parts.add(key)
+        return jobs
 
 
 def build_cpu_h264_writer(
@@ -394,11 +523,14 @@ class VideoSaver(Process):
             event_id: Optional[str] = None,
             event_start_ts: Optional[datetime.datetime] = None,
             part_number: Optional[int] = None,
+            part_start_ts: Optional[datetime.datetime] = None,
             cam_name: Optional[str] = None,
             triggered_by: Optional[str] = None,
             cpu_h264=False,
             cpu_h264_bitrate=1200,
             sonar=False,
+            composite_mode=False,
+            result_q: Optional[Queue] = None,
             ):
         super().__init__()
         self.frame_shape = frame_shape
@@ -424,11 +556,14 @@ class VideoSaver(Process):
         self.event_id = event_id
         self.event_start_ts = event_start_ts
         self.part_number = part_number
+        self.part_start_ts = part_start_ts
         self.cam_name = cam_name
         self.triggered_by = triggered_by
         self.cpu_h264 = cpu_h264
         self.cpu_h264_bitrate = cpu_h264_bitrate
         self.sonar = sonar
+        self.composite_mode = composite_mode
+        self.result_q = result_q
 
         if is_video and filename is None:
             logger.warn("Filename is empty. Will fallback on timestampped name")
@@ -452,7 +587,11 @@ class VideoSaver(Process):
         # so every clip of one episode groups together and per-cam rolled
         # segments stay ordered. `save_prefix` already carries the cam name.
         if self.event_id is not None and self.event_start_ts is not None:
-            ts = self.event_start_ts.strftime("%Y%m%d_%H%M%S")
+            if self.composite_mode:
+                clip_ts = self.part_start_ts or self.event_start_ts
+                ts = clip_ts.astimezone().strftime("%Y%m%d_%H%M%S")
+            else:
+                ts = self.event_start_ts.strftime("%Y%m%d_%H%M%S")
             short = MotionEventCoordinator.event_id_short(self.event_id)
             part = self.part_number if self.part_number is not None else 1
             prefix = save_prefix if save_prefix is not None else os.uname()[1]
@@ -521,9 +660,12 @@ class VideoSaver(Process):
         return filename
 
     @staticmethod
-    def filename_to_metadata_filepath(filename: Path) -> Path:
-        metadata_dir = filename.parent.parent / MOTION_VIDS_METADATA_DIR
-        metadata_dir.mkdir(exist_ok=True)
+    def filename_to_metadata_filepath(
+        filename: Path,
+        metadata_dir_name: str = MOTION_VIDS_METADATA_DIR,
+    ) -> Path:
+        metadata_dir = filename.parent.parent / metadata_dir_name
+        metadata_dir.mkdir(exist_ok=True, parents=True)
         return metadata_dir / f"{filename.stem}.json"
 
     @staticmethod
@@ -607,6 +749,7 @@ class VideoSaver(Process):
             out.write(frame)
             c += 1
 
+        pre_roll_frames = c
         c = 0
         # Continue recording until stop_event is set
         while True:
@@ -635,7 +778,7 @@ class VideoSaver(Process):
         # Sonar deployments need a small per-clip settings file to trigger
         # downstream sonar processing. Keep the same stem as the motion clip and
         # place it at the device level under device_settings/.
-        if self.sonar:
+        if self.sonar and not self.composite_mode:
             try:
                 settings_filepath = VideoSaver.filename_to_device_settings_filepath(
                     Path(filename)
@@ -677,10 +820,23 @@ class VideoSaver(Process):
                 "cam_name": self.cam_name,
                 "triggered_by": self.triggered_by,
                 "part_number": self.part_number,
+                "part_start_ts": (
+                    self.part_start_ts.isoformat()
+                    if self.part_start_ts is not None else None
+                ),
+                "pre_roll_frames": pre_roll_frames,
             })
 
         if payload:
-            metadata_filepath = VideoSaver.filename_to_metadata_filepath(Path(filename))
+            metadata_dir_name = (
+                MOTION_VIDS_PARTS_METADATA
+                if self.composite_mode
+                else MOTION_VIDS_METADATA_DIR
+            )
+            metadata_filepath = VideoSaver.filename_to_metadata_filepath(
+                Path(filename),
+                metadata_dir_name=metadata_dir_name,
+            )
             logger.info(f"Saving metadata file to harddrive: {str(metadata_filepath)}")
             with open(str(metadata_filepath), 'w') as f:
                 json.dump(payload, f)
@@ -689,6 +845,15 @@ class VideoSaver(Process):
             logger.error(f"Could not generate metadata for file: {filename}")
             logger.error(tb)
             self.status_q.put((ERROR_CODE, ("", tb)))
+
+        if self.composite_mode and self.result_q is not None:
+            self.result_q.put({
+                "path": Path(filename),
+                "cam_name": self.cam_name,
+                "event_id": self.event_id,
+                "part_number": self.part_number,
+                "pre_roll_frames": pre_roll_frames,
+            })
 
 
 class OutputFileHealth:
@@ -747,7 +912,9 @@ class MotionDetector:
 
     def __init__(self, dataloader: DataLoader, save_folder, save_video=True, save_cont_video=True, is_video=False, save_prefix=None, ping_url='https://google.com',
                  coordinator: Optional[MotionEventCoordinator] = None,
-                 cam_name: Optional[str] = None):
+                 cam_name: Optional[str] = None,
+                 composite: bool = False,
+                 composite_queue=None):
         self.dataloader = dataloader
         self.save_folder = save_folder
         self.frame_log = {}
@@ -764,7 +931,10 @@ class MotionDetector:
         # with exact legacy behavior.
         self.coordinator = coordinator
         self.cam_name = cam_name
+        self.composite = bool(composite)
+        self.composite_queue = composite_queue
         self._awaiting_next_part: bool = False
+        self._video_saver_clip_infos: Dict[Tuple[str, int], ClipInfo] = {}
         # Per-cam log adapter so every record is tagged with [cam_name] in
         # multi-cam mode. In single-cam mode fall back to the module logger.
         if cam_name is not None:
@@ -779,6 +949,54 @@ class MotionDetector:
         self.lock_tail = Lock()
         self.condition = Condition()
         self.status_q = Queue()
+        self.result_q = Queue()
+
+    def _collect_finished_clip(self, wait_for_result: bool = False) -> None:
+        """Forward successful VideoSaver results through the part barrier."""
+        if not self.composite:
+            return
+        if self.coordinator is None or self.composite_queue is None:
+            raise RuntimeError("Composite mode requires a coordinator and queue")
+
+        first = True
+        while True:
+            try:
+                if first and wait_for_result:
+                    result = self.result_q.get(timeout=1.0)
+                else:
+                    result = self.result_q.get_nowait()
+            except queue.Empty:
+                break
+            first = False
+            key = (str(result["event_id"]), int(result["part_number"]))
+            clip_info = self._video_saver_clip_infos.pop(key, None)
+            if clip_info is None:
+                self.log.error(
+                    "No ClipInfo retained for finished event=%s part=%s",
+                    key[0],
+                    key[1],
+                )
+                continue
+            job = self.coordinator.report_part_finished(
+                str(result["cam_name"]),
+                clip_info,
+                result,
+            )
+            if job is not None:
+                self.composite_queue.put(job)
+
+    def _enqueue_stale_composites(self) -> None:
+        if not self.composite:
+            return
+        if self.coordinator is None or self.composite_queue is None:
+            return
+        for job in self.coordinator.reap_stale_parts():
+            self.log.warning(
+                "Compositing stale event=%s part=%d with missing camera rows",
+                job.event_id,
+                job.part_number,
+            )
+            self.composite_queue.put(job)
 
     def _raise_if_video_saver_failed(self):
         while True:
@@ -861,6 +1079,11 @@ class MotionDetector:
                     self.video_saver.terminate()
                     self.video_saver.join(timeout=5)
 
+            saver_succeeded = (
+                self.video_saver is not None and self.video_saver.exitcode == 0
+            )
+            self._collect_finished_clip(wait_for_result=saver_succeeded)
+
             self.video_saver = None
             self.video_saver_stop_event = None
             self.motion_detected = False
@@ -882,24 +1105,30 @@ class MotionDetector:
         back to today's timestamp-based filename.
         """
         # Safety guard: do not start a new saver while the old one is alive.
-        if self.video_saver is not None and self.video_saver.is_alive():
-            self.log.warning(
-                "Previous VideoSaver still alive; joining before spawning a new one. pid=%s",
-                self.video_saver.pid,
-            )
-            if self.video_saver_stop_event is not None:
-                self.video_saver_stop_event.set()
-            with self.condition:
-                self.condition.notify_all()
-            self.video_saver.join(timeout=10)
-
+        if self.video_saver is not None:
             if self.video_saver.is_alive():
-                self.log.error(
-                    "Previous VideoSaver did not exit after timeout; terminating pid=%s",
+                self.log.warning(
+                    "Previous VideoSaver still alive; joining before spawning "
+                    "a new one. pid=%s",
                     self.video_saver.pid,
                 )
-                self.video_saver.terminate()
-                self.video_saver.join(timeout=5)
+                if self.video_saver_stop_event is not None:
+                    self.video_saver_stop_event.set()
+                with self.condition:
+                    self.condition.notify_all()
+                self.video_saver.join(timeout=10)
+
+                if self.video_saver.is_alive():
+                    self.log.error(
+                        "Previous VideoSaver did not exit after timeout; "
+                        "terminating pid=%s",
+                        self.video_saver.pid,
+                    )
+                    self.video_saver.terminate()
+                    self.video_saver.join(timeout=5)
+
+            saver_succeeded = self.video_saver.exitcode == 0
+            self._collect_finished_clip(wait_for_result=saver_succeeded)
 
         stop_event = Event()
         self.video_saver_stop_event = stop_event
@@ -910,6 +1139,7 @@ class MotionDetector:
                 event_id=clip_info.event_id,
                 event_start_ts=clip_info.event_start_ts,
                 part_number=clip_info.part_number,
+                part_start_ts=clip_info.part_start_ts,
                 cam_name=self.cam_name,
                 triggered_by=clip_info.originator,
             )
@@ -936,11 +1166,16 @@ class MotionDetector:
             cpu_h264=cpu_h264, 
             cpu_h264_bitrate=cpu_h264_bitrate,
             sonar=getattr(self, "sonar", False),
+            composite_mode=self.composite,
+            result_q=self.result_q,
             **vs_kwargs,
         )
 
         video_saver.start()
         self.video_saver = video_saver
+        if clip_info is not None and self.composite:
+            key = (clip_info.event_id, clip_info.part_number)
+            self._video_saver_clip_infos[key] = clip_info
         self.motion_detected = True
         self.motion_counter = 0
 
@@ -968,11 +1203,22 @@ class MotionDetector:
         motion_trigger_seconds: float = 0.2, # Seconds of motion required to trigger detection
         warmup_seconds: float = 1.0,
         sonar: bool = False,
+        composite: Optional[bool] = None,
         shutdown_event=None,
     ):
         # When enabled, each completed motion clip gets a matching JSON file in
         # <device_root>/device_settings/ for downstream sonar processing.
         self.sonar = bool(sonar)
+        if composite is not None:
+            self.composite = bool(composite)
+        if self.composite and (
+            self.coordinator is None or self.cam_name is None
+            or self.composite_queue is None
+        ):
+            raise ValueError(
+                "Composite mode requires multi-camera coordinator, cam_name, "
+                "and composite_queue"
+            )
 
         if morph_kernel_size < 1:
             raise ValueError("morph_kernel_size must be >= 1")
@@ -1022,14 +1268,19 @@ class MotionDetector:
         cont_dir = os.path.join(self.save_folder, 'cont_vids')
         Path(cont_dir).mkdir(parents=True, exist_ok=True)
 
-        if staging:
-            motion_dir = os.path.join(self.save_folder, MOTION_VIDS_STAGING)
+        target_motion_dir_name = MOTION_VIDS_STAGING if staging else MOTION_VIDS
+        target_motion_dir = os.path.join(self.save_folder, target_motion_dir_name)
+        if self.composite:
+            motion_dir = os.path.join(self.save_folder, MOTION_VIDS_PARTS)
         else:
-            motion_dir = os.path.join(self.save_folder, MOTION_VIDS)
+            motion_dir = target_motion_dir
         Path(motion_dir).mkdir(parents=True, exist_ok=True)
+        Path(target_motion_dir).mkdir(parents=True, exist_ok=True)
 
         ensure_writable_dir(cont_dir, "continuous video")
         ensure_writable_dir(motion_dir, "motion video")
+        if self.composite:
+            ensure_writable_dir(target_motion_dir, "composite motion video")
 
         cur_clip = self.dataloader.next_clip()
         self.frame_log[cur_clip.name] = []
@@ -1444,6 +1695,7 @@ class MotionDetector:
                     elapsed_time = (end_time - start_time) * 1000
                     self.log.info(f"Time elapsed: {elapsed_time:.2f} ms")
                     utils.ping_in_background(self.ping_url)
+                    self._enqueue_stale_composites()
                 frame_counter += 1
         finally:
             try:
@@ -1481,6 +1733,12 @@ class MotionDetector:
             if video_saver and video_saver.is_alive():
                 try:
                     video_saver.join()
+                    self._collect_finished_clip(wait_for_result=True)
                 except Exception:
                     self.log.exception("video_saver.join raised")
+            else:
+                try:
+                    self._collect_finished_clip()
+                except Exception:
+                    self.log.exception("collecting final VideoSaver result raised")
         return self.frame_log
