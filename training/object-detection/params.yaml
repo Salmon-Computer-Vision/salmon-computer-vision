@@ -1,6 +1,6 @@
 data:
-  sites: 
-    - base
+  sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt 
+    chignik klukshu
   neg_csvs: 
     data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv 
     data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv 

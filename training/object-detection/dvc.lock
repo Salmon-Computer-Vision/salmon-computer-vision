@@ -7,15 +7,15 @@ stages:
     deps:
     - path: s3://salmonvision-ml-datasets/rgb/raw
       hash: md5
-      md5: 9aab20758f57f39971a38c9a676dad27.dir
-      size: 720238505
-      nfiles: 65
+      md5: 8a74238ac846be6d03925ef56161765a.dir
+      size: 731195456
+      nfiles: 66
     outs:
     - path: data/01_raw/labelstudio_annos
       hash: md5
-      md5: 188b71c31be326fe36d209cc52c23337.dir
-      size: 379352848
-      nfiles: 50
+      md5: 3f6791779fd2db2dd82b810c51131d4c.dir
+      size: 390309799
+      nfiles: 51
   split_data:
     cmd: rm -rf data/02_interim/yolo_annos_unpacked && scripts/unpack_annos.sh 
       data/02_interim/yolo_annos data/02_interim/yolo_annos_unpacked && 
