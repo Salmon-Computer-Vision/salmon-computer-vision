@@ -826,3 +826,31 @@ stages:
       hash: md5
       md5: 599e509df006d3e5daf08d2f17d40651
       size: 25451919
+  index_labelstudio_sites:
+    cmd: scripts/index_labelstudio_sites.py --json-root 
+      data/01_raw/labelstudio_annos --out-dir 
+      data/02_interim/labelstudio_site_index
+    deps:
+    - path: data/01_raw/labelstudio_annos
+      hash: md5
+      md5: 3f6791779fd2db2dd82b810c51131d4c.dir
+      size: 390309799
+      nfiles: 51
+    - path: scripts/index_labelstudio_sites.py
+      hash: md5
+      md5: e465b8763bdf25d099783739757cd428
+      size: 131
+    - path: src/object_detection/metadata/site_index.py
+      hash: md5
+      md5: e145cfb469940c883d7f06ada4a71d01
+      size: 6270
+    - path: src/object_detection/metadata/site_index_cli.py
+      hash: md5
+      md5: 243c6ee5180faa30ffac86b8932ee325
+      size: 1797
+    outs:
+    - path: data/02_interim/labelstudio_site_index
+      hash: md5
+      md5: ca0d311020af9d4ae061512084c9eaf8.dir
+      size: 20589
+      nfiles: 13

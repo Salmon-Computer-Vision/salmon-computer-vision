@@ -12,6 +12,18 @@ stages:
     outs:
     - data/01_raw/labelstudio_annos
     frozen: true
+  index_labelstudio_sites:
+    cmd: >-
+      scripts/index_labelstudio_sites.py
+      --json-root data/01_raw/labelstudio_annos
+      --out-dir data/02_interim/labelstudio_site_index
+    deps:
+      - scripts/index_labelstudio_sites.py
+      - src/object_detection/metadata/site_index.py
+      - src/object_detection/metadata/site_index_cli.py
+      - data/01_raw/labelstudio_annos
+    outs:
+      - data/02_interim/labelstudio_site_index
   build_model_input:
     cmd: >-
       scripts/yolo_converter_ls_video.py
