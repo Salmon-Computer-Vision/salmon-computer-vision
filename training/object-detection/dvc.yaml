@@ -25,34 +25,37 @@ stages:
     outs:
       - data/02_interim/labelstudio_site_index
   build_model_input:
-    cmd: >-
-      scripts/yolo_converter_ls_video.py
-      data/01_raw/labelstudio_annos
-      --data-yaml config/salmon_yolo.yaml
-      --out data/02_interim/yolo_annos_fs
-      --out-shards data/02_interim/yolo_annos
-      --empty-list data/02_interim/yolo_annos/empty_vids.txt
-      --shard-size 100000
-      --pattern '**/*.json'
-      --include-sites ${data.sites}
-      --frame-stride 3
-      --frame-offset-mode video_hash
-      ${data.neg}
-      --negative-ratio ${data.neg_ratio}
-      --negatives-per-video ${data.neg_per_vid}
-      --stats-dir data/02_interim/yolo_annos_stats
-    params:
-    - data
-    deps:
-    - scripts/yolo_converter_ls_video.py
-    - src/object_detection/yolo_ls
-    - src/object_detection/utils
-    - data/01_raw/labelstudio_annos
-    - config/salmon_yolo.yaml
-    outs:
-    - data/02_interim/yolo_annos
-    - data/02_interim/yolo_annos_stats
-    frozen: true
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        scripts/yolo_converter_ls_video.py
+        --input-manifest
+        data/02_interim/labelstudio_site_index/${item}.json
+        --data-yaml config/salmon_yolo.yaml
+        --out data/02_interim/sites/${item}/yolo_annos_fs
+        --out-shards data/02_interim/sites/${item}/yolo_annos
+        --empty-list data/02_interim/sites/${item}/yolo_annos/empty_vids.txt
+        --shard-size 100000
+        --include-sites ${item}
+        --frame-stride 3
+        --frame-offset-mode video_hash
+        ${data.neg}
+        --negative-ratio ${data.neg_ratio}
+        --negatives-per-video ${data.neg_per_vid}
+        --stats-dir data/02_interim/sites/${item}/yolo_annos_stats
+      params:
+        - data.neg
+        - data.neg_ratio
+        - data.neg_per_vid
+      deps:
+        - scripts/yolo_converter_ls_video.py
+        - src/object_detection/yolo_ls
+        - src/object_detection/utils
+        - data/02_interim/labelstudio_site_index/${item}.json
+        - config/salmon_yolo.yaml
+      outs:
+        - data/02_interim/sites/${item}/yolo_annos
+        - data/02_interim/sites/${item}/yolo_annos_stats
   plot_site_class_stats:
     cmd: >-
       scripts/plot_site_class_stats.py

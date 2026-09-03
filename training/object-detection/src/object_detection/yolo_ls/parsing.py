@@ -1,5 +1,6 @@
+import json
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Any
+from typing import Dict, Optional, Tuple, Any, List
 import yaml
 
 def coord_mode(x: float, y: float, w: float, h: float) -> str:
@@ -60,6 +61,106 @@ def to_yolo(
     wn = min(max(wn, 0.0), 1.0)
     hn = min(max(hn, 0.0), 1.0)
     return xc, yc, wn, hn
+
+
+def load_json_paths_from_site_manifest(
+    manifest_path: Path,
+    *,
+    raw_root_override: Optional[Path] = None,
+) -> List[Path]:
+    """
+    Load Label Studio JSON paths from a site-index manifest.
+
+    Expected manifest structure:
+
+    {
+      "site": "stephenssmolt",
+      "raw_root": "data/01_raw/labelstudio_annos",
+      "files": [
+        {
+          "path": "GWA/.../project-116-....json",
+          "sha256": "..."
+        }
+      ]
+    }
+
+    `path` values are interpreted relative to `raw_root`.
+
+    If raw_root_override is supplied, it takes precedence over the
+    manifest's raw_root value.
+    """
+    manifest_path = Path(manifest_path)
+
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception as e:
+        raise ValueError(
+            f"Could not read site manifest {manifest_path}: {e}"
+        ) from e
+
+    if not isinstance(manifest, dict):
+        raise ValueError(
+            f"Site manifest must contain a JSON object: {manifest_path}"
+        )
+
+    files = manifest.get("files")
+    if not isinstance(files, list):
+        raise ValueError(
+            f"Site manifest {manifest_path} must contain a 'files' list"
+        )
+
+    if raw_root_override is not None:
+        raw_root = Path(raw_root_override)
+    else:
+        raw_root_value = manifest.get("raw_root")
+        if not raw_root_value:
+            raise ValueError(
+                f"Site manifest {manifest_path} has no 'raw_root'"
+            )
+        raw_root = Path(raw_root_value)
+
+    paths: List[Path] = []
+
+    for idx, record in enumerate(files):
+        if not isinstance(record, dict):
+            raise ValueError(
+                f"Invalid files[{idx}] entry in {manifest_path}: "
+                f"expected object, got {type(record).__name__}"
+            )
+
+        rel_path = record.get("path")
+        if not rel_path:
+            raise ValueError(
+                f"Missing path in files[{idx}] of {manifest_path}"
+            )
+
+        path = Path(rel_path)
+
+        if not path.is_absolute():
+            path = raw_root / path
+
+        if not path.exists():
+            raise FileNotFoundError(
+                f"JSON referenced by {manifest_path} does not exist: {path}"
+            )
+
+        if not path.is_file():
+            raise ValueError(
+                f"JSON referenced by {manifest_path} is not a file: {path}"
+            )
+
+        paths.append(path)
+
+    # Deterministic conversion order.
+    paths = sorted(set(paths))
+
+    if not paths:
+        raise ValueError(
+            f"Site manifest contains no JSON files: {manifest_path}"
+        )
+
+    return paths
+
 
 def load_class_map_from_yolo_yaml(yaml_path: Path) -> Dict[str, int]:
     """
