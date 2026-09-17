@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 
 # Parse options
 while getopts "s:o:i:d:c:" opt; do
