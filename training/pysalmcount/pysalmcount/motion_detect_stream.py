@@ -472,6 +472,8 @@ def build_cpu_h264_writer(
     # which is smaller than one 720p BGR frame and causes immediate blocking.
     appsrc_max_bytes = frame_bytes * max(queue_buffers, 2)
 
+    key_frame_interval = fps * 2
+
     return (
         f"appsrc is-live=true block={block_str} "
         f"max-bytes={appsrc_max_bytes} "
@@ -481,7 +483,7 @@ def build_cpu_h264_writer(
         "! videoconvert n-threads=2 "
         "! video/x-raw,format=I420 "
         f"! x264enc speed-preset={preset} tune=zerolatency bitrate={bitrate_kbps} "
-        "key-int-max=10 threads=4 "
+        f"key-int-max={key_frame_interval} threads=4 "
         "! h264parse "
         "! mp4mux "
         f"! filesink location={filename}"
