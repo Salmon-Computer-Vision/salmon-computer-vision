@@ -456,6 +456,7 @@ def build_cpu_h264_writer(
     width: int,
     height: int,
     bitrate_kbps: int = 1200,
+    preset: str = "ultrafast",
     *,
     appsrc_block: bool = True,
     queue_leaky: bool = False,
@@ -479,7 +480,7 @@ def build_cpu_h264_writer(
         f"! queue max-size-buffers={queue_buffers} max-size-time=0 max-size-bytes=0{leaky_str} "
         "! videoconvert n-threads=2 "
         "! video/x-raw,format=I420 "
-        f"! x264enc speed-preset=ultrafast tune=zerolatency bitrate={bitrate_kbps} "
+        f"! x264enc speed-preset={preset} tune=zerolatency bitrate={bitrate_kbps} "
         "key-int-max=10 threads=4 "
         "! h264parse "
         "! mp4mux "
@@ -528,6 +529,7 @@ class VideoSaver(Process):
             triggered_by: Optional[str] = None,
             cpu_h264=False,
             cpu_h264_bitrate=1200,
+            preset="ultrafast",
             sonar=False,
             composite_mode=False,
             result_q: Optional[Queue] = None,
@@ -552,6 +554,13 @@ class VideoSaver(Process):
         self.is_video = is_video
         self.filename = filename
         self.frame_count = frame_count
+        self.cpu_h264 = cpu_h264
+        self.cpu_h264_bitrate = cpu_h264_bitrate
+        self.preset = preset
+        self.sonar = sonar
+        self.composite_mode = composite_mode
+        self.result_q = result_q
+
         # Multi-camera event fields. All None in single-cam mode.
         self.event_id = event_id
         self.event_start_ts = event_start_ts
@@ -559,11 +568,6 @@ class VideoSaver(Process):
         self.part_start_ts = part_start_ts
         self.cam_name = cam_name
         self.triggered_by = triggered_by
-        self.cpu_h264 = cpu_h264
-        self.cpu_h264_bitrate = cpu_h264_bitrate
-        self.sonar = sonar
-        self.composite_mode = composite_mode
-        self.result_q = result_q
 
         if is_video and filename is None:
             logger.warn("Filename is empty. Will fallback on timestampped name")
@@ -700,13 +704,14 @@ class VideoSaver(Process):
 
         logger.info(f"Writing motion video to {filename}")
         if self.cpu_h264:
-            logger.info("Writing with CPU x264 ultrafast encoder...")
+            logger.info(f"Writing with CPU x264 {self.preset} encoder...")
             pipeline = build_cpu_h264_writer(
                 filename,
                 self.fps,
                 self.resolution[0],
                 self.resolution[1],
                 bitrate_kbps=self.cpu_h264_bitrate,
+                preset=self.preset,
                 appsrc_block=True,
                 queue_leaky=False,
                 queue_buffers=4,
@@ -1191,6 +1196,7 @@ class MotionDetector:
         cpu_h264=False,
         staging=False,
         bitrate=1200,
+        preset="ultrafast",
         bgsub_threshold: float = 30,
         cnt_min_pixel_stability: int = 1,
         cnt_max_pixel_stability: int = 7,
@@ -1395,13 +1401,14 @@ class MotionDetector:
                         resolution = (frame.shape[1], frame.shape[0])
 
                         if cpu_h264:
-                            self.log.info("Writing continuous video with CPU x264 ultrafast encoder...")
+                            self.log.info(f"Writing continuous video with CPU x264 {preset} encoder...")
                             pipeline = build_cpu_h264_writer(
                                 cont_filename,
                                 fps,
                                 resolution[0],
                                 resolution[1],
                                 bitrate_kbps=bitrate,
+                                preset=preset,
                                 appsrc_block=False,
                                 queue_leaky=True,
                                 queue_buffers=2,

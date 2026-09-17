@@ -174,7 +174,7 @@ def _parse_multi_camera_args(args) -> Tuple[List[str], List[str]]:
 
 
 def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, status_queue,
-        shutdown_event, cpu_h264, bitrate,
+        shutdown_event, cpu_h264, bitrate, preset,
         bgsub_threshold,
         cnt_min_pixel_stability,
         cnt_max_pixel_stability,
@@ -191,7 +191,7 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
     ):
     """Run one camera and report exactly one terminal result."""
     try:
-        det.run(fps=fps, algo=algo, orin=orin, raspi=raspi, staging=staging, cpu_h264=cpu_h264, bitrate=bitrate,
+        det.run(fps=fps, algo=algo, orin=orin, raspi=raspi, staging=staging, cpu_h264=cpu_h264, bitrate=bitrate, preset=preset,
                 bgsub_threshold=bgsub_threshold,
                 cnt_min_pixel_stability=cnt_min_pixel_stability,
                 cnt_max_pixel_stability=cnt_max_pixel_stability,
@@ -422,7 +422,7 @@ def main(args):
                     args=(
                         det, fps, args.algo, args.orin, args.raspi,
                         args.staging, cam_name, status_queue,
-                        shutdown_event, args.cpu_h264, args.bitrate,
+                        shutdown_event, args.cpu_h264, args.bitrate, args.preset,
                         args.bgsub_threshold,
                         args.cnt_min_pixel_stability,
                         args.cnt_max_pixel_stability,
@@ -484,6 +484,7 @@ def main(args):
         cpu_h264=args.cpu_h264,
         staging=args.staging,
         bitrate=args.bitrate,
+        preset=args.preset,
         bgsub_threshold=args.bgsub_threshold,
         cnt_min_pixel_stability=args.cnt_min_pixel_stability,
         cnt_max_pixel_stability=args.cnt_max_pixel_stability,
@@ -514,6 +515,11 @@ if __name__ == "__main__":
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
     parser.add_argument("--cpu_h264", action='store_true', help="Set this flag to use CPU H264 ultra fast settings")
     parser.add_argument("--bitrate", default=1200, help="Set the bitrate")
+    parser.add_argument(
+            "--preset", default="ultrafast", 
+            choices=["ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow", "placebo"], 
+            help="Set the x264 speed preset"
+    )
     parser.add_argument("--gstreamer", action='store_true', help="Set this flag to use Gstreamer capturing")
     parser.add_argument("--h265", action='store_true', help="Set this flag to use h265 decoding")
     parser.add_argument("--device-id", default=None, help="Set the device ID if should be different from the hostname")
