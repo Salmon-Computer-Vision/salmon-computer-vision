@@ -514,9 +514,9 @@ if __name__ == "__main__":
     parser.add_argument("--orin", action='store_true', help="Set this flag to use Jetson Orin Nano settings")
     parser.add_argument("--raspi", action='store_true', help="Set this flag to use Raspi settings")
     parser.add_argument("--cpu_h264", action='store_true', help="Set this flag to use CPU H264 ultra fast settings")
-    parser.add_argument("--bitrate", default=1200, help="Set the bitrate")
+    parser.add_argument("--bitrate", default=3000, help="Set the bitrate")
     parser.add_argument(
-            "--preset", default="ultrafast", 
+            "--preset", default="superfast", 
             choices=["ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow", "placebo"], 
             help="Set the x264 speed preset"
     )
