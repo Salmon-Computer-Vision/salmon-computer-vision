@@ -192,6 +192,25 @@ stages:
       outs:
         - ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}
       frozen: true
+  merge_packed_site_datasets:
+    cmd: >-
+      scripts/merge_packed_site_datasets.py
+      --sites-root ${config.dataset}/salmon_dataset/dataset_sharded/sites
+      --manifests-root ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+      --data-yaml config/salmon_yolo.yaml
+      --manifest-csv ${config.dataset}/packed_dataset_manifest.csv
+      --params-yaml params.yaml
+    params:
+      - data.sites
+      - config.dataset
+    deps:
+      - scripts/merge_packed_site_datasets.py
+      - src/object_detection/dataset/merge.py
+      - ${config.dataset}/salmon_dataset/dataset_sharded/sites
+      - config/salmon_yolo.yaml
+    outs:
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+      - ${config.dataset}/packed_dataset_manifest.csv
   make_site_manifests:
     cmd: >-
       scripts/make_site_manifests.py
@@ -245,9 +264,10 @@ stages:
       rm -rf ${config.dataset}/salmon_dataset/yolo_workdir/val &&
       rm -rf ${config.dataset}/salmon_dataset/yolo_workdir/test &&
       mkdir -p ${config.dataset}/salmon_dataset/yolo_workdir &&
-      scripts/unpack_annos.sh
-      ${config.dataset}/salmon_dataset/dataset_sharded/shards
-      ${config.yolo_workdir} &&
+      scripts/unpack_site_shards.py
+      --sites-root ${config.dataset}/salmon_dataset/dataset_sharded/sites
+      --active-sites-file ${config.dataset}/salmon_dataset/dataset_sharded/manifests/active_sites.txt
+      --out-dir ${config.yolo_workdir} &&
       scripts/crop_site_frames.py
       --dataset-root ${config.yolo_workdir}
       --sites ${preprocess.crop_top_half_sites}
@@ -255,16 +275,18 @@ stages:
       --min-visible-frac ${preprocess.crop_min_visible_frac}
       --summary-json ${config.yolo_workdir}/preprocess_klukshu_top_half_summary.json
     params:
-    - config.dataset
-    - config.yolo_workdir
-    - preprocess.crop_top_half_sites
-    - preprocess.crop_min_visible_frac
+      - config.dataset
+      - config.yolo_workdir
+      - preprocess.crop_top_half_sites
+      - preprocess.crop_min_visible_frac
     deps:
-    - scripts/unpack_annos.sh
-    - scripts/crop_site_frames.py
-    - src/object_detection/preprocessing
-    - src/object_detection/utils
-    - ${config.dataset}/salmon_dataset/dataset_sharded/shards
+      - scripts/unpack_site_shards.py
+      - scripts/unpack_annos.sh
+      - scripts/crop_site_frames.py
+      - src/object_detection/preprocessing
+      - src/object_detection/utils
+      - ${config.dataset}/salmon_dataset/dataset_sharded/sites
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/active_sites.txt
   rewrite_manifest:
     cmd: >-
       cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml

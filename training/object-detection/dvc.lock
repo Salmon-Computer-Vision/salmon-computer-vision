@@ -2096,3 +2096,399 @@ stages:
       md5: c7e2eaf5315330f5cc011a23b7597ae6.dir
       size: 3890548
       nfiles: 5
+  plot_site_class_stats@copper:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/copper/yolo_annos_stats --out-dir 
+      data/02_interim/sites/copper/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/copper/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 8cca35b0ab72ebc1c3add8956e03adeb
+      size: 744
+    - path: 
+        data/02_interim/sites/copper/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 53f56f58b5816ea1696ab4630052d1b3
+      size: 751
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/copper/yolo_annos_stats_plots
+      hash: md5
+      md5: 13b51d4b18011ba1800585bdbb24d95e.dir
+      size: 503022
+      nfiles: 4
+  plot_site_class_stats@tankeeah:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/tankeeah/yolo_annos_stats --out-dir 
+      data/02_interim/sites/tankeeah/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 7a876832cd60ff82771b6c06fe8f2fd6
+      size: 786
+    - path: 
+        data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 26b6aa5cc7d99b2e5ef84265372bdd26
+      size: 794
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/tankeeah/yolo_annos_stats_plots
+      hash: md5
+      md5: 4cac07a58e5dc49855b139b01c04b85e.dir
+      size: 509496
+      nfiles: 4
+  plot_site_class_stats@chignik:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/chignik/yolo_annos_stats --out-dir 
+      data/02_interim/sites/chignik/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/chignik/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 1268959d513325633e69264fd196e884
+      size: 741
+    - path: 
+        data/02_interim/sites/chignik/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: aa06c3a1f5bf5e0f3b7ba3a33e10a27f
+      size: 742
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/chignik/yolo_annos_stats_plots
+      hash: md5
+      md5: 5c1dca02a9d6e07e35521d0969181f27.dir
+      size: 502859
+      nfiles: 4
+  plot_site_class_stats@stephenssmolt:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/stephenssmolt/yolo_annos_stats --out-dir 
+      data/02_interim/sites/stephenssmolt/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: fd1ccf43dca371f6674746c6e24a962e
+      size: 826
+    - path: 
+        data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: b61daeb85e85c3d70b0b45c58b39c268
+      size: 834
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/stephenssmolt/yolo_annos_stats_plots
+      hash: md5
+      md5: 6aeb4efcbe8b9085e709508119f53b52.dir
+      size: 511197
+      nfiles: 4
+  plot_site_class_stats@Elbow:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/Elbow/yolo_annos_stats --out-dir 
+      data/02_interim/sites/Elbow/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/Elbow/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: f442b243ed887dc83500ca1b4c43ed64
+      size: 729
+    - path: 
+        data/02_interim/sites/Elbow/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 5609cde7ceaf143fb4a5a7c4411a7659
+      size: 735
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/Elbow/yolo_annos_stats_plots
+      hash: md5
+      md5: 1752cd6ed60bdd1ef4dec777eac0b44c.dir
+      size: 506407
+      nfiles: 4
+  plot_site_class_stats@klukshu:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/klukshu/yolo_annos_stats --out-dir 
+      data/02_interim/sites/klukshu/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/klukshu/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 9837834ff505e53a287bb23a00541d79
+      size: 676
+    - path: 
+        data/02_interim/sites/klukshu/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 72253a8078ecdf11ae570ce8b2bf8ccc
+      size: 681
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/klukshu/yolo_annos_stats_plots
+      hash: md5
+      md5: 41939f899cfce5e63f6a3bd01a1167bd.dir
+      size: 499814
+      nfiles: 4
+  plot_site_class_stats@kitwanga:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/kitwanga/yolo_annos_stats --out-dir 
+      data/02_interim/sites/kitwanga/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 837d5074b7711a003861875153128dd3
+      size: 769
+    - path: 
+        data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: fa83033b95adb1944c4afbeaca6306e9
+      size: 773
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/kitwanga/yolo_annos_stats_plots
+      hash: md5
+      md5: d4952f0353113aab77aabe0e49e1ed89.dir
+      size: 505812
+      nfiles: 4
+  plot_site_class_stats@kwakwa:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/kwakwa/yolo_annos_stats --out-dir 
+      data/02_interim/sites/kwakwa/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: ba580d043b000aa2e72238e44593d421
+      size: 691
+    - path: 
+        data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: a451694040beb9a65d911740a14db849
+      size: 697
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/kwakwa/yolo_annos_stats_plots
+      hash: md5
+      md5: 6f0cfb0fb381f547935735abfacbdd02.dir
+      size: 504313
+      nfiles: 4
+  plot_site_class_stats@koeye:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/koeye/yolo_annos_stats --out-dir 
+      data/02_interim/sites/koeye/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/koeye/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 20b98460c9b11b23c5776f4c6a771ff3
+      size: 731
+    - path: 
+        data/02_interim/sites/koeye/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 763ea034f6eec30bc9eadebd120d8dd2
+      size: 736
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/koeye/yolo_annos_stats_plots
+      hash: md5
+      md5: 472c2fbefc1634a19510b8106d6a9014.dir
+      size: 506363
+      nfiles: 4
+  plot_site_class_stats@redoubt:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/redoubt/yolo_annos_stats --out-dir 
+      data/02_interim/sites/redoubt/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/redoubt/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 4d342a5da98df62065a378220043cce7
+      size: 701
+    - path: 
+        data/02_interim/sites/redoubt/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: f5608a98971357dc9a4a79d90f7e885d
+      size: 707
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/redoubt/yolo_annos_stats_plots
+      hash: md5
+      md5: 6275b05478a0c71c4477606ef65d3485.dir
+      size: 504199
+      nfiles: 4
+  plot_site_class_stats@bear:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/bear/yolo_annos_stats --out-dir 
+      data/02_interim/sites/bear/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/bear/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: e481670964c5aca1f2a05b784665d33e
+      size: 694
+    - path: 
+        data/02_interim/sites/bear/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 6dfa4ce8242aa79ac0da7bc304463145
+      size: 698
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/bear/yolo_annos_stats_plots
+      hash: md5
+      md5: ebce86df26da266f9e9c87b0798ddff1.dir
+      size: 502397
+      nfiles: 4
+  plot_site_class_stats@kitkiata:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/kitkiata/yolo_annos_stats --out-dir 
+      data/02_interim/sites/kitkiata/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 1354f10438d9dc9ef6bcc940c2485291
+      size: 803
+    - path: 
+        data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 1ee98d08d86f14636516ad15b9fcf644
+      size: 811
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/kitkiata/yolo_annos_stats_plots
+      hash: md5
+      md5: b015b48eb54e8ea1d0151588d83e8b6d.dir
+      size: 504600
+      nfiles: 4
