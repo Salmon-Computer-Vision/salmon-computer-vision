@@ -90,33 +90,37 @@ stages:
     outs:
     - data/02_interim/yolo_condition_negatives
   split_data:
-    cmd: >-
-      rm -rf data/02_interim/yolo_annos_unpacked &&
-      scripts/unpack_annos.sh
-      data/02_interim/yolo_annos
-      data/02_interim/yolo_annos_unpacked &&
-      scripts/unpack_annos.sh
-      data/02_interim/yolo_condition_negatives
-      data/02_interim/yolo_annos_unpacked &&
-      scripts/make_splits.py
-      --labels-root data/02_interim/yolo_annos_unpacked
-      --out-dir data/03_processed/splits_baseline
-      --sites ${data.sites}
-      --seed 42
-      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
-    params:
-    - data
-    deps:
-    - scripts/make_splits.py
-    - src/object_detection/splits
-    - src/object_detection/utils
-    - data/02_interim/yolo_annos
-    - data/02_interim/yolo_condition_negatives
-    - data/01_raw/salmon_vid_counts.csv
-    - data/01_raw/salmon_vid_counts_summary.csv
-    outs:
-    - data/03_processed/splits_baseline
-    frozen: true
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        rm -rf data/02_interim/sites/${item}/split_labels_tmp &&
+        mkdir -p data/02_interim/sites/${item}/split_labels_tmp &&
+        scripts/unpack_annos.sh
+        data/02_interim/sites/${item}/yolo_annos
+        data/02_interim/sites/${item}/split_labels_tmp &&
+        scripts/unpack_annos.sh
+        data/02_interim/yolo_condition_negatives
+        data/02_interim/sites/${item}/split_labels_tmp &&
+        scripts/make_splits.py
+        --labels-root data/02_interim/sites/${item}/split_labels_tmp
+        --out-dir data/03_processed/sites/${item}/splits_baseline
+        --sites ${item}
+        --seed 42
+        --train-frac 0.8
+        --val-frac 0.1
+        --test-frac 0.1 &&
+        rm -rf data/02_interim/sites/${item}/split_labels_tmp
+      deps:
+        - scripts/unpack_annos.sh
+        - scripts/make_splits.py
+        - src/object_detection/splits
+        - src/object_detection/utils
+        - data/02_interim/sites/${item}/yolo_annos
+        - data/02_interim/yolo_condition_negatives
+        - data/01_raw/salmon_vid_counts.csv
+        - data/01_raw/salmon_vid_counts_summary.csv
+      outs:
+        - data/03_processed/sites/${item}/splits_baseline
   build_video_metadata_index:
     cmd: >-
       scripts/build_video_metadata_index.py
