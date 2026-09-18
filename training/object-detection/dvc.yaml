@@ -57,18 +57,20 @@ stages:
         - data/02_interim/sites/${item}/yolo_annos
         - data/02_interim/sites/${item}/yolo_annos_stats
   plot_site_class_stats:
-    cmd: >-
-      scripts/plot_site_class_stats.py
-      --stats-dir data/02_interim/yolo_annos_stats
-      --out-dir data/02_interim/yolo_annos_stats_plots
-    deps:
-    - scripts/plot_site_class_stats.py
-    - src/object_detection/analysis/plots.py
-    - src/object_detection/analysis/cli.py
-    - data/02_interim/yolo_annos_stats/site_class_frame_counts.csv
-    - data/02_interim/yolo_annos_stats/site_class_box_counts.csv
-    outs:
-    - data/02_interim/yolo_annos_stats_plots
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        scripts/plot_site_class_stats.py
+        --stats-dir data/02_interim/sites/${item}/yolo_annos_stats
+        --out-dir data/02_interim/sites/${item}/yolo_annos_stats_plots
+      deps:
+        - scripts/plot_site_class_stats.py
+        - src/object_detection/analysis/plots.py
+        - src/object_detection/analysis/cli.py
+        - data/02_interim/sites/${item}/yolo_annos_stats/site_class_frame_counts.csv
+        - data/02_interim/sites/${item}/yolo_annos_stats/site_class_box_counts.csv
+      outs:
+        - data/02_interim/sites/${item}/yolo_annos_stats_plots
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
@@ -79,7 +81,7 @@ stages:
       --frame-offset-mode video_hash
       --shard-size 100000
     params:
-    - data
+    - data.neg_csvs
     deps:
     - src/object_detection/negatives/conditions.py
     - src/object_detection/negatives/cli.py
