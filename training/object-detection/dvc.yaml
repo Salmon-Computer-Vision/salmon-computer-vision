@@ -12,48 +12,65 @@ stages:
     outs:
     - data/01_raw/labelstudio_annos
     frozen: true
+  index_labelstudio_sites:
+    cmd: >-
+      scripts/index_labelstudio_sites.py
+      --json-root data/01_raw/labelstudio_annos
+      --out-dir data/02_interim/labelstudio_site_index
+    deps:
+      - scripts/index_labelstudio_sites.py
+      - src/object_detection/metadata/site_index.py
+      - src/object_detection/metadata/site_index_cli.py
+      - data/01_raw/labelstudio_annos
+    outs:
+      - data/02_interim/labelstudio_site_index
   build_model_input:
-    cmd: >-
-      scripts/yolo_converter_ls_video.py
-      data/01_raw/labelstudio_annos
-      --data-yaml config/salmon_yolo.yaml
-      --out data/02_interim/yolo_annos_fs
-      --out-shards data/02_interim/yolo_annos
-      --empty-list data/02_interim/yolo_annos/empty_vids.txt
-      --shard-size 100000
-      --pattern '**/*.json'
-      --include-sites ${data.sites}
-      --frame-stride 3
-      --frame-offset-mode video_hash
-      ${data.neg}
-      --negative-ratio ${data.neg_ratio}
-      --negatives-per-video ${data.neg_per_vid}
-      --stats-dir data/02_interim/yolo_annos_stats
-    params:
-    - data
-    deps:
-    - scripts/yolo_converter_ls_video.py
-    - src/object_detection/yolo_ls
-    - src/object_detection/utils
-    - data/01_raw/labelstudio_annos
-    - config/salmon_yolo.yaml
-    outs:
-    - data/02_interim/yolo_annos
-    - data/02_interim/yolo_annos_stats
-    frozen: true
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        scripts/yolo_converter_ls_video.py
+        --input-manifest
+        data/02_interim/labelstudio_site_index/${item}.json
+        --data-yaml config/salmon_yolo.yaml
+        --out data/02_interim/sites/${item}/yolo_annos_fs
+        --out-shards data/02_interim/sites/${item}/yolo_annos
+        --empty-list data/02_interim/sites/${item}/yolo_annos/empty_vids.txt
+        --shard-size 100000
+        --include-sites ${item}
+        --frame-stride 3
+        --frame-offset-mode video_hash
+        ${data.neg}
+        --negative-ratio ${data.neg_ratio}
+        --negatives-per-video ${data.neg_per_vid}
+        --stats-dir data/02_interim/sites/${item}/yolo_annos_stats
+      params:
+        - data.neg
+        - data.neg_ratio
+        - data.neg_per_vid
+      deps:
+        - scripts/yolo_converter_ls_video.py
+        - src/object_detection/yolo_ls
+        - src/object_detection/utils
+        - data/02_interim/labelstudio_site_index/${item}.json
+        - config/salmon_yolo.yaml
+      outs:
+        - data/02_interim/sites/${item}/yolo_annos
+        - data/02_interim/sites/${item}/yolo_annos_stats
   plot_site_class_stats:
-    cmd: >-
-      scripts/plot_site_class_stats.py
-      --stats-dir data/02_interim/yolo_annos_stats
-      --out-dir data/02_interim/yolo_annos_stats_plots
-    deps:
-    - scripts/plot_site_class_stats.py
-    - src/object_detection/analysis/plots.py
-    - src/object_detection/analysis/cli.py
-    - data/02_interim/yolo_annos_stats/site_class_frame_counts.csv
-    - data/02_interim/yolo_annos_stats/site_class_box_counts.csv
-    outs:
-    - data/02_interim/yolo_annos_stats_plots
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        scripts/plot_site_class_stats.py
+        --stats-dir data/02_interim/sites/${item}/yolo_annos_stats
+        --out-dir data/02_interim/sites/${item}/yolo_annos_stats_plots
+      deps:
+        - scripts/plot_site_class_stats.py
+        - src/object_detection/analysis/plots.py
+        - src/object_detection/analysis/cli.py
+        - data/02_interim/sites/${item}/yolo_annos_stats/site_class_frame_counts.csv
+        - data/02_interim/sites/${item}/yolo_annos_stats/site_class_box_counts.csv
+      outs:
+        - data/02_interim/sites/${item}/yolo_annos_stats_plots
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
@@ -64,7 +81,7 @@ stages:
       --frame-offset-mode video_hash
       --shard-size 100000
     params:
-    - data
+    - data.neg_csvs
     deps:
     - src/object_detection/negatives/conditions.py
     - src/object_detection/negatives/cli.py
@@ -73,81 +90,127 @@ stages:
     outs:
     - data/02_interim/yolo_condition_negatives
   split_data:
-    cmd: >-
-      rm -rf data/02_interim/yolo_annos_unpacked &&
-      scripts/unpack_annos.sh
-      data/02_interim/yolo_annos
-      data/02_interim/yolo_annos_unpacked &&
-      scripts/unpack_annos.sh
-      data/02_interim/yolo_condition_negatives
-      data/02_interim/yolo_annos_unpacked &&
-      scripts/make_splits.py
-      --labels-root data/02_interim/yolo_annos_unpacked
-      --out-dir data/03_processed/splits_baseline
-      --sites ${data.sites}
-      --seed 42
-      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1
-    params:
-    - data
-    deps:
-    - scripts/make_splits.py
-    - src/object_detection/splits
-    - src/object_detection/utils
-    - data/02_interim/yolo_annos
-    - data/02_interim/yolo_condition_negatives
-    - data/01_raw/salmon_vid_counts.csv
-    - data/01_raw/salmon_vid_counts_summary.csv
-    outs:
-    - data/03_processed/splits_baseline
-    frozen: true
-  build_video_metadata_index:
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        rm -rf data/02_interim/sites/${item}/split_labels_tmp &&
+        mkdir -p data/02_interim/sites/${item}/split_labels_tmp &&
+        scripts/unpack_annos.sh
+        data/02_interim/sites/${item}/yolo_annos
+        data/02_interim/sites/${item}/split_labels_tmp &&
+        scripts/unpack_annos.sh
+        data/02_interim/yolo_condition_negatives
+        data/02_interim/sites/${item}/split_labels_tmp &&
+        scripts/make_splits.py
+        --labels-root data/02_interim/sites/${item}/split_labels_tmp
+        --out-dir data/03_processed/sites/${item}/splits_baseline
+        --sites ${item}
+        --seed 42
+        --train-frac 0.8
+        --val-frac 0.1
+        --test-frac 0.1 &&
+        rm -rf data/02_interim/sites/${item}/split_labels_tmp
+      deps:
+        - scripts/unpack_annos.sh
+        - scripts/make_splits.py
+        - src/object_detection/splits
+        - src/object_detection/utils
+        - data/02_interim/sites/${item}/yolo_annos
+        - data/02_interim/yolo_condition_negatives
+        - data/01_raw/salmon_vid_counts.csv
+        - data/01_raw/salmon_vid_counts_summary.csv
+      outs:
+        - data/03_processed/sites/${item}/splits_baseline
+  build_video_metadata_index_all:
     cmd: >-
       scripts/build_video_metadata_index.py
       --json-dir data/01_raw/labelstudio_annos
       --out-csv data/02_interim/video_metadata_index.csv
     deps:
-    - src/object_detection/metadata/index.py
-    - src/object_detection/metadata/cli.py
-    - data/01_raw/labelstudio_annos
+      - src/object_detection/metadata/index.py
+      - src/object_detection/metadata/cli.py
+      - data/01_raw/labelstudio_annos
     outs:
-    - data/02_interim/video_metadata_index.csv
-    frozen: true
+      - data/02_interim/video_metadata_index.csv
+  build_video_metadata_index:
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        scripts/filter_video_metadata_index.py
+        --input-csv data/02_interim/video_metadata_index.csv
+        --site ${item}
+        --out-csv data/02_interim/sites/${item}/video_metadata_index.csv
+      deps:
+        - scripts/filter_video_metadata_index.py
+        - src/object_detection/metadata/filter.py
+        - src/object_detection/metadata/filter_cli.py
+        - data/02_interim/video_metadata_index.csv
+      outs:
+        - data/02_interim/sites/${item}/video_metadata_index.csv
   pack_split_dataset:
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
+        mkdir -p ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
+        scripts/unpack_annos.sh
+        data/02_interim/sites/${item}/yolo_annos
+        ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
+        scripts/unpack_annos.sh
+        data/02_interim/yolo_condition_negatives
+        ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
+        scripts/pack_split_dataset.py
+        --splits-dir data/03_processed/sites/${item}/splits_baseline
+        --labels-root ${config.dataset}/salmon_dataset/tmp_labels/${item}
+        --shards-root ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/shards
+        --manifests-root ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/manifests
+        --temp-video-dir ${config.dataset}/salmon_dataset/tmp_videos/${item}
+        --metadata-csv data/02_interim/sites/${item}/video_metadata_index.csv
+        data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+        --data-yaml config/salmon_yolo.yaml
+        --bucket ${data.bucket}
+        --image-ext .jpg
+        --manifest-csv ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/packed_dataset_manifest.csv
+        --splits train val test
+        --shard-size 100000 &&
+        rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item}
+      params:
+        - data.bucket
+        - config.dataset
+      deps:
+        - scripts/unpack_annos.sh
+        - scripts/pack_split_dataset.py
+        - src/object_detection/frames/parsing.py
+        - src/object_detection/frames/extractor.py
+        - src/object_detection/frames/cli.py
+        - src/object_detection/yolo_ls/shards.py
+        - data/03_processed/sites/${item}/splits_baseline
+        - data/02_interim/sites/${item}/yolo_annos
+        - data/02_interim/sites/${item}/video_metadata_index.csv
+        - data/02_interim/yolo_condition_negatives
+        - config/salmon_yolo.yaml
+      outs:
+        - ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}
+      frozen: true
+  merge_packed_site_datasets:
     cmd: >-
-      scripts/pack_split_dataset.py
-      --splits-dir data/03_processed/splits_baseline
-      --labels-root data/02_interim/yolo_annos_unpacked
-      --shards-root ${config.dataset}/salmon_dataset/dataset_sharded/shards
+      scripts/merge_packed_site_datasets.py
+      --sites-root ${config.dataset}/salmon_dataset/dataset_sharded/sites
       --manifests-root ${config.dataset}/salmon_dataset/dataset_sharded/manifests
-      --temp-video-dir ${config.dataset}/salmon_dataset/tmp_videos
-      --metadata-csv data/02_interim/video_metadata_index.csv
-      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       --data-yaml config/salmon_yolo.yaml
-      --bucket ${data.bucket}
-      --image-ext .jpg
       --manifest-csv ${config.dataset}/packed_dataset_manifest.csv
-      --splits train val test
-      --shard-size 100000
-    deps:
-    - src/object_detection/frames/parsing.py
-    - src/object_detection/frames/extractor.py
-    - src/object_detection/frames/cli.py
-    - src/object_detection/yolo_ls/shards.py
-    - data/03_processed/splits_baseline
-    - data/02_interim/video_metadata_index.csv
-    - data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
-    - config/salmon_yolo.yaml
+      --params-yaml params.yaml
     params:
-    - data
-    - config.dataset
+      - data.sites
+      - config.dataset
+    deps:
+      - scripts/merge_packed_site_datasets.py
+      - src/object_detection/dataset/merge.py
+      - ${config.dataset}/salmon_dataset/dataset_sharded/sites
+      - config/salmon_yolo.yaml
     outs:
-    - ${config.dataset}/salmon_dataset/dataset_sharded/shards
-    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/data.yaml
-    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
-    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/train.txt
-    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/val.txt
-    - ${config.dataset}/packed_dataset_manifest.csv
-    frozen: true
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+      - ${config.dataset}/packed_dataset_manifest.csv
   make_site_manifests:
     cmd: >-
       scripts/make_site_manifests.py
@@ -201,9 +264,10 @@ stages:
       rm -rf ${config.dataset}/salmon_dataset/yolo_workdir/val &&
       rm -rf ${config.dataset}/salmon_dataset/yolo_workdir/test &&
       mkdir -p ${config.dataset}/salmon_dataset/yolo_workdir &&
-      scripts/unpack_annos.sh
-      ${config.dataset}/salmon_dataset/dataset_sharded/shards
-      ${config.yolo_workdir} &&
+      scripts/unpack_site_shards.py
+      --sites-root ${config.dataset}/salmon_dataset/dataset_sharded/sites
+      --active-sites-file ${config.dataset}/salmon_dataset/dataset_sharded/manifests/active_sites.txt
+      --out-dir ${config.yolo_workdir} &&
       scripts/crop_site_frames.py
       --dataset-root ${config.yolo_workdir}
       --sites ${preprocess.crop_top_half_sites}
@@ -211,16 +275,18 @@ stages:
       --min-visible-frac ${preprocess.crop_min_visible_frac}
       --summary-json ${config.yolo_workdir}/preprocess_klukshu_top_half_summary.json
     params:
-    - config.dataset
-    - config.yolo_workdir
-    - preprocess.crop_top_half_sites
-    - preprocess.crop_min_visible_frac
+      - config.dataset
+      - config.yolo_workdir
+      - preprocess.crop_top_half_sites
+      - preprocess.crop_min_visible_frac
     deps:
-    - scripts/unpack_annos.sh
-    - scripts/crop_site_frames.py
-    - src/object_detection/preprocessing
-    - src/object_detection/utils
-    - ${config.dataset}/salmon_dataset/dataset_sharded/shards
+      - scripts/unpack_site_shards.py
+      - scripts/unpack_annos.sh
+      - scripts/crop_site_frames.py
+      - src/object_detection/preprocessing
+      - src/object_detection/utils
+      - ${config.dataset}/salmon_dataset/dataset_sharded/sites
+      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/active_sites.txt
   rewrite_manifest:
     cmd: >-
       cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml

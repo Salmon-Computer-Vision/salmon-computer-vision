@@ -161,21 +161,43 @@ class YoloConverterLSVideo:
 
     # ---- public API ----
 
-    def convert_folder(self, json_dir: Path, pattern: str = "*.json") -> ConvertStats:
+    def convert_files(self, json_paths: Iterable[Path]) -> ConvertStats:
+        """
+        Convert multiple Label Studio JSON exports and aggregate their stats.
+
+        Paths are processed in deterministic sorted order.
+        """
         stats = ConvertStats()
-        for p in sorted(Path(json_dir).glob(pattern)):
+
+        for p in sorted(Path(p) for p in json_paths):
             try:
                 s = self.convert_file(p)
+
                 stats.videos_with_boxes += s.videos_with_boxes
                 stats.videos_without_boxes += s.videos_without_boxes
                 stats.label_files_written += s.label_files_written
                 stats.label_lines_written += s.label_lines_written
                 stats.negative_files_written += s.negative_files_written
-                stats.total_candidate_negative_frames += s.total_candidate_negative_frames
+                stats.total_candidate_negative_frames += (
+                    s.total_candidate_negative_frames
+                )
+                stats.errors += s.errors
+
             except Exception as e:
                 stats.errors += 1
                 self._log_error(f"convert_file({p})", e)
+
         return stats
+
+
+    def convert_folder(
+            self,
+            json_dir: Path,
+            pattern: str = "*.json",
+        ) -> ConvertStats:
+
+        paths = sorted(Path(json_dir).glob(pattern))
+        return self.convert_files(paths)
 
     def convert_file(self, json_path: Path) -> ConvertStats:
         stats = ConvertStats()
