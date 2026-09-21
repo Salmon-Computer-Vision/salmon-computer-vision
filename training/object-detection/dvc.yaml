@@ -348,6 +348,7 @@ stages:
   tune_yolo:
     cmd: >-
       CUDA_VISIBLE_DEVICES=${tune.device}
+      uv run --extra ${runtime.cuda}
       scripts/tune_yolo.py
       --data-yaml ${config.yolo_workdir}/data_small.yaml
       --model yolov8n.pt
@@ -373,6 +374,7 @@ stages:
     - config.yolo_workdir
     - config.ray_tmp
     - tune
+    - runtime.cuda
     outs:
     - ${config.dataset}/salmon_dataset/tuning/yolov8n_small
     - ${config.dataset}/salmon_dataset/tuning/yolov8n_small_best.json
@@ -380,6 +382,7 @@ stages:
     frozen: true
   train_yolo_best:
     cmd: >-
+      uv run --extra ${runtime.cuda}
       scripts/train_yolo_best.py
       --data-yaml ${config.yolo_workdir}/data.yaml
       --model yolov8n.pt
@@ -404,13 +407,13 @@ stages:
     - train
     - config.dataset
     - config.yolo_workdir
+    - runtime.cuda
     outs:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
     frozen: true
   make_site_eval_workdir:
     cmd: >-
-      uv run --extra ${runtime.cuda}
       scripts/make_site_eval_workdir.py
       --source-yolo-workdir ${config.real_yolo_workdir}
       --source-test-manifest ${config.dataset}/salmon_dataset/dataset_sharded/manifests/test.txt
@@ -426,7 +429,6 @@ stages:
     - config.real_yolo_workdir
     - config.eval_workdir
     - exp.test_sites
-    - runtime.cuda
     outs:
     - ${config.eval_workdir}/test.txt:
         cache: false
