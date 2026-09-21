@@ -179,9 +179,9 @@ stages:
         --manifest-csv ${config.dataset}/salmon_dataset/tmp_pack/${item}/packed_dataset_manifest.csv
         --splits train val test
         --shard-size 100000 &&
-        rm -rf ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
+        mkdir -p ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
         mv
-        ${config.dataset}/salmon_dataset/tmp_pack/${item}
+        ${config.dataset}/salmon_dataset/tmp_pack/${item}/*
         ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
         rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item}
 
@@ -351,7 +351,7 @@ stages:
       uv run --extra ${runtime.cuda}
       scripts/tune_yolo.py
       --data-yaml ${config.yolo_workdir}/data_small.yaml
-      --model yolov8n.pt
+      --model ${train.model}
       --out-dir ${config.dataset}/salmon_dataset/tuning/yolov8n_small
       --epochs 30
       --imgsz 640
@@ -374,6 +374,7 @@ stages:
     - config.yolo_workdir
     - config.ray_tmp
     - tune
+    - train.model
     - runtime.cuda
     outs:
     - ${config.dataset}/salmon_dataset/tuning/yolov8n_small
@@ -385,7 +386,7 @@ stages:
       uv run --extra ${runtime.cuda}
       scripts/train_yolo_best.py
       --data-yaml ${config.yolo_workdir}/data.yaml
-      --model yolov8n.pt
+      --model ${train.model}
       --args-yaml ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${train.tune_dir}/args.yaml
       --out-dir ${config.dataset}/salmon_dataset/training/yolov8n_full
       --run-name tuned_full_run1
