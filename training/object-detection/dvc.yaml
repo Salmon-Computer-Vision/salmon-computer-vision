@@ -152,7 +152,9 @@ stages:
     do:
       cmd: >-
         rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
+        rm -rf ${config.dataset}/salmon_dataset/tmp_pack/${item} &&
         mkdir -p ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
+        mkdir -p ${config.dataset}/salmon_dataset/tmp_pack/${item} &&
         scripts/unpack_annos.sh
         data/02_interim/sites/${item}/yolo_annos
         ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
@@ -162,21 +164,31 @@ stages:
         scripts/pack_split_dataset.py
         --splits-dir data/03_processed/sites/${item}/splits_baseline
         --labels-root ${config.dataset}/salmon_dataset/tmp_labels/${item}
-        --shards-root ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/shards
-        --manifests-root ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/manifests
+        --shards-root ${config.dataset}/salmon_dataset/tmp_pack/${item}/shards
+        --manifests-root ${config.dataset}/salmon_dataset/tmp_pack/${item}/manifests
         --temp-video-dir ${config.dataset}/salmon_dataset/tmp_videos/${item}
         --metadata-csv data/02_interim/sites/${item}/video_metadata_index.csv
         data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+        --reuse-shards-root
+        ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/shards
+        --reuse-shards-root
+        ${config.dataset}/salmon_dataset/dataset_sharded/shards
         --data-yaml config/salmon_yolo.yaml
         --bucket ${data.bucket}
         --image-ext .jpg
-        --manifest-csv ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/packed_dataset_manifest.csv
+        --manifest-csv ${config.dataset}/salmon_dataset/tmp_pack/${item}/packed_dataset_manifest.csv
         --splits train val test
         --shard-size 100000 &&
+        rm -rf ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
+        mv
+        ${config.dataset}/salmon_dataset/tmp_pack/${item}
+        ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
         rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item}
+
       params:
         - data.bucket
         - config.dataset
+
       deps:
         - scripts/unpack_annos.sh
         - scripts/pack_split_dataset.py
@@ -189,9 +201,10 @@ stages:
         - data/02_interim/sites/${item}/video_metadata_index.csv
         - data/02_interim/yolo_condition_negatives
         - config/salmon_yolo.yaml
+
       outs:
-        - ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}
-      frozen: true
+        - ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}:
+            persist: true
   merge_packed_site_datasets:
     cmd: >-
       scripts/merge_packed_site_datasets.py

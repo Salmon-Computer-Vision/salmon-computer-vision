@@ -81,6 +81,38 @@ Run tests with
 uv run pytest
 ```
 
+#### Issue: Object is of storage class GLACIER
+
+This happens when the videos we are trying to download have been
+archived into GLACIER storage. We can restore these temporarily
+with the following bash script.
+
+Capture the `repro` command into a logfile:
+
+```
+dvc repro pack_split_dataset 2>&1 | tee pack.log
+```
+
+Submit restore requests:
+```
+./scripts/restore_glacier_from_log.sh request pack.log
+```
+
+By default it will be BULK (5-12 hours process) and for 3 days.
+
+Explicitly:
+```bash
+./scripts/restore_glacier_from_log.sh request pack.log 3 Bulk
+```
+
+Once the requests have been sent, use the same script to check the status:
+
+```
+./scripts/restore_glacier_from_log.sh status pack.log
+```
+
+The last line should say when all the objects are ready for download.
+
 ### Plot AP50 by site
 
 To evaluate over all test sites, run the following command:

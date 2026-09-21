@@ -34,6 +34,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--manifest-csv", default=None)
     p.add_argument("--splits", nargs="*", default=["train", "val", "test"])
     p.add_argument("--shard-size", type=int, default=100000)
+    p.add_argument(
+        "--reuse-shards-root",
+        action="append",
+        type=Path,
+        default=[],
+        help=(
+            "Optional directory containing existing tar shards whose image "
+            "frames can be reused. May be specified multiple times. "
+            "Earlier entries have priority."
+        ),
+    )
+
     return p
 
 
@@ -55,6 +67,7 @@ def main() -> None:
         split_names=args.splits,
         manifest_csv=Path(args.manifest_csv) if args.manifest_csv else None,
         shard_size=args.shard_size,
+        reuse_shards_roots=args.reuse_shards_root,
     )
 
     print(

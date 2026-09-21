@@ -2492,3 +2492,315 @@ stages:
       md5: b015b48eb54e8ea1d0151588d83e8b6d.dir
       size: 504600
       nfiles: 4
+  build_video_metadata_index@tankeeah:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site tankeeah --out-csv 
+      data/02_interim/sites/tankeeah/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/tankeeah/video_metadata_index.csv
+      hash: md5
+      md5: 90e515e9c32e99c82b2ab89a29b1e1c4
+      size: 2341661
+  build_video_metadata_index@kitwanga:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site kitwanga --out-csv 
+      data/02_interim/sites/kitwanga/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/kitwanga/video_metadata_index.csv
+      hash: md5
+      md5: 9a55763b9e0b509ade9d08c00064bf04
+      size: 193399
+  build_video_metadata_index@bear:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site bear --out-csv 
+      data/02_interim/sites/bear/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/bear/video_metadata_index.csv
+      hash: md5
+      md5: ca9b57f1b0a8fd5dc37b5e2d5f6d89f1
+      size: 404530
+  build_video_metadata_index@kitkiata:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site kitkiata --out-csv 
+      data/02_interim/sites/kitkiata/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/kitkiata/video_metadata_index.csv
+      hash: md5
+      md5: 5604d56be0ade18bd205c10cb983dd73
+      size: 983551
+  build_video_metadata_index@copper:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site copper --out-csv 
+      data/02_interim/sites/copper/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/copper/video_metadata_index.csv
+      hash: md5
+      md5: 67aa440870bda5f78fd8454175b6731a
+      size: 843969
+  build_video_metadata_index@kwakwa:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site kwakwa --out-csv 
+      data/02_interim/sites/kwakwa/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/kwakwa/video_metadata_index.csv
+      hash: md5
+      md5: b20ed93dcc81788dd308b904f14bc122
+      size: 232751
+  build_video_metadata_index@Elbow:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site Elbow --out-csv 
+      data/02_interim/sites/Elbow/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/Elbow/video_metadata_index.csv
+      hash: md5
+      md5: a4073c5e3d2b8f8d897b02c1eef29f72
+      size: 5132280
+  build_video_metadata_index@koeye:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site koeye --out-csv 
+      data/02_interim/sites/koeye/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/koeye/video_metadata_index.csv
+      hash: md5
+      md5: 148075d90fc0ed8a2027e2940451b57c
+      size: 516389
+  build_video_metadata_index@redoubt:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site redoubt --out-csv 
+      data/02_interim/sites/redoubt/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/redoubt/video_metadata_index.csv
+      hash: md5
+      md5: cf8090ba87f1c98671286f9244261631
+      size: 80181
+  build_video_metadata_index@chignik:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site chignik --out-csv 
+      data/02_interim/sites/chignik/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/chignik/video_metadata_index.csv
+      hash: md5
+      md5: da7e1f484508124c6341dcba3d3f1035
+      size: 241217
+  build_video_metadata_index@klukshu:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site klukshu --out-csv 
+      data/02_interim/sites/klukshu/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/klukshu/video_metadata_index.csv
+      hash: md5
+      md5: dd0efebcc3a7266958151439114b7ae6
+      size: 38998
+  build_video_metadata_index@stephenssmolt:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site stephenssmolt --out-csv 
+      data/02_interim/sites/stephenssmolt/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/stephenssmolt/video_metadata_index.csv
+      hash: md5
+      md5: e4c63b0e868355d39fec3fa9a65bba2d
+      size: 177192
