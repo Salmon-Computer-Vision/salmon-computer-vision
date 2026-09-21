@@ -308,9 +308,9 @@ The last line should say when all the objects are ready for download.
 To evaluate over all test sites, run the following command:
 
 ```bash
-uv run --extra cuXXX ./scripts/run_site_eval_experiments.py --queue --run-queue
+uv run --extra cu124 ./scripts/run_site_eval_experiments.py --queue --run-queue
 ```
-Replace cuXXX with your appropriate CUDA version.
+Replace cu124 with your appropriate CUDA version if necessary.
 
 Add `--dry-run` to test the command first.
 
