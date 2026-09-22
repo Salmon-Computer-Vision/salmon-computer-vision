@@ -41,12 +41,14 @@ tune:
   gpu_per_trial: 1 # Lower numbers creates more parallel trials (Can be fractional)
   batch: 32
   iterations: 20
+  model: yolov8n.pt
 train:
   device: 0,1
   batch: 128
   patience: 50
   tune_dir: tune15
   model: yolov8n.pt
+  run_name: tuned_full_run1
 exp:
   train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
   val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
