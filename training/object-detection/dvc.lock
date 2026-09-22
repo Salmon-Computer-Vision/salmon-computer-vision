@@ -2804,3 +2804,1049 @@ stages:
       hash: md5
       md5: e4c63b0e868355d39fec3fa9a65bba2d
       size: 177192
+  pack_split_dataset@tankeeah:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/tankeeah && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah && 
+      scripts/unpack_annos.sh data/02_interim/sites/tankeeah/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/tankeeah/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/manifests 
+      --temp-video-dir data/04_dataset/salmon_dataset/tmp_videos/tankeeah 
+      --metadata-csv data/02_interim/sites/tankeeah/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/tankeeah/video_metadata_index.csv
+      hash: md5
+      md5: 90e515e9c32e99c82b2ab89a29b1e1c4
+      size: 2341661
+    - path: data/02_interim/sites/tankeeah/yolo_annos
+      hash: md5
+      md5: 1cb8c51dc0c22422d2c42e721360cc27.dir
+      size: 249945514
+      nfiles: 4
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/tankeeah/splits_baseline
+      hash: md5
+      md5: 5fa20d1ea5cc57338fba1c4cb2cda11c.dir
+      size: 13664127
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah
+      hash: md5
+      md5: 0a3ca60e00a8e95bfe3a0b82b78e0e6e.dir
+      size: 9767248935
+      nfiles: 11
+  pack_split_dataset@kitwanga:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kitwanga && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga && 
+      scripts/unpack_annos.sh data/02_interim/sites/kitwanga/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/kitwanga/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/manifests 
+      --temp-video-dir data/04_dataset/salmon_dataset/tmp_videos/kitwanga 
+      --metadata-csv data/02_interim/sites/kitwanga/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/kitwanga/video_metadata_index.csv
+      hash: md5
+      md5: 9a55763b9e0b509ade9d08c00064bf04
+      size: 193399
+    - path: data/02_interim/sites/kitwanga/yolo_annos
+      hash: md5
+      md5: ba8ae0ecf477559c93cdffa31ebd35bb.dir
+      size: 8224130
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/kitwanga/splits_baseline
+      hash: md5
+      md5: 447ca37a63e3a7553e2aa4d79a79536e.dir
+      size: 501878
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga
+      hash: md5
+      md5: 1628c0616a884ce2263883c00def0f54.dir
+      size: 276849210
+      nfiles: 8
+  pack_split_dataset@bear:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/bear && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/bear && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/bear && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/bear && scripts/unpack_annos.sh 
+      data/02_interim/sites/bear/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/bear && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/bear && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/bear/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/bear --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/bear/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/bear/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/bear --metadata-csv 
+      data/02_interim/sites/bear/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/bear/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/bear/packed_dataset_manifest.csv 
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/bear && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/bear/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/bear && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/bear
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/bear/video_metadata_index.csv
+      hash: md5
+      md5: ca9b57f1b0a8fd5dc37b5e2d5f6d89f1
+      size: 404530
+    - path: data/02_interim/sites/bear/yolo_annos
+      hash: md5
+      md5: 967586ff4860fe8cbee5ec8ce1a99dd5.dir
+      size: 49566430
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/bear/splits_baseline
+      hash: md5
+      md5: 7f8d41f335965d438d275dffd63313a0.dir
+      size: 2704997
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/bear
+      hash: md5
+      md5: 49274d53ee3e6d18b26a1b352796a7c9.dir
+      size: 1585840663
+      nfiles: 8
+  pack_split_dataset@kitkiata:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kitkiata && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata && 
+      scripts/unpack_annos.sh data/02_interim/sites/kitkiata/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/kitkiata/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/manifests 
+      --temp-video-dir data/04_dataset/salmon_dataset/tmp_videos/kitkiata 
+      --metadata-csv data/02_interim/sites/kitkiata/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/kitkiata/video_metadata_index.csv
+      hash: md5
+      md5: 5604d56be0ade18bd205c10cb983dd73
+      size: 983551
+    - path: data/02_interim/sites/kitkiata/yolo_annos
+      hash: md5
+      md5: 4155bcabf8458218b29be90b494d28c7.dir
+      size: 122035105
+      nfiles: 3
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/kitkiata/splits_baseline
+      hash: md5
+      md5: 5524bbe0904c31601a1808d16f1eaa5a.dir
+      size: 7461775
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata
+      hash: md5
+      md5: 3382466363b0670ad2d7749ba66a5615.dir
+      size: 7171154553
+      nfiles: 9
+  pack_split_dataset@copper:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/copper && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/copper && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/copper && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/copper && scripts/unpack_annos.sh 
+      data/02_interim/sites/copper/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/copper && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/copper && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/copper/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/copper --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/copper/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/copper/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/copper --metadata-csv 
+      data/02_interim/sites/copper/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/copper/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/copper/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/copper && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/copper/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/copper && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/copper
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/copper/video_metadata_index.csv
+      hash: md5
+      md5: 67aa440870bda5f78fd8454175b6731a
+      size: 843969
+    - path: data/02_interim/sites/copper/yolo_annos
+      hash: md5
+      md5: 18996df030e30f392cd140632a779e39.dir
+      size: 55108624
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/copper/splits_baseline
+      hash: md5
+      md5: de1c391bfd1ae4e5e042c9bace12726b.dir
+      size: 3255409
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/copper
+      hash: md5
+      md5: fb37fd24004da076d48bacf9d5b9c27b.dir
+      size: 2090018113
+      nfiles: 8
+  pack_split_dataset@kwakwa:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kwakwa && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa && scripts/unpack_annos.sh 
+      data/02_interim/sites/kwakwa/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/kwakwa/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/kwakwa --metadata-csv 
+      data/02_interim/sites/kwakwa/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/kwakwa/video_metadata_index.csv
+      hash: md5
+      md5: b20ed93dcc81788dd308b904f14bc122
+      size: 232751
+    - path: data/02_interim/sites/kwakwa/yolo_annos
+      hash: md5
+      md5: 6c9295413413947a38d2f417c2e6320c.dir
+      size: 23757095
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/kwakwa/splits_baseline
+      hash: md5
+      md5: d11de6e5eb70b22722788360bbdc7cfb.dir
+      size: 1376488
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa
+      hash: md5
+      md5: b16f5363e2cf16a866d75ca3ed9866d1.dir
+      size: 873559226
+      nfiles: 8
+  pack_split_dataset@Elbow:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/Elbow && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow && scripts/unpack_annos.sh 
+      data/02_interim/sites/Elbow/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow && scripts/unpack_annos.sh
+      data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/Elbow/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/Elbow --metadata-csv 
+      data/02_interim/sites/Elbow/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow/packed_dataset_manifest.csv 
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/Elbow/video_metadata_index.csv
+      hash: md5
+      md5: a4073c5e3d2b8f8d897b02c1eef29f72
+      size: 5132280
+    - path: data/02_interim/sites/Elbow/yolo_annos
+      hash: md5
+      md5: 7a6eaa31707be4769ce0cd63d0ec7f76.dir
+      size: 77317946
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/Elbow/splits_baseline
+      hash: md5
+      md5: 1396ce4e57eae677ec86c2d37758b6fe.dir
+      size: 4386764
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow
+      hash: md5
+      md5: 8bf1debfbcbec9f4cc2757db554c4253.dir
+      size: 4253716040
+      nfiles: 9
+  pack_split_dataset@koeye:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/koeye && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye && scripts/unpack_annos.sh 
+      data/02_interim/sites/koeye/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye && scripts/unpack_annos.sh
+      data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/koeye/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/koeye --metadata-csv 
+      data/02_interim/sites/koeye/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye/packed_dataset_manifest.csv 
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/koeye/video_metadata_index.csv
+      hash: md5
+      md5: 148075d90fc0ed8a2027e2940451b57c
+      size: 516389
+    - path: data/02_interim/sites/koeye/yolo_annos
+      hash: md5
+      md5: d385008188ebb67bb52fbd10f7c91006.dir
+      size: 69643137
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/koeye/splits_baseline
+      hash: md5
+      md5: c7e2eaf5315330f5cc011a23b7597ae6.dir
+      size: 3890548
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye
+      hash: md5
+      md5: 95cefdf3830fed063aa29d0a46330a5c.dir
+      size: 3287477385
+      nfiles: 8
+  pack_split_dataset@redoubt:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/redoubt && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt && scripts/unpack_annos.sh
+      data/02_interim/sites/redoubt/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/redoubt/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt/manifests --temp-video-dir
+      data/04_dataset/salmon_dataset/tmp_videos/redoubt --metadata-csv 
+      data/02_interim/sites/redoubt/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/redoubt/video_metadata_index.csv
+      hash: md5
+      md5: cf8090ba87f1c98671286f9244261631
+      size: 80181
+    - path: data/02_interim/sites/redoubt/yolo_annos
+      hash: md5
+      md5: 4bd76c0584185006ca6b97dc005e4cb7.dir
+      size: 26809180
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/redoubt/splits_baseline
+      hash: md5
+      md5: 27fed8ac3f1f310b43889f732ab6bda4.dir
+      size: 1472340
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt
+      hash: md5
+      md5: a30298da734492742a5d965e83baddf0.dir
+      size: 944816713
+      nfiles: 8
+  pack_split_dataset@chignik:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/chignik && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik && scripts/unpack_annos.sh
+      data/02_interim/sites/chignik/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/chignik/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik/manifests --temp-video-dir
+      data/04_dataset/salmon_dataset/tmp_videos/chignik --metadata-csv 
+      data/02_interim/sites/chignik/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/chignik/video_metadata_index.csv
+      hash: md5
+      md5: da7e1f484508124c6341dcba3d3f1035
+      size: 241217
+    - path: data/02_interim/sites/chignik/yolo_annos
+      hash: md5
+      md5: 88820064f81425971828701712368697.dir
+      size: 24403072
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/chignik/splits_baseline
+      hash: md5
+      md5: 1df3a9cb83cfa13cd3a4f557d069dba1.dir
+      size: 1469479
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik
+      hash: md5
+      md5: ce995ade292b5d8daa41aa4d4db14767.dir
+      size: 680230580
+      nfiles: 8
+  pack_split_dataset@klukshu:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/klukshu && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu && scripts/unpack_annos.sh
+      data/02_interim/sites/klukshu/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/klukshu/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu/manifests --temp-video-dir
+      data/04_dataset/salmon_dataset/tmp_videos/klukshu --metadata-csv 
+      data/02_interim/sites/klukshu/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/klukshu/video_metadata_index.csv
+      hash: md5
+      md5: dd0efebcc3a7266958151439114b7ae6
+      size: 38998
+    - path: data/02_interim/sites/klukshu/yolo_annos
+      hash: md5
+      md5: 929c4e8ad4370f4ade614f13cf9b67ae.dir
+      size: 3727407
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/klukshu/splits_baseline
+      hash: md5
+      md5: 9da8b766dfa5412ffc4493f278b77155.dir
+      size: 247066
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu
+      hash: md5
+      md5: a5b40320f6c2d837c1a0f2daba5a5270.dir
+      size: 157294367
+      nfiles: 8
+  pack_split_dataset@stephenssmolt:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && rm 
+      -rf data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt && 
+      scripts/unpack_annos.sh data/02_interim/sites/stephenssmolt/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/stephenssmolt/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/shards 
+      --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/manifests 
+      --temp-video-dir data/04_dataset/salmon_dataset/tmp_videos/stephenssmolt 
+      --metadata-csv 
+      data/02_interim/sites/stephenssmolt/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt && rm 
+      -rf data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/stephenssmolt/video_metadata_index.csv
+      hash: md5
+      md5: e4c63b0e868355d39fec3fa9a65bba2d
+      size: 177192
+    - path: data/02_interim/sites/stephenssmolt/yolo_annos
+      hash: md5
+      md5: cabcf98fa10eb47584cfed584b2e0135.dir
+      size: 40865097
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/stephenssmolt/splits_baseline
+      hash: md5
+      md5: c2d94f772773168d9fdc0e036a70bda2.dir
+      size: 2395735
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt
+      hash: md5
+      md5: e38e9cda0b4a736b04a0d4a62e17b406.dir
+      size: 1405178216
+      nfiles: 8
