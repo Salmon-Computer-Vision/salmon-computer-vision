@@ -1,3 +1,4 @@
+import io
 import csv
 import tarfile
 from pathlib import Path
@@ -53,6 +54,43 @@ def make_label_file(labels_root: Path, video_stem: str, frame_idx: int, text: st
     p = labels_root / video_stem / f"frame_{frame_idx:06d}.txt"
     write_text(p, text)
     return p
+
+
+def make_cached_frame_shard(
+    shards_root: Path,
+    video_stem: str,
+    frames: dict[int, bytes],
+    *,
+    split: str = "train",
+    shard_name: str = "train-000000.tar",
+) -> Path:
+    """
+    Create a minimal reuse tar containing cached image frames.
+
+    The cache implementation only cares about:
+        <anything>/<video_stem>/frame_XXXXXX.jpg
+
+    so the original split does not need to match the new split.
+    """
+    shards_root.mkdir(parents=True, exist_ok=True)
+    shard_path = shards_root / shard_name
+
+    with tarfile.open(shard_path, "w") as tf:
+        for frame_idx, image_bytes in frames.items():
+            member_name = (
+                f"{split}/{video_stem}/"
+                f"frame_{frame_idx:06d}.jpg"
+            )
+
+            info = tarfile.TarInfo(name=member_name)
+            info.size = len(image_bytes)
+
+            tf.addfile(
+                info,
+                io.BytesIO(image_bytes),
+            )
+
+    return shard_path
 
 
 def test_ensure_dir(tmp_path: Path):
@@ -276,6 +314,15 @@ def test_pack_split_dataset_shards_happy_path(tmp_path: Path, monkeypatch):
     assert stats.images_written == 2
     assert stats.labels_written == 2
 
+    # No reuse cache was supplied, so both frames must come from
+    # the downloaded source video.
+    assert stats.images_reused == 0
+    assert stats.images_extracted == 2
+
+    # A video is downloaded once regardless of how many frames
+    # are extracted from it.
+    assert stats.videos_downloaded == 1
+
     # Temp video cleaned up
     assert not (temp_video_dir / f"{video_stem}.mp4").exists()
 
@@ -312,6 +359,9 @@ def test_pack_split_dataset_shards_happy_path(tmp_path: Path, monkeypatch):
     assert rows[0]["images_written"] == "2"
     assert rows[0]["labels_written"] == "2"
     assert rows[0]["status"] == "ok"
+    assert rows[0]["images_reused"] == "0"
+    assert rows[0]["images_extracted"] == "2"
+    assert rows[0]["videos_downloaded"] == "1"
 
 
 def test_pack_split_dataset_shards_missing_metadata(tmp_path: Path, monkeypatch):
@@ -359,6 +409,9 @@ def test_pack_split_dataset_shards_missing_metadata(tmp_path: Path, monkeypatch)
     assert stats.frames_requested == 1
     assert stats.images_written == 0
     assert stats.labels_written == 0
+    assert stats.images_reused == 0
+    assert stats.images_extracted == 0
+    assert stats.videos_downloaded == 0
 
     rows = list(csv.DictReader(build_manifest.open("r", encoding="utf-8")))
     assert len(rows) == 1
@@ -414,6 +467,9 @@ def test_pack_split_dataset_shards_invalid_fps(tmp_path: Path, monkeypatch):
     assert stats.videos_failed == 1
     assert stats.images_written == 0
     assert stats.labels_written == 0
+    assert stats.images_reused == 0
+    assert stats.images_extracted == 0
+    assert stats.videos_downloaded == 0
 
 
 def test_pack_split_dataset_shards_fallback_to_bucket_plus_stem(tmp_path: Path, monkeypatch):
@@ -560,6 +616,12 @@ def test_pack_split_dataset_shards_multiple_splits(tmp_path: Path, monkeypatch):
     assert stats.images_written == 2
     assert stats.labels_written == 2
 
+    # No reuse cache was supplied, so both frames must come from
+    # the downloaded source video.
+    assert stats.images_reused == 0
+    assert stats.images_extracted == 2
+    assert stats.videos_downloaded == 2
+
     assert (shards_root / "train-000000.tar").exists()
     assert (shards_root / "val-000000.tar").exists()
 
@@ -568,3 +630,503 @@ def test_pack_split_dataset_shards_multiple_splits(tmp_path: Path, monkeypatch):
 
     assert f"train/{train_video}/frame_000010.jpg" in train_manifest
     assert f"val/{val_video}/frame_000020.jpg" in val_manifest
+
+
+def test_pack_split_dataset_shards_all_frames_reused(
+    tmp_path: Path,
+    monkeypatch,
+):
+    splits_dir = tmp_path / "splits"
+    labels_root = tmp_path / "labels"
+    shards_root = tmp_path / "shards"
+    manifests_root = tmp_path / "packed_manifests"
+    temp_video_dir = tmp_path / "tmp_videos"
+    metadata_csv = tmp_path / "video_metadata.csv"
+
+    reuse_shards_root = tmp_path / "reuse_shards"
+
+    video_stem = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
+
+    #
+    # Current requested dataset.
+    #
+    write_split_manifest_file(
+        splits_dir / "train.txt",
+        [
+            f"{video_stem}/frame_000010.txt",
+            f"{video_stem}/frame_000012.txt",
+        ],
+    )
+
+    #
+    # These are the CURRENT labels.
+    #
+    # Cached labels, if there were any, must not be reused.
+    #
+    make_label_file(
+        labels_root,
+        video_stem,
+        10,
+        "0 0.5 0.5 0.1 0.2\n",
+    )
+    make_label_file(
+        labels_root,
+        video_stem,
+        12,
+        "1 0.4 0.4 0.2 0.2\n",
+    )
+
+    write_metadata_csv(
+        metadata_csv,
+        [
+            {
+                "video_stem": video_stem,
+                "fps": "10",
+                "nb_frames": "100",
+                "duration": "10.0",
+                "width": "1280",
+                "height": "720",
+                "org": "HIRMD",
+                "site": "tankeeah",
+                "device": "jetson-0",
+                "s3_key": (
+                    f"HIRMD/tankeeah/jetson-0/motion_vids/"
+                    f"{video_stem}.mp4"
+                ),
+            }
+        ],
+    )
+
+    #
+    # Put both requested images into a PREVIOUS val shard.
+    #
+    # This deliberately tests that the cache is independent
+    # of the old train/val/test split.
+    #
+    make_cached_frame_shard(
+        reuse_shards_root,
+        video_stem,
+        {
+            10: b"cached-image-10",
+            12: b"cached-image-12",
+        },
+        split="val",
+        shard_name="val-000000.tar",
+    )
+
+    import object_detection.frames.extractor as extractor_mod
+
+    #
+    # With a complete cache, neither of these should EVER run.
+    #
+    def unexpected_download(
+        bucket: str,
+        s3_key: str,
+        local_video_path: Path,
+    ) -> None:
+        raise AssertionError(
+            "download_s3_video should not be called "
+            "when all requested frames are cached"
+        )
+
+    def unexpected_extract(
+        video_path: Path,
+        frame_idx: int,
+        fps: float,
+        image_ext: str = ".jpg",
+    ) -> bytes:
+        raise AssertionError(
+            "extract_frame_bytes_ffmpeg should not be called "
+            "when all requested frames are cached"
+        )
+
+    monkeypatch.setattr(
+        extractor_mod,
+        "download_s3_video",
+        unexpected_download,
+    )
+    monkeypatch.setattr(
+        extractor_mod,
+        "extract_frame_bytes_ffmpeg",
+        unexpected_extract,
+    )
+
+    stats = pack_split_dataset_shards(
+        splits_dir=splits_dir,
+        labels_root=labels_root,
+        shards_root=shards_root,
+        manifests_root=manifests_root,
+        temp_video_dir=temp_video_dir,
+        metadata_csv_paths=[metadata_csv],
+        class_names=["Sockeye", "Coho"],
+        bucket="prod-salmonvision-edge-assets-labelstudio-source",
+        image_ext=".jpg",
+        cleanup_video=True,
+        split_names=("train", "val", "test"),
+        shard_size=100,
+        reuse_shards_roots=[reuse_shards_root],
+    )
+
+    assert stats.splits_seen == 1
+    assert stats.videos_seen == 1
+    assert stats.videos_processed == 1
+    assert stats.videos_failed == 0
+
+    assert stats.frames_requested == 2
+    assert stats.images_written == 2
+    assert stats.labels_written == 2
+
+    assert stats.images_reused == 2
+    assert stats.images_extracted == 0
+    assert stats.videos_downloaded == 0
+
+    #
+    # No temporary video should ever have been created.
+    #
+    assert not (
+        temp_video_dir / f"{video_stem}.mp4"
+    ).exists()
+
+    #
+    # Verify that cached IMAGE bytes were used, but CURRENT
+    # label files were used.
+    #
+    output_shard = shards_root / "train-000000.tar"
+    assert output_shard.exists()
+
+    with tarfile.open(output_shard, "r") as tf:
+        cached_10 = tf.extractfile(
+            f"train/{video_stem}/frame_000010.jpg"
+        ).read()
+
+        cached_12 = tf.extractfile(
+            f"train/{video_stem}/frame_000012.jpg"
+        ).read()
+
+        label_10 = tf.extractfile(
+            f"train/{video_stem}/frame_000010.txt"
+        ).read().decode("utf-8")
+
+        label_12 = tf.extractfile(
+            f"train/{video_stem}/frame_000012.txt"
+        ).read().decode("utf-8")
+
+    assert cached_10 == b"cached-image-10"
+    assert cached_12 == b"cached-image-12"
+
+    assert label_10 == "0 0.5 0.5 0.1 0.2\n"
+    assert label_12 == "1 0.4 0.4 0.2 0.2\n"
+
+
+def test_pack_split_dataset_shards_partial_cache_downloads_once_and_extracts_missing(
+    tmp_path: Path,
+    monkeypatch,
+):
+    splits_dir = tmp_path / "splits"
+    labels_root = tmp_path / "labels"
+    shards_root = tmp_path / "shards"
+    manifests_root = tmp_path / "packed_manifests"
+    temp_video_dir = tmp_path / "tmp_videos"
+    metadata_csv = tmp_path / "video_metadata.csv"
+
+    reuse_shards_root = tmp_path / "reuse_shards"
+
+    video_stem = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
+
+    write_split_manifest_file(
+        splits_dir / "train.txt",
+        [
+            f"{video_stem}/frame_000010.txt",
+            f"{video_stem}/frame_000012.txt",
+        ],
+    )
+
+    make_label_file(
+        labels_root,
+        video_stem,
+        10,
+        "0 0.5 0.5 0.1 0.2\n",
+    )
+    make_label_file(
+        labels_root,
+        video_stem,
+        12,
+        "1 0.4 0.4 0.2 0.2\n",
+    )
+
+    expected_s3_key = (
+        f"HIRMD/tankeeah/jetson-0/motion_vids/"
+        f"{video_stem}.mp4"
+    )
+
+    write_metadata_csv(
+        metadata_csv,
+        [
+            {
+                "video_stem": video_stem,
+                "fps": "10",
+                "nb_frames": "100",
+                "duration": "10.0",
+                "width": "1280",
+                "height": "720",
+                "org": "HIRMD",
+                "site": "tankeeah",
+                "device": "jetson-0",
+                "s3_key": expected_s3_key,
+            }
+        ],
+    )
+
+    #
+    # Only frame 10 is cached.
+    # Frame 12 must be extracted.
+    #
+    make_cached_frame_shard(
+        reuse_shards_root,
+        video_stem,
+        {
+            10: b"cached-image-10",
+        },
+    )
+
+    download_calls = []
+    extract_calls = []
+
+    def fake_download_s3_video(
+        bucket: str,
+        s3_key: str,
+        local_video_path: Path,
+    ) -> None:
+        download_calls.append(
+            {
+                "bucket": bucket,
+                "s3_key": s3_key,
+                "local_video_path": local_video_path,
+            }
+        )
+
+        local_video_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        local_video_path.write_bytes(b"fake-video")
+
+    def fake_extract_frame_bytes_ffmpeg(
+        video_path: Path,
+        frame_idx: int,
+        fps: float,
+        image_ext: str = ".jpg",
+    ) -> bytes:
+        extract_calls.append(
+            {
+                "video_path": video_path,
+                "frame_idx": frame_idx,
+                "fps": fps,
+                "image_ext": image_ext,
+            }
+        )
+
+        return f"extracted-image-{frame_idx}".encode("utf-8")
+
+    import object_detection.frames.extractor as extractor_mod
+
+    monkeypatch.setattr(
+        extractor_mod,
+        "download_s3_video",
+        fake_download_s3_video,
+    )
+    monkeypatch.setattr(
+        extractor_mod,
+        "extract_frame_bytes_ffmpeg",
+        fake_extract_frame_bytes_ffmpeg,
+    )
+
+    stats = pack_split_dataset_shards(
+        splits_dir=splits_dir,
+        labels_root=labels_root,
+        shards_root=shards_root,
+        manifests_root=manifests_root,
+        temp_video_dir=temp_video_dir,
+        metadata_csv_paths=[metadata_csv],
+        class_names=["Sockeye", "Coho"],
+        bucket="prod-salmonvision-edge-assets-labelstudio-source",
+        image_ext=".jpg",
+        cleanup_video=True,
+        split_names=("train", "val", "test"),
+        shard_size=100,
+        reuse_shards_roots=[reuse_shards_root],
+    )
+
+    #
+    # Overall accounting.
+    #
+    assert stats.splits_seen == 1
+    assert stats.videos_seen == 1
+    assert stats.videos_processed == 1
+    assert stats.videos_failed == 0
+
+    assert stats.frames_requested == 2
+    assert stats.images_written == 2
+    assert stats.labels_written == 2
+
+    assert stats.images_reused == 1
+    assert stats.images_extracted == 1
+
+    #
+    # Even though only one frame is missing, the source MP4
+    # is downloaded once.
+    #
+    assert stats.videos_downloaded == 1
+
+    assert len(download_calls) == 1
+    assert download_calls[0]["bucket"] == (
+        "prod-salmonvision-edge-assets-labelstudio-source"
+    )
+    assert download_calls[0]["s3_key"] == expected_s3_key
+
+    #
+    # FFmpeg should ONLY be invoked for frame 12.
+    #
+    assert len(extract_calls) == 1
+    assert extract_calls[0]["frame_idx"] == 12
+    assert extract_calls[0]["fps"] == 10.0
+    assert extract_calls[0]["image_ext"] == ".jpg"
+
+    #
+    # Temporary source video should be removed afterward.
+    #
+    assert not (
+        temp_video_dir / f"{video_stem}.mp4"
+    ).exists()
+
+    #
+    # Verify the resulting packed shard contains one cached
+    # image and one newly extracted image.
+    #
+    output_shard = shards_root / "train-000000.tar"
+    assert output_shard.exists()
+
+    with tarfile.open(output_shard, "r") as tf:
+        image_10 = tf.extractfile(
+            f"train/{video_stem}/frame_000010.jpg"
+        ).read()
+
+        image_12 = tf.extractfile(
+            f"train/{video_stem}/frame_000012.jpg"
+        ).read()
+
+    assert image_10 == b"cached-image-10"
+    assert image_12 == b"extracted-image-12"
+
+
+def test_pack_split_dataset_shards_reuse_root_priority(
+    tmp_path: Path,
+    monkeypatch,
+):
+    splits_dir = tmp_path / "splits"
+    labels_root = tmp_path / "labels"
+    shards_root = tmp_path / "output_shards"
+    manifests_root = tmp_path / "manifests"
+    temp_video_dir = tmp_path / "tmp_videos"
+    metadata_csv = tmp_path / "video_metadata.csv"
+
+    site_cache = tmp_path / "site_cache"
+    legacy_cache = tmp_path / "legacy_cache"
+
+    video_stem = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
+
+    write_split_manifest_file(
+        splits_dir / "train.txt",
+        [f"{video_stem}/frame_000010.txt"],
+    )
+
+    make_label_file(
+        labels_root,
+        video_stem,
+        10,
+        "0 0.5 0.5 0.1 0.2\n",
+    )
+
+    write_metadata_csv(
+        metadata_csv,
+        [
+            {
+                "video_stem": video_stem,
+                "fps": "10",
+                "nb_frames": "100",
+                "duration": "10.0",
+                "width": "1280",
+                "height": "720",
+                "org": "HIRMD",
+                "site": "tankeeah",
+                "device": "jetson-0",
+                "s3_key": "unused.mp4",
+            }
+        ],
+    )
+
+    #
+    # Same frame exists in both caches.
+    #
+    make_cached_frame_shard(
+        site_cache,
+        video_stem,
+        {10: b"new-site-cache"},
+    )
+
+    make_cached_frame_shard(
+        legacy_cache,
+        video_stem,
+        {10: b"old-legacy-cache"},
+    )
+
+    import object_detection.frames.extractor as extractor_mod
+
+    def unexpected_download(*args, **kwargs):
+        raise AssertionError("Source video should not be downloaded")
+
+    def unexpected_extract(*args, **kwargs):
+        raise AssertionError("Frame should not be extracted")
+
+    monkeypatch.setattr(
+        extractor_mod,
+        "download_s3_video",
+        unexpected_download,
+    )
+    monkeypatch.setattr(
+        extractor_mod,
+        "extract_frame_bytes_ffmpeg",
+        unexpected_extract,
+    )
+
+    stats = pack_split_dataset_shards(
+        splits_dir=splits_dir,
+        labels_root=labels_root,
+        shards_root=shards_root,
+        manifests_root=manifests_root,
+        temp_video_dir=temp_video_dir,
+        metadata_csv_paths=[metadata_csv],
+        class_names=["Sockeye"],
+        bucket="prod-salmonvision-edge-assets-labelstudio-source",
+        reuse_shards_roots=[
+            site_cache,
+            legacy_cache,
+        ],
+    )
+
+    assert stats.images_reused == 1
+    assert stats.images_extracted == 0
+    assert stats.videos_downloaded == 0
+
+    with tarfile.open(
+        shards_root / "train-000000.tar",
+        "r",
+    ) as tf:
+        image = tf.extractfile(
+            f"train/{video_stem}/frame_000010.jpg"
+        ).read()
+
+    #
+    # First reuse root must take precedence.
+    #
+    assert image == b"new-site-cache"

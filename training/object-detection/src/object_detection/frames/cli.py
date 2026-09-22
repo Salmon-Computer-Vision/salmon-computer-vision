@@ -77,8 +77,8 @@ def main() -> None:
         f"videos_failed={stats.videos_failed} "
         f"frames_requested={stats.frames_requested} "
         f"images_written={stats.images_written} "
-        f"labels_written={stats.labels_written}"
-        f"images_reused={stats.images_reused}"
-        f"images_extracted={stats.images_extracted}"
+        f"labels_written={stats.labels_written} "
+        f"images_reused={stats.images_reused} "
+        f"images_extracted={stats.images_extracted} "
         f"videos_downloaded={stats.videos_downloaded}"
     )
