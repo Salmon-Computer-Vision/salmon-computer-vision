@@ -179,9 +179,9 @@ stages:
         --manifest-csv ${config.dataset}/salmon_dataset/tmp_pack/${item}/packed_dataset_manifest.csv
         --splits train val test
         --shard-size 100000 &&
-        mkdir -p ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
+        rm -rf ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
         mv
-        ${config.dataset}/salmon_dataset/tmp_pack/${item}/*
+        ${config.dataset}/salmon_dataset/tmp_pack/${item}
         ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
         rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item}
 
