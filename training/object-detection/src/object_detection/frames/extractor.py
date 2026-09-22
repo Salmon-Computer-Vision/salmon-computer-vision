@@ -542,8 +542,6 @@ def pack_split_dataset_shards(
                     )
                     stats.labels_written += 1
 
-                stats.videos_processed += 1
-
                 manifest_rows.append({
                     "split": split,
                     "video_stem": video_stem,
@@ -554,10 +552,12 @@ def pack_split_dataset_shards(
                     "labels_written": str(len(frame_indices)),
                     "images_reused": str(len(cached_images)),
                     "images_extracted": str(len(missing_frames)),
-                    "videos_downloaded": str(len(video_downloaded)),
+                    "videos_downloaded": str(int(video_downloaded)),
                     "status": "ok",
                     "error": "",
                 })
+
+                stats.videos_processed += 1
 
             except Exception as e:
                 stats.videos_failed += 1
