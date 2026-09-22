@@ -30,6 +30,11 @@ class ExtractionStats:
     frames_requested: int = 0
     images_written: int = 0
     labels_written: int = 0
+    
+    images_reused: int = 0
+    images_extracted: int = 0
+
+    videos_downloaded: int = 0
 
 
 @dataclass(frozen=True)
@@ -480,6 +485,7 @@ def pack_split_dataset_shards(
                     )
 
                     video_downloaded = True
+                    stats.videos_downloaded += 1
 
                 for frame_idx in frame_indices:
                     label_relpath = (
@@ -500,13 +506,16 @@ def pack_split_dataset_shards(
                     #
                     image_bytes = cached_images.get(frame_idx)
 
-                    if image_bytes is None:
+                    if image_bytes is not None:
+                        stats.images_reused += 1
+                    else:
                         image_bytes = extract_frame_bytes_ffmpeg(
                             video_path=local_video,
                             frame_idx=frame_idx,
                             fps=fps,
                             image_ext=image_ext,
                         )
+                        stats.images_extracted += 1
 
                     #
                     # LABEL:
@@ -521,6 +530,7 @@ def pack_split_dataset_shards(
                         str(image_relpath),
                         image_bytes,
                     )
+                    stats.images_written += 1
 
                     split_to_image_relpaths[split].append(
                         str(image_relpath)
@@ -530,6 +540,7 @@ def pack_split_dataset_shards(
                         str(packed_label_relpath),
                         label_text,
                     )
+                    stats.labels_written += 1
 
                 stats.videos_processed += 1
 
@@ -538,9 +549,12 @@ def pack_split_dataset_shards(
                     "video_stem": video_stem,
                     "s3_key": s3_key,
                     "fps": str(fps),
-                    "requested_frames": str(len(frame_indices)),
-                    "images_written": str(len(frame_indices)),
-                    "labels_written": str(len(frame_indices)),
+                    "requested_frames": str(stats.frames_requested),
+                    "images_written": str(stats.images_written),
+                    "labels_written": str(stats.labels_written),
+                    "images_reused": str(stats.images_reused),
+                    "images_extracted": str(stats.images_extracted),
+                    "videos_downloaded": str(stats.videos_downloaded),
                     "status": "ok",
                     "error": "",
                 })
@@ -553,9 +567,11 @@ def pack_split_dataset_shards(
                     "video_stem": video_stem,
                     "s3_key": s3_key,
                     "fps": str(fps) if fps > 0 else "",
-                    "requested_frames": str(len(frame_indices)),
-                    "images_written": "0",
-                    "labels_written": "0",
+                    "requested_frames": str(stats.frames_requested),
+                    "images_written": str(stats.images_written),
+                    "images_reused": str(stats.images_reused),
+                    "images_extracted": str(stats.images_extracted),
+                    "videos_downloaded": str(stats.videos_downloaded),
                     "status": "error",
                     "error": repr(e),
                 })
