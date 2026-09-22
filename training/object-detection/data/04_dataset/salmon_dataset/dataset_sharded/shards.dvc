@@ -1,0 +1,6 @@
+outs:
+- md5: 70d82ebde491e1e4b3e617232c1f336d.dir
+  size: 34575742976
+  nfiles: 15
+  hash: md5
+  path: shards
