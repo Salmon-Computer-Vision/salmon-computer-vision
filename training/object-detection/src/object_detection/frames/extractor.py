@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import csv
 import subprocess
+import re
+import tarfile
+from collections import defaultdict
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Set
+from pathlib import Path, PurePosixPath
+from typing import Dict, Iterable, List, Optional, Tuple
 import io
 import tarfile
 
@@ -27,6 +30,156 @@ class ExtractionStats:
     frames_requested: int = 0
     images_written: int = 0
     labels_written: int = 0
+    
+    images_reused: int = 0
+    images_extracted: int = 0
+
+    videos_downloaded: int = 0
+
+
+@dataclass(frozen=True)
+class CachedFrameRef:
+    tar_path: Path
+    member_name: str
+
+
+class TarFrameCache:
+    """
+    Read-only cache of already-extracted image frames stored in tar shards.
+
+    Cache key is:
+
+        (video_stem, frame_idx)
+
+    The original train/val/test split is deliberately ignored. This allows
+    a frame that used to be in train to be reused even if a new split puts
+    it in val/test.
+    """
+
+    FRAME_RE = re.compile(
+        r"^frame_(?P<frame>\d+)\.(?:jpg|jpeg|png)$",
+        re.IGNORECASE,
+    )
+
+    def __init__(
+        self,
+        shard_roots: Iterable[Path],
+        *,
+        image_ext: str = ".jpg",
+    ) -> None:
+        self.image_ext = image_ext.lower()
+        self._index: Dict[Tuple[str, int], CachedFrameRef] = {}
+
+        roots = [Path(p) for p in shard_roots]
+
+        for root in roots:
+            if not root.exists():
+                print(f"[frames] reuse cache does not exist, skipping: {root}")
+                continue
+
+            tar_paths = sorted(root.glob("*.tar"))
+
+            print(
+                f"[frames] indexing reuse cache: "
+                f"{root} ({len(tar_paths)} tar files)"
+            )
+
+            for tar_path in tar_paths:
+                self._index_tar(tar_path)
+
+        print(
+            f"[frames] reuse cache contains "
+            f"{len(self._index)} image frames"
+        )
+
+    def _index_tar(self, tar_path: Path) -> None:
+        try:
+            with tarfile.open(tar_path, "r") as tf:
+                for member in tf:
+                    if not member.isfile():
+                        continue
+
+                    p = PurePosixPath(member.name)
+
+                    if p.suffix.lower() != self.image_ext:
+                        continue
+
+                    # Expected:
+                    #
+                    # train/<video_stem>/frame_000123.jpg
+                    #
+                    # We deliberately only care about the final two
+                    # components.
+                    if len(p.parts) < 2:
+                        continue
+
+                    video_stem = p.parts[-2]
+                    filename = p.parts[-1]
+
+                    m = self.FRAME_RE.match(filename)
+                    if not m:
+                        continue
+
+                    frame_idx = int(m.group("frame"))
+
+                    key = (video_stem, frame_idx)
+
+                    # Earlier roots have priority.
+                    #
+                    # This lets us specify:
+                    #
+                    #   1. previous per-site shards
+                    #   2. legacy combined shards
+                    #
+                    # and prefer the newer per-site cache.
+                    self._index.setdefault(
+                        key,
+                        CachedFrameRef(
+                            tar_path=tar_path,
+                            member_name=member.name,
+                        ),
+                    )
+
+        except tarfile.TarError as e:
+            raise RuntimeError(
+                f"Could not read reuse tar {tar_path}: {e}"
+            ) from e
+
+    def get_many(
+        self,
+        video_stem: str,
+        frame_indices: Iterable[int],
+    ) -> Dict[int, bytes]:
+        """
+        Return cached image bytes for as many requested frames as possible.
+
+        Tar files are opened once per group rather than once per frame.
+        """
+        grouped: Dict[Path, List[Tuple[int, str]]] = defaultdict(list)
+
+        for frame_idx in frame_indices:
+            ref = self._index.get((video_stem, frame_idx))
+
+            if ref is not None:
+                grouped[ref.tar_path].append(
+                    (frame_idx, ref.member_name)
+                )
+
+        result: Dict[int, bytes] = {}
+
+        for tar_path, requests in grouped.items():
+            with tarfile.open(tar_path, "r") as tf:
+                for frame_idx, member_name in requests:
+                    member = tf.getmember(member_name)
+                    fp = tf.extractfile(member)
+
+                    if fp is None:
+                        continue
+
+                    result[frame_idx] = fp.read()
+
+        return result
+
 
 def load_video_metadata_index(path: Path) -> Dict[str, Dict[str, str]]:
     out: Dict[str, Dict[str, str]] = {}
@@ -220,6 +373,7 @@ def pack_split_dataset_shards(
     split_names: Iterable[str] = ("train", "val", "test"),
     manifest_csv: Optional[Path] = None,
     shard_size: int = 100000,
+    reuse_shards_roots: Optional[Iterable[Path]] = None,
 ) -> ExtractionStats:
     """
     Reads split manifests containing label relpaths, e.g.
@@ -236,6 +390,10 @@ def pack_split_dataset_shards(
     split_requests = load_split_requests(splits_dir, split_names)
     stats = ExtractionStats(splits_seen=len(split_requests))
     metadata_index = merge_video_metadata_csvs(metadata_csv_paths)
+    frame_cache = TarFrameCache(
+        reuse_shards_roots or [],
+        image_ext=image_ext,
+    )    
 
     ensure_dir(shards_root)
     ensure_dir(manifests_root)
@@ -261,49 +419,128 @@ def pack_split_dataset_shards(
             local_video = temp_video_dir / f"{video_stem}.mp4"
             s3_key = ""
             fps = 0.0
+            video_downloaded = False
 
             try:
                 meta = metadata_index.get(video_stem)
                 if meta is None:
-                    raise KeyError(f"Missing metadata for video_stem={video_stem}")
+                    raise KeyError(
+                        f"Missing metadata for video_stem={video_stem}"
+                    )
 
                 fps = safe_float(meta.get("fps", ""), 0.0)
+
                 if fps <= 0:
-                    raise ValueError(f"Invalid fps for video_stem={video_stem}: {meta.get('fps', '')!r}")
+                    raise ValueError(
+                        f"Invalid fps for video_stem={video_stem}: "
+                        f"{meta.get('fps', '')!r}"
+                    )
 
                 s3_key = (meta.get("s3_key") or "").strip()
+
                 if not s3_key:
                     if not bucket:
-                        raise ValueError(f"Missing s3_key for video_stem={video_stem}")
+                        raise ValueError(
+                            f"Missing s3_key for video_stem={video_stem}"
+                        )
+
                     s3_key = video_stem_to_s3_key(video_stem)
 
-                download_s3_video(bucket=bucket, s3_key=s3_key, local_video_path=local_video)
+                #
+                # First try the existing tar cache.
+                #
+                cached_images = frame_cache.get_many(
+                    video_stem,
+                    frame_indices,
+                )
+
+                missing_frames = [
+                    frame_idx
+                    for frame_idx in frame_indices
+                    if frame_idx not in cached_images
+                ]
+
+                if cached_images:
+                    print(
+                        f"[frames] {video_stem}: "
+                        f"reusing {len(cached_images)}/"
+                        f"{len(frame_indices)} cached frames"
+                    )
+
+                #
+                # Only download the source video if at least one image
+                # is not already cached.
+                #
+                if missing_frames:
+                    print(
+                        f"[frames] {video_stem}: "
+                        f"{len(missing_frames)} frames missing from cache; "
+                        f"downloading source video"
+                    )
+
+                    download_s3_video(
+                        bucket=bucket,
+                        s3_key=s3_key,
+                        local_video_path=local_video,
+                    )
+
+                    video_downloaded = True
+                    stats.videos_downloaded += 1
 
                 for frame_idx in frame_indices:
-                    label_relpath = f"{video_stem}/frame_{frame_idx:06d}.txt"
-                    image_relpath, packed_label_relpath = split_label_relpath_to_packed_paths(
-                        split=split,
-                        relpath=label_relpath,
-                        image_ext=image_ext,
+                    label_relpath = (
+                        f"{video_stem}/frame_{frame_idx:06d}.txt"
                     )
 
-                    image_bytes = extract_frame_bytes_ffmpeg(
-                        video_path=local_video,
-                        frame_idx=frame_idx,
-                        fps=fps,
-                        image_ext=image_ext,
+                    image_relpath, packed_label_relpath = (
+                        split_label_relpath_to_packed_paths(
+                            split=split,
+                            relpath=label_relpath,
+                            image_ext=image_ext,
+                        )
                     )
-                    label_text = read_label_text(labels_root, label_relpath)
 
-                    writer.write_bytes(str(image_relpath), image_bytes)
-                    split_to_image_relpaths[split].append(str(image_relpath))
+                    #
+                    # IMAGE:
+                    # reuse old frame if possible.
+                    #
+                    image_bytes = cached_images.get(frame_idx)
 
+                    if image_bytes is not None:
+                        stats.images_reused += 1
+                    else:
+                        image_bytes = extract_frame_bytes_ffmpeg(
+                            video_path=local_video,
+                            frame_idx=frame_idx,
+                            fps=fps,
+                            image_ext=image_ext,
+                        )
+                        stats.images_extracted += 1
+
+                    #
+                    # LABEL:
+                    # always use the current annotation.
+                    #
+                    label_text = read_label_text(
+                        labels_root,
+                        label_relpath,
+                    )
+
+                    writer.write_bytes(
+                        str(image_relpath),
+                        image_bytes,
+                    )
                     stats.images_written += 1
 
-                    writer.write_text(str(packed_label_relpath), label_text)
-                    stats.labels_written += 1
+                    split_to_image_relpaths[split].append(
+                        str(image_relpath)
+                    )
 
-                stats.videos_processed += 1
+                    writer.write_text(
+                        str(packed_label_relpath),
+                        label_text,
+                    )
+                    stats.labels_written += 1
 
                 manifest_rows.append({
                     "split": split,
@@ -313,12 +550,18 @@ def pack_split_dataset_shards(
                     "requested_frames": str(len(frame_indices)),
                     "images_written": str(len(frame_indices)),
                     "labels_written": str(len(frame_indices)),
+                    "images_reused": str(len(cached_images)),
+                    "images_extracted": str(len(missing_frames)),
+                    "videos_downloaded": str(int(video_downloaded)),
                     "status": "ok",
                     "error": "",
                 })
 
+                stats.videos_processed += 1
+
             except Exception as e:
                 stats.videos_failed += 1
+
                 manifest_rows.append({
                     "split": split,
                     "video_stem": video_stem,
@@ -327,12 +570,15 @@ def pack_split_dataset_shards(
                     "requested_frames": str(len(frame_indices)),
                     "images_written": "0",
                     "labels_written": "0",
+                    "images_reused": "0",
+                    "images_extracted": "0",
+                    "videos_downloaded": "0",
                     "status": "error",
                     "error": repr(e),
                 })
 
             finally:
-                if cleanup_video:
+                if cleanup_video and video_downloaded:
                     try:
                         if local_video.exists():
                             local_video.unlink()
@@ -358,6 +604,9 @@ def pack_split_dataset_shards(
                     "requested_frames",
                     "images_written",
                     "labels_written",
+                    "images_reused",
+                    "images_extracted",
+                    "videos_downloaded",
                     "status",
                     "error",
                 ],

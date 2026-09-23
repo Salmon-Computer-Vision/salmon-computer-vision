@@ -2,11 +2,38 @@ import argparse
 from pathlib import Path
 
 from object_detection.yolo_ls.converter import YoloConverterLSVideo
-from object_detection.yolo_ls.parsing import load_class_map_from_yolo_yaml
+from object_detection.yolo_ls.parsing import (
+    load_class_map_from_yolo_yaml,
+    load_json_paths_from_site_manifest,
+)
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Convert Label Studio video JSON to YOLO frame labels")
-    parser.add_argument("input", help="JSON file or directory containing Label Studio JSON")
+    parser.add_argument(
+        "input",
+        nargs="?",
+        default=None,
+        help=(
+            "JSON file or directory containing Label Studio JSON. "
+            "Mutually exclusive with --input-manifest."
+        ),
+    )
+    parser.add_argument(
+        "--input-manifest",
+        default=None,
+        help=(
+            "Site-index JSON manifest containing raw_root and files[].path. "
+            "Mutually exclusive with positional input."
+        ),
+    )
+    parser.add_argument(
+        "--manifest-raw-root",
+        default=None,
+        help=(
+            "Optional override for raw_root stored in --input-manifest. "
+            "Useful when raw data is mounted at a different location."
+        ),
+    )
     parser.add_argument("--data-yaml", required=True, help="Path to YOLO data.yaml (with 'names:' mapping)")
     parser.add_argument("--out", required=True, help="Output directory")
     parser.add_argument("--empty-list", default=None, help="Path to write videos with no boxes")
@@ -41,6 +68,16 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
+    if args.input is None and args.input_manifest is None:
+        parser.error(
+            "one of positional input or --input-manifest is required"
+        )
+
+    if args.input is not None and args.input_manifest is not None:
+        parser.error(
+            "positional input and --input-manifest are mutually exclusive"
+        )
+
     data_yaml_path = Path(args.data_yaml)
     class_map = load_class_map_from_yolo_yaml(data_yaml_path)
 
@@ -65,13 +102,37 @@ def main() -> None:
         stats_dir=Path(args.stats_dir) if args.stats_dir else None,
     )
 
-    inp = Path(args.input)
-    if inp.is_dir():
-        print(f"Converting labels from {inp}")
+    if args.input_manifest is not None:
+        manifest_path = Path(args.input_manifest)
 
-        s = conv.convert_folder(inp, pattern=args.pattern)
+        json_paths = load_json_paths_from_site_manifest(
+            manifest_path,
+            raw_root_override=(
+                Path(args.manifest_raw_root)
+                if args.manifest_raw_root
+                else None
+            ),
+        )
+
+        print(
+            f"Converting {len(json_paths)} Label Studio export(s) "
+            f"from manifest {manifest_path}"
+        )
+
+        s = conv.convert_files(json_paths)
+
     else:
-        s = conv.convert_file(inp)
+        inp = Path(args.input)
+
+        if inp.is_dir():
+            print(f"Converting labels from directory {inp}")
+            s = conv.convert_folder(
+                inp,
+                pattern=args.pattern,
+            )
+        else:
+            print(f"Converting labels from file {inp}")
+            s = conv.convert_file(inp)
 
     neg_written, max_neg, total_candidate_frames = conv.materialize_negatives()
     s.negative_files_written += neg_written

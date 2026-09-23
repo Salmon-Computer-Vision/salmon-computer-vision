@@ -7,15 +7,15 @@ stages:
     deps:
     - path: s3://salmonvision-ml-datasets/rgb/raw
       hash: md5
-      md5: 9aab20758f57f39971a38c9a676dad27.dir
-      size: 720238505
-      nfiles: 65
+      md5: 8a74238ac846be6d03925ef56161765a.dir
+      size: 731195456
+      nfiles: 66
     outs:
     - path: data/01_raw/labelstudio_annos
       hash: md5
-      md5: 188b71c31be326fe36d209cc52c23337.dir
-      size: 379352848
-      nfiles: 50
+      md5: 3f6791779fd2db2dd82b810c51131d4c.dir
+      size: 390309799
+      nfiles: 51
   split_data:
     cmd: rm -rf data/02_interim/yolo_annos_unpacked && scripts/unpack_annos.sh 
       data/02_interim/yolo_annos data/02_interim/yolo_annos_unpacked && 
@@ -193,24 +193,17 @@ stages:
       size: 1309
     params:
       params.yaml:
-        data:
-          sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye 
-            redoubt chignik klukshu
-          neg_csvs: 
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv
-            data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
-          neg: --include-negatives
-          neg_ratio: 0.1
-          neg_per_vid: 11
-          bucket: prod-salmonvision-edge-assets-labelstudio-source
+        data.neg_csvs: 
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_tankeeah_2025.csv
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_bear_2025.csv 
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_kitwanga_2025.csv
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_chignik_2024.csv
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_copper_2025.csv
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_kitkiata_2025.csv
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_klukshu_2025.csv
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_koeye_2025.csv 
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_redoubt_2025.csv
+          data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
     outs:
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
@@ -826,3 +819,3034 @@ stages:
       hash: md5
       md5: 599e509df006d3e5daf08d2f17d40651
       size: 25451919
+  index_labelstudio_sites:
+    cmd: scripts/index_labelstudio_sites.py --json-root 
+      data/01_raw/labelstudio_annos --out-dir 
+      data/02_interim/labelstudio_site_index
+    deps:
+    - path: data/01_raw/labelstudio_annos
+      hash: md5
+      md5: 3f6791779fd2db2dd82b810c51131d4c.dir
+      size: 390309799
+      nfiles: 51
+    - path: scripts/index_labelstudio_sites.py
+      hash: md5
+      md5: e465b8763bdf25d099783739757cd428
+      size: 131
+    - path: src/object_detection/metadata/site_index.py
+      hash: md5
+      md5: e145cfb469940c883d7f06ada4a71d01
+      size: 6270
+    - path: src/object_detection/metadata/site_index_cli.py
+      hash: md5
+      md5: 243c6ee5180faa30ffac86b8932ee325
+      size: 1797
+    outs:
+    - path: data/02_interim/labelstudio_site_index
+      hash: md5
+      md5: ca0d311020af9d4ae061512084c9eaf8.dir
+      size: 20589
+      nfiles: 13
+  build_video_metadata_index_all:
+    cmd: scripts/build_video_metadata_index.py --json-dir 
+      data/01_raw/labelstudio_annos --out-csv 
+      data/02_interim/video_metadata_index.csv
+    deps:
+    - path: data/01_raw/labelstudio_annos
+      hash: md5
+      md5: 3f6791779fd2db2dd82b810c51131d4c.dir
+      size: 390309799
+      nfiles: 51
+    - path: src/object_detection/metadata/cli.py
+      hash: md5
+      md5: 43b9e9a0588e937ad2ef4851d3ba4949
+      size: 612
+    - path: src/object_detection/metadata/index.py
+      hash: md5
+      md5: 47e821131bd966ebc04b0a94048095a6
+      size: 3924
+    outs:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+  build_model_input@chignik:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/chignik.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/chignik/yolo_annos_fs 
+      --out-shards data/02_interim/sites/chignik/yolo_annos --empty-list 
+      data/02_interim/sites/chignik/yolo_annos/empty_vids.txt --shard-size 
+      100000 --include-sites chignik --frame-stride 3 --frame-offset-mode 
+      video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
+      11 --stats-dir data/02_interim/sites/chignik/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/chignik.json
+      hash: md5
+      md5: c506e30de82475c8849791f6a2a858c5
+      size: 793
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/chignik/yolo_annos
+      hash: md5
+      md5: 88820064f81425971828701712368697.dir
+      size: 24403072
+      nfiles: 2
+    - path: data/02_interim/sites/chignik/yolo_annos_stats
+      hash: md5
+      md5: 755084185fe609179f07499492522ac1.dir
+      size: 10642
+      nfiles: 5
+  build_model_input@redoubt:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/redoubt.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/redoubt/yolo_annos_fs 
+      --out-shards data/02_interim/sites/redoubt/yolo_annos --empty-list 
+      data/02_interim/sites/redoubt/yolo_annos/empty_vids.txt --shard-size 
+      100000 --include-sites redoubt --frame-stride 3 --frame-offset-mode 
+      video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
+      11 --stats-dir data/02_interim/sites/redoubt/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/redoubt.json
+      hash: md5
+      md5: 245ff66da3f204b3dd0cc5e4a40dc302
+      size: 452
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/redoubt/yolo_annos
+      hash: md5
+      md5: 4bd76c0584185006ca6b97dc005e4cb7.dir
+      size: 26809180
+      nfiles: 2
+    - path: data/02_interim/sites/redoubt/yolo_annos_stats
+      hash: md5
+      md5: d33eb83d540962cd15f7d8845a4bbe95.dir
+      size: 10430
+      nfiles: 5
+  split_data@redoubt:
+    cmd: rm -rf data/02_interim/sites/redoubt/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/redoubt/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/sites/redoubt/yolo_annos 
+      data/02_interim/sites/redoubt/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/redoubt/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/redoubt/split_labels_tmp --out-dir 
+      data/03_processed/sites/redoubt/splits_baseline --sites redoubt --seed 42 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/redoubt/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/redoubt/yolo_annos
+      hash: md5
+      md5: 4bd76c0584185006ca6b97dc005e4cb7.dir
+      size: 26809180
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/redoubt/splits_baseline
+      hash: md5
+      md5: 27fed8ac3f1f310b43889f732ab6bda4.dir
+      size: 1472340
+      nfiles: 5
+  build_model_input@koeye:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/koeye.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/koeye/yolo_annos_fs 
+      --out-shards data/02_interim/sites/koeye/yolo_annos --empty-list 
+      data/02_interim/sites/koeye/yolo_annos/empty_vids.txt --shard-size 100000 
+      --include-sites koeye --frame-stride 3 --frame-offset-mode video_hash 
+      --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
+      --stats-dir data/02_interim/sites/koeye/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/koeye.json
+      hash: md5
+      md5: 826f0044b47b9ff72cd5685fb2d4a813
+      size: 795
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/koeye/yolo_annos
+      hash: md5
+      md5: d385008188ebb67bb52fbd10f7c91006.dir
+      size: 69643137
+      nfiles: 2
+    - path: data/02_interim/sites/koeye/yolo_annos_stats
+      hash: md5
+      md5: 919a5dff6ffbc1b49f2a11b94258a02e.dir
+      size: 10720
+      nfiles: 5
+  build_model_input@bear:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/bear.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/bear/yolo_annos_fs 
+      --out-shards data/02_interim/sites/bear/yolo_annos --empty-list 
+      data/02_interim/sites/bear/yolo_annos/empty_vids.txt --shard-size 100000 
+      --include-sites bear --frame-stride 3 --frame-offset-mode video_hash 
+      --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
+      --stats-dir data/02_interim/sites/bear/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/bear.json
+      hash: md5
+      md5: 5a01114d6e10c777a594154950f95658
+      size: 453
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/bear/yolo_annos
+      hash: md5
+      md5: 967586ff4860fe8cbee5ec8ce1a99dd5.dir
+      size: 49566430
+      nfiles: 2
+    - path: data/02_interim/sites/bear/yolo_annos_stats
+      hash: md5
+      md5: 7fe3853f03447d67cf6266404a330a7b.dir
+      size: 10545
+      nfiles: 5
+  build_model_input@copper:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/copper.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/copper/yolo_annos_fs 
+      --out-shards data/02_interim/sites/copper/yolo_annos --empty-list 
+      data/02_interim/sites/copper/yolo_annos/empty_vids.txt --shard-size 100000
+      --include-sites copper --frame-stride 3 --frame-offset-mode video_hash 
+      --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
+      --stats-dir data/02_interim/sites/copper/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/copper.json
+      hash: md5
+      md5: 6b5a58a6288a25ac57652bb9531c77a1
+      size: 457
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/copper/yolo_annos
+      hash: md5
+      md5: 18996df030e30f392cd140632a779e39.dir
+      size: 55108624
+      nfiles: 2
+    - path: data/02_interim/sites/copper/yolo_annos_stats
+      hash: md5
+      md5: 3d3cbff6bf8f95410345c6f4027f5172.dir
+      size: 10750
+      nfiles: 5
+  split_data@copper:
+    cmd: rm -rf data/02_interim/sites/copper/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/copper/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/sites/copper/yolo_annos 
+      data/02_interim/sites/copper/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/copper/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/copper/split_labels_tmp --out-dir 
+      data/03_processed/sites/copper/splits_baseline --sites copper --seed 42 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/copper/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/copper/yolo_annos
+      hash: md5
+      md5: 18996df030e30f392cd140632a779e39.dir
+      size: 55108624
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/copper/splits_baseline
+      hash: md5
+      md5: de1c391bfd1ae4e5e042c9bace12726b.dir
+      size: 3255409
+      nfiles: 5
+  build_model_input@kwakwa:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/kwakwa.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/kwakwa/yolo_annos_fs 
+      --out-shards data/02_interim/sites/kwakwa/yolo_annos --empty-list 
+      data/02_interim/sites/kwakwa/yolo_annos/empty_vids.txt --shard-size 100000
+      --include-sites kwakwa --frame-stride 3 --frame-offset-mode video_hash 
+      --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
+      --stats-dir data/02_interim/sites/kwakwa/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/kwakwa.json
+      hash: md5
+      md5: 54651c0fe704f5af6cea77a85b029da3
+      size: 782
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/kwakwa/yolo_annos
+      hash: md5
+      md5: 6c9295413413947a38d2f417c2e6320c.dir
+      size: 23757095
+      nfiles: 2
+    - path: data/02_interim/sites/kwakwa/yolo_annos_stats
+      hash: md5
+      md5: 0bcf7e1f99d8f578f0bec98b1590adbf.dir
+      size: 10421
+      nfiles: 5
+  split_data@kwakwa:
+    cmd: rm -rf data/02_interim/sites/kwakwa/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/kwakwa/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/sites/kwakwa/yolo_annos 
+      data/02_interim/sites/kwakwa/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/kwakwa/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/kwakwa/split_labels_tmp --out-dir 
+      data/03_processed/sites/kwakwa/splits_baseline --sites kwakwa --seed 42 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/kwakwa/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/kwakwa/yolo_annos
+      hash: md5
+      md5: 6c9295413413947a38d2f417c2e6320c.dir
+      size: 23757095
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/kwakwa/splits_baseline
+      hash: md5
+      md5: d11de6e5eb70b22722788360bbdc7cfb.dir
+      size: 1376488
+      nfiles: 5
+  build_model_input@tankeeah:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/tankeeah.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/tankeeah/yolo_annos_fs
+      --out-shards data/02_interim/sites/tankeeah/yolo_annos --empty-list 
+      data/02_interim/sites/tankeeah/yolo_annos/empty_vids.txt --shard-size 
+      100000 --include-sites tankeeah --frame-stride 3 --frame-offset-mode 
+      video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
+      11 --stats-dir data/02_interim/sites/tankeeah/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/tankeeah.json
+      hash: md5
+      md5: 88d4d1e4e77118f3a7ee67ae2034c6ba
+      size: 5398
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/tankeeah/yolo_annos
+      hash: md5
+      md5: 1cb8c51dc0c22422d2c42e721360cc27.dir
+      size: 249945514
+      nfiles: 4
+    - path: data/02_interim/sites/tankeeah/yolo_annos_stats
+      hash: md5
+      md5: fc9b88c8635056bbc313112ef02e1473.dir
+      size: 10919
+      nfiles: 5
+  split_data@tankeeah:
+    cmd: rm -rf data/02_interim/sites/tankeeah/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/tankeeah/split_labels_tmp && scripts/unpack_annos.sh
+      data/02_interim/sites/tankeeah/yolo_annos 
+      data/02_interim/sites/tankeeah/split_labels_tmp && scripts/unpack_annos.sh
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/tankeeah/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/tankeeah/split_labels_tmp --out-dir 
+      data/03_processed/sites/tankeeah/splits_baseline --sites tankeeah --seed 
+      42 --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/tankeeah/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/tankeeah/yolo_annos
+      hash: md5
+      md5: 1cb8c51dc0c22422d2c42e721360cc27.dir
+      size: 249945514
+      nfiles: 4
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/tankeeah/splits_baseline
+      hash: md5
+      md5: 5fa20d1ea5cc57338fba1c4cb2cda11c.dir
+      size: 13664127
+      nfiles: 5
+  build_model_input@kitwanga:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/kitwanga.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/kitwanga/yolo_annos_fs
+      --out-shards data/02_interim/sites/kitwanga/yolo_annos --empty-list 
+      data/02_interim/sites/kitwanga/yolo_annos/empty_vids.txt --shard-size 
+      100000 --include-sites kitwanga --frame-stride 3 --frame-offset-mode 
+      video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
+      11 --stats-dir data/02_interim/sites/kitwanga/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/kitwanga.json
+      hash: md5
+      md5: 0719b4fbb13547e201fb369295e4c088
+      size: 780
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/kitwanga/yolo_annos
+      hash: md5
+      md5: ba8ae0ecf477559c93cdffa31ebd35bb.dir
+      size: 8224130
+      nfiles: 2
+    - path: data/02_interim/sites/kitwanga/yolo_annos_stats
+      hash: md5
+      md5: 0f7055235a99f4cc2cc167c2abfdb2e8.dir
+      size: 10766
+      nfiles: 5
+  build_model_input@kitkiata:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/kitkiata.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/kitkiata/yolo_annos_fs
+      --out-shards data/02_interim/sites/kitkiata/yolo_annos --empty-list 
+      data/02_interim/sites/kitkiata/yolo_annos/empty_vids.txt --shard-size 
+      100000 --include-sites kitkiata --frame-stride 3 --frame-offset-mode 
+      video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
+      11 --stats-dir data/02_interim/sites/kitkiata/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/kitkiata.json
+      hash: md5
+      md5: 2d6cc13f2eb65d4039a082076ebbd930
+      size: 7829
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/kitkiata/yolo_annos
+      hash: md5
+      md5: 4155bcabf8458218b29be90b494d28c7.dir
+      size: 122035105
+      nfiles: 3
+    - path: data/02_interim/sites/kitkiata/yolo_annos_stats
+      hash: md5
+      md5: 8c9a73c6947aa36b53f2d7b76aa93404.dir
+      size: 11011
+      nfiles: 5
+  split_data@chignik:
+    cmd: rm -rf data/02_interim/sites/chignik/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/chignik/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/sites/chignik/yolo_annos 
+      data/02_interim/sites/chignik/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/chignik/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/chignik/split_labels_tmp --out-dir 
+      data/03_processed/sites/chignik/splits_baseline --sites chignik --seed 42 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/chignik/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/chignik/yolo_annos
+      hash: md5
+      md5: 88820064f81425971828701712368697.dir
+      size: 24403072
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/chignik/splits_baseline
+      hash: md5
+      md5: 1df3a9cb83cfa13cd3a4f557d069dba1.dir
+      size: 1469479
+      nfiles: 5
+  build_model_input@stephenssmolt:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/stephenssmolt.json --data-yaml 
+      config/salmon_yolo.yaml --out 
+      data/02_interim/sites/stephenssmolt/yolo_annos_fs --out-shards 
+      data/02_interim/sites/stephenssmolt/yolo_annos --empty-list 
+      data/02_interim/sites/stephenssmolt/yolo_annos/empty_vids.txt --shard-size
+      100000 --include-sites stephenssmolt --frame-stride 3 --frame-offset-mode 
+      video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
+      11 --stats-dir data/02_interim/sites/stephenssmolt/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/stephenssmolt.json
+      hash: md5
+      md5: 7f0daf7dd00d3398fb1a40cd9da224a2
+      size: 513
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/stephenssmolt/yolo_annos
+      hash: md5
+      md5: cabcf98fa10eb47584cfed584b2e0135.dir
+      size: 40865097
+      nfiles: 2
+    - path: data/02_interim/sites/stephenssmolt/yolo_annos_stats
+      hash: md5
+      md5: 4ca726b063bee257096d701cd14568a9.dir
+      size: 10872
+      nfiles: 5
+  split_data@bear:
+    cmd: rm -rf data/02_interim/sites/bear/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/bear/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/sites/bear/yolo_annos 
+      data/02_interim/sites/bear/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/bear/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/bear/split_labels_tmp --out-dir 
+      data/03_processed/sites/bear/splits_baseline --sites bear --seed 42 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/bear/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/bear/yolo_annos
+      hash: md5
+      md5: 967586ff4860fe8cbee5ec8ce1a99dd5.dir
+      size: 49566430
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/bear/splits_baseline
+      hash: md5
+      md5: 7f8d41f335965d438d275dffd63313a0.dir
+      size: 2704997
+      nfiles: 5
+  build_model_input@klukshu:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/klukshu.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/klukshu/yolo_annos_fs 
+      --out-shards data/02_interim/sites/klukshu/yolo_annos --empty-list 
+      data/02_interim/sites/klukshu/yolo_annos/empty_vids.txt --shard-size 
+      100000 --include-sites klukshu --frame-stride 3 --frame-offset-mode 
+      video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
+      11 --stats-dir data/02_interim/sites/klukshu/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/klukshu.json
+      hash: md5
+      md5: 786e326dd3d91744ab3aee64f308872d
+      size: 455
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/klukshu/yolo_annos
+      hash: md5
+      md5: 929c4e8ad4370f4ade614f13cf9b67ae.dir
+      size: 3727407
+      nfiles: 2
+    - path: data/02_interim/sites/klukshu/yolo_annos_stats
+      hash: md5
+      md5: 4d5139225c6a27625197efb70cb06a8e.dir
+      size: 10263
+      nfiles: 5
+  split_data@klukshu:
+    cmd: rm -rf data/02_interim/sites/klukshu/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/klukshu/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/sites/klukshu/yolo_annos 
+      data/02_interim/sites/klukshu/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/klukshu/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/klukshu/split_labels_tmp --out-dir 
+      data/03_processed/sites/klukshu/splits_baseline --sites klukshu --seed 42 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/klukshu/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/klukshu/yolo_annos
+      hash: md5
+      md5: 929c4e8ad4370f4ade614f13cf9b67ae.dir
+      size: 3727407
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/klukshu/splits_baseline
+      hash: md5
+      md5: 9da8b766dfa5412ffc4493f278b77155.dir
+      size: 247066
+      nfiles: 5
+  split_data@kitkiata:
+    cmd: rm -rf data/02_interim/sites/kitkiata/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/kitkiata/split_labels_tmp && scripts/unpack_annos.sh
+      data/02_interim/sites/kitkiata/yolo_annos 
+      data/02_interim/sites/kitkiata/split_labels_tmp && scripts/unpack_annos.sh
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/kitkiata/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/kitkiata/split_labels_tmp --out-dir 
+      data/03_processed/sites/kitkiata/splits_baseline --sites kitkiata --seed 
+      42 --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/kitkiata/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/kitkiata/yolo_annos
+      hash: md5
+      md5: 4155bcabf8458218b29be90b494d28c7.dir
+      size: 122035105
+      nfiles: 3
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/kitkiata/splits_baseline
+      hash: md5
+      md5: 5524bbe0904c31601a1808d16f1eaa5a.dir
+      size: 7461775
+      nfiles: 5
+  split_data@stephenssmolt:
+    cmd: rm -rf data/02_interim/sites/stephenssmolt/split_labels_tmp && mkdir -p
+      data/02_interim/sites/stephenssmolt/split_labels_tmp && 
+      scripts/unpack_annos.sh data/02_interim/sites/stephenssmolt/yolo_annos 
+      data/02_interim/sites/stephenssmolt/split_labels_tmp && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/stephenssmolt/split_labels_tmp && 
+      scripts/make_splits.py --labels-root 
+      data/02_interim/sites/stephenssmolt/split_labels_tmp --out-dir 
+      data/03_processed/sites/stephenssmolt/splits_baseline --sites 
+      stephenssmolt --seed 42 --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 &&
+      rm -rf data/02_interim/sites/stephenssmolt/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/stephenssmolt/yolo_annos
+      hash: md5
+      md5: cabcf98fa10eb47584cfed584b2e0135.dir
+      size: 40865097
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/stephenssmolt/splits_baseline
+      hash: md5
+      md5: c2d94f772773168d9fdc0e036a70bda2.dir
+      size: 2395735
+      nfiles: 5
+  build_model_input@Elbow:
+    cmd: scripts/yolo_converter_ls_video.py --input-manifest 
+      data/02_interim/labelstudio_site_index/Elbow.json --data-yaml 
+      config/salmon_yolo.yaml --out data/02_interim/sites/Elbow/yolo_annos_fs 
+      --out-shards data/02_interim/sites/Elbow/yolo_annos --empty-list 
+      data/02_interim/sites/Elbow/yolo_annos/empty_vids.txt --shard-size 100000 
+      --include-sites Elbow --frame-stride 3 --frame-offset-mode video_hash 
+      --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
+      --stats-dir data/02_interim/sites/Elbow/yolo_annos_stats
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index/Elbow.json
+      hash: md5
+      md5: c85efbec9c9cbd9b70956ccc0c9a4e73
+      size: 443
+    - path: scripts/yolo_converter_ls_video.py
+      hash: md5
+      md5: 95696514ec77c20c6491c5af2ccb46a5
+      size: 118
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls
+      hash: md5
+      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      size: 127842
+      nfiles: 15
+    params:
+      params.yaml:
+        data.neg: --include-negatives
+        data.neg_per_vid: 11
+        data.neg_ratio: 0.1
+    outs:
+    - path: data/02_interim/sites/Elbow/yolo_annos
+      hash: md5
+      md5: 7a6eaa31707be4769ce0cd63d0ec7f76.dir
+      size: 77317946
+      nfiles: 2
+    - path: data/02_interim/sites/Elbow/yolo_annos_stats
+      hash: md5
+      md5: 3c54572d4a258c5f64f1c17dfc8bcc6f.dir
+      size: 10692
+      nfiles: 5
+  split_data@Elbow:
+    cmd: rm -rf data/02_interim/sites/Elbow/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/Elbow/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/sites/Elbow/yolo_annos 
+      data/02_interim/sites/Elbow/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/Elbow/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/Elbow/split_labels_tmp --out-dir 
+      data/03_processed/sites/Elbow/splits_baseline --sites Elbow --seed 42 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/Elbow/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/Elbow/yolo_annos
+      hash: md5
+      md5: 7a6eaa31707be4769ce0cd63d0ec7f76.dir
+      size: 77317946
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/Elbow/splits_baseline
+      hash: md5
+      md5: 1396ce4e57eae677ec86c2d37758b6fe.dir
+      size: 4386764
+      nfiles: 5
+  split_data@kitwanga:
+    cmd: rm -rf data/02_interim/sites/kitwanga/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/kitwanga/split_labels_tmp && scripts/unpack_annos.sh
+      data/02_interim/sites/kitwanga/yolo_annos 
+      data/02_interim/sites/kitwanga/split_labels_tmp && scripts/unpack_annos.sh
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/kitwanga/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/kitwanga/split_labels_tmp --out-dir 
+      data/03_processed/sites/kitwanga/splits_baseline --sites kitwanga --seed 
+      42 --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/kitwanga/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/kitwanga/yolo_annos
+      hash: md5
+      md5: ba8ae0ecf477559c93cdffa31ebd35bb.dir
+      size: 8224130
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/kitwanga/splits_baseline
+      hash: md5
+      md5: 447ca37a63e3a7553e2aa4d79a79536e.dir
+      size: 501878
+      nfiles: 5
+  split_data@koeye:
+    cmd: rm -rf data/02_interim/sites/koeye/split_labels_tmp && mkdir -p 
+      data/02_interim/sites/koeye/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/sites/koeye/yolo_annos 
+      data/02_interim/sites/koeye/split_labels_tmp && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/02_interim/sites/koeye/split_labels_tmp && scripts/make_splits.py 
+      --labels-root data/02_interim/sites/koeye/split_labels_tmp --out-dir 
+      data/03_processed/sites/koeye/splits_baseline --sites koeye --seed 42 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      data/02_interim/sites/koeye/split_labels_tmp
+    deps:
+    - path: data/01_raw/salmon_vid_counts.csv
+      hash: md5
+      md5: b6136eee30a358d7473a160197bc91be
+      size: 6465051
+    - path: data/01_raw/salmon_vid_counts_summary.csv
+      hash: md5
+      md5: c65c2ba8214d26905ccb9608e9071b93
+      size: 1031
+    - path: data/02_interim/sites/koeye/yolo_annos
+      hash: md5
+      md5: d385008188ebb67bb52fbd10f7c91006.dir
+      size: 69643137
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: scripts/make_splits.py
+      hash: md5
+      md5: 3921729fec8a5aa6c1eb25c54196a658
+      size: 650
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/splits
+      hash: md5
+      md5: 809d5acd572623d575c9dc0fe89cc739.dir
+      size: 59810
+      nfiles: 9
+    - path: src/object_detection/utils
+      hash: md5
+      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      size: 4638
+      nfiles: 6
+    outs:
+    - path: data/03_processed/sites/koeye/splits_baseline
+      hash: md5
+      md5: c7e2eaf5315330f5cc011a23b7597ae6.dir
+      size: 3890548
+      nfiles: 5
+  plot_site_class_stats@copper:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/copper/yolo_annos_stats --out-dir 
+      data/02_interim/sites/copper/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/copper/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 8cca35b0ab72ebc1c3add8956e03adeb
+      size: 744
+    - path: 
+        data/02_interim/sites/copper/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 53f56f58b5816ea1696ab4630052d1b3
+      size: 751
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/copper/yolo_annos_stats_plots
+      hash: md5
+      md5: 13b51d4b18011ba1800585bdbb24d95e.dir
+      size: 503022
+      nfiles: 4
+  plot_site_class_stats@tankeeah:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/tankeeah/yolo_annos_stats --out-dir 
+      data/02_interim/sites/tankeeah/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 7a876832cd60ff82771b6c06fe8f2fd6
+      size: 786
+    - path: 
+        data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 26b6aa5cc7d99b2e5ef84265372bdd26
+      size: 794
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/tankeeah/yolo_annos_stats_plots
+      hash: md5
+      md5: 4cac07a58e5dc49855b139b01c04b85e.dir
+      size: 509496
+      nfiles: 4
+  plot_site_class_stats@chignik:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/chignik/yolo_annos_stats --out-dir 
+      data/02_interim/sites/chignik/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/chignik/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 1268959d513325633e69264fd196e884
+      size: 741
+    - path: 
+        data/02_interim/sites/chignik/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: aa06c3a1f5bf5e0f3b7ba3a33e10a27f
+      size: 742
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/chignik/yolo_annos_stats_plots
+      hash: md5
+      md5: 5c1dca02a9d6e07e35521d0969181f27.dir
+      size: 502859
+      nfiles: 4
+  plot_site_class_stats@stephenssmolt:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/stephenssmolt/yolo_annos_stats --out-dir 
+      data/02_interim/sites/stephenssmolt/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: fd1ccf43dca371f6674746c6e24a962e
+      size: 826
+    - path: 
+        data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: b61daeb85e85c3d70b0b45c58b39c268
+      size: 834
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/stephenssmolt/yolo_annos_stats_plots
+      hash: md5
+      md5: 6aeb4efcbe8b9085e709508119f53b52.dir
+      size: 511197
+      nfiles: 4
+  plot_site_class_stats@Elbow:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/Elbow/yolo_annos_stats --out-dir 
+      data/02_interim/sites/Elbow/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/Elbow/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: f442b243ed887dc83500ca1b4c43ed64
+      size: 729
+    - path: 
+        data/02_interim/sites/Elbow/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 5609cde7ceaf143fb4a5a7c4411a7659
+      size: 735
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/Elbow/yolo_annos_stats_plots
+      hash: md5
+      md5: 1752cd6ed60bdd1ef4dec777eac0b44c.dir
+      size: 506407
+      nfiles: 4
+  plot_site_class_stats@klukshu:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/klukshu/yolo_annos_stats --out-dir 
+      data/02_interim/sites/klukshu/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/klukshu/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 9837834ff505e53a287bb23a00541d79
+      size: 676
+    - path: 
+        data/02_interim/sites/klukshu/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 72253a8078ecdf11ae570ce8b2bf8ccc
+      size: 681
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/klukshu/yolo_annos_stats_plots
+      hash: md5
+      md5: 41939f899cfce5e63f6a3bd01a1167bd.dir
+      size: 499814
+      nfiles: 4
+  plot_site_class_stats@kitwanga:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/kitwanga/yolo_annos_stats --out-dir 
+      data/02_interim/sites/kitwanga/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 837d5074b7711a003861875153128dd3
+      size: 769
+    - path: 
+        data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: fa83033b95adb1944c4afbeaca6306e9
+      size: 773
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/kitwanga/yolo_annos_stats_plots
+      hash: md5
+      md5: d4952f0353113aab77aabe0e49e1ed89.dir
+      size: 505812
+      nfiles: 4
+  plot_site_class_stats@kwakwa:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/kwakwa/yolo_annos_stats --out-dir 
+      data/02_interim/sites/kwakwa/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: ba580d043b000aa2e72238e44593d421
+      size: 691
+    - path: 
+        data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: a451694040beb9a65d911740a14db849
+      size: 697
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/kwakwa/yolo_annos_stats_plots
+      hash: md5
+      md5: 6f0cfb0fb381f547935735abfacbdd02.dir
+      size: 504313
+      nfiles: 4
+  plot_site_class_stats@koeye:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/koeye/yolo_annos_stats --out-dir 
+      data/02_interim/sites/koeye/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/koeye/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 20b98460c9b11b23c5776f4c6a771ff3
+      size: 731
+    - path: 
+        data/02_interim/sites/koeye/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 763ea034f6eec30bc9eadebd120d8dd2
+      size: 736
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/koeye/yolo_annos_stats_plots
+      hash: md5
+      md5: 472c2fbefc1634a19510b8106d6a9014.dir
+      size: 506363
+      nfiles: 4
+  plot_site_class_stats@redoubt:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/redoubt/yolo_annos_stats --out-dir 
+      data/02_interim/sites/redoubt/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/redoubt/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 4d342a5da98df62065a378220043cce7
+      size: 701
+    - path: 
+        data/02_interim/sites/redoubt/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: f5608a98971357dc9a4a79d90f7e885d
+      size: 707
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/redoubt/yolo_annos_stats_plots
+      hash: md5
+      md5: 6275b05478a0c71c4477606ef65d3485.dir
+      size: 504199
+      nfiles: 4
+  plot_site_class_stats@bear:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/bear/yolo_annos_stats --out-dir 
+      data/02_interim/sites/bear/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/bear/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: e481670964c5aca1f2a05b784665d33e
+      size: 694
+    - path: 
+        data/02_interim/sites/bear/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 6dfa4ce8242aa79ac0da7bc304463145
+      size: 698
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/bear/yolo_annos_stats_plots
+      hash: md5
+      md5: ebce86df26da266f9e9c87b0798ddff1.dir
+      size: 502397
+      nfiles: 4
+  plot_site_class_stats@kitkiata:
+    cmd: scripts/plot_site_class_stats.py --stats-dir 
+      data/02_interim/sites/kitkiata/yolo_annos_stats --out-dir 
+      data/02_interim/sites/kitkiata/yolo_annos_stats_plots
+    deps:
+    - path: 
+        data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 1354f10438d9dc9ef6bcc940c2485291
+      size: 803
+    - path: 
+        data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 1ee98d08d86f14636516ad15b9fcf644
+      size: 811
+    - path: scripts/plot_site_class_stats.py
+      hash: md5
+      md5: 7c1ca14d1377e69543e54322532cba6e
+      size: 118
+    - path: src/object_detection/analysis/cli.py
+      hash: md5
+      md5: 4c234430bce012a2eb9938330693a3b5
+      size: 667
+    - path: src/object_detection/analysis/plots.py
+      hash: md5
+      md5: c4af19845d58aab807875f56bf64f6a7
+      size: 2574
+    outs:
+    - path: data/02_interim/sites/kitkiata/yolo_annos_stats_plots
+      hash: md5
+      md5: b015b48eb54e8ea1d0151588d83e8b6d.dir
+      size: 504600
+      nfiles: 4
+  build_video_metadata_index@tankeeah:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site tankeeah --out-csv 
+      data/02_interim/sites/tankeeah/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/tankeeah/video_metadata_index.csv
+      hash: md5
+      md5: 90e515e9c32e99c82b2ab89a29b1e1c4
+      size: 2341661
+  build_video_metadata_index@kitwanga:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site kitwanga --out-csv 
+      data/02_interim/sites/kitwanga/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/kitwanga/video_metadata_index.csv
+      hash: md5
+      md5: 9a55763b9e0b509ade9d08c00064bf04
+      size: 193399
+  build_video_metadata_index@bear:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site bear --out-csv 
+      data/02_interim/sites/bear/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/bear/video_metadata_index.csv
+      hash: md5
+      md5: ca9b57f1b0a8fd5dc37b5e2d5f6d89f1
+      size: 404530
+  build_video_metadata_index@kitkiata:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site kitkiata --out-csv 
+      data/02_interim/sites/kitkiata/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/kitkiata/video_metadata_index.csv
+      hash: md5
+      md5: 5604d56be0ade18bd205c10cb983dd73
+      size: 983551
+  build_video_metadata_index@copper:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site copper --out-csv 
+      data/02_interim/sites/copper/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/copper/video_metadata_index.csv
+      hash: md5
+      md5: 67aa440870bda5f78fd8454175b6731a
+      size: 843969
+  build_video_metadata_index@kwakwa:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site kwakwa --out-csv 
+      data/02_interim/sites/kwakwa/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/kwakwa/video_metadata_index.csv
+      hash: md5
+      md5: b20ed93dcc81788dd308b904f14bc122
+      size: 232751
+  build_video_metadata_index@Elbow:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site Elbow --out-csv 
+      data/02_interim/sites/Elbow/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/Elbow/video_metadata_index.csv
+      hash: md5
+      md5: a4073c5e3d2b8f8d897b02c1eef29f72
+      size: 5132280
+  build_video_metadata_index@koeye:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site koeye --out-csv 
+      data/02_interim/sites/koeye/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/koeye/video_metadata_index.csv
+      hash: md5
+      md5: 148075d90fc0ed8a2027e2940451b57c
+      size: 516389
+  build_video_metadata_index@redoubt:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site redoubt --out-csv 
+      data/02_interim/sites/redoubt/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/redoubt/video_metadata_index.csv
+      hash: md5
+      md5: cf8090ba87f1c98671286f9244261631
+      size: 80181
+  build_video_metadata_index@chignik:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site chignik --out-csv 
+      data/02_interim/sites/chignik/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/chignik/video_metadata_index.csv
+      hash: md5
+      md5: da7e1f484508124c6341dcba3d3f1035
+      size: 241217
+  build_video_metadata_index@klukshu:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site klukshu --out-csv 
+      data/02_interim/sites/klukshu/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/klukshu/video_metadata_index.csv
+      hash: md5
+      md5: dd0efebcc3a7266958151439114b7ae6
+      size: 38998
+  build_video_metadata_index@stephenssmolt:
+    cmd: scripts/filter_video_metadata_index.py --input-csv 
+      data/02_interim/video_metadata_index.csv --site stephenssmolt --out-csv 
+      data/02_interim/sites/stephenssmolt/video_metadata_index.csv
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: scripts/filter_video_metadata_index.py
+      hash: md5
+      md5: db428922d21cd5ebeff39c808c759651
+      size: 127
+    - path: src/object_detection/metadata/filter.py
+      hash: md5
+      md5: 310a1ca7a0ecac36f2ecccb7af8d5f55
+      size: 2177
+    - path: src/object_detection/metadata/filter_cli.py
+      hash: md5
+      md5: 8e344ca457ed9ece46425f960407b325
+      size: 770
+    outs:
+    - path: data/02_interim/sites/stephenssmolt/video_metadata_index.csv
+      hash: md5
+      md5: e4c63b0e868355d39fec3fa9a65bba2d
+      size: 177192
+  pack_split_dataset@tankeeah:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/tankeeah && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah && 
+      scripts/unpack_annos.sh data/02_interim/sites/tankeeah/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/tankeeah/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/manifests 
+      --temp-video-dir data/04_dataset/salmon_dataset/tmp_videos/tankeeah 
+      --metadata-csv data/02_interim/sites/tankeeah/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/tankeeah
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/tankeeah/video_metadata_index.csv
+      hash: md5
+      md5: 90e515e9c32e99c82b2ab89a29b1e1c4
+      size: 2341661
+    - path: data/02_interim/sites/tankeeah/yolo_annos
+      hash: md5
+      md5: 1cb8c51dc0c22422d2c42e721360cc27.dir
+      size: 249945514
+      nfiles: 4
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/tankeeah/splits_baseline
+      hash: md5
+      md5: 5fa20d1ea5cc57338fba1c4cb2cda11c.dir
+      size: 13664127
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah
+      hash: md5
+      md5: 0a3ca60e00a8e95bfe3a0b82b78e0e6e.dir
+      size: 9767248935
+      nfiles: 11
+  pack_split_dataset@kitwanga:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kitwanga && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga && 
+      scripts/unpack_annos.sh data/02_interim/sites/kitwanga/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/kitwanga/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/manifests 
+      --temp-video-dir data/04_dataset/salmon_dataset/tmp_videos/kitwanga 
+      --metadata-csv data/02_interim/sites/kitwanga/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/kitwanga
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/kitwanga/video_metadata_index.csv
+      hash: md5
+      md5: 9a55763b9e0b509ade9d08c00064bf04
+      size: 193399
+    - path: data/02_interim/sites/kitwanga/yolo_annos
+      hash: md5
+      md5: ba8ae0ecf477559c93cdffa31ebd35bb.dir
+      size: 8224130
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/kitwanga/splits_baseline
+      hash: md5
+      md5: 447ca37a63e3a7553e2aa4d79a79536e.dir
+      size: 501878
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga
+      hash: md5
+      md5: 1628c0616a884ce2263883c00def0f54.dir
+      size: 276849210
+      nfiles: 8
+  pack_split_dataset@bear:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/bear && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/bear && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/bear && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/bear && scripts/unpack_annos.sh 
+      data/02_interim/sites/bear/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/bear && scripts/unpack_annos.sh 
+      data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/bear && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/bear/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/bear --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/bear/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/bear/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/bear --metadata-csv 
+      data/02_interim/sites/bear/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/bear/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/bear/packed_dataset_manifest.csv 
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/bear && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/bear/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/bear && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/bear
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/bear/video_metadata_index.csv
+      hash: md5
+      md5: ca9b57f1b0a8fd5dc37b5e2d5f6d89f1
+      size: 404530
+    - path: data/02_interim/sites/bear/yolo_annos
+      hash: md5
+      md5: 967586ff4860fe8cbee5ec8ce1a99dd5.dir
+      size: 49566430
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/bear/splits_baseline
+      hash: md5
+      md5: 7f8d41f335965d438d275dffd63313a0.dir
+      size: 2704997
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/bear
+      hash: md5
+      md5: 49274d53ee3e6d18b26a1b352796a7c9.dir
+      size: 1585840663
+      nfiles: 8
+  pack_split_dataset@kitkiata:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kitkiata && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata && 
+      scripts/unpack_annos.sh data/02_interim/sites/kitkiata/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/kitkiata/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/manifests 
+      --temp-video-dir data/04_dataset/salmon_dataset/tmp_videos/kitkiata 
+      --metadata-csv data/02_interim/sites/kitkiata/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/kitkiata
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/kitkiata/video_metadata_index.csv
+      hash: md5
+      md5: 5604d56be0ade18bd205c10cb983dd73
+      size: 983551
+    - path: data/02_interim/sites/kitkiata/yolo_annos
+      hash: md5
+      md5: 4155bcabf8458218b29be90b494d28c7.dir
+      size: 122035105
+      nfiles: 3
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/kitkiata/splits_baseline
+      hash: md5
+      md5: 5524bbe0904c31601a1808d16f1eaa5a.dir
+      size: 7461775
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata
+      hash: md5
+      md5: 3382466363b0670ad2d7749ba66a5615.dir
+      size: 7171154553
+      nfiles: 9
+  pack_split_dataset@copper:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/copper && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/copper && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/copper && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/copper && scripts/unpack_annos.sh 
+      data/02_interim/sites/copper/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/copper && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/copper && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/copper/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/copper --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/copper/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/copper/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/copper --metadata-csv 
+      data/02_interim/sites/copper/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/copper/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/copper/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/copper && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/copper/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/copper && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/copper
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/copper/video_metadata_index.csv
+      hash: md5
+      md5: 67aa440870bda5f78fd8454175b6731a
+      size: 843969
+    - path: data/02_interim/sites/copper/yolo_annos
+      hash: md5
+      md5: 18996df030e30f392cd140632a779e39.dir
+      size: 55108624
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/copper/splits_baseline
+      hash: md5
+      md5: de1c391bfd1ae4e5e042c9bace12726b.dir
+      size: 3255409
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/copper
+      hash: md5
+      md5: fb37fd24004da076d48bacf9d5b9c27b.dir
+      size: 2090018113
+      nfiles: 8
+  pack_split_dataset@kwakwa:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kwakwa && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa && scripts/unpack_annos.sh 
+      data/02_interim/sites/kwakwa/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/kwakwa/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/kwakwa --metadata-csv 
+      data/02_interim/sites/kwakwa/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/kwakwa
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/kwakwa/video_metadata_index.csv
+      hash: md5
+      md5: b20ed93dcc81788dd308b904f14bc122
+      size: 232751
+    - path: data/02_interim/sites/kwakwa/yolo_annos
+      hash: md5
+      md5: 6c9295413413947a38d2f417c2e6320c.dir
+      size: 23757095
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/kwakwa/splits_baseline
+      hash: md5
+      md5: d11de6e5eb70b22722788360bbdc7cfb.dir
+      size: 1376488
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa
+      hash: md5
+      md5: b16f5363e2cf16a866d75ca3ed9866d1.dir
+      size: 873559226
+      nfiles: 8
+  pack_split_dataset@Elbow:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/Elbow && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow && scripts/unpack_annos.sh 
+      data/02_interim/sites/Elbow/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow && scripts/unpack_annos.sh
+      data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/Elbow/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/Elbow --metadata-csv 
+      data/02_interim/sites/Elbow/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow/packed_dataset_manifest.csv 
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/Elbow
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/Elbow/video_metadata_index.csv
+      hash: md5
+      md5: a4073c5e3d2b8f8d897b02c1eef29f72
+      size: 5132280
+    - path: data/02_interim/sites/Elbow/yolo_annos
+      hash: md5
+      md5: 7a6eaa31707be4769ce0cd63d0ec7f76.dir
+      size: 77317946
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/Elbow/splits_baseline
+      hash: md5
+      md5: 1396ce4e57eae677ec86c2d37758b6fe.dir
+      size: 4386764
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow
+      hash: md5
+      md5: 8bf1debfbcbec9f4cc2757db554c4253.dir
+      size: 4253716040
+      nfiles: 9
+  pack_split_dataset@koeye:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/koeye && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye && scripts/unpack_annos.sh 
+      data/02_interim/sites/koeye/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye && scripts/unpack_annos.sh
+      data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/koeye/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye/manifests --temp-video-dir 
+      data/04_dataset/salmon_dataset/tmp_videos/koeye --metadata-csv 
+      data/02_interim/sites/koeye/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye/packed_dataset_manifest.csv 
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/koeye
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/koeye/video_metadata_index.csv
+      hash: md5
+      md5: 148075d90fc0ed8a2027e2940451b57c
+      size: 516389
+    - path: data/02_interim/sites/koeye/yolo_annos
+      hash: md5
+      md5: d385008188ebb67bb52fbd10f7c91006.dir
+      size: 69643137
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/koeye/splits_baseline
+      hash: md5
+      md5: c7e2eaf5315330f5cc011a23b7597ae6.dir
+      size: 3890548
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye
+      hash: md5
+      md5: 95cefdf3830fed063aa29d0a46330a5c.dir
+      size: 3287477385
+      nfiles: 8
+  pack_split_dataset@redoubt:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/redoubt && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt && scripts/unpack_annos.sh
+      data/02_interim/sites/redoubt/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/redoubt/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt/manifests --temp-video-dir
+      data/04_dataset/salmon_dataset/tmp_videos/redoubt --metadata-csv 
+      data/02_interim/sites/redoubt/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/redoubt
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/redoubt/video_metadata_index.csv
+      hash: md5
+      md5: cf8090ba87f1c98671286f9244261631
+      size: 80181
+    - path: data/02_interim/sites/redoubt/yolo_annos
+      hash: md5
+      md5: 4bd76c0584185006ca6b97dc005e4cb7.dir
+      size: 26809180
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/redoubt/splits_baseline
+      hash: md5
+      md5: 27fed8ac3f1f310b43889f732ab6bda4.dir
+      size: 1472340
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt
+      hash: md5
+      md5: a30298da734492742a5d965e83baddf0.dir
+      size: 944816713
+      nfiles: 8
+  pack_split_dataset@chignik:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/chignik && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik && scripts/unpack_annos.sh
+      data/02_interim/sites/chignik/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/chignik/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik/manifests --temp-video-dir
+      data/04_dataset/salmon_dataset/tmp_videos/chignik --metadata-csv 
+      data/02_interim/sites/chignik/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/chignik
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/chignik/video_metadata_index.csv
+      hash: md5
+      md5: da7e1f484508124c6341dcba3d3f1035
+      size: 241217
+    - path: data/02_interim/sites/chignik/yolo_annos
+      hash: md5
+      md5: 88820064f81425971828701712368697.dir
+      size: 24403072
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/chignik/splits_baseline
+      hash: md5
+      md5: 1df3a9cb83cfa13cd3a4f557d069dba1.dir
+      size: 1469479
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik
+      hash: md5
+      md5: ce995ade292b5d8daa41aa4d4db14767.dir
+      size: 680230580
+      nfiles: 8
+  pack_split_dataset@klukshu:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/klukshu && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu && scripts/unpack_annos.sh
+      data/02_interim/sites/klukshu/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/klukshu/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu/shards --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu/manifests --temp-video-dir
+      data/04_dataset/salmon_dataset/tmp_videos/klukshu --metadata-csv 
+      data/02_interim/sites/klukshu/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu && rm -rf 
+      data/04_dataset/salmon_dataset/tmp_labels/klukshu
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/klukshu/video_metadata_index.csv
+      hash: md5
+      md5: dd0efebcc3a7266958151439114b7ae6
+      size: 38998
+    - path: data/02_interim/sites/klukshu/yolo_annos
+      hash: md5
+      md5: 929c4e8ad4370f4ade614f13cf9b67ae.dir
+      size: 3727407
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/klukshu/splits_baseline
+      hash: md5
+      md5: 9da8b766dfa5412ffc4493f278b77155.dir
+      size: 247066
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu
+      hash: md5
+      md5: a5b40320f6c2d837c1a0f2daba5a5270.dir
+      size: 157294367
+      nfiles: 8
+  pack_split_dataset@stephenssmolt:
+    cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && rm 
+      -rf data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && mkdir -p 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt && 
+      scripts/unpack_annos.sh data/02_interim/sites/stephenssmolt/yolo_annos 
+      data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && 
+      scripts/unpack_annos.sh data/02_interim/yolo_condition_negatives 
+      data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && 
+      scripts/pack_split_dataset.py --splits-dir 
+      data/03_processed/sites/stephenssmolt/splits_baseline --labels-root 
+      data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt --shards-root 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/shards 
+      --manifests-root 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/manifests 
+      --temp-video-dir data/04_dataset/salmon_dataset/tmp_videos/stephenssmolt 
+      --metadata-csv 
+      data/02_interim/sites/stephenssmolt/video_metadata_index.csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --reuse-shards-root 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt/shards 
+      --reuse-shards-root data/04_dataset/salmon_dataset/dataset_sharded/shards 
+      --data-yaml config/salmon_yolo.yaml --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
+      --manifest-csv 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/packed_dataset_manifest.csv
+      --splits train val test --shard-size 100000 && mkdir -p 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt && mv 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/* 
+      data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt && rm 
+      -rf data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/sites/stephenssmolt/video_metadata_index.csv
+      hash: md5
+      md5: e4c63b0e868355d39fec3fa9a65bba2d
+      size: 177192
+    - path: data/02_interim/sites/stephenssmolt/yolo_annos
+      hash: md5
+      md5: cabcf98fa10eb47584cfed584b2e0135.dir
+      size: 40865097
+      nfiles: 2
+    - path: data/02_interim/yolo_condition_negatives
+      hash: md5
+      md5: 92eeb25ba8cbf94d6af317842129b22a.dir
+      size: 891798
+      nfiles: 4
+    - path: data/03_processed/sites/stephenssmolt/splits_baseline
+      hash: md5
+      md5: c2d94f772773168d9fdc0e036a70bda2.dir
+      size: 2395735
+      nfiles: 5
+    - path: scripts/pack_split_dataset.py
+      hash: md5
+      md5: 27e6ab25d4fc12902fd5c0a880c18171
+      size: 116
+    - path: scripts/unpack_annos.sh
+      hash: md5
+      md5: 757607d0c25666091e773251e5b66ecd
+      size: 552
+    - path: src/object_detection/frames/cli.py
+      hash: md5
+      md5: b608065be8341af590b1000fc92f44c6
+      size: 3483
+    - path: src/object_detection/frames/extractor.py
+      hash: md5
+      md5: 6bc15c2a6b6794f6a365861198d29649
+      size: 18121
+    - path: src/object_detection/frames/parsing.py
+      hash: md5
+      md5: 8bc3da42992b645e23f4d9ca653ee78a
+      size: 1930
+    - path: src/object_detection/yolo_ls/shards.py
+      hash: md5
+      md5: f1cbbdcd356139bb8d28958ee0e05be6
+      size: 1309
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+    outs:
+    - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt
+      hash: md5
+      md5: e38e9cda0b4a736b04a0d4a62e17b406.dir
+      size: 1405178216
+      nfiles: 8

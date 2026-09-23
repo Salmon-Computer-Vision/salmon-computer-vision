@@ -1,1 +1,3 @@
 *.pt
+/dvc_plots
+/dvclive
