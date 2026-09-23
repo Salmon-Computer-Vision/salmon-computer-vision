@@ -150,12 +150,15 @@ for device_path in "${SITE_PATH}"/* ; do
 
     if [[ "$NO_BACKUP" != "true" ]]; then
         rclone copy "$SRC" "$BACKUP" \
+            --exclude ".write_test*" \
             --transfers=2 \
             --no-traverse \
             --progress
     fi
 
     rclone move "$device_path" "$DEST" \
+        --exclude ".write_test*" \
+        --exclude "**/.write_test*" \
         --include "/motion_vids/**" \
         --include "/device_settings/**" \
         --bwlimit=0 \
