@@ -157,10 +157,11 @@ for device_path in "${SITE_PATH}"/* ; do
     fi
 
     rclone move "$device_path" "$DEST" \
-        --exclude ".write_test*" \
-        --exclude "**/.write_test*" \
-        --include "/motion_vids/**" \
-        --include "/device_settings/**" \
+        --filter "- /.write_test*" \
+        --filter "- **/.write_test*" \
+        --filter "+ /motion_vids/**" \
+        --filter "+ /device_settings/**" \
+        --filter "- **" \
         --bwlimit=0 \
         --buffer-size=128M \
         --transfers=2 \
