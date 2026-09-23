@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from object_detection.yolo_ls.converter import YoloConverterLSVideo
+from object_detection.yolo_ls.converter import ConvertStats, YoloConverterLSVideo
 
 
 def test_stride_offset_fixed(tmp_path: Path):
@@ -469,3 +469,153 @@ def test_materialize_negatives_writes_to_shards(tmp_path: Path, sample_item):
         for name in negatives:
             content = tf.extractfile(name).read().decode("utf-8")
             assert content == ""
+
+
+
+def test_convert_files_aggregates_stats_in_deterministic_path_order(
+    tmp_path: Path,
+    monkeypatch,
+):
+    conv = YoloConverterLSVideo(
+        class_map={"Sockeye": 0},
+        output_dir=tmp_path / "out",
+    )
+
+    a = tmp_path / "a.json"
+    b = tmp_path / "b.json"
+
+    seen = []
+
+    def fake_convert_file(path: Path) -> ConvertStats:
+        path = Path(path)
+        seen.append(path.name)
+
+        if path.name == "a.json":
+            return ConvertStats(
+                videos_with_boxes=1,
+                label_lines_written=4,
+                label_files_written=3,
+                negative_files_written=1,
+                total_candidate_negative_frames=5,
+                errors=0,
+            )
+
+        return ConvertStats(
+            videos_without_boxes=2,
+            label_lines_written=6,
+            label_files_written=2,
+            negative_files_written=3,
+            total_candidate_negative_frames=7,
+            errors=1,
+        )
+
+    monkeypatch.setattr(conv, "convert_file", fake_convert_file)
+
+    stats = conv.convert_files([b, a])
+
+    assert seen == ["a.json", "b.json"]
+    assert stats.videos_with_boxes == 1
+    assert stats.videos_without_boxes == 2
+    assert stats.label_lines_written == 10
+    assert stats.label_files_written == 5
+    assert stats.negative_files_written == 4
+    assert stats.total_candidate_negative_frames == 12
+    assert stats.errors == 1
+
+
+def test_convert_files_continues_after_unexpected_convert_file_exception(
+    tmp_path: Path,
+    monkeypatch,
+):
+    conv = YoloConverterLSVideo(
+        class_map={"Sockeye": 0},
+        output_dir=tmp_path / "out",
+    )
+
+    a = tmp_path / "a.json"
+    b = tmp_path / "b.json"
+
+    def fake_convert_file(path: Path) -> ConvertStats:
+        if Path(path).name == "a.json":
+            raise RuntimeError("boom")
+
+        return ConvertStats(
+            videos_with_boxes=1,
+            label_files_written=2,
+        )
+
+    logged = []
+
+    monkeypatch.setattr(conv, "convert_file", fake_convert_file)
+    monkeypatch.setattr(
+        conv,
+        "_log_error",
+        lambda context, exc: logged.append((context, str(exc))),
+    )
+
+    stats = conv.convert_files([b, a])
+
+    assert stats.videos_with_boxes == 1
+    assert stats.label_files_written == 2
+    assert stats.errors == 1
+
+    assert len(logged) == 1
+    assert "convert_file(" in logged[0][0]
+    assert "a.json" in logged[0][0]
+    assert logged[0][1] == "boom"
+
+
+def test_convert_files_real_multiple_exports(tmp_path: Path, sample_item):
+    """
+    Exercise the manifest-facing converter API using real JSON exports rather
+    than convert_folder().
+    """
+    conv = YoloConverterLSVideo(
+        class_map={"Sockeye": 0},
+        output_dir=tmp_path / "out",
+        coord_mode="percent",
+    )
+
+    item1 = json.loads(json.dumps(sample_item))
+    item2 = json.loads(json.dumps(sample_item))
+
+    item1["data"]["metadata_file_filename"] = (
+        "HIRMD-tankeeah-jetson-0_20240704_055747_M.mp4"
+    )
+    item1["data"]["video"] = (
+        "s3://bucket/HIRMD-tankeeah-jetson-0_20240704_055747_M.mp4"
+    )
+
+    item2["data"]["metadata_file_filename"] = (
+        "HIRMD-tankeeah-jetson-1_20240704_055748_M.mp4"
+    )
+    item2["data"]["video"] = (
+        "s3://bucket/HIRMD-tankeeah-jetson-1_20240704_055748_M.mp4"
+    )
+
+    a = tmp_path / "a.json"
+    b = tmp_path / "b.json"
+
+    a.write_text(json.dumps([item1]), encoding="utf-8")
+    b.write_text(json.dumps([item2]), encoding="utf-8")
+
+    stats = conv.convert_files([b, a])
+
+    assert stats.videos_with_boxes == 2
+    assert stats.videos_without_boxes == 0
+    assert stats.label_files_written == 6
+    assert stats.errors == 0
+
+    assert (
+        tmp_path
+        / "out"
+        / "HIRMD-tankeeah-jetson-0_20240704_055747_M"
+        / "frame_000010.txt"
+    ).exists()
+
+    assert (
+        tmp_path
+        / "out"
+        / "HIRMD-tankeeah-jetson-1_20240704_055748_M"
+        / "frame_000010.txt"
+    ).exists()
