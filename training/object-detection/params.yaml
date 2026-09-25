@@ -33,6 +33,8 @@ config:
   real_yolo_workdir: /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/yolo_workdir
   eval_workdir: /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/site_eval_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
+pack:
+  download_workers: 8
 preprocess:
   crop_top_half_sites: klukshu
   crop_min_visible_frac: 0.05
@@ -60,3 +62,10 @@ eval:
   workers: 8
 runtime:
   cuda: cu124
+tracking_eval:
+  tracker: bytetrack.yaml
+  conf: 0.05
+  iou: 0.7
+  imgsz: 640
+  device: 0
+  max_videos: 0   # 0 means all
