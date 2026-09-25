@@ -178,7 +178,8 @@ stages:
         --image-ext .jpg
         --manifest-csv ${config.dataset}/salmon_dataset/tmp_pack/${item}/packed_dataset_manifest.csv
         --splits train val test
-        --shard-size 100000 &&
+        --shard-size 100000
+        --download-workers ${pack.download_workers} &&
         rm -rf ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
         mv
         ${config.dataset}/salmon_dataset/tmp_pack/${item}
@@ -188,6 +189,7 @@ stages:
       params:
         - data.bucket
         - config.dataset
+        - pack.download_workers
 
       deps:
         - scripts/unpack_annos.sh
