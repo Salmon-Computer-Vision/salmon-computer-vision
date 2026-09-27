@@ -216,7 +216,7 @@ def test_invalid_download_workers_rejected(tmp_path: Path):
         )
 
 
-def test_one_parallel_download_failure_does_not_abort_other_video(
+def test_one_parallel_download_failure_continues_other_video_then_raises(
     tmp_path: Path,
     monkeypatch,
 ):
@@ -229,16 +229,25 @@ def test_one_parallel_download_failure_does_not_abort_other_video(
 
     import object_detection.frames.extractor as extractor_mod
 
+    download_calls = []
+    extract_calls = []
+
     def fake_download_s3_video(
         bucket: str,
         s3_key: str,
         local_video_path: Path,
     ) -> None:
+        download_calls.append(s3_key)
+
         if videos[0] in s3_key:
             raise RuntimeError("simulated download failure")
 
         local_video_path.parent.mkdir(parents=True, exist_ok=True)
         local_video_path.write_bytes(b"fake-video")
+
+    def fake_extract_frame_bytes_ffmpeg(**kwargs) -> bytes:
+        extract_calls.append(kwargs["video_path"].stem)
+        return b"jpg"
 
     monkeypatch.setattr(
         extractor_mod,
@@ -248,25 +257,73 @@ def test_one_parallel_download_failure_does_not_abort_other_video(
     monkeypatch.setattr(
         extractor_mod,
         "extract_frame_bytes_ffmpeg",
-        lambda **kwargs: b"jpg",
+        fake_extract_frame_bytes_ffmpeg,
     )
 
-    stats = pack_split_dataset_shards(
-        splits_dir=splits_dir,
-        labels_root=labels_root,
-        shards_root=tmp_path / "shards",
-        manifests_root=tmp_path / "manifests",
-        temp_video_dir=tmp_path / "tmp_videos",
-        metadata_csv_paths=[metadata_csv],
-        class_names=["Sockeye"],
-        bucket="prod-salmonvision-edge-assets-labelstudio-source",
-        download_workers=2,
+    shards_root = tmp_path / "shards"
+    manifests_root = tmp_path / "manifests"
+    temp_video_dir = tmp_path / "tmp_videos"
+    build_manifest = tmp_path / "packed_dataset_manifest.csv"
+
+    with pytest.raises(
+        RuntimeError,
+        match=r"Packing completed with 1 failed video\(s\)",
+    ):
+        pack_split_dataset_shards(
+            splits_dir=splits_dir,
+            labels_root=labels_root,
+            shards_root=shards_root,
+            manifests_root=manifests_root,
+            temp_video_dir=temp_video_dir,
+            metadata_csv_paths=[metadata_csv],
+            class_names=["Sockeye"],
+            bucket="prod-salmonvision-edge-assets-labelstudio-source",
+            manifest_csv=build_manifest,
+            download_workers=2,
+        )
+
+    # Both source downloads were attempted even though the first one failed.
+    assert len(download_calls) == 2
+    assert any(videos[0] in key for key in download_calls)
+    assert any(videos[1] in key for key in download_calls)
+
+    # Only the successfully downloaded video reaches FFmpeg extraction.
+    assert extract_calls == [videos[1]]
+
+    # The successful video is still packed before the aggregate RuntimeError.
+    train_manifest = (manifests_root / "train.txt").read_text(
+        encoding="utf-8"
     )
+    assert f"train/{videos[1]}/frame_000010.jpg" in train_manifest
+    assert f"train/{videos[0]}/frame_000010.jpg" not in train_manifest
+    assert (manifests_root / "data.yaml").exists()
 
-    assert stats.videos_seen == 2
-    assert stats.videos_processed == 1
-    assert stats.videos_failed == 1
+    # The per-video build CSV preserves both results, which is what makes the
+    # final failure actionable in the DVC temp output.
+    with build_manifest.open("r", newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
 
-    # Count only successful source-video downloads, matching the existing
-    # semantics of ExtractionStats.videos_downloaded.
-    assert stats.videos_downloaded == 1
+    assert len(rows) == 2
+
+    rows_by_video = {
+        row["video_stem"]: row
+        for row in rows
+    }
+
+    failed = rows_by_video[videos[0]]
+    assert failed["status"] == "error"
+    assert failed["images_written"] == "0"
+    assert failed["labels_written"] == "0"
+    assert failed["videos_downloaded"] == "0"
+    assert "simulated download failure" in failed["error"]
+
+    succeeded = rows_by_video[videos[1]]
+    assert succeeded["status"] == "ok"
+    assert succeeded["images_written"] == "1"
+    assert succeeded["labels_written"] == "1"
+    assert succeeded["images_extracted"] == "1"
+    assert succeeded["videos_downloaded"] == "1"
+
+    # cleanup_video=True should clean up even the successfully downloaded temp MP4.
+    assert not (temp_video_dir / f"{videos[1]}.mp4").exists()
+

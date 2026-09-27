@@ -387,36 +387,50 @@ def test_pack_split_dataset_shards_missing_metadata(tmp_path: Path, monkeypatch)
     import object_detection.frames.extractor as extractor_mod
 
     def fake_download_s3_video(bucket: str, s3_key: str, local_video_path: Path) -> None:
-        raise AssertionError("download_s3_video should not be called when metadata is missing")
+        raise AssertionError(
+            "download_s3_video should not be called when metadata is missing"
+        )
 
-    monkeypatch.setattr(extractor_mod, "download_s3_video", fake_download_s3_video)
-
-    stats = pack_split_dataset_shards(
-        splits_dir=splits_dir,
-        labels_root=labels_root,
-        shards_root=shards_root,
-        manifests_root=manifests_root,
-        temp_video_dir=temp_video_dir,
-        metadata_csv_paths=[metadata_csv],
-        class_names=["Sockeye"],
-        bucket="prod-salmonvision-edge-assets-labelstudio-source",
-        manifest_csv=build_manifest,
+    monkeypatch.setattr(
+        extractor_mod,
+        "download_s3_video",
+        fake_download_s3_video,
     )
 
-    assert stats.videos_seen == 1
-    assert stats.videos_processed == 0
-    assert stats.videos_failed == 1
-    assert stats.frames_requested == 1
-    assert stats.images_written == 0
-    assert stats.labels_written == 0
-    assert stats.images_reused == 0
-    assert stats.images_extracted == 0
-    assert stats.videos_downloaded == 0
+    with pytest.raises(
+        RuntimeError,
+        match=r"Packing completed with 1 failed video\(s\)",
+    ):
+        pack_split_dataset_shards(
+            splits_dir=splits_dir,
+            labels_root=labels_root,
+            shards_root=shards_root,
+            manifests_root=manifests_root,
+            temp_video_dir=temp_video_dir,
+            metadata_csv_paths=[metadata_csv],
+            class_names=["Sockeye"],
+            bucket="prod-salmonvision-edge-assets-labelstudio-source",
+            manifest_csv=build_manifest,
+        )
+
+    # The final RuntimeError is deliberately raised only after diagnostic
+    # manifests have been written.
+    assert (manifests_root / "train.txt").read_text(encoding="utf-8") == ""
+    assert (manifests_root / "data.yaml").exists()
 
     rows = list(csv.DictReader(build_manifest.open("r", encoding="utf-8")))
     assert len(rows) == 1
-    assert rows[0]["status"] == "error"
-    assert "Missing metadata" in rows[0]["error"]
+
+    row = rows[0]
+    assert row["video_stem"] == video_stem
+    assert row["requested_frames"] == "1"
+    assert row["images_written"] == "0"
+    assert row["labels_written"] == "0"
+    assert row["images_reused"] == "0"
+    assert row["images_extracted"] == "0"
+    assert row["videos_downloaded"] == "0"
+    assert row["status"] == "error"
+    assert "Missing metadata" in row["error"]
 
 
 def test_pack_split_dataset_shards_invalid_fps(tmp_path: Path, monkeypatch):
@@ -426,6 +440,7 @@ def test_pack_split_dataset_shards_invalid_fps(tmp_path: Path, monkeypatch):
     manifests_root = tmp_path / "packed_manifests"
     temp_video_dir = tmp_path / "tmp_videos"
     metadata_csv = tmp_path / "video_metadata.csv"
+    build_manifest = tmp_path / "build_manifest.csv"
 
     video_stem = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
 
@@ -453,24 +468,53 @@ def test_pack_split_dataset_shards_invalid_fps(tmp_path: Path, monkeypatch):
         ],
     )
 
-    stats = pack_split_dataset_shards(
-        splits_dir=splits_dir,
-        labels_root=labels_root,
-        shards_root=shards_root,
-        manifests_root=manifests_root,
-        temp_video_dir=temp_video_dir,
-        metadata_csv_paths=[metadata_csv],
-        class_names=["Sockeye"],
-        bucket="prod-salmonvision-edge-assets-labelstudio-source",
+    import object_detection.frames.extractor as extractor_mod
+
+    def unexpected_download(*args, **kwargs):
+        raise AssertionError(
+            "download_s3_video should not be called when FPS is invalid"
+        )
+
+    monkeypatch.setattr(
+        extractor_mod,
+        "download_s3_video",
+        unexpected_download,
     )
 
-    assert stats.videos_failed == 1
-    assert stats.images_written == 0
-    assert stats.labels_written == 0
-    assert stats.images_reused == 0
-    assert stats.images_extracted == 0
-    assert stats.videos_downloaded == 0
+    with pytest.raises(
+        RuntimeError,
+        match=r"Packing completed with 1 failed video\(s\)",
+    ):
+        pack_split_dataset_shards(
+            splits_dir=splits_dir,
+            labels_root=labels_root,
+            shards_root=shards_root,
+            manifests_root=manifests_root,
+            temp_video_dir=temp_video_dir,
+            metadata_csv_paths=[metadata_csv],
+            class_names=["Sockeye"],
+            bucket="prod-salmonvision-edge-assets-labelstudio-source",
+            manifest_csv=build_manifest,
+        )
 
+    # As with other per-video failures, the output diagnostics must exist before
+    # the function raises at the end of the packing run.
+    assert (manifests_root / "train.txt").read_text(encoding="utf-8") == ""
+    assert (manifests_root / "data.yaml").exists()
+
+    rows = list(csv.DictReader(build_manifest.open("r", encoding="utf-8")))
+    assert len(rows) == 1
+
+    row = rows[0]
+    assert row["video_stem"] == video_stem
+    assert row["requested_frames"] == "1"
+    assert row["images_written"] == "0"
+    assert row["labels_written"] == "0"
+    assert row["images_reused"] == "0"
+    assert row["images_extracted"] == "0"
+    assert row["videos_downloaded"] == "0"
+    assert row["status"] == "error"
+    assert "Invalid fps" in row["error"]
 
 def test_pack_split_dataset_shards_fallback_to_bucket_plus_stem(tmp_path: Path, monkeypatch):
     splits_dir = tmp_path / "splits"
