@@ -280,25 +280,25 @@ with the following bash script.
 Capture the `repro` command into a logfile:
 
 ```
-dvc repro pack_split_dataset 2>&1 | tee pack.log
+dvc repro pack_split_dataset 2>&1 | tee $(date +"pack_%Y%m%d_%H%M%S.log")
 ```
 
 Submit restore requests:
 ```
-./scripts/restore_glacier_from_log.sh request pack.log
+./scripts/restore_glacier_from_log.sh request pack_xxx.log
 ```
 
 By default it will be BULK (5-12 hours process) and for 3 days.
 
 Explicitly:
 ```bash
-./scripts/restore_glacier_from_log.sh request pack.log 3 Bulk
+./scripts/restore_glacier_from_log.sh request pack_xxx.log 3 Bulk
 ```
 
 Once the requests have been sent, use the same script to check the status:
 
 ```
-./scripts/restore_glacier_from_log.sh status pack.log
+./scripts/restore_glacier_from_log.sh status pack_xxx.log
 ```
 
 The last line should say when all the objects are ready for download.

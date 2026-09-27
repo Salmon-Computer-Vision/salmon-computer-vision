@@ -899,7 +899,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -947,7 +947,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1049,7 +1049,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1097,7 +1097,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1145,7 +1145,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1247,7 +1247,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1349,7 +1349,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1451,7 +1451,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1499,7 +1499,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1602,7 +1602,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1704,7 +1704,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -1915,7 +1915,7 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: 7e4169e1ba1bf12e7ca2f035a321a040.dir
+      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
       size: 127842
       nfiles: 15
     params:
@@ -2828,9 +2828,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/tankeeah/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/tankeeah/* 
+      data/04_dataset/salmon_dataset/tmp_pack/tankeeah 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/tankeeah
     deps:
@@ -2867,12 +2867,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -2885,11 +2885,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah
       hash: md5
-      md5: 0a3ca60e00a8e95bfe3a0b82b78e0e6e.dir
-      size: 9767248935
+      md5: 2ed458e73e925e537340949c00836ebb.dir
+      size: 10891135221
       nfiles: 11
   pack_split_dataset@kitwanga:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kitwanga && rm -rf 
@@ -2915,9 +2916,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/kitwanga/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/kitwanga/* 
+      data/04_dataset/salmon_dataset/tmp_pack/kitwanga 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/kitwanga
     deps:
@@ -2954,12 +2955,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -2972,11 +2973,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga
       hash: md5
-      md5: 1628c0616a884ce2263883c00def0f54.dir
-      size: 276849210
+      md5: 6c560937835316fec12de5c7961eff48.dir
+      size: 289392612
       nfiles: 8
   pack_split_dataset@bear:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/bear && rm -rf 
@@ -3002,9 +3004,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/bear/packed_dataset_manifest.csv 
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/bear && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/bear/* 
+      data/04_dataset/salmon_dataset/tmp_pack/bear 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/bear && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/bear
     deps:
@@ -3041,12 +3043,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3059,11 +3061,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/bear
       hash: md5
-      md5: 49274d53ee3e6d18b26a1b352796a7c9.dir
-      size: 1585840663
+      md5: 5577ed0f1e82bb8903e126b18471ea11.dir
+      size: 2043386933
       nfiles: 8
   pack_split_dataset@kitkiata:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kitkiata && rm -rf 
@@ -3089,9 +3092,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/kitkiata/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/kitkiata/* 
+      data/04_dataset/salmon_dataset/tmp_pack/kitkiata 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/kitkiata
     deps:
@@ -3128,12 +3131,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3146,11 +3149,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata
       hash: md5
-      md5: 3382466363b0670ad2d7749ba66a5615.dir
-      size: 7171154553
+      md5: 0051620f97059bcfbd892f4cf08089ce.dir
+      size: 7829574095
       nfiles: 9
   pack_split_dataset@copper:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/copper && rm -rf 
@@ -3176,9 +3180,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/copper/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/copper && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/copper/* 
+      data/04_dataset/salmon_dataset/tmp_pack/copper 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/copper && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/copper
     deps:
@@ -3215,12 +3219,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3233,11 +3237,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/copper
       hash: md5
-      md5: fb37fd24004da076d48bacf9d5b9c27b.dir
-      size: 2090018113
+      md5: e00b38a221758ff2fbe229c32e3013dd.dir
+      size: 2153455062
       nfiles: 8
   pack_split_dataset@kwakwa:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kwakwa && rm -rf 
@@ -3263,9 +3268,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/kwakwa/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/kwakwa/* 
+      data/04_dataset/salmon_dataset/tmp_pack/kwakwa 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/kwakwa
     deps:
@@ -3302,12 +3307,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3320,11 +3325,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa
       hash: md5
-      md5: b16f5363e2cf16a866d75ca3ed9866d1.dir
-      size: 873559226
+      md5: 24e3dc1d25a5a8384fcfd3811f480694.dir
+      size: 946181036
       nfiles: 8
   pack_split_dataset@Elbow:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/Elbow && rm -rf 
@@ -3350,9 +3356,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/Elbow/packed_dataset_manifest.csv 
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/Elbow/* 
+      data/04_dataset/salmon_dataset/tmp_pack/Elbow 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/Elbow
     deps:
@@ -3389,12 +3395,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3407,11 +3413,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow
       hash: md5
-      md5: 8bf1debfbcbec9f4cc2757db554c4253.dir
-      size: 4253716040
+      md5: ae648cad8d77588fe80d0d0790d4fe6d.dir
+      size: 4615748124
       nfiles: 9
   pack_split_dataset@koeye:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/koeye && rm -rf 
@@ -3437,9 +3444,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/koeye/packed_dataset_manifest.csv 
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/koeye/* 
+      data/04_dataset/salmon_dataset/tmp_pack/koeye 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/koeye
     deps:
@@ -3476,12 +3483,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3494,11 +3501,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye
       hash: md5
-      md5: 95cefdf3830fed063aa29d0a46330a5c.dir
-      size: 3287477385
+      md5: a2cdf3e8efbf6ba2ed9b134abf4a61d4.dir
+      size: 3369761518
       nfiles: 8
   pack_split_dataset@redoubt:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/redoubt && rm -rf 
@@ -3524,9 +3532,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/redoubt/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/redoubt/* 
+      data/04_dataset/salmon_dataset/tmp_pack/redoubt 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/redoubt
     deps:
@@ -3563,12 +3571,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3581,11 +3589,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt
       hash: md5
-      md5: a30298da734492742a5d965e83baddf0.dir
-      size: 944816713
+      md5: e41273ec20a92439796ace4378844db8.dir
+      size: 1336777765
       nfiles: 8
   pack_split_dataset@chignik:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/chignik && rm -rf 
@@ -3611,9 +3620,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/chignik/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/chignik/* 
+      data/04_dataset/salmon_dataset/tmp_pack/chignik 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/chignik
     deps:
@@ -3650,12 +3659,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3668,11 +3677,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik
       hash: md5
-      md5: ce995ade292b5d8daa41aa4d4db14767.dir
-      size: 680230580
+      md5: 46a896685d81dc40a190baced91a18c1.dir
+      size: 680239555
       nfiles: 8
   pack_split_dataset@klukshu:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/klukshu && rm -rf 
@@ -3698,9 +3708,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/klukshu/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/klukshu/* 
+      data/04_dataset/salmon_dataset/tmp_pack/klukshu 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu && rm -rf 
       data/04_dataset/salmon_dataset/tmp_labels/klukshu
     deps:
@@ -3737,12 +3747,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3755,11 +3765,12 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu
       hash: md5
-      md5: a5b40320f6c2d837c1a0f2daba5a5270.dir
-      size: 157294367
+      md5: 135665961d5d88ad11fa5ad40b7cc2de.dir
+      size: 157777699
       nfiles: 8
   pack_split_dataset@stephenssmolt:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && rm 
@@ -3787,9 +3798,9 @@ stages:
       prod-salmonvision-edge-assets-labelstudio-source --image-ext .jpg 
       --manifest-csv 
       data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/packed_dataset_manifest.csv
-      --splits train val test --shard-size 100000 && mkdir -p 
+      --splits train val test --shard-size 100000 --download-workers 8 && rm -rf
       data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt && mv 
-      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt/* 
+      data/04_dataset/salmon_dataset/tmp_pack/stephenssmolt 
       data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt && rm 
       -rf data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt
     deps:
@@ -3826,12 +3837,12 @@ stages:
       size: 552
     - path: src/object_detection/frames/cli.py
       hash: md5
-      md5: b608065be8341af590b1000fc92f44c6
-      size: 3483
+      md5: bf78da159d667b0103b6a4ca12af6a09
+      size: 3937
     - path: src/object_detection/frames/extractor.py
       hash: md5
-      md5: 6bc15c2a6b6794f6a365861198d29649
-      size: 18121
+      md5: ae20a1c09c720ccba0f48f09cf656214
+      size: 25842
     - path: src/object_detection/frames/parsing.py
       hash: md5
       md5: 8bc3da42992b645e23f4d9ca653ee78a
@@ -3844,9 +3855,10 @@ stages:
       params.yaml:
         config.dataset: data/04_dataset
         data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/stephenssmolt
       hash: md5
-      md5: e38e9cda0b4a736b04a0d4a62e17b406.dir
-      size: 1405178216
+      md5: 19a23d1bfcbc573c892ea018f4ffc16b.dir
+      size: 1405184770
       nfiles: 8
