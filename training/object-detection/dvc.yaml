@@ -152,20 +152,9 @@ stages:
     do:
       cmd: >-
         rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
-        mkdir -p ${config.dataset}/salmon_dataset/pack_retry_cache &&
-        rm -rf ${config.dataset}/salmon_dataset/pack_retry_cache/${item} &&
-
-        if [ -f ${config.dataset}/salmon_dataset/tmp_pack/${item}/packed_dataset_manifest.csv ]; then
-          mv
-          ${config.dataset}/salmon_dataset/tmp_pack/${item}
-          ${config.dataset}/salmon_dataset/pack_retry_cache/${item};
-        else
-          rm -rf ${config.dataset}/salmon_dataset/tmp_pack/${item};
-        fi &&
-
+        rm -rf ${config.dataset}/salmon_dataset/tmp_pack/${item} &&
         mkdir -p ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
         mkdir -p ${config.dataset}/salmon_dataset/tmp_pack/${item} &&
-
         scripts/unpack_annos.sh
         data/02_interim/sites/${item}/yolo_annos
         ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
@@ -181,8 +170,6 @@ stages:
         --metadata-csv data/02_interim/sites/${item}/video_metadata_index.csv
         data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
         --reuse-shards-root
-        ${config.dataset}/salmon_dataset/pack_retry_cache/${item}/shards
-        --reuse-shards-root
         ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/shards
         --reuse-shards-root
         ${config.dataset}/salmon_dataset/dataset_sharded/shards
@@ -197,7 +184,6 @@ stages:
         mv
         ${config.dataset}/salmon_dataset/tmp_pack/${item}
         ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
-        rm -rf ${config.dataset}/salmon_dataset/pack_retry_cache/${item} &&
         rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item}
 
       params:
