@@ -798,10 +798,4 @@ def pack_split_dataset_shards(
             for row_order in sorted(manifest_rows_by_order):
                 w.writerow(manifest_rows_by_order[row_order])
 
-    if stats.videos_failed > 0:
-        raise RuntimeError(
-            f"Packing completed with {stats.videos_failed} failed video(s). "
-            "See packed_dataset_manifest.csv for details."
-        )
-
     return stats
