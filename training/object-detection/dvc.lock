@@ -2889,8 +2889,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah
       hash: md5
-      md5: 2ed458e73e925e537340949c00836ebb.dir
-      size: 10891135221
+      md5: c17e7e49afb72bad2ef306dfa5fb50d7.dir
+      size: 10891597928
       nfiles: 11
   pack_split_dataset@kitwanga:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kitwanga && rm -rf 
@@ -2977,8 +2977,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitwanga
       hash: md5
-      md5: 6c560937835316fec12de5c7961eff48.dir
-      size: 289392612
+      md5: 040bf4a21e8550e236461042697a2280.dir
+      size: 289392629
       nfiles: 8
   pack_split_dataset@bear:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/bear && rm -rf 
@@ -3065,8 +3065,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/bear
       hash: md5
-      md5: 5577ed0f1e82bb8903e126b18471ea11.dir
-      size: 2043386933
+      md5: 409b7ceaa1885b0d69cefc0857be2823.dir
+      size: 2043386975
       nfiles: 8
   pack_split_dataset@kitkiata:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/kitkiata && rm -rf 
@@ -3153,8 +3153,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata
       hash: md5
-      md5: 0051620f97059bcfbd892f4cf08089ce.dir
-      size: 7829574095
+      md5: e416a6d3269c767ae76792e2a9092ece.dir
+      size: 7829574141
       nfiles: 9
   pack_split_dataset@copper:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/copper && rm -rf 
@@ -3241,7 +3241,7 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/copper
       hash: md5
-      md5: e00b38a221758ff2fbe229c32e3013dd.dir
+      md5: f096764a52efefc0f07538526404ce52.dir
       size: 2153455062
       nfiles: 8
   pack_split_dataset@kwakwa:
@@ -3329,8 +3329,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa
       hash: md5
-      md5: 24e3dc1d25a5a8384fcfd3811f480694.dir
-      size: 946181036
+      md5: c3ed2f89e855e1fc22e21c9dd87513e7.dir
+      size: 946181161
       nfiles: 8
   pack_split_dataset@Elbow:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/Elbow && rm -rf 
@@ -3417,8 +3417,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow
       hash: md5
-      md5: ae648cad8d77588fe80d0d0790d4fe6d.dir
-      size: 4615748124
+      md5: a71331b915a6528ae6e769f80fb1a3b9.dir
+      size: 4616605821
       nfiles: 9
   pack_split_dataset@koeye:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/koeye && rm -rf 
@@ -3505,8 +3505,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye
       hash: md5
-      md5: a2cdf3e8efbf6ba2ed9b134abf4a61d4.dir
-      size: 3369761518
+      md5: 506fefcd14dc4d975b387b0a22b5acdd.dir
+      size: 3369761618
       nfiles: 8
   pack_split_dataset@redoubt:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/redoubt && rm -rf 
@@ -3593,8 +3593,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/redoubt
       hash: md5
-      md5: e41273ec20a92439796ace4378844db8.dir
-      size: 1336777765
+      md5: c59b6d0a1eb402417cabbff02c3d3714.dir
+      size: 1336777772
       nfiles: 8
   pack_split_dataset@chignik:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/chignik && rm -rf 
@@ -3769,8 +3769,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/klukshu
       hash: md5
-      md5: 135665961d5d88ad11fa5ad40b7cc2de.dir
-      size: 157777699
+      md5: 1430251b74fa53d95af24d1a57de210c.dir
+      size: 157777700
       nfiles: 8
   pack_split_dataset@stephenssmolt:
     cmd: rm -rf data/04_dataset/salmon_dataset/tmp_labels/stephenssmolt && rm 
