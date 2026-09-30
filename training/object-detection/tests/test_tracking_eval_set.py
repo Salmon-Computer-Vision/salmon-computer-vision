@@ -182,3 +182,22 @@ def test_legacy_python_api_still_builds_test_split(tmp_path):
         videos_dir=tmp_path / "videos",
     )
     assert records[0].split == "test"
+
+
+def test_leakage_check_ignores_current_split_manifest(tmp_path: Path):
+    from object_detection.tracking_eval.eval_set import assert_no_video_overlap
+
+    stem = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
+    val_manifest = tmp_path / "val.txt"
+    val_manifest.write_text(
+        f"val/{stem}/frame_000010.jpg\n",
+        encoding="utf-8",
+    )
+
+    # Passing all split manifests uniformly from DVC is convenient; the helper
+    # must ignore the current split rather than reporting self-overlap.
+    assert_no_video_overlap(
+        split="val",
+        selected_video_stems=[stem],
+        compare_manifests=[("val", val_manifest)],
+    )

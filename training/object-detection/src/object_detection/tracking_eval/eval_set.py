@@ -213,6 +213,11 @@ def assert_no_video_overlap(
     problems: List[str] = []
 
     for compare_name, compare_path in compare_manifests:
+        # Allow callers/DVC foreach stages to pass train/val/test uniformly.
+        # The current split is not a leakage comparison against itself.
+        if compare_name.strip().lower() == split.strip().lower():
+            continue
+
         compare_counts, _ = read_eval_manifest(compare_path)
         overlap = sorted(selected.intersection(compare_counts.keys()))
         if not overlap:
