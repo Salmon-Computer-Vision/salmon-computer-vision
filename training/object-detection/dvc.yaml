@@ -272,7 +272,8 @@ stages:
       - ${config.dataset}/salmon_dataset/dataset_sharded/sites
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/active_sites.txt
     outs:
-      - ${config.yolo_workdir}/.unpack_complete
+      - ${config.yolo_workdir}/.unpack_complete:
+          push: false
   rewrite_manifest:
     cmd: >-
       cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml
