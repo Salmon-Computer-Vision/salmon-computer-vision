@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import csv
-import subprocess
 import re
+import subprocess
+import sys
 import tarfile
+import threading
 from collections import defaultdict
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Dict, Iterable, List, Optional, Tuple
-import io
-import tarfile
 
 from object_detection.yolo_ls.shards import TarShardWriter
 from object_detection.frames.parsing import (
@@ -19,6 +20,9 @@ from object_detection.frames.parsing import (
 )
 
 from object_detection.utils.utils import safe_float
+
+
+_DOWNLOAD_OUTPUT_LOCK = threading.Lock()
 
 
 @dataclass
@@ -41,6 +45,18 @@ class ExtractionStats:
 class CachedFrameRef:
     tar_path: Path
     member_name: str
+
+
+@dataclass(frozen=True)
+class PlannedVideo:
+    order: int
+    split: str
+    video_stem: str
+    frame_indices: Tuple[int, ...]
+    fps: float
+    s3_key: str
+    local_video: Path
+    missing_frames: Tuple[int, ...]
 
 
 class TarFrameCache:
@@ -144,6 +160,18 @@ class TarFrameCache:
             raise RuntimeError(
                 f"Could not read reuse tar {tar_path}: {e}"
             ) from e
+
+    def missing_indices(
+        self,
+        video_stem: str,
+        frame_indices: Iterable[int],
+    ) -> List[int]:
+        """Return requested frame indices that are not present in the cache index."""
+        return [
+            frame_idx
+            for frame_idx in frame_indices
+            if (video_stem, frame_idx) not in self._index
+        ]
 
     def get_many(
         self,
@@ -283,13 +311,47 @@ def load_split_requests(splits_dir: Path, split_names: Iterable[str]) -> Dict[st
 
 
 def download_s3_video(bucket: str, s3_key: str, local_video_path: Path) -> None:
+    """
+    Download one source MP4 with the AWS CLI.
+
+    Output is captured per process and emitted under a lock so concurrent AWS
+    commands do not interleave their warning/error lines. This is particularly
+    useful for Glacier warnings, which are later parsed by
+    restore_glacier_from_log.sh.
+    """
     ensure_dir(local_video_path.parent)
+
     cmd = [
         "aws", "s3", "cp",
         f"s3://{bucket}/{s3_key}",
         str(local_video_path),
+        "--only-show-errors",
     ]
-    subprocess.run(cmd, check=True)
+
+    result = subprocess.run(
+        cmd,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    # Preserve AWS warnings/errors in the pipeline log, but avoid multiple
+    # concurrent subprocesses garbling the same line.
+    if result.stdout or result.stderr:
+        with _DOWNLOAD_OUTPUT_LOCK:
+            if result.stdout:
+                print(result.stdout, end="")
+            if result.stderr:
+                print(result.stderr, end="", file=sys.stderr)
+
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(
+            result.returncode,
+            cmd,
+            output=result.stdout,
+            stderr=result.stderr,
+        )
 
 
 def read_label_text(labels_root: Path, relpath: str) -> str:
@@ -374,29 +436,36 @@ def pack_split_dataset_shards(
     manifest_csv: Optional[Path] = None,
     shard_size: int = 100000,
     reuse_shards_roots: Optional[Iterable[Path]] = None,
+    download_workers: int = 8,
 ) -> ExtractionStats:
     """
-    Reads split manifests containing label relpaths, e.g.
-      HIRMD-.../frame_000123.txt
+    Pack split-aware YOLO labels and image frames into tar shards.
 
-    Produces sharded paired dataset:
-      train/<video_stem>/frame_000123.jpg
-      train/<video_stem>/frame_000123.txt
-      ...
+    Source-video downloads are parallelized, but frame extraction and shard
+    writing remain single-threaded. This keeps TarShardWriter usage simple and
+    avoids running many ffmpeg processes at once.
 
-    Also writes fresh split manifests that point to image relpaths inside the packed layout:
-      train/HIRMD-.../frame_000123.jpg
+    Downloads are handled in bounded batches of at most 2 * download_workers
+    planned videos, which provides prefetch overlap without allowing an entire
+    site's source MP4s to accumulate in temp_video_dir.
     """
+    download_workers = int(download_workers)
+    if download_workers < 1:
+        raise ValueError(
+            f"download_workers must be >= 1, got {download_workers}"
+        )
+
     split_requests = load_split_requests(splits_dir, split_names)
     stats = ExtractionStats(splits_seen=len(split_requests))
     metadata_index = merge_video_metadata_csvs(metadata_csv_paths)
     frame_cache = TarFrameCache(
         reuse_shards_roots or [],
         image_ext=image_ext,
-    )    
+    )
 
     ensure_dir(shards_root)
     ensure_dir(manifests_root)
+    ensure_dir(temp_video_dir)
 
     shard_writers: Dict[str, TarShardWriter] = {}
     for split in split_requests.keys():
@@ -406,20 +475,35 @@ def pack_split_dataset_shards(
             prefix=split,
         )
 
-    split_to_image_relpaths: Dict[str, List[str]] = {split: [] for split in split_requests.keys()}
-    manifest_rows: List[Dict[str, str]] = []
+    split_to_image_relpaths: Dict[str, List[str]] = {
+        split: []
+        for split in split_requests.keys()
+    }
 
+    # Store rows by the original deterministic request order. This lets us do
+    # metadata/cache planning up front without changing manifest row order.
+    manifest_rows_by_order: Dict[int, Dict[str, str]] = {}
+    jobs: List[PlannedVideo] = []
+
+    order = 0
+    seen_temp_paths: Dict[str, int] = defaultdict(int)
+
+    #
+    # Planning pass:
+    #   * validate metadata
+    #   * determine which videos actually need source downloads from the
+    #     lightweight cache index (without reading cached JPEG bytes yet)
+    #
     for split, by_video in split_requests.items():
-        writer = shard_writers[split]
+        for video_stem, frame_indices_list in by_video.items():
+            order += 1
+            frame_indices = tuple(frame_indices_list)
 
-        for video_stem, frame_indices in by_video.items():
             stats.videos_seen += 1
             stats.frames_requested += len(frame_indices)
 
-            local_video = temp_video_dir / f"{video_stem}.mp4"
             s3_key = ""
             fps = 0.0
-            video_downloaded = False
 
             try:
                 meta = metadata_index.get(video_stem)
@@ -429,7 +513,6 @@ def pack_split_dataset_shards(
                     )
 
                 fps = safe_float(meta.get("fps", ""), 0.0)
-
                 if fps <= 0:
                     raise ValueError(
                         f"Invalid fps for video_stem={video_stem}: "
@@ -437,132 +520,49 @@ def pack_split_dataset_shards(
                     )
 
                 s3_key = (meta.get("s3_key") or "").strip()
-
                 if not s3_key:
                     if not bucket:
                         raise ValueError(
                             f"Missing s3_key for video_stem={video_stem}"
                         )
-
                     s3_key = video_stem_to_s3_key(video_stem)
 
-                #
-                # First try the existing tar cache.
-                #
-                cached_images = frame_cache.get_many(
-                    video_stem,
-                    frame_indices,
+                missing_frames = tuple(
+                    frame_cache.missing_indices(
+                        video_stem,
+                        frame_indices,
+                    )
                 )
 
-                missing_frames = [
-                    frame_idx
-                    for frame_idx in frame_indices
-                    if frame_idx not in cached_images
-                ]
-
-                if cached_images:
-                    print(
-                        f"[frames] {video_stem}: "
-                        f"reusing {len(cached_images)}/"
-                        f"{len(frame_indices)} cached frames"
+                # A video should normally occur in exactly one split. If it
+                # somehow occurs more than once, avoid concurrent writes to the
+                # same temporary path.
+                occurrence = seen_temp_paths[video_stem]
+                seen_temp_paths[video_stem] += 1
+                if occurrence == 0:
+                    local_video = temp_video_dir / f"{video_stem}.mp4"
+                else:
+                    local_video = (
+                        temp_video_dir
+                        / f"{video_stem}__job_{order:06d}.mp4"
                     )
 
-                #
-                # Only download the source video if at least one image
-                # is not already cached.
-                #
-                if missing_frames:
-                    print(
-                        f"[frames] {video_stem}: "
-                        f"{len(missing_frames)} frames missing from cache; "
-                        f"downloading source video"
-                    )
-
-                    download_s3_video(
-                        bucket=bucket,
+                jobs.append(
+                    PlannedVideo(
+                        order=order,
+                        split=split,
+                        video_stem=video_stem,
+                        frame_indices=frame_indices,
+                        fps=fps,
                         s3_key=s3_key,
-                        local_video_path=local_video,
+                        local_video=local_video,
+                        missing_frames=missing_frames,
                     )
-
-                    video_downloaded = True
-                    stats.videos_downloaded += 1
-
-                for frame_idx in frame_indices:
-                    label_relpath = (
-                        f"{video_stem}/frame_{frame_idx:06d}.txt"
-                    )
-
-                    image_relpath, packed_label_relpath = (
-                        split_label_relpath_to_packed_paths(
-                            split=split,
-                            relpath=label_relpath,
-                            image_ext=image_ext,
-                        )
-                    )
-
-                    #
-                    # IMAGE:
-                    # reuse old frame if possible.
-                    #
-                    image_bytes = cached_images.get(frame_idx)
-
-                    if image_bytes is not None:
-                        stats.images_reused += 1
-                    else:
-                        image_bytes = extract_frame_bytes_ffmpeg(
-                            video_path=local_video,
-                            frame_idx=frame_idx,
-                            fps=fps,
-                            image_ext=image_ext,
-                        )
-                        stats.images_extracted += 1
-
-                    #
-                    # LABEL:
-                    # always use the current annotation.
-                    #
-                    label_text = read_label_text(
-                        labels_root,
-                        label_relpath,
-                    )
-
-                    writer.write_bytes(
-                        str(image_relpath),
-                        image_bytes,
-                    )
-                    stats.images_written += 1
-
-                    split_to_image_relpaths[split].append(
-                        str(image_relpath)
-                    )
-
-                    writer.write_text(
-                        str(packed_label_relpath),
-                        label_text,
-                    )
-                    stats.labels_written += 1
-
-                manifest_rows.append({
-                    "split": split,
-                    "video_stem": video_stem,
-                    "s3_key": s3_key,
-                    "fps": str(fps),
-                    "requested_frames": str(len(frame_indices)),
-                    "images_written": str(len(frame_indices)),
-                    "labels_written": str(len(frame_indices)),
-                    "images_reused": str(len(cached_images)),
-                    "images_extracted": str(len(missing_frames)),
-                    "videos_downloaded": str(int(video_downloaded)),
-                    "status": "ok",
-                    "error": "",
-                })
-
-                stats.videos_processed += 1
+                )
 
             except Exception as e:
                 stats.videos_failed += 1
-
-                manifest_rows.append({
+                manifest_rows_by_order[order] = {
                     "split": split,
                     "video_stem": video_stem,
                     "s3_key": s3_key,
@@ -575,25 +575,207 @@ def pack_split_dataset_shards(
                     "videos_downloaded": "0",
                     "status": "error",
                     "error": repr(e),
-                })
+                }
 
-            finally:
-                if cleanup_video and video_downloaded:
-                    try:
-                        if local_video.exists():
-                            local_video.unlink()
-                    except Exception:
-                        pass
+    #
+    # Download/extraction pass.
+    #
+    # A 2x worker batch leaves enough work queued that downloads continue while
+    # the main thread extracts/writes earlier videos, while also bounding temp
+    # storage to roughly 2 * download_workers source MP4s.
+    #
+    batch_size = max(1, download_workers * 2)
+
+    for batch_start in range(0, len(jobs), batch_size):
+        batch = jobs[batch_start:batch_start + batch_size]
+
+        with ThreadPoolExecutor(
+            max_workers=download_workers,
+            thread_name_prefix="s3-video",
+        ) as executor:
+            download_futures: Dict[int, Future[None]] = {}
+
+            for job in batch:
+                if not job.missing_frames:
+                    continue
+
+                print(
+                    f"[frames] {job.video_stem}: "
+                    f"{len(job.missing_frames)} frames missing from cache; "
+                    f"queued source-video download"
+                )
+
+                download_futures[job.order] = executor.submit(
+                    download_s3_video,
+                    bucket,
+                    job.s3_key,
+                    job.local_video,
+                )
+
+            #
+            # Process in deterministic split/video order. Downloads for later
+            # videos remain active in the background while the main thread
+            # extracts and packs the current one.
+            #
+            for job in batch:
+                writer = shard_writers[job.split]
+                video_downloaded = False
+
+                try:
+                    future = download_futures.get(job.order)
+                    if future is not None:
+                        future.result()
+                        video_downloaded = True
+                        stats.videos_downloaded += 1
+
+                    cached_images = frame_cache.get_many(
+                        job.video_stem,
+                        job.frame_indices,
+                    )
+
+                    if cached_images:
+                        print(
+                            f"[frames] {job.video_stem}: "
+                            f"reusing {len(cached_images)}/"
+                            f"{len(job.frame_indices)} cached frames"
+                        )
+
+                    # Normally this exactly matches job.missing_frames. Recheck
+                    # after reading the tar in case a cache member disappeared
+                    # or could not be read after the planning pass.
+                    missing_frames = [
+                        frame_idx
+                        for frame_idx in job.frame_indices
+                        if frame_idx not in cached_images
+                    ]
+
+                    if missing_frames and not video_downloaded:
+                        print(
+                            f"[frames] {job.video_stem}: "
+                            f"cache changed after planning; downloading source "
+                            f"video synchronously"
+                        )
+                        download_s3_video(
+                            bucket=bucket,
+                            s3_key=job.s3_key,
+                            local_video_path=job.local_video,
+                        )
+                        video_downloaded = True
+                        stats.videos_downloaded += 1
+
+                    for frame_idx in job.frame_indices:
+                        label_relpath = (
+                            f"{job.video_stem}/"
+                            f"frame_{frame_idx:06d}.txt"
+                        )
+
+                        image_relpath, packed_label_relpath = (
+                            split_label_relpath_to_packed_paths(
+                                split=job.split,
+                                relpath=label_relpath,
+                                image_ext=image_ext,
+                            )
+                        )
+
+                        image_bytes = cached_images.get(frame_idx)
+
+                        if image_bytes is not None:
+                            stats.images_reused += 1
+                        else:
+                            image_bytes = extract_frame_bytes_ffmpeg(
+                                video_path=job.local_video,
+                                frame_idx=frame_idx,
+                                fps=job.fps,
+                                image_ext=image_ext,
+                            )
+                            stats.images_extracted += 1
+
+                        # Always use the current annotation, even when the image
+                        # comes from a previous packed-shard cache.
+                        label_text = read_label_text(
+                            labels_root,
+                            label_relpath,
+                        )
+
+                        writer.write_bytes(
+                            str(image_relpath),
+                            image_bytes,
+                        )
+                        stats.images_written += 1
+
+                        split_to_image_relpaths[job.split].append(
+                            str(image_relpath)
+                        )
+
+                        writer.write_text(
+                            str(packed_label_relpath),
+                            label_text,
+                        )
+                        stats.labels_written += 1
+
+                    manifest_rows_by_order[job.order] = {
+                        "split": job.split,
+                        "video_stem": job.video_stem,
+                        "s3_key": job.s3_key,
+                        "fps": str(job.fps),
+                        "requested_frames": str(len(job.frame_indices)),
+                        "images_written": str(len(job.frame_indices)),
+                        "labels_written": str(len(job.frame_indices)),
+                        "images_reused": str(len(cached_images)),
+                        "images_extracted": str(len(missing_frames)),
+                        "videos_downloaded": str(int(video_downloaded)),
+                        "status": "ok",
+                        "error": "",
+                    }
+
+                    stats.videos_processed += 1
+
+                except Exception as e:
+                    stats.videos_failed += 1
+
+                    manifest_rows_by_order[job.order] = {
+                        "split": job.split,
+                        "video_stem": job.video_stem,
+                        "s3_key": job.s3_key,
+                        "fps": str(job.fps) if job.fps > 0 else "",
+                        "requested_frames": str(len(job.frame_indices)),
+                        "images_written": "0",
+                        "labels_written": "0",
+                        "images_reused": "0",
+                        "images_extracted": "0",
+                        "videos_downloaded": str(int(video_downloaded)),
+                        "status": "error",
+                        "error": repr(e),
+                    }
+
+                finally:
+                    if cleanup_video:
+                        try:
+                            if job.local_video.exists():
+                                job.local_video.unlink()
+                        except Exception:
+                            pass
 
     for writer in shard_writers.values():
         writer.close()
 
-    write_split_manifests(manifests_root, split_to_image_relpaths)
-    write_data_yaml(manifests_root, class_names)
+    write_split_manifests(
+        manifests_root,
+        split_to_image_relpaths,
+    )
+    write_data_yaml(
+        manifests_root,
+        class_names,
+    )
 
     if manifest_csv is not None:
         ensure_dir(manifest_csv.parent)
-        with manifest_csv.open("w", newline="", encoding="utf-8") as f:
+
+        with manifest_csv.open(
+            "w",
+            newline="",
+            encoding="utf-8",
+        ) as f:
             w = csv.DictWriter(
                 f,
                 fieldnames=[
@@ -612,7 +794,8 @@ def pack_split_dataset_shards(
                 ],
             )
             w.writeheader()
-            for row in manifest_rows:
-                w.writerow(row)
+
+            for row_order in sorted(manifest_rows_by_order):
+                w.writerow(manifest_rows_by_order[row_order])
 
     return stats

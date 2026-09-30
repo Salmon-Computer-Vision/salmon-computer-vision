@@ -151,44 +151,15 @@ stages:
     foreach: ${data.sites}
     do:
       cmd: >-
-        rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
-        rm -rf ${config.dataset}/salmon_dataset/tmp_pack/${item} &&
-        mkdir -p ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
-        mkdir -p ${config.dataset}/salmon_dataset/tmp_pack/${item} &&
-        scripts/unpack_annos.sh
-        data/02_interim/sites/${item}/yolo_annos
-        ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
-        scripts/unpack_annos.sh
-        data/02_interim/yolo_condition_negatives
-        ${config.dataset}/salmon_dataset/tmp_labels/${item} &&
-        scripts/pack_split_dataset.py
-        --splits-dir data/03_processed/sites/${item}/splits_baseline
-        --labels-root ${config.dataset}/salmon_dataset/tmp_labels/${item}
-        --shards-root ${config.dataset}/salmon_dataset/tmp_pack/${item}/shards
-        --manifests-root ${config.dataset}/salmon_dataset/tmp_pack/${item}/manifests
-        --temp-video-dir ${config.dataset}/salmon_dataset/tmp_videos/${item}
-        --metadata-csv data/02_interim/sites/${item}/video_metadata_index.csv
-        data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
-        --reuse-shards-root
-        ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}/shards
-        --reuse-shards-root
-        ${config.dataset}/salmon_dataset/dataset_sharded/shards
-        --data-yaml config/salmon_yolo.yaml
-        --bucket ${data.bucket}
-        --image-ext .jpg
-        --manifest-csv ${config.dataset}/salmon_dataset/tmp_pack/${item}/packed_dataset_manifest.csv
-        --splits train val test
-        --shard-size 100000 &&
-        rm -rf ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
-        mv
-        ${config.dataset}/salmon_dataset/tmp_pack/${item}
-        ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item} &&
-        rm -rf ${config.dataset}/salmon_dataset/tmp_labels/${item}
-
+        scripts/pack_split_dataset_site.sh
+        ${item}
+        ${config.dataset}
+        ${data.bucket}
+        ${pack.download_workers}
       params:
         - data.bucket
         - config.dataset
-
+        - pack.download_workers
       deps:
         - scripts/unpack_annos.sh
         - scripts/pack_split_dataset.py
@@ -201,7 +172,6 @@ stages:
         - data/02_interim/sites/${item}/video_metadata_index.csv
         - data/02_interim/yolo_condition_negatives
         - config/salmon_yolo.yaml
-
       outs:
         - ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}:
             persist: true
@@ -302,7 +272,8 @@ stages:
       - ${config.dataset}/salmon_dataset/dataset_sharded/sites
       - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/active_sites.txt
     outs:
-      - ${config.yolo_workdir}/.unpack_complete
+      - ${config.yolo_workdir}/.unpack_complete:
+          push: false
   rewrite_manifest:
     cmd: >-
       cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml
@@ -415,6 +386,25 @@ stages:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
     frozen: true
+  make_tracking_test_set:
+    cmd: >-
+      uv run --extra ${runtime.cuda}
+      scripts/make_tracking_test_set.py
+      --test-manifest ${config.dataset}/salmon_dataset/site_manifests/test.txt
+      --metadata-csv data/02_interim/video_metadata_index.csv
+      --out-csv data/03_processed/tracking_eval/test_videos.csv
+      --videos-dir ${config.dataset}/salmon_dataset/tracking_eval/videos
+      --max-videos ${tracking_eval.max_videos}
+    deps:
+      - scripts/make_tracking_test_set.py
+      - src/object_detection/tracking_eval/test_set.py
+      - ${config.dataset}/salmon_dataset/site_manifests/test.txt
+      - data/02_interim/video_metadata_index.csv
+    params:
+      - config.dataset
+      - tracking_eval.max_videos
+    outs:
+      - data/03_processed/tracking_eval/test_videos.csv
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py

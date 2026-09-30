@@ -35,6 +35,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--splits", nargs="*", default=["train", "val", "test"])
     p.add_argument("--shard-size", type=int, default=100000)
     p.add_argument(
+        "--download-workers",
+        type=int,
+        default=8,
+        help=(
+            "Maximum concurrent source-video downloads. "
+            "Frame extraction and tar writing remain single-threaded."
+        ),
+    )
+    p.add_argument(
         "--reuse-shards-root",
         action="append",
         type=Path,
@@ -68,6 +77,7 @@ def main() -> None:
         manifest_csv=Path(args.manifest_csv) if args.manifest_csv else None,
         shard_size=args.shard_size,
         reuse_shards_roots=args.reuse_shards_root,
+        download_workers=args.download_workers,
     )
 
     print(
