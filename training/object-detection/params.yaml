@@ -64,6 +64,7 @@ runtime:
   cuda: cu124
 tracking_eval:
   tracker: botsort.yaml
+  coord_mode: percent
   conf: 0.05
   iou: 0.7
   imgsz: 640
