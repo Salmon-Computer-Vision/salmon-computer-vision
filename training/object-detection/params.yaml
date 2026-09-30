@@ -63,7 +63,7 @@ eval:
 runtime:
   cuda: cu124
 tracking_eval:
-  tracker: bytetrack.yaml
+  tracker: botsort.yaml
   conf: 0.05
   iou: 0.7
   imgsz: 640
