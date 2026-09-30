@@ -247,6 +247,49 @@ flowchart TD
     class EVALSET,EVAL,RESULTS eval;
 ```
 
+Tracking metrics evaluation pipeline:
+
+```
+make_tracking_eval_set@val
+make_tracking_eval_set@test
+          │
+          ▼
+build_tracking_ground_truth@val
+build_tracking_ground_truth@test
+          │
+          ▼
+materialize_tracking_videos
+          │
+          ▼
+run_tracker@val
+          │
+          ▼
+evaluate_tracking@val
+    HOTA
+    DetA
+    AssA
+    MOTA
+    IDF1
+          │
+          ▼
+evaluate_counts@val
+    MAE
+    nMAE
+    directional/species counts
+
+
+                  after tracker/config selection
+
+
+run_tracker@test
+          │
+          ▼
+evaluate_tracking@test
+          │
+          ▼
+evaluate_counts@test
+```
+
 Run the following to run the entire pipeline:
 ```bash
 dvc repro
