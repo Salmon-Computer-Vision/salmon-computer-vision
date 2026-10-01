@@ -271,6 +271,23 @@ Run tests with
 uv run pytest
 ```
 
+Stage `update_raw` is made frozen to prevent always checking the S3 for changes.
+If there is an update to the JSON files exported from label studio, you can force
+the stage to run:
+
+```
+dvc repro --force update_raw
+```
+
+Note that the `--force` flag will also force depended on stages to run, so also
+adding `--single-item` might be a good idea for a stage in the middle of the
+pipeline. For example, if you want to force re-run the packing stage due to
+errors in downloading:
+
+```
+dvc repro --force --single-item pack_split_dataset
+```
+
 #### Issue: Object is of storage class GLACIER
 
 This happens when the videos we are trying to download have been
