@@ -642,7 +642,7 @@ stages:
       size: 3616
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     params:
@@ -916,13 +916,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -964,13 +964,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1033,7 +1033,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1066,13 +1066,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1114,13 +1114,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1162,13 +1162,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1231,7 +1231,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1264,13 +1264,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1333,7 +1333,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1366,13 +1366,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1435,7 +1435,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1468,13 +1468,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1516,13 +1516,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1585,7 +1585,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1619,13 +1619,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1688,7 +1688,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1721,13 +1721,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -1790,7 +1790,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1844,7 +1844,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1899,7 +1899,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -1932,13 +1932,13 @@ stages:
       size: 118
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: bde1d5af35a1f79d1aef7056ac877eb4.dir
-      size: 127842
+      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
+      size: 129696
       nfiles: 15
     params:
       params.yaml:
@@ -2001,7 +2001,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -2055,7 +2055,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -2109,7 +2109,7 @@ stages:
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
-      md5: 9f40ed154f40ef036d7dbc9aedaaa54a.dir
+      md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
     outs:
@@ -3620,3 +3620,219 @@ stages:
       md5: a6f7531e4aaa15fa3dc493c05f1fb97d.dir
       size: 46559766
       nfiles: 5
+  make_tracking_eval_set@val:
+    cmd: scripts/make_tracking_eval_set.py --manifest 
+      data/04_dataset/salmon_dataset/site_manifests/val.txt --split val 
+      --metadata-csv data/02_interim/video_metadata_index.csv --out-csv 
+      data/03_processed/tracking_eval/val_videos.csv --videos-dir 
+      data/04_dataset/salmon_dataset/tracking_eval/videos --max-videos 0 
+      --compare-manifest 
+      train=data/04_dataset/salmon_dataset/site_manifests/train.txt 
+      --compare-manifest 
+      val=data/04_dataset/salmon_dataset/site_manifests/val.txt 
+      --compare-manifest 
+      test=data/04_dataset/salmon_dataset/site_manifests/test.txt
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
+      hash: md5
+      md5: 538fc55623d67bec2adf5658d679c55d
+      size: 6497474
+    - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
+      hash: md5
+      md5: 8713ebaf6dda2780e7eb7f2428d8815a
+      size: 28392227
+    - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
+      hash: md5
+      md5: 71443007956477402aa61695c73fe02f
+      size: 9083341
+    - path: scripts/make_tracking_eval_set.py
+      hash: md5
+      md5: 2201259855c35f63c9dc98b04f396ad1
+      size: 426
+    - path: src/object_detection/tracking_eval/eval_set.py
+      hash: md5
+      md5: e3017a833cac473f30f338c0599211ce
+      size: 19655
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        tracking_eval.max_videos: 0
+    outs:
+    - path: data/03_processed/tracking_eval/val_videos.csv
+      hash: md5
+      md5: 97b2c62f5ef6d53698206a089b31611a
+      size: 3178031
+  make_tracking_eval_set@test:
+    cmd: scripts/make_tracking_eval_set.py --manifest 
+      data/04_dataset/salmon_dataset/site_manifests/test.txt --split test 
+      --metadata-csv data/02_interim/video_metadata_index.csv --out-csv 
+      data/03_processed/tracking_eval/test_videos.csv --videos-dir 
+      data/04_dataset/salmon_dataset/tracking_eval/videos --max-videos 0 
+      --compare-manifest 
+      train=data/04_dataset/salmon_dataset/site_manifests/train.txt 
+      --compare-manifest 
+      val=data/04_dataset/salmon_dataset/site_manifests/val.txt 
+      --compare-manifest 
+      test=data/04_dataset/salmon_dataset/site_manifests/test.txt
+    deps:
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
+      hash: md5
+      md5: 538fc55623d67bec2adf5658d679c55d
+      size: 6497474
+    - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
+      hash: md5
+      md5: 8713ebaf6dda2780e7eb7f2428d8815a
+      size: 28392227
+    - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
+      hash: md5
+      md5: 71443007956477402aa61695c73fe02f
+      size: 9083341
+    - path: scripts/make_tracking_eval_set.py
+      hash: md5
+      md5: 2201259855c35f63c9dc98b04f396ad1
+      size: 426
+    - path: src/object_detection/tracking_eval/eval_set.py
+      hash: md5
+      md5: e3017a833cac473f30f338c0599211ce
+      size: 19655
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        tracking_eval.max_videos: 0
+    outs:
+    - path: data/03_processed/tracking_eval/test_videos.csv
+      hash: md5
+      md5: e926460de020778d23cc1a83529ade63
+      size: 2697302
+  build_tracking_ground_truth@val:
+    cmd: scripts/build_tracking_ground_truth.py --eval-csv 
+      data/03_processed/tracking_eval/val_videos.csv --site-index-dir 
+      data/02_interim/labelstudio_site_index --data-yaml config/salmon_yolo.yaml
+      --out-gt-csv data/03_processed/tracking_eval/val_gt.csv 
+      --out-sequences-csv data/03_processed/tracking_eval/val_sequences.csv 
+      --metadata-csv data/02_interim/video_metadata_index.csv 
+      --negative-metadata-csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --coord-mode percent
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index
+      hash: md5
+      md5: ca0d311020af9d4ae061512084c9eaf8.dir
+      size: 20589
+      nfiles: 13
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: 
+        data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      hash: md5
+      md5: 2f85b059d97fa9832cd3b9f5e4f6b43e
+      size: 19865
+    - path: data/03_processed/tracking_eval/val_videos.csv
+      hash: md5
+      md5: 97b2c62f5ef6d53698206a089b31611a
+      size: 3178031
+    - path: scripts/build_tracking_ground_truth.py
+      hash: md5
+      md5: 91f79488c63f89169790ff27009223ef
+      size: 353
+    - path: src/object_detection/tracking_eval/ground_truth.py
+      hash: md5
+      md5: 27a59f6fbefa19022d9aa73cd2f7726f
+      size: 25739
+    - path: src/object_detection/utils
+      hash: md5
+      md5: e5157dad97686a473451975985738514.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls/parsing.py
+      hash: md5
+      md5: 652f47bfcc6b2af9ea2be6654c3f8322
+      size: 5622
+    params:
+      params.yaml:
+        tracking_eval.coord_mode: percent
+    outs:
+    - path: data/03_processed/tracking_eval/val_gt.csv
+      hash: md5
+      md5: 5ac094b455e0b4b2f4e946fef5b50c68
+      size: 219013651
+    - path: data/03_processed/tracking_eval/val_sequences.csv
+      hash: md5
+      md5: c008f033fce3177ea6d54bfed8103686
+      size: 2643860
+  build_tracking_ground_truth@test:
+    cmd: scripts/build_tracking_ground_truth.py --eval-csv 
+      data/03_processed/tracking_eval/test_videos.csv --site-index-dir 
+      data/02_interim/labelstudio_site_index --data-yaml config/salmon_yolo.yaml
+      --out-gt-csv data/03_processed/tracking_eval/test_gt.csv 
+      --out-sequences-csv data/03_processed/tracking_eval/test_sequences.csv 
+      --metadata-csv data/02_interim/video_metadata_index.csv 
+      --negative-metadata-csv 
+      data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      --coord-mode percent
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/02_interim/labelstudio_site_index
+      hash: md5
+      md5: ca0d311020af9d4ae061512084c9eaf8.dir
+      size: 20589
+      nfiles: 13
+    - path: data/02_interim/video_metadata_index.csv
+      hash: md5
+      md5: 0ca998c8c3035944f920c89789d6434a
+      size: 11185337
+    - path: 
+        data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      hash: md5
+      md5: 2f85b059d97fa9832cd3b9f5e4f6b43e
+      size: 19865
+    - path: data/03_processed/tracking_eval/test_videos.csv
+      hash: md5
+      md5: e926460de020778d23cc1a83529ade63
+      size: 2697302
+    - path: scripts/build_tracking_ground_truth.py
+      hash: md5
+      md5: 91f79488c63f89169790ff27009223ef
+      size: 353
+    - path: src/object_detection/tracking_eval/ground_truth.py
+      hash: md5
+      md5: 27a59f6fbefa19022d9aa73cd2f7726f
+      size: 25739
+    - path: src/object_detection/utils
+      hash: md5
+      md5: e5157dad97686a473451975985738514.dir
+      size: 4638
+      nfiles: 6
+    - path: src/object_detection/yolo_ls/parsing.py
+      hash: md5
+      md5: 652f47bfcc6b2af9ea2be6654c3f8322
+      size: 5622
+    params:
+      params.yaml:
+        tracking_eval.coord_mode: percent
+    outs:
+    - path: data/03_processed/tracking_eval/test_gt.csv
+      hash: md5
+      md5: 76d9618847733fdb82b873e830c9d8d1
+      size: 130141923
+    - path: data/03_processed/tracking_eval/test_sequences.csv
+      hash: md5
+      md5: dd22dd74f5a4548b27174308d6f58efc
+      size: 2184351
