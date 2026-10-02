@@ -41,9 +41,11 @@ dvc pull
 
 All the data will be downloaded to `data`.
 
-`data/04_dataset/salmon_dataset/dataset_sharded/` has the full dataset packed into tar shards.
+`data/04_dataset/salmon_dataset/{sites}/dataset_sharded/` has the full dataset packed into tar shards.
 
-You can manually perform tar extract or run the unpack step:
+The unpack step should automatically run when running later steps, but you can
+manually perform run the unpack step:
+ 
 ```bash
 dvc repro --single-item --force unpack_split_dataset
 ```
@@ -52,7 +54,8 @@ This will unpack the tar files and put them in `data/04_dataset/salmon_dataset/y
 
 ### Pipeline
 
-Check dvc.yaml for the full pipeline.
+Check `dvc.yaml` for the full pipeline and `params.yaml` for the inserted
+parameters.
 
 Here is a visual describing all the components:
 
@@ -266,10 +269,12 @@ If wanting to only run one stage, use the `--single-item` flag:
 dvc repro --single-item build_model_input
 ```
 
-Run tests with
-```
-uv run pytest
-```
+The parameters that describe the sites, paths, and training configs is in
+`params.yaml`. `data.sites` params describe what data will be downloaded and
+can be edited to add more sites to be extracted and packed. `exp.{set}_sites`
+is where you specify the sites that will actually be used in the training,
+validation, and testing. This separates the downloading and training steps to
+allow site-based experimentation.
 
 Stage `update_raw` is made frozen to prevent always checking the S3 for changes.
 If there is an update to the JSON files exported from label studio, you can force
@@ -286,6 +291,11 @@ errors in downloading:
 
 ```
 dvc repro --force --single-item pack_split_dataset
+```
+
+Run tests with
+```
+uv run pytest
 ```
 
 #### Issue: Object is of storage class GLACIER
