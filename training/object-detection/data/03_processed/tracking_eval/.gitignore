@@ -1,1 +1,6 @@
 /test_videos.csv
+/val_videos.csv
+/val_gt.csv
+/val_sequences.csv
+/test_gt.csv
+/test_sequences.csv

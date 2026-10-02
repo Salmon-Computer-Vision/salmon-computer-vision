@@ -386,25 +386,64 @@ stages:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
     frozen: true
-  make_tracking_test_set:
-    cmd: >-
-      uv run --extra ${runtime.cuda}
-      scripts/make_tracking_test_set.py
-      --test-manifest ${config.dataset}/salmon_dataset/site_manifests/test.txt
-      --metadata-csv data/02_interim/video_metadata_index.csv
-      --out-csv data/03_processed/tracking_eval/test_videos.csv
-      --videos-dir ${config.dataset}/salmon_dataset/tracking_eval/videos
-      --max-videos ${tracking_eval.max_videos}
-    deps:
-      - scripts/make_tracking_test_set.py
-      - src/object_detection/tracking_eval/test_set.py
-      - ${config.dataset}/salmon_dataset/site_manifests/test.txt
-      - data/02_interim/video_metadata_index.csv
-    params:
-      - config.dataset
-      - tracking_eval.max_videos
-    outs:
-      - data/03_processed/tracking_eval/test_videos.csv
+  make_tracking_eval_set:
+    foreach:
+      - val
+      - test
+    do:
+      cmd: >-
+        scripts/make_tracking_eval_set.py
+        --manifest ${config.dataset}/salmon_dataset/site_manifests/${item}.txt
+        --split ${item}
+        --metadata-csv data/02_interim/video_metadata_index.csv
+        --out-csv data/03_processed/tracking_eval/${item}_videos.csv
+        --videos-dir ${config.dataset}/salmon_dataset/tracking_eval/videos
+        --max-videos ${tracking_eval.max_videos}
+        --compare-manifest train=${config.dataset}/salmon_dataset/site_manifests/train.txt
+        --compare-manifest val=${config.dataset}/salmon_dataset/site_manifests/val.txt
+        --compare-manifest test=${config.dataset}/salmon_dataset/site_manifests/test.txt
+      deps:
+        - scripts/make_tracking_eval_set.py
+        - src/object_detection/tracking_eval/eval_set.py
+        - ${config.dataset}/salmon_dataset/site_manifests/train.txt
+        - ${config.dataset}/salmon_dataset/site_manifests/val.txt
+        - ${config.dataset}/salmon_dataset/site_manifests/test.txt
+        - data/02_interim/video_metadata_index.csv
+      params:
+        - config.dataset
+        - tracking_eval.max_videos
+      outs:
+        - data/03_processed/tracking_eval/${item}_videos.csv
+  build_tracking_ground_truth:
+    foreach:
+      - val
+      - test
+    do:
+      cmd: >-
+        scripts/build_tracking_ground_truth.py
+        --eval-csv data/03_processed/tracking_eval/${item}_videos.csv
+        --site-index-dir data/02_interim/labelstudio_site_index
+        --data-yaml config/salmon_yolo.yaml
+        --out-gt-csv data/03_processed/tracking_eval/${item}_gt.csv
+        --out-sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --metadata-csv data/02_interim/video_metadata_index.csv
+        --negative-metadata-csv data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+        --coord-mode ${tracking_eval.coord_mode}
+      deps:
+        - scripts/build_tracking_ground_truth.py
+        - src/object_detection/tracking_eval/ground_truth.py
+        - src/object_detection/yolo_ls/parsing.py
+        - src/object_detection/utils
+        - data/03_processed/tracking_eval/${item}_videos.csv
+        - data/02_interim/labelstudio_site_index
+        - data/02_interim/video_metadata_index.csv
+        - data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+        - config/salmon_yolo.yaml
+      params:
+        - tracking_eval.coord_mode
+      outs:
+        - data/03_processed/tracking_eval/${item}_gt.csv
+        - data/03_processed/tracking_eval/${item}_sequences.csv
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py
