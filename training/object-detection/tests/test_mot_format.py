@@ -255,14 +255,50 @@ def test_rejects_n_tracks_mismatch(tmp_path: Path):
         materialize(tmp_path, [seq_row(stem, n_tracks=2, n_gt_rows=1)], [gt_row(stem, 1, 1)])
 
 
-def test_rejects_rotated_boxes_by_default_and_allows_explicit_override(tmp_path: Path):
+def test_rotated_label_studio_box_is_materialized_as_axis_aligned_aabb(tmp_path: Path):
     stem = "v_20250101_000000_M"
-    sequences = [seq_row(stem, n_gt_rows=1, rotated_rows=1)]
-    gt = [gt_row(stem, 1, 1, rotation=12.0)]
-    with pytest.raises(ValueError, match="rotated GT"):
-        materialize(tmp_path, sequences, gt)
-    stats, _, _ = materialize(tmp_path, sequences, gt, allow_rotated=True)
+    sequences = [seq_row(stem, n_gt_rows=1, rotated_rows=1, width=100, height=100)]
+    # LS stores rotation around the exported top-left anchor. A 10x20 box at
+    # (10,20) rotated +90 degrees has corners (10,20), (10,30), (-10,30),
+    # (-10,20). After clipping to the image the visible AABB is x=[0,10],
+    # y=[20,30], then MOT origin becomes 1-based.
+    gt = [gt_row(
+        stem, 1, 1, rotation=90.0,
+        x_px=10, y_px=20, width_px=10, height_px=20,
+    )]
+    stats, root, _ = materialize(tmp_path, sequences, gt)
+    line = (root / "SalmonVision-val" / stem / "gt" / "gt.txt").read_text().strip()
+    parts = line.split(",")
+    assert parts[:2] == ["1", "1"]
+    assert float(parts[2]) == pytest.approx(1.0)
+    assert float(parts[3]) == pytest.approx(21.0)
+    assert float(parts[4]) == pytest.approx(10.0)
+    assert float(parts[5]) == pytest.approx(10.0)
     assert stats.rotated_rows == 1
+    assert stats.clipped_rows == 1
+
+
+def test_out_of_frame_axis_aligned_box_is_clipped_to_visible_image(tmp_path: Path):
+    stem = "v_20250101_000000_M"
+    sequences = [seq_row(stem, n_gt_rows=1, width=100, height=80)]
+    gt = [gt_row(
+        stem, 1, 1, x_px=-5, y_px=-2, width_px=20, height_px=10,
+    )]
+    stats, root, _ = materialize(tmp_path, sequences, gt)
+    parts = (root / "SalmonVision-val" / stem / "gt" / "gt.txt").read_text().strip().split(",")
+    assert float(parts[2]) == pytest.approx(1.0)
+    assert float(parts[3]) == pytest.approx(1.0)
+    assert float(parts[4]) == pytest.approx(15.0)
+    assert float(parts[5]) == pytest.approx(8.0)
+    assert stats.clipped_rows == 1
+
+
+def test_rejects_fully_outside_box_instead_of_silently_dropping_it(tmp_path: Path):
+    stem = "v_20250101_000000_M"
+    sequences = [seq_row(stem, n_gt_rows=1, width=100, height=80)]
+    gt = [gt_row(stem, 1, 1, x_px=-30, y_px=10, width_px=10, height_px=10)]
+    with pytest.raises(ValueError, match="fully outside"):
+        materialize(tmp_path, sequences, gt)
 
 
 def test_rejects_rotated_row_count_mismatch(tmp_path: Path):
@@ -272,7 +308,6 @@ def test_rejects_rotated_row_count_mismatch(tmp_path: Path):
             tmp_path,
             [seq_row(stem, n_gt_rows=1, rotated_rows=0)],
             [gt_row(stem, 1, 1, rotation=1.0)],
-            allow_rotated=True,
         )
 
 

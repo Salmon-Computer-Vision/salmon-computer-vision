@@ -64,6 +64,8 @@ class BuildStats:
     synthetic_track_uids: int = 0
     unknown_class_tracks: int = 0
     rotated_rows: int = 0
+    degenerate_rows_dropped: int = 0
+    degenerate_tracks_dropped: int = 0
 
 
 def _parse_ts(value: object) -> datetime:
@@ -426,6 +428,8 @@ def build_tracking_ground_truth(
                     "unknown_class_tracks": 0,
                     "synthetic_track_uids": 0,
                     "rotated_rows": 0,
+                    "degenerate_rows_dropped": 0,
+                    "degenerate_tracks_dropped": 0,
                     "local_video_path": video.local_video_path,
                 }
             )
@@ -478,17 +482,24 @@ def build_tracking_ground_truth(
         n_keyframes = 0
         n_rows_before = len(gt_rows)
         rotated_for_video = 0
+        degenerate_rows_for_video = 0
+        degenerate_tracks_for_video = 0
+        tracks_written_for_video = 0
 
-        # MOT IDs are 1-based and need only be unique within a sequence.
-        for track_id, (_, r, track_uid, uid_source) in enumerate(valid_tracks, start=1):
+        # MOT IDs are 1-based and need only be unique within a sequence. Assign
+        # them only after a track has at least one valid positive-area box so
+        # dropped degenerate-only annotations do not create gaps or inflate
+        # n_tracks.
+        for _, r, track_uid, uid_source in valid_tracks:
             value = r.get("value") or {}
             class_name = str((value.get("labels") or [""])[0])
             class_id = int(class_map[class_name])
             sequence = value.get("sequence") or []
             frames = interpolate_track_sequence(sequence)
-            n_keyframes += sum(1 for fr in frames if fr.is_keyframe)
 
             seen_frames: set[int] = set()
+            pending_rows: List[Dict[str, object]] = []
+
             for fr in frames:
                 if fr.frame_idx in seen_frames:
                     raise ValueError(
@@ -531,18 +542,23 @@ def build_tracking_ground_truth(
                         f"frame {fr.frame_idx}"
                     )
 
-                if abs(fr.rotation) > 1e-9:
-                    rotated_for_video += 1
-                    stats.rotated_rows += 1
+                # MOT boxes must have positive area. Label Studio does not
+                # define zero-sized VideoRectangle boxes as a visibility state;
+                # enabled controls interpolation/visibility instead. Treat
+                # non-positive dimensions as malformed annotation rows and omit
+                # them from canonical GT.
+                if w_px <= 0.0 or h_px <= 0.0 or wn <= 0.0 or hn <= 0.0:
+                    degenerate_rows_for_video += 1
+                    stats.degenerate_rows_dropped += 1
+                    continue
 
-                gt_rows.append(
+                pending_rows.append(
                     {
                         "split": video.split,
                         "video_stem": video.video_stem,
                         "site": video.site,
                         "frame_idx": fr.frame_idx,
                         "mot_frame": fr.frame_idx + 1,
-                        "track_id": track_id,
                         "track_uid": track_uid,
                         "track_uid_source": uid_source,
                         "class_id": class_id,
@@ -565,8 +581,25 @@ def build_tracking_ground_truth(
                     }
                 )
 
+            if not pending_rows:
+                if frames:
+                    degenerate_tracks_for_video += 1
+                    stats.degenerate_tracks_dropped += 1
+                continue
+
+            tracks_written_for_video += 1
+            track_id = tracks_written_for_video
+            for row in pending_rows:
+                row["track_id"] = track_id
+                if str(row["is_keyframe"]) == "true":
+                    n_keyframes += 1
+                if abs(float(row["rotation_deg"])) > 1e-9:
+                    rotated_for_video += 1
+                    stats.rotated_rows += 1
+                gt_rows.append(row)
+
         n_gt_rows = len(gt_rows) - n_rows_before
-        n_tracks = len(valid_tracks)
+        n_tracks = tracks_written_for_video
         if n_tracks > 0:
             stats.videos_with_tracks += 1
             stats.tracks_written += n_tracks
@@ -591,6 +624,8 @@ def build_tracking_ground_truth(
                 "unknown_class_tracks": unknown_for_video,
                 "synthetic_track_uids": synthetic_for_video,
                 "rotated_rows": rotated_for_video,
+                "degenerate_rows_dropped": degenerate_rows_for_video,
+                "degenerate_tracks_dropped": degenerate_tracks_for_video,
                 "local_video_path": video.local_video_path,
             }
         )
@@ -655,6 +690,8 @@ def build_tracking_ground_truth(
         "unknown_class_tracks",
         "synthetic_track_uids",
         "rotated_rows",
+        "degenerate_rows_dropped",
+        "degenerate_tracks_dropped",
         "local_video_path",
     ]
     with out_sequences_csv.open("w", newline="", encoding="utf-8") as f:
@@ -753,7 +790,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         f"gt_rows_written={stats.gt_rows_written} "
         f"synthetic_track_uids={stats.synthetic_track_uids} "
         f"unknown_class_tracks={stats.unknown_class_tracks} "
-        f"rotated_rows={stats.rotated_rows}"
+        f"rotated_rows={stats.rotated_rows} "
+        f"degenerate_rows_dropped={stats.degenerate_rows_dropped} "
+        f"degenerate_tracks_dropped={stats.degenerate_tracks_dropped}"
     )
 
 

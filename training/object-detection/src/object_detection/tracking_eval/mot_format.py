@@ -26,6 +26,18 @@ class SequenceInfo:
 
 
 @dataclass(frozen=True)
+class CanonicalGtRow:
+    video_stem: str
+    mot_frame: int
+    track_id: int
+    x: float
+    y: float
+    width: float
+    height: float
+    rotation_deg: float
+
+
+@dataclass(frozen=True)
 class MotGtRow:
     video_stem: str
     mot_frame: int
@@ -46,6 +58,7 @@ class MaterializeStats:
     gt_rows_written: int = 0
     tracks_written: int = 0
     rotated_rows: int = 0
+    clipped_rows: int = 0
 
 
 def _as_int(value: object, *, field: str, context: str) -> int:
@@ -161,9 +174,9 @@ def read_sequence_info(path: Path, *, expected_split: Optional[str] = None) -> D
     return out
 
 
-def read_gt_rows(path: Path, *, expected_split: Optional[str] = None) -> Dict[str, List[MotGtRow]]:
+def read_gt_rows(path: Path, *, expected_split: Optional[str] = None) -> Dict[str, List[CanonicalGtRow]]:
     path = Path(path)
-    grouped: Dict[str, List[MotGtRow]] = {}
+    grouped: Dict[str, List[CanonicalGtRow]] = {}
     with path.open("r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         if reader.fieldnames is None:
@@ -209,12 +222,12 @@ def read_gt_rows(path: Path, *, expected_split: Optional[str] = None) -> Dict[st
                 )
 
             grouped.setdefault(stem, []).append(
-                MotGtRow(
+                CanonicalGtRow(
                     video_stem=stem,
                     mot_frame=frame,
                     track_id=track_id,
-                    left=x + 1.0,
-                    top=y + 1.0,
+                    x=x,
+                    y=y,
                     width=width,
                     height=height,
                     rotation_deg=rotation,
@@ -222,6 +235,86 @@ def read_gt_rows(path: Path, *, expected_split: Optional[str] = None) -> Dict[st
             )
     return grouped
 
+
+
+def _rotated_aabb_zero_based(row: CanonicalGtRow) -> Tuple[float, float, float, float]:
+    """Return an axis-aligned bbox enclosing Label Studio's rotated box.
+
+    Label Studio stores rotation clockwise around the exported (x, y) top-left
+    anchor. The canonical CSV keeps that representation. MOTChallenge requires
+    axis-aligned boxes, so materialization encloses the rotated four corners.
+    """
+    if abs(row.rotation_deg) <= 1e-12:
+        return row.x, row.y, row.width, row.height
+
+    theta = math.radians(row.rotation_deg)
+    cos_t = math.cos(theta)
+    sin_t = math.sin(theta)
+
+    x0, y0 = row.x, row.y
+    w, h = row.width, row.height
+    corners = (
+        (x0, y0),
+        (x0 + w * cos_t, y0 + w * sin_t),
+        (x0 + w * cos_t - h * sin_t, y0 + w * sin_t + h * cos_t),
+        (x0 - h * sin_t, y0 + h * cos_t),
+    )
+    xs = [p[0] for p in corners]
+    ys = [p[1] for p in corners]
+    left = min(xs)
+    top = min(ys)
+    right = max(xs)
+    bottom = max(ys)
+    return left, top, right - left, bottom - top
+
+
+def _to_mot_box(row: CanonicalGtRow, seq: SequenceInfo) -> Tuple[MotGtRow, bool]:
+    """Convert canonical zero-based LS geometry to clipped 1-based MOT bbox.
+
+    Boxes are clipped to the visible video frame. This handles annotations that
+    extend slightly outside the image and rotated boxes whose enclosing AABB
+    crosses a frame edge. Fully out-of-frame boxes remain an error because
+    silently dropping them would make n_gt_rows/n_tracks inconsistent.
+    """
+    x, y, width, height = _rotated_aabb_zero_based(row)
+    right = x + width
+    bottom = y + height
+
+    clipped_left = max(0.0, x)
+    clipped_top = max(0.0, y)
+    clipped_right = min(float(seq.width), right)
+    clipped_bottom = min(float(seq.height), bottom)
+
+    if clipped_right <= clipped_left or clipped_bottom <= clipped_top:
+        raise ValueError(
+            f"GT box is fully outside the video frame for {row.video_stem}: "
+            f"frame={row.mot_frame} track_id={row.track_id} "
+            f"aabb=({x},{y},{width},{height}) frame_size={seq.width}x{seq.height}"
+        )
+
+    clipped = any(
+        abs(a - b) > 1e-9
+        for a, b in (
+            (clipped_left, x),
+            (clipped_top, y),
+            (clipped_right, right),
+            (clipped_bottom, bottom),
+        )
+    )
+
+    return (
+        MotGtRow(
+            video_stem=row.video_stem,
+            mot_frame=row.mot_frame,
+            track_id=row.track_id,
+            left=clipped_left + 1.0,
+            top=clipped_top + 1.0,
+            width=clipped_right - clipped_left,
+            height=clipped_bottom - clipped_top,
+            rotation_deg=row.rotation_deg,
+        ),
+        clipped,
+    )
 
 def format_motchallenge_gt_row(row: MotGtRow) -> str:
     """
@@ -334,7 +427,6 @@ def materialize_mot_ground_truth(
     benchmark: str,
     split: str,
     summary_json: Optional[Path] = None,
-    allow_rotated: bool = False,
 ) -> MaterializeStats:
     benchmark = benchmark.strip()
     split = split.strip()
@@ -348,9 +440,9 @@ def materialize_mot_ground_truth(
         raise ValueError(f"split must be a simple name, got {split!r}")
 
     sequences = read_sequence_info(sequences_csv, expected_split=split)
-    gt_by_sequence = read_gt_rows(gt_csv, expected_split=split)
+    canonical_gt_by_sequence = read_gt_rows(gt_csv, expected_split=split)
 
-    extra_gt = sorted(set(gt_by_sequence).difference(sequences))
+    extra_gt = sorted(set(canonical_gt_by_sequence).difference(sequences))
     if extra_gt:
         raise ValueError(
             "GT CSV contains sequence(s) absent from sequences CSV: " + ", ".join(extra_gt[:20])
@@ -359,13 +451,13 @@ def materialize_mot_ground_truth(
     stats = MaterializeStats(split=split, benchmark=benchmark)
 
     for stem, seq in sequences.items():
-        rows = gt_by_sequence.get(stem, [])
-        unique_tracks = {row.track_id for row in rows}
-        rotated = sum(abs(row.rotation_deg) > 1e-9 for row in rows)
+        canonical_rows = canonical_gt_by_sequence.get(stem, [])
+        unique_tracks = {row.track_id for row in canonical_rows}
+        rotated = sum(abs(row.rotation_deg) > 1e-9 for row in canonical_rows)
 
-        if len(rows) != seq.n_gt_rows:
+        if len(canonical_rows) != seq.n_gt_rows:
             raise ValueError(
-                f"n_gt_rows mismatch for {stem}: sequences CSV says {seq.n_gt_rows}, GT CSV has {len(rows)}"
+                f"n_gt_rows mismatch for {stem}: sequences CSV says {seq.n_gt_rows}, GT CSV has {len(canonical_rows)}"
             )
         if len(unique_tracks) != seq.n_tracks:
             raise ValueError(
@@ -375,14 +467,13 @@ def materialize_mot_ground_truth(
             raise ValueError(
                 f"rotated_rows mismatch for {stem}: sequences CSV says {seq.rotated_rows}, GT CSV has {rotated}"
             )
-        if rotated and not allow_rotated:
-            raise ValueError(
-                f"Sequence {stem} contains {rotated} rotated GT row(s); MOTChallenge boxes are axis-aligned. "
-                "Pass --allow-rotated only if the canonical x/y/width/height representation is intentional."
-            )
-
+        mot_rows: List[MotGtRow] = []
         seen: set[Tuple[int, int]] = set()
-        for row in rows:
+        for canonical_row in canonical_rows:
+            row, was_clipped = _to_mot_box(canonical_row, seq)
+            if was_clipped:
+                stats.clipped_rows += 1
+            mot_rows.append(row)
             if row.mot_frame > seq.nb_frames:
                 raise ValueError(
                     f"GT frame {row.mot_frame} exceeds seqLength={seq.nb_frames} for {stem}"
@@ -397,10 +488,10 @@ def materialize_mot_ground_truth(
             seen.add(key)
 
         stats.sequences_written += 1
-        stats.gt_rows_written += len(rows)
+        stats.gt_rows_written += len(mot_rows)
         stats.tracks_written += len(unique_tracks)
         stats.rotated_rows += rotated
-        if not rows:
+        if not mot_rows:
             stats.zero_gt_sequences += 1
 
     out_root = Path(out_root)
@@ -421,10 +512,11 @@ def materialize_mot_ground_truth(
         gt_dir = seq_dir / "gt"
         gt_dir.mkdir(parents=True, exist_ok=True)
 
-        rows = sorted(
-            gt_by_sequence.get(seq.video_stem, []),
+        canonical_rows = sorted(
+            canonical_gt_by_sequence.get(seq.video_stem, []),
             key=lambda row: (row.mot_frame, row.track_id),
         )
+        rows = [_to_mot_box(row, seq)[0] for row in canonical_rows]
         gt_lines = [format_motchallenge_gt_row(row) for row in rows]
         gt_path = gt_dir / "gt.txt"
         gt_path.write_text("\n".join(gt_lines) + ("\n" if gt_lines else ""), encoding="utf-8")
@@ -459,11 +551,6 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--benchmark", required=True)
     p.add_argument("--split", required=True)
     p.add_argument("--summary-json", type=Path, default=None)
-    p.add_argument(
-        "--allow-rotated",
-        action="store_true",
-        help="Allow rows whose canonical GT reports non-zero rotation; MOT output remains axis-aligned.",
-    )
     return p
 
 
@@ -476,14 +563,13 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         benchmark=args.benchmark,
         split=args.split,
         summary_json=args.summary_json,
-        allow_rotated=args.allow_rotated,
     )
     print(
         "MOT GT materialized: "
         f"benchmark={stats.benchmark} split={stats.split} "
         f"sequences={stats.sequences_written} zero_gt_sequences={stats.zero_gt_sequences} "
         f"tracks={stats.tracks_written} gt_rows={stats.gt_rows_written} "
-        f"rotated_rows={stats.rotated_rows}"
+        f"rotated_rows={stats.rotated_rows} clipped_rows={stats.clipped_rows}"
     )
 
 
