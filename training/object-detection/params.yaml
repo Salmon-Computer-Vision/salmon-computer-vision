@@ -65,6 +65,7 @@ runtime:
 tracking_eval:
   tracker: botsort.yaml
   coord_mode: percent
+  mot_benchmark: SalmonVision
   conf: 0.05
   iou: 0.7
   imgsz: 640

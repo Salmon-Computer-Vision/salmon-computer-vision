@@ -444,6 +444,31 @@ stages:
       outs:
         - data/03_processed/tracking_eval/${item}_gt.csv
         - data/03_processed/tracking_eval/${item}_sequences.csv
+  materialize_mot_ground_truth:
+    foreach:
+      - val
+      - test
+    do:
+      cmd: >-
+        scripts/materialize_mot_ground_truth.py
+        --gt-csv data/03_processed/tracking_eval/${item}_gt.csv
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --out-root ${config.dataset}/salmon_dataset/tracking_eval/mot_gt
+        --benchmark ${tracking_eval.mot_benchmark}
+        --split ${item}
+        --summary-json data/03_processed/tracking_eval/${item}_mot_summary.json
+      deps:
+        - scripts/materialize_mot_ground_truth.py
+        - src/object_detection/tracking_eval/mot_format.py
+        - data/03_processed/tracking_eval/${item}_gt.csv
+        - data/03_processed/tracking_eval/${item}_sequences.csv
+      params:
+        - config.dataset
+        - tracking_eval.mot_benchmark
+      outs:
+        - ${config.dataset}/salmon_dataset/tracking_eval/mot_gt/${tracking_eval.mot_benchmark}-${item}
+        - ${config.dataset}/salmon_dataset/tracking_eval/mot_gt/seqmaps/${tracking_eval.mot_benchmark}-${item}.txt
+        - data/03_processed/tracking_eval/${item}_mot_summary.json
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py
