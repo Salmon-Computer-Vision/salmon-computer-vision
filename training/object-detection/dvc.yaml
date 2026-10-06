@@ -467,6 +467,32 @@ stages:
         - tracking_eval.mot_benchmark
       outs:
         - data/03_processed/tracking_eval/${item}_mot_summary.json
+  materialize_tracking_videos:
+    foreach:
+      - val
+      - test
+    do:
+      cmd: >-
+        scripts/materialize_tracking_videos.py
+        --eval-csv data/03_processed/tracking_eval/${item}_videos.csv
+        --split ${item}
+        --bucket ${data.bucket}
+        --workers ${pack.download_workers}
+        --status-csv data/03_processed/tracking_eval/${item}_video_download_status.csv
+        --summary-json data/03_processed/tracking_eval/${item}_video_download_summary.json
+        --glacier-log data/03_processed/tracking_eval/${item}_glacier_restore.log
+      deps:
+        - scripts/materialize_tracking_videos.py
+        - src/object_detection/tracking_eval/videos.py
+        - data/03_processed/tracking_eval/${item}_videos.csv
+      params:
+        - data.bucket
+        - pack.download_workers
+      outs:
+        - data/03_processed/tracking_eval/${item}_video_download_status.csv
+        - data/03_processed/tracking_eval/${item}_video_download_summary.json
+        - data/03_processed/tracking_eval/${item}_glacier_restore.log
+      always_changed: true
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py
