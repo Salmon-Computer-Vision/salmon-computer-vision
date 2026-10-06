@@ -4,3 +4,5 @@
 /val_sequences.csv
 /test_gt.csv
 /test_sequences.csv
+/val_mot_summary.json
+/test_mot_summary.json

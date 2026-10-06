@@ -3751,8 +3751,8 @@ stages:
       size: 353
     - path: src/object_detection/tracking_eval/ground_truth.py
       hash: md5
-      md5: 27a59f6fbefa19022d9aa73cd2f7726f
-      size: 25739
+      md5: 0ae6a83ab0e982f98dcc379436566d72
+      size: 32284
     - path: src/object_detection/utils
       hash: md5
       md5: e5157dad97686a473451975985738514.dir
@@ -3768,12 +3768,12 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_gt.csv
       hash: md5
-      md5: 5ac094b455e0b4b2f4e946fef5b50c68
-      size: 219013651
+      md5: 48b5d783d1d4b8b65d6008581785d5f3
+      size: 218902504
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: c008f033fce3177ea6d54bfed8103686
-      size: 2643860
+      md5: d4d53a1f24d19858f12dbf63cfdc4382
+      size: 2743309
   build_tracking_ground_truth@test:
     cmd: scripts/build_tracking_ground_truth.py --eval-csv 
       data/03_processed/tracking_eval/test_videos.csv --site-index-dir 
@@ -3813,8 +3813,8 @@ stages:
       size: 353
     - path: src/object_detection/tracking_eval/ground_truth.py
       hash: md5
-      md5: 27a59f6fbefa19022d9aa73cd2f7726f
-      size: 25739
+      md5: 0ae6a83ab0e982f98dcc379436566d72
+      size: 32284
     - path: src/object_detection/utils
       hash: md5
       md5: e5157dad97686a473451975985738514.dir
@@ -3830,9 +3830,96 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_gt.csv
       hash: md5
-      md5: 76d9618847733fdb82b873e830c9d8d1
-      size: 130141923
+      md5: 7c20b870bbfae53ef381461cf0aeb2f7
+      size: 130077185
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: dd22dd74f5a4548b27174308d6f58efc
-      size: 2184351
+      md5: 8bd02b9780f1591d6c64612c6d3a3f44
+      size: 2269059
+  materialize_mot_ground_truth@val:
+    cmd: scripts/materialize_mot_ground_truth.py --gt-csv 
+      data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
+      data/03_processed/tracking_eval/val_sequences.csv --out-root 
+      data/04_dataset/salmon_dataset/tracking_eval/mot_gt --benchmark 
+      SalmonVision --split val --summary-json 
+      data/03_processed/tracking_eval/val_mot_summary.json
+    deps:
+    - path: data/03_processed/tracking_eval/val_gt.csv
+      hash: md5
+      md5: 48b5d783d1d4b8b65d6008581785d5f3
+      size: 218902504
+    - path: data/03_processed/tracking_eval/val_sequences.csv
+      hash: md5
+      md5: d4d53a1f24d19858f12dbf63cfdc4382
+      size: 2743309
+    - path: scripts/materialize_mot_ground_truth.py
+      hash: md5
+      md5: ecce562160f43ccbcd800194f7479558
+      size: 351
+    - path: src/object_detection/tracking_eval/mot_format.py
+      hash: md5
+      md5: 54c20c7eb2085832ea76c6bc575ef6be
+      size: 23051
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        tracking_eval.mot_benchmark: SalmonVision
+    outs:
+    - path: data/03_processed/tracking_eval/val_mot_summary.json
+      hash: md5
+      md5: 2990693f14a68fd414557b7564a23589
+      size: 215
+    - path: data/04_dataset/salmon_dataset/tracking_eval/mot_gt/SalmonVision-val
+      hash: md5
+      md5: bc4fc6f0aed0e7aae257c96396df4bd3.dir
+      size: 39054493
+      nfiles: 16550
+    - path: 
+        data/04_dataset/salmon_dataset/tracking_eval/mot_gt/seqmaps/SalmonVision-val.txt
+      hash: md5
+      md5: 44702b7abd38cb9478b3381053c552b0
+      size: 339833
+  materialize_mot_ground_truth@test:
+    cmd: scripts/materialize_mot_ground_truth.py --gt-csv 
+      data/03_processed/tracking_eval/test_gt.csv --sequences-csv 
+      data/03_processed/tracking_eval/test_sequences.csv --out-root 
+      data/04_dataset/salmon_dataset/tracking_eval/mot_gt --benchmark 
+      SalmonVision --split test --summary-json 
+      data/03_processed/tracking_eval/test_mot_summary.json
+    deps:
+    - path: data/03_processed/tracking_eval/test_gt.csv
+      hash: md5
+      md5: 7c20b870bbfae53ef381461cf0aeb2f7
+      size: 130077185
+    - path: data/03_processed/tracking_eval/test_sequences.csv
+      hash: md5
+      md5: 8bd02b9780f1591d6c64612c6d3a3f44
+      size: 2269059
+    - path: scripts/materialize_mot_ground_truth.py
+      hash: md5
+      md5: ecce562160f43ccbcd800194f7479558
+      size: 351
+    - path: src/object_detection/tracking_eval/mot_format.py
+      hash: md5
+      md5: 54c20c7eb2085832ea76c6bc575ef6be
+      size: 23051
+    params:
+      params.yaml:
+        config.dataset: data/04_dataset
+        tracking_eval.mot_benchmark: SalmonVision
+    outs:
+    - path: data/03_processed/tracking_eval/test_mot_summary.json
+      hash: md5
+      md5: 26189123befb8ec6f7e454cc42aa1534
+      size: 212
+    - path: 
+        data/04_dataset/salmon_dataset/tracking_eval/mot_gt/SalmonVision-test
+      hash: md5
+      md5: e8529c21605bb8684d9403c9425cfcaf.dir
+      size: 23499421
+      nfiles: 14092
+    - path: 
+        data/04_dataset/salmon_dataset/tracking_eval/mot_gt/seqmaps/SalmonVision-test.txt
+      hash: md5
+      md5: f5677246c2e68f0071f942e232ca6894
+      size: 285243
