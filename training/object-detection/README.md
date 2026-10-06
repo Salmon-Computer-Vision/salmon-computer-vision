@@ -269,6 +269,12 @@ If wanting to only run one stage, use the `--single-item` flag:
 dvc repro --single-item build_model_input
 ```
 
+Important long-running stages include `pack_split_dataset`, `tune_yolo`, and
+`train_yolo_best`. `pack_split_dataset` downloads, extracts, and packs the
+video frames into tarballs, whereas the latter does hyperparameter tuning and
+training. `tune_yolo` should not need to be run unless the dataset or model is
+significantly different to search for new hyperparameters.
+
 The parameters that describe the sites, paths, and training configs is in
 `params.yaml`. `data.sites` params describe what data will be downloaded and
 can be edited to add more sites to be extracted and packed. `exp.{set}_sites`
