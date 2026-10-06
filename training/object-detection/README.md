@@ -282,6 +282,16 @@ is where you specify the sites that will actually be used in the training,
 validation, and testing. This separates the downloading and training steps to
 allow site-based experimentation.
 
+The stages are site-agnostic, meaning some stages iterate upon all the sites in
+`data.sites` param and editing it to be one site or adding a new site will not
+affect the data and split makeup for the other sites. You can see this in the
+`foreach` line which expands the stages adding a `@site_name` for each site which
+can be run manually if desired:
+
+```
+dvc repro pack_split_dataset@tankeeah
+```
+
 Stage `update_raw` is made frozen to prevent always checking the S3 for changes.
 If there is an update to the JSON files exported from label studio, you can force
 the stage to run:
