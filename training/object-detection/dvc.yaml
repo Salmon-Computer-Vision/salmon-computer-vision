@@ -466,8 +466,6 @@ stages:
         - config.dataset
         - tracking_eval.mot_benchmark
       outs:
-        - ${config.dataset}/salmon_dataset/tracking_eval/mot_gt/${tracking_eval.mot_benchmark}-${item}
-        - ${config.dataset}/salmon_dataset/tracking_eval/mot_gt/seqmaps/${tracking_eval.mot_benchmark}-${item}.txt
         - data/03_processed/tracking_eval/${item}_mot_summary.json
   make_site_eval_workdir:
     cmd: >-
