@@ -371,3 +371,25 @@ def test_rejects_inconsistent_zero_gt_status_counts(tmp_path: Path):
     bad["status"] = "condition_negative"
     with pytest.raises(ValueError, match="Zero-GT sequence"):
         materialize(tmp_path, [bad], [gt_row(stem, 1, 1)])
+
+
+def test_preflight_reports_multiple_sequence_frame_errors_at_once(tmp_path: Path):
+    a = "A-site-jetson-0_20250101_000000_M"
+    b = "B-site-jetson-0_20250101_000000_M"
+    seqs = [
+        seq_row(a, nb_frames=1, n_gt_rows=1),
+        seq_row(b, nb_frames=2, n_gt_rows=1),
+    ]
+    rows = [
+        gt_row(a, 2, 1),
+        gt_row(b, 3, 1),
+    ]
+
+    with pytest.raises(ValueError) as excinfo:
+        materialize(tmp_path, seqs, rows)
+
+    message = str(excinfo.value)
+    assert "MOT GT preflight failed with 2 issue(s)" in message
+    assert a in message
+    assert b in message
+    assert "exceeds seqLength" in message

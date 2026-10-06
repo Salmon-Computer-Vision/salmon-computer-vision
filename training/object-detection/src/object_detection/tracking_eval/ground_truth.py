@@ -66,6 +66,10 @@ class BuildStats:
     rotated_rows: int = 0
     degenerate_rows_dropped: int = 0
     degenerate_tracks_dropped: int = 0
+    out_of_range_rows_dropped: int = 0
+    out_of_range_tracks_dropped: int = 0
+    fully_outside_rows_dropped: int = 0
+    fully_outside_tracks_dropped: int = 0
 
 
 def _parse_ts(value: object) -> datetime:
@@ -308,7 +312,58 @@ def _video_nb_frames(item: Optional[dict], metadata: Dict[str, str]) -> int:
     nb_frames = int(safe_float(data.get("metadata_video_nb_frames"), 0))
     if nb_frames <= 0:
         nb_frames = int(safe_float(metadata.get("nb_frames"), 0))
+    if nb_frames <= 0:
+        duration = safe_float(
+            data.get("metadata_video_duration", data.get("duration")),
+            safe_float(metadata.get("duration"), 0.0),
+        )
+        fps = _video_fps(item, metadata)
+        if duration > 0 and fps > 0:
+            nb_frames = int(round(duration * fps))
     return nb_frames
+
+
+def _box_has_visible_area(
+    *,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    rotation_deg: float,
+    video_width: int,
+    video_height: int,
+) -> bool:
+    """Return whether an LS rectangle has any visible AABB area in-frame.
+
+    Label Studio rotates VideoRectangle geometry clockwise around its exported
+    top-left (x, y) anchor. MOTChallenge ultimately needs an axis-aligned box,
+    so this uses the same enclosing-AABB geometry as the materializer and only
+    rejects annotations whose entire AABB lies outside the video frame.
+    """
+    if abs(rotation_deg) <= 1e-12:
+        left, top = x, y
+        right, bottom = x + width, y + height
+    else:
+        theta = math.radians(rotation_deg)
+        cos_t = math.cos(theta)
+        sin_t = math.sin(theta)
+        corners = (
+            (x, y),
+            (x + width * cos_t, y + width * sin_t),
+            (x + width * cos_t - height * sin_t,
+             y + width * sin_t + height * cos_t),
+            (x - height * sin_t, y + height * cos_t),
+        )
+        xs = [point[0] for point in corners]
+        ys = [point[1] for point in corners]
+        left, top = min(xs), min(ys)
+        right, bottom = max(xs), max(ys)
+
+    clipped_left = max(0.0, left)
+    clipped_top = max(0.0, top)
+    clipped_right = min(float(video_width), right)
+    clipped_bottom = min(float(video_height), bottom)
+    return clipped_right > clipped_left and clipped_bottom > clipped_top
 
 
 def _collect_annotation_candidates(
@@ -430,6 +485,10 @@ def build_tracking_ground_truth(
                     "rotated_rows": 0,
                     "degenerate_rows_dropped": 0,
                     "degenerate_tracks_dropped": 0,
+                    "out_of_range_rows_dropped": 0,
+                    "out_of_range_tracks_dropped": 0,
+                    "fully_outside_rows_dropped": 0,
+                    "fully_outside_tracks_dropped": 0,
                     "local_video_path": video.local_video_path,
                 }
             )
@@ -484,6 +543,10 @@ def build_tracking_ground_truth(
         rotated_for_video = 0
         degenerate_rows_for_video = 0
         degenerate_tracks_for_video = 0
+        out_of_range_rows_for_video = 0
+        out_of_range_tracks_for_video = 0
+        fully_outside_rows_for_video = 0
+        fully_outside_tracks_for_video = 0
         tracks_written_for_video = 0
 
         # MOT IDs are 1-based and need only be unique within a sequence. Assign
@@ -499,6 +562,9 @@ def build_tracking_ground_truth(
 
             seen_frames: set[int] = set()
             pending_rows: List[Dict[str, object]] = []
+            track_had_degenerate = False
+            track_had_out_of_range = False
+            track_had_fully_outside = False
 
             for fr in frames:
                 if fr.frame_idx in seen_frames:
@@ -507,6 +573,16 @@ def build_tracking_ground_truth(
                         f"in {video.video_stem}"
                     )
                 seen_frames.add(fr.frame_idx)
+
+                # Label Studio frame indices are zero-based. If metadata says
+                # a video has N frames, valid annotation indices are 0..N-1.
+                # Keyframes at N (or beyond) are malformed/out-of-range and
+                # cannot be represented by a TrackEval sequence of length N.
+                if nb_frames > 0 and fr.frame_idx >= nb_frames:
+                    out_of_range_rows_for_video += 1
+                    stats.out_of_range_rows_dropped += 1
+                    track_had_out_of_range = True
+                    continue
 
                 if width <= 0 or height <= 0:
                     raise ValueError(
@@ -550,6 +626,21 @@ def build_tracking_ground_truth(
                 if w_px <= 0.0 or h_px <= 0.0 or wn <= 0.0 or hn <= 0.0:
                     degenerate_rows_for_video += 1
                     stats.degenerate_rows_dropped += 1
+                    track_had_degenerate = True
+                    continue
+
+                if not _box_has_visible_area(
+                    x=x_px,
+                    y=y_px,
+                    width=w_px,
+                    height=h_px,
+                    rotation_deg=fr.rotation,
+                    video_width=width,
+                    video_height=height,
+                ):
+                    fully_outside_rows_for_video += 1
+                    stats.fully_outside_rows_dropped += 1
+                    track_had_fully_outside = True
                     continue
 
                 pending_rows.append(
@@ -583,8 +674,15 @@ def build_tracking_ground_truth(
 
             if not pending_rows:
                 if frames:
-                    degenerate_tracks_for_video += 1
-                    stats.degenerate_tracks_dropped += 1
+                    if track_had_degenerate:
+                        degenerate_tracks_for_video += 1
+                        stats.degenerate_tracks_dropped += 1
+                    if track_had_out_of_range:
+                        out_of_range_tracks_for_video += 1
+                        stats.out_of_range_tracks_dropped += 1
+                    if track_had_fully_outside:
+                        fully_outside_tracks_for_video += 1
+                        stats.fully_outside_tracks_dropped += 1
                 continue
 
             tracks_written_for_video += 1
@@ -626,6 +724,10 @@ def build_tracking_ground_truth(
                 "rotated_rows": rotated_for_video,
                 "degenerate_rows_dropped": degenerate_rows_for_video,
                 "degenerate_tracks_dropped": degenerate_tracks_for_video,
+                "out_of_range_rows_dropped": out_of_range_rows_for_video,
+                "out_of_range_tracks_dropped": out_of_range_tracks_for_video,
+                "fully_outside_rows_dropped": fully_outside_rows_for_video,
+                "fully_outside_tracks_dropped": fully_outside_tracks_for_video,
                 "local_video_path": video.local_video_path,
             }
         )
@@ -692,6 +794,10 @@ def build_tracking_ground_truth(
         "rotated_rows",
         "degenerate_rows_dropped",
         "degenerate_tracks_dropped",
+        "out_of_range_rows_dropped",
+        "out_of_range_tracks_dropped",
+        "fully_outside_rows_dropped",
+        "fully_outside_tracks_dropped",
         "local_video_path",
     ]
     with out_sequences_csv.open("w", newline="", encoding="utf-8") as f:
@@ -792,7 +898,11 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         f"unknown_class_tracks={stats.unknown_class_tracks} "
         f"rotated_rows={stats.rotated_rows} "
         f"degenerate_rows_dropped={stats.degenerate_rows_dropped} "
-        f"degenerate_tracks_dropped={stats.degenerate_tracks_dropped}"
+        f"degenerate_tracks_dropped={stats.degenerate_tracks_dropped} "
+        f"out_of_range_rows_dropped={stats.out_of_range_rows_dropped} "
+        f"out_of_range_tracks_dropped={stats.out_of_range_tracks_dropped} "
+        f"fully_outside_rows_dropped={stats.fully_outside_rows_dropped} "
+        f"fully_outside_tracks_dropped={stats.fully_outside_tracks_dropped}"
     )
 
 

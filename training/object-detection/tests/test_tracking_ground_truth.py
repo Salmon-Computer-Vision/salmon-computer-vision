@@ -481,3 +481,119 @@ def test_track_ids_are_contiguous_after_dropping_degenerate_only_track(tmp_path:
     assert len(rows) == 1
     assert rows[0]["track_uid"] == "good-track"
     assert rows[0]["track_id"] == "1"
+
+
+def test_out_of_range_annotation_frame_is_dropped_and_counted(tmp_path: Path):
+    stem = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
+    item = make_item(
+        stem=stem,
+        seq=[
+            {"frame": 98, "x": 10, "y": 20, "width": 30, "height": 40, "rotation": 0, "enabled": True},
+            {"frame": 99, "x": 11, "y": 21, "width": 30, "height": 40, "rotation": 0, "enabled": True},
+            # metadata_video_nb_frames=100, so frame 100 is out of range for zero-based indexing.
+            {"frame": 100, "x": 12, "y": 22, "width": 30, "height": 40, "rotation": 0, "enabled": True},
+        ],
+    )
+    _, eval_csv, data_yaml, _, site_index_dir = setup_one_video(tmp_path, item=item)
+    out_gt = tmp_path / "gt.csv"
+    out_seq = tmp_path / "seq.csv"
+
+    stats = build_tracking_ground_truth(
+        eval_csv=eval_csv,
+        site_index_dir=site_index_dir,
+        data_yaml=data_yaml,
+        out_gt_csv=out_gt,
+        out_sequences_csv=out_seq,
+        coord_mode="percent",
+    )
+
+    rows = list(csv.DictReader(out_gt.open("r", encoding="utf-8")))
+    assert [int(row["frame_idx"]) for row in rows] == [98, 99]
+    assert [int(row["mot_frame"]) for row in rows] == [99, 100]
+
+    seq = list(csv.DictReader(out_seq.open("r", encoding="utf-8")))[0]
+    assert seq["nb_frames"] == "100"
+    assert seq["n_tracks"] == "1"
+    assert seq["n_gt_rows"] == "2"
+    assert seq["out_of_range_rows_dropped"] == "1"
+    assert seq["out_of_range_tracks_dropped"] == "0"
+    assert stats.out_of_range_rows_dropped == 1
+    assert stats.out_of_range_tracks_dropped == 0
+
+
+def test_out_of_range_only_track_is_removed_and_ids_remain_contiguous(tmp_path: Path):
+    stem = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
+    item = make_item(
+        stem=stem,
+        result_id="bad-track",
+        seq=[
+            {"frame": 100, "x": 10, "y": 20, "width": 30, "height": 40, "rotation": 0, "enabled": True},
+        ],
+    )
+    item["annotations"][0]["result"].append(
+        {
+            "id": "good-track",
+            "type": "videorectangle",
+            "from_name": "box",
+            "to_name": "video",
+            "value": {
+                "labels": ["Sockeye"],
+                "sequence": [
+                    {"frame": 50, "x": 10, "y": 20, "width": 30, "height": 40, "rotation": 0, "enabled": True},
+                ],
+            },
+        }
+    )
+    _, eval_csv, data_yaml, _, site_index_dir = setup_one_video(tmp_path, item=item)
+    out_gt = tmp_path / "gt.csv"
+    out_seq = tmp_path / "seq.csv"
+
+    stats = build_tracking_ground_truth(
+        eval_csv=eval_csv,
+        site_index_dir=site_index_dir,
+        data_yaml=data_yaml,
+        out_gt_csv=out_gt,
+        out_sequences_csv=out_seq,
+        coord_mode="percent",
+    )
+
+    rows = list(csv.DictReader(out_gt.open("r", encoding="utf-8")))
+    assert len(rows) == 1
+    assert rows[0]["track_uid"] == "good-track"
+    assert rows[0]["track_id"] == "1"
+    seq = list(csv.DictReader(out_seq.open("r", encoding="utf-8")))[0]
+    assert seq["n_tracks"] == "1"
+    assert seq["out_of_range_rows_dropped"] == "1"
+    assert seq["out_of_range_tracks_dropped"] == "1"
+    assert stats.out_of_range_tracks_dropped == 1
+
+
+def test_fully_outside_annotation_is_dropped_upstream(tmp_path: Path):
+    stem = "HIRMD-tankeeah-jetson-0_20250714_012827_M"
+    item = make_item(
+        stem=stem,
+        seq=[
+            # Percent coordinates entirely to the left of the image.
+            {"frame": 5, "x": -20, "y": 20, "width": 5, "height": 10, "rotation": 0, "enabled": True},
+        ],
+    )
+    _, eval_csv, data_yaml, _, site_index_dir = setup_one_video(tmp_path, item=item)
+    out_gt = tmp_path / "gt.csv"
+    out_seq = tmp_path / "seq.csv"
+
+    stats = build_tracking_ground_truth(
+        eval_csv=eval_csv,
+        site_index_dir=site_index_dir,
+        data_yaml=data_yaml,
+        out_gt_csv=out_gt,
+        out_sequences_csv=out_seq,
+        coord_mode="percent",
+    )
+
+    assert list(csv.DictReader(out_gt.open("r", encoding="utf-8"))) == []
+    seq = list(csv.DictReader(out_seq.open("r", encoding="utf-8")))[0]
+    assert seq["status"] == "no_tracks"
+    assert seq["fully_outside_rows_dropped"] == "1"
+    assert seq["fully_outside_tracks_dropped"] == "1"
+    assert stats.fully_outside_rows_dropped == 1
+    assert stats.fully_outside_tracks_dropped == 1

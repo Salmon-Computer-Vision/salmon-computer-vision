@@ -442,57 +442,93 @@ def materialize_mot_ground_truth(
     sequences = read_sequence_info(sequences_csv, expected_split=split)
     canonical_gt_by_sequence = read_gt_rows(gt_csv, expected_split=split)
 
+    preflight_errors: List[str] = []
     extra_gt = sorted(set(canonical_gt_by_sequence).difference(sequences))
     if extra_gt:
-        raise ValueError(
-            "GT CSV contains sequence(s) absent from sequences CSV: " + ", ".join(extra_gt[:20])
+        preflight_errors.append(
+            "GT CSV contains sequence(s) absent from sequences CSV: "
+            + ", ".join(extra_gt[:20])
         )
 
     stats = MaterializeStats(split=split, benchmark=benchmark)
+    mot_rows_by_sequence: Dict[str, List[MotGtRow]] = {}
 
+    # Validate the entire split before writing anything. This intentionally
+    # accumulates all sequence/annotation inconsistencies so a long DVC run
+    # does not fail one bad annotation at a time.
     for stem, seq in sequences.items():
         canonical_rows = canonical_gt_by_sequence.get(stem, [])
         unique_tracks = {row.track_id for row in canonical_rows}
         rotated = sum(abs(row.rotation_deg) > 1e-9 for row in canonical_rows)
 
         if len(canonical_rows) != seq.n_gt_rows:
-            raise ValueError(
-                f"n_gt_rows mismatch for {stem}: sequences CSV says {seq.n_gt_rows}, GT CSV has {len(canonical_rows)}"
+            preflight_errors.append(
+                f"n_gt_rows mismatch for {stem}: sequences CSV says "
+                f"{seq.n_gt_rows}, GT CSV has {len(canonical_rows)}"
             )
         if len(unique_tracks) != seq.n_tracks:
-            raise ValueError(
-                f"n_tracks mismatch for {stem}: sequences CSV says {seq.n_tracks}, GT CSV has {len(unique_tracks)}"
+            preflight_errors.append(
+                f"n_tracks mismatch for {stem}: sequences CSV says "
+                f"{seq.n_tracks}, GT CSV has {len(unique_tracks)}"
             )
         if rotated != seq.rotated_rows:
-            raise ValueError(
-                f"rotated_rows mismatch for {stem}: sequences CSV says {seq.rotated_rows}, GT CSV has {rotated}"
+            preflight_errors.append(
+                f"rotated_rows mismatch for {stem}: sequences CSV says "
+                f"{seq.rotated_rows}, GT CSV has {rotated}"
             )
+
         mot_rows: List[MotGtRow] = []
         seen: set[Tuple[int, int]] = set()
         for canonical_row in canonical_rows:
-            row, was_clipped = _to_mot_box(canonical_row, seq)
-            if was_clipped:
-                stats.clipped_rows += 1
-            mot_rows.append(row)
+            try:
+                row, was_clipped = _to_mot_box(canonical_row, seq)
+            except ValueError as exc:
+                preflight_errors.append(str(exc))
+                continue
+
             if row.mot_frame > seq.nb_frames:
-                raise ValueError(
-                    f"GT frame {row.mot_frame} exceeds seqLength={seq.nb_frames} for {stem}"
+                preflight_errors.append(
+                    f"GT frame {row.mot_frame} exceeds seqLength={seq.nb_frames} "
+                    f"for {stem}"
                 )
+                continue
             if row.left < 1 or row.top < 1:
-                raise ValueError(
-                    f"MOTChallenge 1-based bbox origin became invalid for {stem}: left={row.left}, top={row.top}"
+                preflight_errors.append(
+                    f"MOTChallenge 1-based bbox origin became invalid for {stem}: "
+                    f"left={row.left}, top={row.top}"
                 )
+                continue
             key = (row.mot_frame, row.track_id)
             if key in seen:
-                raise ValueError(f"Duplicate (mot_frame,track_id)={key} for {stem}")
+                preflight_errors.append(
+                    f"Duplicate (mot_frame,track_id)={key} for {stem}"
+                )
+                continue
             seen.add(key)
+            mot_rows.append(row)
+            if was_clipped:
+                stats.clipped_rows += 1
 
+        mot_rows_by_sequence[stem] = mot_rows
         stats.sequences_written += 1
         stats.gt_rows_written += len(mot_rows)
         stats.tracks_written += len(unique_tracks)
         stats.rotated_rows += rotated
         if not mot_rows:
             stats.zero_gt_sequences += 1
+
+    if preflight_errors:
+        max_preview = 100
+        preview = "\n".join(
+            f"  - {message}" for message in preflight_errors[:max_preview]
+        )
+        remainder = len(preflight_errors) - max_preview
+        if remainder > 0:
+            preview += f"\n  - ... and {remainder} more issue(s)"
+        raise ValueError(
+            f"MOT GT preflight failed with {len(preflight_errors)} issue(s):\n"
+            f"{preview}"
+        )
 
     out_root = Path(out_root)
     split_root = out_root / f"{benchmark}-{split}"
@@ -512,11 +548,10 @@ def materialize_mot_ground_truth(
         gt_dir = seq_dir / "gt"
         gt_dir.mkdir(parents=True, exist_ok=True)
 
-        canonical_rows = sorted(
-            canonical_gt_by_sequence.get(seq.video_stem, []),
+        rows = sorted(
+            mot_rows_by_sequence.get(seq.video_stem, []),
             key=lambda row: (row.mot_frame, row.track_id),
         )
-        rows = [_to_mot_box(row, seq)[0] for row in canonical_rows]
         gt_lines = [format_motchallenge_gt_row(row) for row in rows]
         gt_path = gt_dir / "gt.txt"
         gt_path.write_text("\n".join(gt_lines) + ("\n" if gt_lines else ""), encoding="utf-8")
