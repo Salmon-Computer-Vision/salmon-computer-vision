@@ -6,3 +6,7 @@
 /test_sequences.csv
 /val_mot_summary.json
 /test_mot_summary.json
+/val_video_download_status.csv
+/val_video_download_summary.json
+/test_video_download_status.csv
+/test_video_download_summary.json

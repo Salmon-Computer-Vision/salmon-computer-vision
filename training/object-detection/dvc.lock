@@ -3923,3 +3923,79 @@ stages:
       hash: md5
       md5: f5677246c2e68f0071f942e232ca6894
       size: 285243
+  materialize_tracking_videos@val:
+    cmd: scripts/materialize_tracking_videos.py --eval-csv 
+      data/03_processed/tracking_eval/val_videos.csv --split val --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --workers 8 --status-csv 
+      data/03_processed/tracking_eval/val_video_download_status.csv 
+      --summary-json 
+      data/03_processed/tracking_eval/val_video_download_summary.json 
+      --glacier-log data/03_processed/tracking_eval/val_glacier_restore.log
+    deps:
+    - path: data/03_processed/tracking_eval/val_videos.csv
+      hash: md5
+      md5: 97b2c62f5ef6d53698206a089b31611a
+      size: 3178031
+    - path: scripts/materialize_tracking_videos.py
+      hash: md5
+      md5: 180c1365870f8aa120c5d4c66ba42912
+      size: 347
+    - path: src/object_detection/tracking_eval/videos.py
+      hash: md5
+      md5: 17c7678678698628b6c4e6eca85e39ac
+      size: 15917
+    params:
+      params.yaml:
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
+    outs:
+    - path: data/03_processed/tracking_eval/val_glacier_restore.log
+      hash: md5
+      md5: d41d8cd98f00b204e9800998ecf8427e
+      size: 0
+    - path: data/03_processed/tracking_eval/val_video_download_status.csv
+      hash: md5
+      md5: 3815abc97b57146be85d68a6fb2805a7
+      size: 2539956
+    - path: data/03_processed/tracking_eval/val_video_download_summary.json
+      hash: md5
+      md5: 3f296d3d4305af3da5160c3c7af0e50d
+      size: 148
+  materialize_tracking_videos@test:
+    cmd: scripts/materialize_tracking_videos.py --eval-csv 
+      data/03_processed/tracking_eval/test_videos.csv --split test --bucket 
+      prod-salmonvision-edge-assets-labelstudio-source --workers 8 --status-csv 
+      data/03_processed/tracking_eval/test_video_download_status.csv 
+      --summary-json 
+      data/03_processed/tracking_eval/test_video_download_summary.json 
+      --glacier-log data/03_processed/tracking_eval/test_glacier_restore.log
+    deps:
+    - path: data/03_processed/tracking_eval/test_videos.csv
+      hash: md5
+      md5: e926460de020778d23cc1a83529ade63
+      size: 2697302
+    - path: scripts/materialize_tracking_videos.py
+      hash: md5
+      md5: 180c1365870f8aa120c5d4c66ba42912
+      size: 347
+    - path: src/object_detection/tracking_eval/videos.py
+      hash: md5
+      md5: 17c7678678698628b6c4e6eca85e39ac
+      size: 15917
+    params:
+      params.yaml:
+        data.bucket: prod-salmonvision-edge-assets-labelstudio-source
+        pack.download_workers: 8
+    outs:
+    - path: data/03_processed/tracking_eval/test_glacier_restore.log
+      hash: md5
+      md5: d41d8cd98f00b204e9800998ecf8427e
+      size: 0
+    - path: data/03_processed/tracking_eval/test_video_download_status.csv
+      hash: md5
+      md5: 3a34b0bd2802933d72e008ca3adbed15
+      size: 2160605
+    - path: data/03_processed/tracking_eval/test_video_download_summary.json
+      hash: md5
+      md5: 23fa574aaab97cba13b2354ba401246b
+      size: 148
