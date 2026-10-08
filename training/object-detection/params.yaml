@@ -45,16 +45,16 @@ tune:
   iterations: 20
   model: yolov8n.pt
 train:
-  device: 0,1
-  batch: 128
+  device: 1
+  batch: 64
   patience: 50
   tune_dir: tune15
   model: yolov8n.pt
   run_name: tuned_full_run1
 exp:
-  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
-  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
-  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
+  train_sites: stephenssmolt
+  val_sites: stephenssmolt
+  test_sites: stephenssmolt
 eval:
   imgsz: 640
   batch: 32
