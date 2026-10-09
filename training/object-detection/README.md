@@ -354,7 +354,7 @@ dvc repro --force --single-item pack_split_dataset
 
 Run tests with
 ```
-uv run pytest
+uv run --extra cu124 pytest
 ```
 
 #### Issue: Object is of storage class GLACIER
@@ -389,7 +389,9 @@ Once the requests have been sent, use the same script to check the status:
 
 The last line should say when all the objects are ready for download.
 
-### Plot AP50 by site
+### Plotting 
+
+#### AP50
 
 To evaluate over all test sites, run the following command:
 
@@ -412,6 +414,24 @@ Run a simple http server and connect to it through SSH tunnel
 cd dvc_plots
 python -m http.server
 ```
+
+#### Tracking and counting metrics
+
+```bash
+# Current workspace (single revision)
+scripts/plot_species_metrics.sh val hota
+scripts/plot_species_metrics.sh test idf1
+scripts/plot_species_metrics.sh test count-compare
+scripts/plot_species_metrics.sh test count-mae
+
+# Compare revisions with species metrics already produced:
+scripts/plot_species_metrics.sh test hota tracking-site-koeye tracking-site-tankeeah
+scripts/plot_species_metrics.sh test count-compare tracking-site-koeye tracking-site-tankeeah
+```
+
+Plot types: `hota`, `idf1`, `deta`, `assa` (bounded 0–1 bars);
+`count-compare` (GT vs predicted total directional events as grouped bars);
+`count-mae` (MAE per video by species, nonnegative/unbounded).
 
 ### Dev
 
