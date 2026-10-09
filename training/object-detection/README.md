@@ -415,7 +415,7 @@ python -m http.server
 
 ### Dev
 
-`run_tracking_inference` stage:
+#### `run_tracking_inference` stage:
 
 Prediction columns (`x_px`, `y_px`, `width_px`, `height_px` are **zero-based
 original-image pixels**, not normalized and not cropped):
@@ -439,3 +439,28 @@ Missing/archived source videos remain explicitly excluded, not counted as
 negatives. The TrackEval stage must build the seqmap only from `ok` sequences
 and report the full coverage denominator.
 
+
+#### `evaluate_tracking_metrics` stage:
+
+The current upstream GT builder records observed Label Studio objects. It does
+not prove that every fish was labeled throughout each entire MP4. Treat both
+MOT and counting scores as **provisional**. The default `observed` scope:
+
+* includes video iff inference completed all metadata-reported frames, GT exists,
+  and GT has at least one box;
+* excludes zero-GT videos unless *separately verified* as fully annotated;
+* still cannot rule out missing fish in nonempty videos.
+
+For publishable metrics, curate an independent CSV such as:
+
+```csv
+video_stem,fully_annotated
+GWA-stephenssmolt-jetsonnx-0_20260507_173911_M,true
+...
+```
+
+Then set `--annotation-scope verified --coverage-csv path/to/coverage.csv`
+for **both** scripts. To use this through DVC, add the coverage file as a
+`deps:` entry and add those CLI args in both new `cmd:` sections. A verified
+empty-GT sequence is included and its tracker detections correctly become
+false positives. Neither stage silently treats an unlabeled video as negative.
