@@ -4179,7 +4179,10 @@ stages:
       data/03_processed/tracking_eval/val_inference_status.csv 
       --predictions-parquet 
       data/03_processed/tracking_eval/val_predictions.parquet --split val 
-      --benchmark SalmonVision --tracker botsort.yaml --workdir-root 
+      --benchmark SalmonVision --tracker botsort.yaml --data-yaml 
+      config/salmon_yolo.yaml --per-species-csv 
+      data/03_processed/tracking_eval/val_tracking_per_species.csv 
+      --workdir-root 
       data/04_dataset/salmon_dataset/tracking_eval/workdir/metrics 
       --annotation-scope verified --coverage-csv 
       data/03_processed/tracking_eval/val_annotation_coverage.csv --summary-json
@@ -4189,6 +4192,14 @@ stages:
       --coverage-output-csv 
       data/03_processed/tracking_eval/val_tracking_coverage.csv
     deps:
+    - path: config/plots/tracking_species_scores.vl.json
+      hash: md5
+      md5: 4d7cbcb9a374ee12b74595d6951e212b
+      size: 2497
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
     - path: data/03_processed/tracking_eval/val_annotation_coverage.csv
       hash: md5
       md5: 1e59fd7c856d0ff5699f9dcfd0784152
@@ -4221,10 +4232,14 @@ stages:
       hash: md5
       md5: 54c20c7eb2085832ea76c6bc575ef6be
       size: 23051
+    - path: src/object_detection/tracking_eval/species_metrics.py
+      hash: md5
+      md5: 7f7a77fdc7c94bfdeccb0c335542e3ce
+      size: 6994
     - path: src/object_detection/tracking_eval/tracking_metrics.py
       hash: md5
-      md5: d91b4a249167a9d83b8c6b3b1e4e118b
-      size: 11089
+      md5: c60361b3e2f7fe2f7b80669e08e262f4
+      size: 12345
     params:
       params.yaml:
         config.dataset: data/04_dataset
@@ -4239,12 +4254,16 @@ stages:
       size: 23196
     - path: data/03_processed/tracking_eval/val_tracking_metrics.json
       hash: md5
-      md5: 7c18397d32947aa081cf8823694885f1
-      size: 632
+      md5: e221ffb729be95e44ff2f96bb1c0bc7d
+      size: 726
     - path: data/03_processed/tracking_eval/val_tracking_per_sequence.csv
       hash: md5
       md5: 6c59d813c7146a67c87ec82733ceb465
       size: 56494
+    - path: data/03_processed/tracking_eval/val_tracking_per_species.csv
+      hash: md5
+      md5: 30eb4974642c934675ab7962cb66485b
+      size: 2033
   evaluate_tracking_metrics@test:
     cmd: uv run --extra cu124 scripts/evaluate_tracking_metrics.py --gt-csv 
       data/03_processed/tracking_eval/test_gt.csv --sequences-csv 
@@ -4252,7 +4271,10 @@ stages:
       data/03_processed/tracking_eval/test_inference_status.csv 
       --predictions-parquet 
       data/03_processed/tracking_eval/test_predictions.parquet --split test 
-      --benchmark SalmonVision --tracker botsort.yaml --workdir-root 
+      --benchmark SalmonVision --tracker botsort.yaml --data-yaml 
+      config/salmon_yolo.yaml --per-species-csv 
+      data/03_processed/tracking_eval/test_tracking_per_species.csv 
+      --workdir-root 
       data/04_dataset/salmon_dataset/tracking_eval/workdir/metrics 
       --annotation-scope verified --coverage-csv 
       data/03_processed/tracking_eval/test_annotation_coverage.csv 
@@ -4262,6 +4284,14 @@ stages:
       --coverage-output-csv 
       data/03_processed/tracking_eval/test_tracking_coverage.csv
     deps:
+    - path: config/plots/tracking_species_scores.vl.json
+      hash: md5
+      md5: 4d7cbcb9a374ee12b74595d6951e212b
+      size: 2497
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
     - path: data/03_processed/tracking_eval/test_annotation_coverage.csv
       hash: md5
       md5: ac8f1fe29d43e5bad08575453ce6d6e9
@@ -4294,10 +4324,14 @@ stages:
       hash: md5
       md5: 54c20c7eb2085832ea76c6bc575ef6be
       size: 23051
+    - path: src/object_detection/tracking_eval/species_metrics.py
+      hash: md5
+      md5: 7f7a77fdc7c94bfdeccb0c335542e3ce
+      size: 6994
     - path: src/object_detection/tracking_eval/tracking_metrics.py
       hash: md5
-      md5: d91b4a249167a9d83b8c6b3b1e4e118b
-      size: 11089
+      md5: c60361b3e2f7fe2f7b80669e08e262f4
+      size: 12345
     params:
       params.yaml:
         config.dataset: data/04_dataset
@@ -4312,12 +4346,16 @@ stages:
       size: 14660
     - path: data/03_processed/tracking_eval/test_tracking_metrics.json
       hash: md5
-      md5: f741da9de1e48a014c1ef5b78b49f73f
-      size: 633
+      md5: 43e6c3cb550c6c1ffde8ae1f03501db7
+      size: 727
     - path: data/03_processed/tracking_eval/test_tracking_per_sequence.csv
       hash: md5
       md5: 11a87485172e1bd257356ff90dec6161
       size: 35149
+    - path: data/03_processed/tracking_eval/test_tracking_per_species.csv
+      hash: md5
+      md5: 33ebee110282f3923adcdf5f8bf8720f
+      size: 1976
   evaluate_fish_counts@val:
     cmd: uv run --extra cu124 scripts/evaluate_fish_counts.py --gt-csv 
       data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
@@ -4332,10 +4370,15 @@ stages:
       data/03_processed/tracking_eval/val_count_metrics.json --per-group-csv 
       data/03_processed/tracking_eval/val_count_per_group.csv --per-video-csv 
       data/03_processed/tracking_eval/val_count_per_video.csv --per-site-csv 
-      data/03_processed/tracking_eval/val_count_per_site.csv --events-csv 
+      data/03_processed/tracking_eval/val_count_per_site.csv --per-species-csv 
+      data/03_processed/tracking_eval/val_count_per_species.csv --events-csv 
       data/03_processed/tracking_eval/val_count_events.csv --coverage-output-csv
       data/03_processed/tracking_eval/val_count_coverage.csv
     deps:
+    - path: config/plots/count_species_mae.vl.json
+      hash: md5
+      md5: 49d26f98086999de60fea76c55bf8143
+      size: 2471
     - path: config/salmon_yolo.yaml
       hash: md5
       md5: f453f5dc54f1743eaedcc3ab117d269e
@@ -4366,8 +4409,8 @@ stages:
       size: 123
     - path: src/object_detection/tracking_eval/count_metrics.py
       hash: md5
-      md5: 878b951751de56433ed762280349f3d2
-      size: 16668
+      md5: e8d535c997d7291ef812a04f321c0652
+      size: 18671
     - path: src/object_detection/tracking_eval/eval_common.py
       hash: md5
       md5: e363eb111a2d0805944861b4b395bb5d
@@ -4402,6 +4445,10 @@ stages:
       hash: md5
       md5: f6d9b08e92f418d5eccc36139da9b8b7
       size: 1062
+    - path: data/03_processed/tracking_eval/val_count_per_species.csv
+      hash: md5
+      md5: 7320ba63d8c31c6fc52318774d03bfd5
+      size: 930
     - path: data/03_processed/tracking_eval/val_count_per_video.csv
       hash: md5
       md5: cf6dc29ad49bc12507eb1bc2eff13544
@@ -4421,10 +4468,16 @@ stages:
       --per-group-csv data/03_processed/tracking_eval/test_count_per_group.csv 
       --per-video-csv data/03_processed/tracking_eval/test_count_per_video.csv 
       --per-site-csv data/03_processed/tracking_eval/test_count_per_site.csv 
-      --events-csv data/03_processed/tracking_eval/test_count_events.csv 
+      --per-species-csv 
+      data/03_processed/tracking_eval/test_count_per_species.csv --events-csv 
+      data/03_processed/tracking_eval/test_count_events.csv 
       --coverage-output-csv 
       data/03_processed/tracking_eval/test_count_coverage.csv
     deps:
+    - path: config/plots/count_species_mae.vl.json
+      hash: md5
+      md5: 49d26f98086999de60fea76c55bf8143
+      size: 2471
     - path: config/salmon_yolo.yaml
       hash: md5
       md5: f453f5dc54f1743eaedcc3ab117d269e
@@ -4455,8 +4508,8 @@ stages:
       size: 123
     - path: src/object_detection/tracking_eval/count_metrics.py
       hash: md5
-      md5: 878b951751de56433ed762280349f3d2
-      size: 16668
+      md5: e8d535c997d7291ef812a04f321c0652
+      size: 18671
     - path: src/object_detection/tracking_eval/eval_common.py
       hash: md5
       md5: e363eb111a2d0805944861b4b395bb5d
@@ -4491,6 +4544,10 @@ stages:
       hash: md5
       md5: 30b2fd8f75593fc9e1b58c31922ad9eb
       size: 1155
+    - path: data/03_processed/tracking_eval/test_count_per_species.csv
+      hash: md5
+      md5: 90216876bfc53c1d41ca99004afb69fa
+      size: 945
     - path: data/03_processed/tracking_eval/test_count_per_video.csv
       hash: md5
       md5: 8bbe35dac9bb52be605da880e0253c80

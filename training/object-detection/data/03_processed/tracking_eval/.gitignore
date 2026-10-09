@@ -36,3 +36,7 @@
 /test_count_coverage.csv
 /test_count_per_site.csv
 /test_count_metrics.json
+/val_tracking_per_species.csv
+/test_tracking_per_species.csv
+/val_count_per_species.csv
+/test_count_per_species.csv
