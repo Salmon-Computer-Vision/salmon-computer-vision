@@ -412,3 +412,30 @@ Run a simple http server and connect to it through SSH tunnel
 cd dvc_plots
 python -m http.server
 ```
+
+### Dev
+
+`run_tracking_inference` stage:
+
+Prediction columns (`x_px`, `y_px`, `width_px`, `height_px` are **zero-based
+original-image pixels**, not normalized and not cropped):
+
+```text
+split,site,video_stem,frame_idx,mot_frame,track_id,class_id,confidence,x_px,y_px,width_px,height_px
+```
+
+`frame_idx` starts at 0; `mot_frame=frame_idx+1`; track IDs are 1-based per
+video. This is **not** a MOT text file. A subsequent TrackEval stage will
+convert to MOT's 10-column tracker format and add 1 to the x/y origin. Frames
+with no confirmed IDs have zero prediction rows; counts of untracked returned
+detections are recorded separately. Track IDs are reset before every new video.
+
+**Evaluation safety:** The status file distinguishes `ok`, `unavailable`,
+`missing_local_video`, and `error`. An `ok` video with zero fish remains in the
+evaluation coverage. The module fails the DVC stage for inference or local-file
+errors, and rejects video/GT metadata inconsistencies larger than 1% (minimum
+tolerance 2 frames); it never silently declares those sequences evaluated.
+Missing/archived source videos remain explicitly excluded, not counted as
+negatives. The TrackEval stage must build the seqmap only from `ok` sequences
+and report the full coverage denominator.
+
