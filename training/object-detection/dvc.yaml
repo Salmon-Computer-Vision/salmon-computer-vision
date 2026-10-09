@@ -598,7 +598,7 @@ stages:
             x: HOTA
             y: class_name
             template: config/plots/tracking_species_scores.vl.json
-            title: Species-aware tracking HOTA
+            title: Species-aware tracking HOTA (${item})
       outs:
         - data/03_processed/tracking_eval/${item}_tracking_per_sequence.csv
         - data/03_processed/tracking_eval/${item}_tracking_coverage.csv
@@ -651,7 +651,7 @@ stages:
             x: MAE_per_video
             y: class_name
             template: config/plots/count_species_mae.vl.json
-            title: Species directional count MAE per video
+            title: Species directional count MAE per video (${item})
       outs:
         - data/03_processed/tracking_eval/${item}_count_per_group.csv
         - data/03_processed/tracking_eval/${item}_count_per_video.csv
