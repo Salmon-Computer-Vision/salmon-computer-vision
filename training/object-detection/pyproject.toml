@@ -12,6 +12,7 @@ dependencies = [
     "pyarrow>=16",
     "pyyaml>=6.0.3",
     "ray[tune]>=2.36.1",
+    "trackeval",
     "ultralytics>=8.4.36",
 ]
 
@@ -70,6 +71,7 @@ torchvision = [
   { index = "pytorch-cu129", extra = "cu129" },
   { index = "pytorch-cu130", extra = "cu130" },
 ]
+trackeval = { git = "https://github.com/JonathonLuiten/TrackEval.git" }
 
 [[tool.uv.index]]
 name = "pytorch-cu124"

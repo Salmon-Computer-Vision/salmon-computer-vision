@@ -2382,6 +2382,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pyyaml" },
     { name = "ray", extra = ["tune"] },
+    { name = "trackeval" },
     { name = "ultralytics" },
 ]
 
@@ -2427,6 +2428,7 @@ requires-dist = [
     { name = "torchvision", marker = "extra == 'cu124'", specifier = "==0.21.0", index = "https://download.pytorch.org/whl/cu124", conflict = { package = "object-detection", extra = "cu124" } },
     { name = "torchvision", marker = "extra == 'cu129'", specifier = "==0.23.0", index = "https://download.pytorch.org/whl/cu129", conflict = { package = "object-detection", extra = "cu129" } },
     { name = "torchvision", marker = "extra == 'cu130'", specifier = "==0.25.0", index = "https://download.pytorch.org/whl/cu130", conflict = { package = "object-detection", extra = "cu130" } },
+    { name = "trackeval", git = "https://github.com/JonathonLuiten/TrackEval.git" },
     { name = "ultralytics", specifier = ">=8.4.36" },
 ]
 provides-extras = ["cu124", "cu129", "cu130"]
@@ -4052,6 +4054,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/58/83/6ba9844a41128c62e810fddddd72473201f3eacde02046066142a2d96cc5/tqdm-4.66.5.tar.gz", hash = "sha256:e1020aef2e5096702d8a025ac7d16b1577279c9d63f8375b63083e9a5f0fcbad", size = 169504, upload-time = "2024-08-03T22:35:40.339Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/48/5d/acf5905c36149bbaec41ccf7f2b68814647347b72075ac0b1fe3022fdc73/tqdm-4.66.5-py3-none-any.whl", hash = "sha256:90279a3770753eafc9194a0364852159802111925aa30eb3f9d85b0e805ac7cd", size = 78351, upload-time = "2024-08-03T22:35:36.644Z" },
+]
+
+[[package]]
+name = "trackeval"
+version = "1.0.dev1"
+source = { git = "https://github.com/JonathonLuiten/TrackEval.git#12c8791b303e0a0b50f753af204249e622d0281a" }
+dependencies = [
+    { name = "numpy" },
+    { name = "scipy" },
 ]
 
 [[package]]
