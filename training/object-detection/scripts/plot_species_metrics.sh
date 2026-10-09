@@ -23,7 +23,7 @@ case "$kind" in
   *) echo "Unknown plot kind: $kind" >&2; exit 2;;
 esac
 if (( $# == 0 )); then
-  dvc plots show -t "$templ" -x "$field" -y class_name --title "$title" --targets "$target"
+  dvc plots show -t "$templ" -x "$field" -y class_name --title "$title" "$target"
 else
   dvc plots diff -t "$templ" -x "$field" -y class_name --title "$title" --targets "$target" -- "$@"
 fi
