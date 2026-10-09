@@ -484,3 +484,30 @@ for **both** scripts. To use this through DVC, add the coverage file as a
 `deps:` entry and add those CLI args in both new `cmd:` sections. A verified
 empty-GT sequence is included and its tracker detections correctly become
 false positives. Neither stage silently treats an unlabeled video as negative.
+
+#### Parameters
+
+Under `data:` in `params.yaml`:
+
+```yaml
+neg: --include-negatives
+neg_ratio: 0.10
+neg_per_vid: 11
+neg_annotated_sites: stephenssmolt
+neg_annotated_per_vid: 12
+neg_exclusion_frames: 3
+```
+
+- `neg_annotated_sites`: comma-separated or space-separated **human-reviewed**
+  site names. Use an empty string to disable annotated-video negatives. The
+  existing empty-video sampling remains enabled by `--include-negatives`.
+- `neg_annotated_per_vid`: max candidate frames from each annotated video,
+  before the global negative ratio cap.
+- `neg_exclusion_frames`: safety margin of **original video frames** around
+  every human-annotated/interpolated frame. Does not refer to sampled stride
+  positions. 0 means no margin.
+- `neg_ratio`: combined cap for negatives from *both* empty and annotated
+  videos, expressed as a fraction of final positive+negative labels.
+
+The converter reuses the same frame stride and `video_hash`-based offset as
+positives, so extracted frame numbers match the existing pack stage.
