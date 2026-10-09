@@ -16,3 +16,11 @@
 /test_predictions.parquet
 /test_inference_status.csv
 /test_inference_summary.json
+/val_annotation_coverage.csv
+/test_annotation_coverage.csv
+/val_tracking_per_sequence.csv
+/val_tracking_coverage.csv
+/val_tracking_metrics.json
+/test_tracking_per_sequence.csv
+/test_tracking_coverage.csv
+/test_tracking_metrics.json
