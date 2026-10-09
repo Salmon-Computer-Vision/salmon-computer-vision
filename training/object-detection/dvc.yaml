@@ -646,13 +646,8 @@ stages:
         - tracking_eval.metric_annotation_scope
       metrics:
         - data/03_processed/tracking_eval/${item}_count_metrics.json
-      plots:
-        - data/03_processed/tracking_eval/${item}_count_per_species.csv:
-            x: MAE_per_video
-            y: class_name
-            template: config/plots/count_species_mae.vl.json
-            title: Species directional count MAE per video (${item})
       outs:
+        - data/03_processed/tracking_eval/${item}_count_per_species.csv
         - data/03_processed/tracking_eval/${item}_count_per_group.csv
         - data/03_processed/tracking_eval/${item}_count_per_video.csv
         - data/03_processed/tracking_eval/${item}_count_events.csv
@@ -733,6 +728,38 @@ plots:
     title: Confusion Matrix
     x_label: True Label
     y_label: Predicted Label
+
+# Validation - MAE
+- count_species_mae_val:
+    x: MAE_per_video
+    y:
+      data/03_processed/tracking_eval/val_count_per_species.csv: class_name
+    template: config/plots/count_species_mae.vl.json
+    title: Species directional count MAE per video (val)
+
+# Test - MAE
+- count_species_mae_test:
+    x: MAE_per_video
+    y:
+      data/03_processed/tracking_eval/test_count_per_species.csv: class_name
+    template: config/plots/count_species_mae.vl.json
+    title: Species directional count MAE per video (test)
+
+# Validation - GT vs predictions
+- count_species_comparison_val:
+    x: gt_count
+    y:
+      data/03_processed/tracking_eval/val_count_per_species.csv: class_name
+    template: config/plots/count_species_comparison.vl.json
+    title: GT vs predicted fish counts by species (val)
+
+# Test - GT vs predictions
+- count_species_comparison_test:
+    x: gt_count
+    y:
+      data/03_processed/tracking_eval/test_count_per_species.csv: class_name
+    template: config/plots/count_species_comparison.vl.json
+    title: GT vs predicted fish counts by species (test)
 artifacts:
   best:
     path: dvclive/artifacts/best.pt
