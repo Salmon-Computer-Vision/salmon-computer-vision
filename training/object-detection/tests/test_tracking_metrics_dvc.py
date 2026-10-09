@@ -12,5 +12,5 @@ def test_stage_commands_and_params():
         assert '${item}_inference_status.csv' in cfg['cmd']
         assert not any('/mot_gt/' in out for out in cfg.get('outs',[]))
     params=yaml.safe_load((root/'params.yaml').read_text())
-    assert params['tracking_eval']['metric_annotation_scope']=='observed'
+    assert params['tracking_eval']['metric_annotation_scope']=='verified'
     assert params['count_eval']['tracking_thresh']==10
