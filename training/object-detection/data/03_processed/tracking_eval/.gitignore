@@ -24,3 +24,15 @@
 /test_tracking_per_sequence.csv
 /test_tracking_coverage.csv
 /test_tracking_metrics.json
+/val_count_per_group.csv
+/val_count_per_video.csv
+/val_count_events.csv
+/val_count_coverage.csv
+/val_count_per_site.csv
+/val_count_metrics.json
+/test_count_per_group.csv
+/test_count_per_video.csv
+/test_count_events.csv
+/test_count_coverage.csv
+/test_count_per_site.csv
+/test_count_metrics.json

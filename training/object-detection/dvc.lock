@@ -4318,3 +4318,180 @@ stages:
       hash: md5
       md5: 11a87485172e1bd257356ff90dec6161
       size: 35149
+  evaluate_fish_counts@val:
+    cmd: uv run --extra cu124 scripts/evaluate_fish_counts.py --gt-csv 
+      data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
+      data/03_processed/tracking_eval/val_sequences.csv --inference-status-csv 
+      data/03_processed/tracking_eval/val_inference_status.csv 
+      --predictions-parquet 
+      data/03_processed/tracking_eval/val_predictions.parquet --data-yaml 
+      config/salmon_yolo.yaml --split val --tracking-thresh 10 --vote-method all
+      --drop-bounding-boxes false --bound-line-ratio 0.5 --annotation-scope 
+      verified --coverage-csv 
+      data/03_processed/tracking_eval/val_annotation_coverage.csv --summary-json
+      data/03_processed/tracking_eval/val_count_metrics.json --per-group-csv 
+      data/03_processed/tracking_eval/val_count_per_group.csv --per-video-csv 
+      data/03_processed/tracking_eval/val_count_per_video.csv --per-site-csv 
+      data/03_processed/tracking_eval/val_count_per_site.csv --events-csv 
+      data/03_processed/tracking_eval/val_count_events.csv --coverage-output-csv
+      data/03_processed/tracking_eval/val_count_coverage.csv
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/03_processed/tracking_eval/val_annotation_coverage.csv
+      hash: md5
+      md5: 1e59fd7c856d0ff5699f9dcfd0784152
+      size: 25336
+    - path: data/03_processed/tracking_eval/val_gt.csv
+      hash: md5
+      md5: cb77769673d0ddfd8ceff6a4c6e3eeb4
+      size: 31172360
+    - path: data/03_processed/tracking_eval/val_inference_status.csv
+      hash: md5
+      md5: a4f01bb1387f55233b1ada5873fd5767
+      size: 64583
+    - path: data/03_processed/tracking_eval/val_predictions.parquet
+      hash: md5
+      md5: b5493eb92d8d923296f17eed058c4c4e
+      size: 3124305
+    - path: data/03_processed/tracking_eval/val_sequences.csv
+      hash: md5
+      md5: 266d9000b69bfd55434123d8b03c290f
+      size: 97041
+    - path: scripts/evaluate_fish_counts.py
+      hash: md5
+      md5: 9b4314cb6a908f49a7b86785c90171dc
+      size: 123
+    - path: src/object_detection/tracking_eval/count_metrics.py
+      hash: md5
+      md5: 878b951751de56433ed762280349f3d2
+      size: 16668
+    - path: src/object_detection/tracking_eval/eval_common.py
+      hash: md5
+      md5: e363eb111a2d0805944861b4b395bb5d
+      size: 9140
+    params:
+      params.yaml:
+        count_eval:
+          tracking_thresh: 10
+          vote_method: all
+          drop_bounding_boxes: false
+          bound_line_ratio: 0.5
+        runtime.cuda: cu124
+        tracking_eval.metric_annotation_scope: verified
+    outs:
+    - path: data/03_processed/tracking_eval/val_count_coverage.csv
+      hash: md5
+      md5: 6628c9c7c2d249b336fe5efe581b258a
+      size: 23196
+    - path: data/03_processed/tracking_eval/val_count_events.csv
+      hash: md5
+      md5: 5faee2d27876b98c7664b8aa3cbf66b2
+      size: 66755
+    - path: data/03_processed/tracking_eval/val_count_metrics.json
+      hash: md5
+      md5: 9c5c03a9a619b1d73f3d6914c0ffd37c
+      size: 626
+    - path: data/03_processed/tracking_eval/val_count_per_group.csv
+      hash: md5
+      md5: 29b38835151c270329f23700d08acfb9
+      size: 20412
+    - path: data/03_processed/tracking_eval/val_count_per_site.csv
+      hash: md5
+      md5: f6d9b08e92f418d5eccc36139da9b8b7
+      size: 1062
+    - path: data/03_processed/tracking_eval/val_count_per_video.csv
+      hash: md5
+      md5: cf6dc29ad49bc12507eb1bc2eff13544
+      size: 20379
+  evaluate_fish_counts@test:
+    cmd: uv run --extra cu124 scripts/evaluate_fish_counts.py --gt-csv 
+      data/03_processed/tracking_eval/test_gt.csv --sequences-csv 
+      data/03_processed/tracking_eval/test_sequences.csv --inference-status-csv 
+      data/03_processed/tracking_eval/test_inference_status.csv 
+      --predictions-parquet 
+      data/03_processed/tracking_eval/test_predictions.parquet --data-yaml 
+      config/salmon_yolo.yaml --split test --tracking-thresh 10 --vote-method 
+      all --drop-bounding-boxes false --bound-line-ratio 0.5 --annotation-scope 
+      verified --coverage-csv 
+      data/03_processed/tracking_eval/test_annotation_coverage.csv 
+      --summary-json data/03_processed/tracking_eval/test_count_metrics.json 
+      --per-group-csv data/03_processed/tracking_eval/test_count_per_group.csv 
+      --per-video-csv data/03_processed/tracking_eval/test_count_per_video.csv 
+      --per-site-csv data/03_processed/tracking_eval/test_count_per_site.csv 
+      --events-csv data/03_processed/tracking_eval/test_count_events.csv 
+      --coverage-output-csv 
+      data/03_processed/tracking_eval/test_count_coverage.csv
+    deps:
+    - path: config/salmon_yolo.yaml
+      hash: md5
+      md5: f453f5dc54f1743eaedcc3ab117d269e
+      size: 547
+    - path: data/03_processed/tracking_eval/test_annotation_coverage.csv
+      hash: md5
+      md5: ac8f1fe29d43e5bad08575453ce6d6e9
+      size: 15845
+    - path: data/03_processed/tracking_eval/test_gt.csv
+      hash: md5
+      md5: 50d13071583a507433a7772109883f40
+      size: 12637548
+    - path: data/03_processed/tracking_eval/test_inference_status.csv
+      hash: md5
+      md5: 3362037b8e2ac03a232f197f9a071555
+      size: 40733
+    - path: data/03_processed/tracking_eval/test_predictions.parquet
+      hash: md5
+      md5: 500bbee1245fdcad5ae548aea9a317af
+      size: 1536438
+    - path: data/03_processed/tracking_eval/test_sequences.csv
+      hash: md5
+      md5: 7d0df269ec7bb5960cb6bd2468ea6bdb
+      size: 61017
+    - path: scripts/evaluate_fish_counts.py
+      hash: md5
+      md5: 9b4314cb6a908f49a7b86785c90171dc
+      size: 123
+    - path: src/object_detection/tracking_eval/count_metrics.py
+      hash: md5
+      md5: 878b951751de56433ed762280349f3d2
+      size: 16668
+    - path: src/object_detection/tracking_eval/eval_common.py
+      hash: md5
+      md5: e363eb111a2d0805944861b4b395bb5d
+      size: 9140
+    params:
+      params.yaml:
+        count_eval:
+          tracking_thresh: 10
+          vote_method: all
+          drop_bounding_boxes: false
+          bound_line_ratio: 0.5
+        runtime.cuda: cu124
+        tracking_eval.metric_annotation_scope: verified
+    outs:
+    - path: data/03_processed/tracking_eval/test_count_coverage.csv
+      hash: md5
+      md5: 7b5098c125c18f975f70adbc5663c2f9
+      size: 14660
+    - path: data/03_processed/tracking_eval/test_count_events.csv
+      hash: md5
+      md5: c55cbc0012e1e5bb1009e4476e68252b
+      size: 30226
+    - path: data/03_processed/tracking_eval/test_count_metrics.json
+      hash: md5
+      md5: 56626df0fb21c77bdb7b4e3c6e6b706a
+      size: 625
+    - path: data/03_processed/tracking_eval/test_count_per_group.csv
+      hash: md5
+      md5: 1ac1c0d30ce7e135eca2fbb396e625f0
+      size: 11332
+    - path: data/03_processed/tracking_eval/test_count_per_site.csv
+      hash: md5
+      md5: 30b2fd8f75593fc9e1b58c31922ad9eb
+      size: 1155
+    - path: data/03_processed/tracking_eval/test_count_per_video.csv
+      hash: md5
+      md5: 8bbe35dac9bb52be605da880e0253c80
+      size: 12919
