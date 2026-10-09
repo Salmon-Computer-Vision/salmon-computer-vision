@@ -492,6 +492,48 @@ stages:
       - data/03_processed/tracking_eval/${item}_video_download_summary.json
       - data/03_processed/tracking_eval/${item}_glacier_restore.log
       always_changed: true
+  run_tracking_inference:
+    foreach:
+      - val
+      - test
+    do:
+      cmd: >-
+        uv run --extra ${runtime.cuda}
+        scripts/run_tracking_inference.py
+        --eval-csv data/03_processed/tracking_eval/${item}_videos.csv
+        --download-status-csv data/03_processed/tracking_eval/${item}_video_download_status.csv
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --split ${item}
+        --model ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
+        --tracker ${tracking_eval.tracker}
+        --conf ${tracking_eval.conf}
+        --iou ${tracking_eval.iou}
+        --imgsz ${tracking_eval.imgsz}
+        --device ${tracking_eval.device}
+        --cache-dir ${config.dataset}/salmon_dataset/tracking_eval/workdir/inference_cache/${item}
+        --predictions-parquet data/03_processed/tracking_eval/${item}_predictions.parquet
+        --inference-status-csv data/03_processed/tracking_eval/${item}_inference_status.csv
+        --summary-json data/03_processed/tracking_eval/${item}_inference_summary.json
+      deps:
+        - scripts/run_tracking_inference.py
+        - src/object_detection/tracking_eval/inference.py
+        - data/03_processed/tracking_eval/${item}_videos.csv
+        - data/03_processed/tracking_eval/${item}_video_download_status.csv
+        - data/03_processed/tracking_eval/${item}_sequences.csv
+        - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
+      params:
+        - config.dataset
+        - train.run_name
+        - runtime.cuda
+        - tracking_eval.tracker
+        - tracking_eval.conf
+        - tracking_eval.iou
+        - tracking_eval.imgsz
+        - tracking_eval.device
+      outs:
+        - data/03_processed/tracking_eval/${item}_predictions.parquet
+        - data/03_processed/tracking_eval/${item}_inference_status.csv
+        - data/03_processed/tracking_eval/${item}_inference_summary.json
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py
