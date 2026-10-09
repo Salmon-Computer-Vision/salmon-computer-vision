@@ -10,3 +10,9 @@
 /val_video_download_summary.json
 /test_video_download_status.csv
 /test_video_download_summary.json
+/val_predictions.parquet
+/val_inference_status.csv
+/val_inference_summary.json
+/test_predictions.parquet
+/test_inference_status.csv
+/test_inference_summary.json
