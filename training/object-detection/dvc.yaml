@@ -42,11 +42,17 @@ stages:
         ${data.neg}
         --negative-ratio ${data.neg_ratio}
         --negatives-per-video ${data.neg_per_vid}
+        --annotated-negative-sites "${data.neg_annotated_sites}"
+        --annotated-negatives-per-video ${data.neg_annotated_per_vid}
+        --negative-exclusion-frames ${data.neg_exclusion_frames}
         --stats-dir data/02_interim/sites/${item}/yolo_annos_stats
       params:
       - data.neg
       - data.neg_ratio
       - data.neg_per_vid
+      - data.neg_annotated_sites
+      - data.neg_annotated_per_vid
+      - data.neg_exclusion_frames
       deps:
       - scripts/yolo_converter_ls_video.py
       - src/object_detection/yolo_ls

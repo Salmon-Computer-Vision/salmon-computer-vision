@@ -1,4 +1,5 @@
 import argparse
+import re
 from pathlib import Path
 
 from object_detection.yolo_ls.converter import YoloConverterLSVideo
@@ -59,6 +60,12 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Max sampled negative frames per empty video")
     parser.add_argument("--negative-seed", type=int, default=42,
                         help="Seed for deterministic negative sampling")
+    parser.add_argument("--annotated-negative-sites", default="",
+                        help="Comma/space-separated sites to sample unlabeled frames from reviewed annotated videos")
+    parser.add_argument("--annotated-negatives-per-video", type=int, default=12,
+                        help="Max negative frames from each annotated video (before global ratio cap)")
+    parser.add_argument("--negative-exclusion-frames", type=int, default=3,
+                        help="Exclude frames within this temporal distance of any LS annotation")
     parser.add_argument("--stats-dir", default=None,
                     help="Directory to write site/class frame and box count summaries")
 
@@ -99,6 +106,9 @@ def main() -> None:
         negative_ratio=args.negative_ratio,
         negatives_per_video=args.negatives_per_video,
         negative_seed=args.negative_seed,
+        annotated_negative_sites=[v for v in re.split(r"[\s,]+", args.annotated_negative_sites.strip()) if v],
+        annotated_negatives_per_video=args.annotated_negatives_per_video,
+        negative_exclusion_frames=args.negative_exclusion_frames,
         stats_dir=Path(args.stats_dir) if args.stats_dir else None,
     )
 
@@ -149,5 +159,7 @@ def main() -> None:
         f"negative_label_files={s.negative_files_written} "
         f"total_candidate_negative_frames={s.total_candidate_negative_frames} "
         f"max_neg={max_neg} "
+        f"negative_from_empty={conv._negative_report.get('selected_from_empty_videos', 0)} "
+        f"negative_from_annotated={conv._negative_report.get('selected_from_annotated_videos', 0)} "
         f"errors={s.errors}"
     )

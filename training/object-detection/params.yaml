@@ -26,6 +26,11 @@ data:
   neg: --include-negatives
   neg_ratio: 0.10
   neg_per_vid: 11
+  # Human-reviewed Label Studio tasks; add sites here as annotation coverage is verified.
+  neg_annotated_sites: stephenssmolt
+  neg_annotated_per_vid: 12
+  # Exclude neighboring frames around annotated fish to reduce borderline negatives.
+  neg_exclusion_frames: 3
   bucket: prod-salmonvision-edge-assets-labelstudio-source
 config:
   dataset: data/04_dataset

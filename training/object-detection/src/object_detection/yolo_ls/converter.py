@@ -1,7 +1,7 @@
 import json
 import csv
 import traceback
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple, Any
 from collections import defaultdict
@@ -42,7 +42,14 @@ class ConvertStats:
 class NegativeVideoCandidate:
     video_stem: str
     video_uri: str
+    site: str
     total_frames: int
+    # Frames occupied by ANY LS rectangle (including classes not present in
+    # class_map). Do not use the stride-sampled YOLO frames to build this set.
+    occupied_frames: set[int] = field(default_factory=set)
+    has_boxes: bool = False
+    invalid_results: bool = False
+
 
 class YoloConverterLSVideo:
     """
@@ -109,6 +116,9 @@ class YoloConverterLSVideo:
         negative_ratio: float = 0.10,
         negatives_per_video: int = 6,
         negative_seed: int = 42,
+        annotated_negative_sites: Optional[List[str]] = None,
+        annotated_negatives_per_video: int = 12,
+        negative_exclusion_frames: int = 3,
         stats_dir: Optional[Path] = None,
     ):
         """
@@ -144,10 +154,21 @@ class YoloConverterLSVideo:
         self.negative_ratio = float(negative_ratio)
         self.negatives_per_video = int(negatives_per_video)
         self.negative_seed = int(negative_seed)
+        self.annotated_negative_sites = set(annotated_negative_sites or [])
+        self.annotated_negatives_per_video = int(annotated_negatives_per_video)
+        self.negative_exclusion_frames = int(negative_exclusion_frames)
+        if not 0 <= self.negative_ratio <= 1:
+            raise ValueError("negative_ratio must be between 0 and 1")
+        if self.negatives_per_video < 0 or self.annotated_negatives_per_video < 0:
+            raise ValueError("per-video negative sample limits must be >= 0")
+        if self.negative_exclusion_frames < 0:
+            raise ValueError("negative_exclusion_frames must be >= 0")
 
         self._positive_frame_files_written = 0
         self._negative_frame_files_written = 0
-        self._negative_candidates: List[NegativeVideoCandidate] = []
+        self._negative_candidates: Dict[str, NegativeVideoCandidate] = {}
+        self._negative_rows: List[dict] = []
+        self._negative_report: dict = {}
 
         self.stats_dir = Path(stats_dir) if stats_dir else None
 
@@ -232,70 +253,110 @@ class YoloConverterLSVideo:
         return stats
 
     def materialize_negatives(self) -> Tuple[int, int, int]:
-        """
-        Sample negatives globally so negatives are at most self.negative_ratio
-        of the final dataset. Returns number of negative files written.
-        """
-        if not self.include_negatives:
-            return 0, 0, 0
+        """Write empty labels from reviewed empty and annotated videos.
 
-        pos = self._positive_frame_files_written
-        if pos <= 0:
-            return 0, 0, 0
-
-        r = self.negative_ratio
-        if r <= 0:
-            return 0, 0, 0
-        if r >= 1:
-            max_neg = sum(
-                min(self.negatives_per_video, len(self._eligible_frames_for_video(c.video_stem, c.total_frames)))
-                for c in self._negative_candidates
-            )
+        The global negative_ratio caps all negatives as a fraction of final
+        (positive + negative) frames. Per-video limits are applied before
+        deterministic global downsampling. Returned values preserve the CLI API.
+        """
+        positive = self._positive_frame_files_written
+        if self.negative_ratio >= 1:
+            max_neg = None  # All per-video candidates allowed.
         else:
-            max_neg = int((r / (1.0 - r)) * pos)
+            max_neg = int(self.negative_ratio / (1 - self.negative_ratio) * positive)
 
-        if max_neg <= 0:
-            return 0, 0, 0
+        # In particular, a dataset with no positive labels cannot silently
+        # acquire arbitrary negatives under a ratio-based sampling policy.
+        if not self.include_negatives or positive <= 0 or self.negative_ratio <= 0:
+            max_neg = 0
 
-        # Build all candidates at the video level first
-        per_video_samples: Dict[str, List[int]] = {}
-        total_candidate_frames = 0
+        candidates: list[tuple[str, int, str]] = []
+        video_rows: list[dict] = []
+        for stem, c in sorted(self._negative_candidates.items()):
+            source = "annotated" if c.has_boxes else "empty"
+            enabled = (
+                self.include_negatives and
+                (source == "empty" or c.site in self.annotated_negative_sites)
+                and not c.invalid_results
+            )
+            limit = (self.annotated_negatives_per_video if c.has_boxes
+                     else self.negatives_per_video)
+            eligible: list[int] = []
+            if enabled and limit > 0 and c.total_frames > 0:
+                eligible = self._eligible_frames_for_video(stem, c.total_frames)
+                if c.occupied_frames:
+                    # Exclude all occupied frames, including interpolated boxes
+                    # outside the stride grid. Pad temporal boundaries to avoid
+                    # false-negative labels adjacent to a fish trajectory.
+                    margin = self.negative_exclusion_frames
+                    unsafe = set()
+                    for frame in c.occupied_frames:
+                        unsafe.update(range(max(0, frame - margin),
+                                            min(c.total_frames, frame + margin + 1)))
+                    eligible = [f for f in eligible if f not in unsafe]
+            k = min(limit, len(eligible)) if enabled else 0
+            if k:
+                seed = zlib.crc32(f"{stem}|{self.negative_seed}".encode("utf-8"))
+                sampled = sorted(random.Random(seed).sample(eligible, k))
+                candidates.extend((stem, f, source) for f in sampled)
+            video_rows.append({
+                "site": c.site, "video_stem": stem, "source": source,
+                "total_frames": c.total_frames,
+                "occupied_frames": len(c.occupied_frames),
+                "eligible_frames": len(eligible),
+                "candidate_frames": k,
+                "selected_negative_frames": 0,
+                "sampling_enabled": enabled,
+                "invalid_results": c.invalid_results,
+            })
 
-        for c in self._negative_candidates:
-            eligible = self._eligible_frames_for_video(c.video_stem, c.total_frames)
-            if not eligible:
-                continue
+        # Globally sample without favoring particular input-file order.
+        candidates.sort()
+        random.Random(self.negative_seed).shuffle(candidates)
+        selected = candidates if max_neg is None else candidates[:max_neg]
+        selected.sort()
+        selected_lookup = {(stem, frame) for stem, frame, _ in selected}
+        if len(selected_lookup) != len(selected):
+            raise ValueError("Duplicate candidate label frames detected")
 
-            k = min(self.negatives_per_video, len(eligible))
-            sampled = self._sample_negative_frames_for_video(c.video_stem, c.total_frames, k)
-            if sampled:
-                per_video_samples[c.video_stem] = sampled
-                total_candidate_frames += len(sampled)
+        # Safety check before emitting any empty labels. A video may appear
+        # in multiple Label Studio exports; occupied frames are merged.
+        for stem, frame, _ in selected:
+            if frame in self._negative_candidates[stem].occupied_frames:
+                raise ValueError(f"Cannot make a positive frame negative: {stem}:{frame}")
+            self._write_label(stem, frame, "")
 
-        if total_candidate_frames <= 0:
-            return 0, 0, total_candidate_frames
+        selected_counts = defaultdict(int)
+        site_counts = defaultdict(lambda: defaultdict(int))
+        source_counts = defaultdict(int)
+        for stem, _, source in selected:
+            selected_counts[stem] += 1
+            site = self._negative_candidates[stem].site
+            site_counts[site]["total"] += 1
+            site_counts[site][source] += 1
+            source_counts[source] += 1
+        for row in video_rows:
+            row["selected_negative_frames"] = selected_counts[row["video_stem"]]
 
-        # Flatten candidates, then globally subsample if needed
-        flat: List[Tuple[str, int]] = []
-        for video_stem, frames in per_video_samples.items():
-            for frame_idx in frames:
-                flat.append((video_stem, frame_idx))
-
-        # Deterministic global shuffle
-        flat.sort()
-        rng = random.Random(self.negative_seed)
-        rng.shuffle(flat)
-
-        flat = flat[:max_neg]
-
-        # Write empty labels
-        wrote = 0
-        for video_stem, frame_idx in sorted(flat):
-            self._write_label(video_stem, frame_idx, "")
-            wrote += 1
-
-        self._negative_frame_files_written += wrote
-        return wrote, max_neg, total_candidate_frames
+        total = len(selected)
+        self._negative_frame_files_written += total
+        self._negative_rows = video_rows
+        self._negative_report = {
+            "positive_label_files": positive,
+            "max_negative_files": max_neg if max_neg is not None else len(candidates),
+            "candidate_negative_files": len(candidates),
+            "selected_negative_files": total,
+            "selected_from_empty_videos": source_counts["empty"],
+            "selected_from_annotated_videos": source_counts["annotated"],
+            "final_negative_fraction": total / (positive + total) if positive + total else 0.0,
+            "by_site": {site: dict(by_source) for site, by_source in sorted(site_counts.items())},
+            "negative_ratio": self.negative_ratio,
+            "negatives_per_empty_video": self.negatives_per_video,
+            "negatives_per_annotated_video": self.annotated_negatives_per_video,
+            "annotated_negative_sites": sorted(self.annotated_negative_sites),
+            "negative_exclusion_frames": self.negative_exclusion_frames,
+        }
+        return total, self._negative_report["max_negative_files"], len(candidates)
 
     def export_stats(self) -> None:
         if self.stats_dir is None:
@@ -310,6 +371,9 @@ class YoloConverterLSVideo:
         site_totals_csv = self.stats_dir / "site_totals.csv"
         class_totals_csv = self.stats_dir / "class_totals.csv"
         summary_json = self.stats_dir / "summary.json"
+        negative_summary_json = self.stats_dir / "negative_summary.json"
+        negative_video_csv = self.stats_dir / "negative_video_counts.csv"
+        negative_site_csv = self.stats_dir / "site_negative_counts.csv"
 
         all_sites = sorted({
             site for (site, _) in self._site_class_frame_counts.keys()
@@ -383,6 +447,11 @@ class YoloConverterLSVideo:
                     "total_frames_with_boxes",
                     "total_boxes",
                     "total_videos_with_boxes",
+                    "negative_from_empty",
+                    "negative_from_annotated",
+                    "negative_total",
+                    "total_frames_including_negatives",
+                    "negative_fraction",
                     "frame_pct_of_dataset",
                     "box_pct_of_dataset",
                 ],
@@ -401,6 +470,14 @@ class YoloConverterLSVideo:
                     "total_frames_with_boxes": total_frames,
                     "total_boxes": total_boxes,
                     "total_videos_with_boxes": self._site_total_videos.get(site, 0),
+                    "negative_from_empty": self._negative_report.get("by_site", {}).get(site, {}).get("empty", 0),
+                    "negative_from_annotated": self._negative_report.get("by_site", {}).get(site, {}).get("annotated", 0),
+                    "negative_total": self._negative_report.get("by_site", {}).get(site, {}).get("total", 0),
+                    "total_frames_including_negatives": total_frames + self._negative_report.get("by_site", {}).get(site, {}).get("total", 0),
+                    "negative_fraction": round(
+                        self._negative_report.get("by_site", {}).get(site, {}).get("total", 0)
+                        / (total_frames + self._negative_report.get("by_site", {}).get(site, {}).get("total", 0)), 6)
+                        if total_frames + self._negative_report.get("by_site", {}).get(site, {}).get("total", 0) else 0.0,
                     "frame_pct_of_dataset": round(self._pct(total_frames, dataset_total_frames), 6),
                     "box_pct_of_dataset": round(self._pct(total_boxes, dataset_total_boxes), 6),
                 })
@@ -435,7 +512,36 @@ class YoloConverterLSVideo:
                     "box_pct_of_dataset": round(self._pct(total_box_count, dataset_total_boxes), 6),
                 })
 
+        # Negative frames have no class. Keep them separate from class totals.
+        negative_summary_json.write_text(
+            json.dumps(self._negative_report, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        negative_fields = ["site", "video_stem", "source", "total_frames",
+                           "occupied_frames", "eligible_frames", "candidate_frames",
+                           "selected_negative_frames", "sampling_enabled", "invalid_results"]
+        with negative_video_csv.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=negative_fields)
+            writer.writeheader()
+            writer.writerows(self._negative_rows)
+        with negative_site_csv.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["site", "positive_frames",
+                "negative_from_empty", "negative_from_annotated", "negative_total",
+                "final_total_frames", "negative_fraction"])
+            writer.writeheader()
+            sites_for_negatives = sorted(set(all_sites) | set(self._negative_report.get("by_site", {})))
+            for site in sites_for_negatives:
+                vals = self._negative_report.get("by_site", {}).get(site, {})
+                positive = self._site_total_frames.get(site, 0)
+                negative = vals.get("total", 0)
+                writer.writerow({"site": site, "positive_frames": positive,
+                    "negative_from_empty": vals.get("empty", 0),
+                    "negative_from_annotated": vals.get("annotated", 0),
+                    "negative_total": negative, "final_total_frames": positive + negative,
+                    "negative_fraction": negative / (positive + negative) if positive + negative else 0.0})
+
         summary = {
+            "negative_sampling": self._negative_report,
             "sites": all_sites,
             "class_ids": all_class_ids,
             "class_names": {str(cls_id): inv_class_map.get(cls_id, str(cls_id)) for cls_id in all_class_ids},
@@ -443,12 +549,20 @@ class YoloConverterLSVideo:
                 "total_frames_with_boxes": sum(self._site_total_frames.values()),
                 "total_boxes": sum(self._site_total_boxes.values()),
                 "total_videos_with_boxes": sum(self._site_total_videos.values()),
+                "total_negative_frames": self._negative_report.get("selected_negative_files", 0),
+                "negative_from_empty": self._negative_report.get("selected_from_empty_videos", 0),
+                "negative_from_annotated": self._negative_report.get("selected_from_annotated_videos", 0),
+                "total_frames_including_negatives": sum(self._site_total_frames.values()) + self._negative_report.get("selected_negative_files", 0),
+                "negative_fraction": self._negative_report.get("final_negative_fraction", 0.0),
             },
             "site_totals": {
                 site: {
                     "total_frames_with_boxes": self._site_total_frames.get(site, 0),
                     "total_boxes": self._site_total_boxes.get(site, 0),
                     "total_videos_with_boxes": self._site_total_videos.get(site, 0),
+                    "negative_from_empty": self._negative_report.get("by_site", {}).get(site, {}).get("empty", 0),
+                    "negative_from_annotated": self._negative_report.get("by_site", {}).get(site, {}).get("annotated", 0),
+                    "total_negative_frames": self._negative_report.get("by_site", {}).get(site, {}).get("total", 0),
                     "frame_pct_of_dataset": round(
                         self._pct(
                             self._site_total_frames.get(site, 0),
@@ -792,29 +906,25 @@ class YoloConverterLSVideo:
                 results.append(r)
 
         wrote_any = False
-
-        # Collect lines per frame
         frame_lines: Dict[int, List[str]] = defaultdict(list)
+        occupied_frames: set[int] = set()
+        invalid_results = False
         for r in results:
             value = r.get("value") or {}
             labels: List[str] = value.get("labels") or []
-            if not labels:
-                continue
-            cls_name = labels[0]
-            if cls_name not in self.class_map:
-                # unknown class; skip this track
-                continue
-            cls_id = self.class_map[cls_name]
-
             seq: Iterable[dict] = value.get("sequence") or []
-            frame_boxes = self._interpolate_sequence(seq)  # frame -> [(x,y,w,h), ...]
-
+            frame_boxes = self._interpolate_sequence(seq)
+            # Protect every LS rectangle, even for unrecognized fish species.
+            occupied_frames.update(frame_boxes)
+            if not labels or labels[0] not in self.class_map:
+                invalid_results = True
+                continue
+            cls_id = self.class_map[labels[0]]
             for frame_idx, boxes in frame_boxes.items():
                 for (x, y, w, h) in boxes:
                     xc, yc, wn, hn = to_yolo(
                         x, y, w, h,
-                        vid_w=vid_w,
-                        vid_h=vid_h,
+                        vid_w=vid_w, vid_h=vid_h,
                         forced_mode=self.coord_mode,
                     )
                     frame_lines[frame_idx].append(f"{cls_id} {xc:.6f} {yc:.6f} {wn:.6f} {hn:.6f}")
@@ -829,16 +939,19 @@ class YoloConverterLSVideo:
                 with self.empty_list_path.open("a") as f:
                     f.write(f"{video_uri}\n")
 
-            if self.include_negatives:
-                total_frames = self._infer_total_frames(item, results=None)
-                if total_frames > 0:
-                    self._negative_candidates.append(
-                        NegativeVideoCandidate(
-                            video_stem=video_stem,
-                            video_uri=video_uri,
-                            total_frames=total_frames,
-                        )
-                    )
+        if self.include_negatives:
+            total_frames = self._infer_total_frames(item, results=results)
+            if total_frames > 0:
+                c = self._negative_candidates.get(video_stem)
+                if c is None:
+                    c = NegativeVideoCandidate(video_stem, video_uri, site, total_frames)
+                    self._negative_candidates[video_stem] = c
+                elif c.site != site:
+                    raise ValueError(f"Conflicting sites for video {video_stem}: {c.site}, {site}")
+                c.total_frames = max(c.total_frames, total_frames)
+                c.occupied_frames.update(occupied_frames)
+                c.has_boxes |= wrote_any or bool(occupied_frames)
+                c.invalid_results |= invalid_results
 
         # Apply frame sampling
         if self.frame_stride > 1 and frame_lines:
