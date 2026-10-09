@@ -306,6 +306,7 @@ def main(argv=None):
         settings=CountSettings(a.tracking_thresh, a.vote_method, a.drop_bounding_boxes, a.bound_line_ratio),
         scope=a.annotation_scope, coverage_csv=a.coverage_csv,
         summary_json=a.summary_json, per_group_csv=a.per_group_csv, per_video_csv=a.per_video_csv,
+        per_site_csv=a.per_site_csv,
         events_csv=a.events_csv, coverage_csv_out=a.coverage_output_csv)
     print(f"Counting {a.split}: {result}")
 
