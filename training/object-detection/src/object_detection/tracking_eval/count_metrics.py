@@ -221,13 +221,46 @@ def aggregate_site_direction(detail: list[dict], selected: dict[str, dict[str, s
     return output
 
 
+def aggregate_species_directional(detail: list[dict], selected: dict,
+                                  names: dict[int, str], split: str) -> list[dict]:
+    """Species totals and errors summed across (video, direction).
+
+    Sum absolute differences BEFORE aggregation; never cancel opposing
+    directions or errors from different videos. MAE denominator includes all
+    successfully evaluated videos, even those with zero fish.
+    """
+    totals = {cls: dict(gt_count=0, pred_count=0, absolute_error_sum=0)
+              for cls in names}
+    for row in detail:
+        cls = int(row["class_id"])
+        if cls not in totals:
+            raise ValueError(f"Unknown counted species id {cls}")
+        totals[cls]["gt_count"] += int(row["gt_count"])
+        totals[cls]["pred_count"] += int(row["pred_count"])
+        totals[cls]["absolute_error_sum"] += int(row["absolute_error"])
+    n = len(selected)
+    if not n:
+        raise ValueError("No evaluated videos")
+    result = []
+    for cls, name in sorted(names.items()):
+        values = totals[cls]
+        gt, pred, error = values["gt_count"], values["pred_count"], values["absolute_error_sum"]
+        result.append(dict(split=split, class_id=cls, class_name=name,
+                           num_videos=n, gt_count=gt, pred_count=pred,
+                           signed_error=pred-gt, absolute_error_sum=error,
+                           MAE_per_video=error/n,
+                           nMAE=error/gt if gt else None))
+    return result
+
+
 def evaluate_counts(*, gt_csv: Path, sequence_csv: Path, inference_status_csv: Path,
                     predictions_parquet: Path, data_yaml: Path, split: str,
                     settings: CountSettings, scope: str,
                     summary_json: Path, per_group_csv: Path, per_video_csv: Path,
                     per_site_csv: Path,
                     events_csv: Path, coverage_csv_out: Path,
-                    coverage_csv: Path | None = None) -> dict:
+                    coverage_csv: Path | None = None,
+                    per_species_csv: Path | None = None) -> dict:
     selected, ledger = select_sequences(sequence_csv=sequence_csv, inference_status_csv=inference_status_csv,
                                         split=split, scope=scope, coverage_csv=coverage_csv)
     if not selected:
@@ -247,6 +280,7 @@ def evaluate_counts(*, gt_csv: Path, sequence_csv: Path, inference_status_csv: P
                                    **event})
     detail, videos = aggregate_counts(all_events, selected, names, split)
     by_site = aggregate_site_direction(detail, selected, split)
+    by_species = aggregate_species_directional(detail, selected, names, split)
     abs_err = sum(x["absolute_error"] for x in detail)
     gt_total = sum(x["gt_count"] for x in detail)
     pred_total = sum(x["pred_count"] for x in detail)
@@ -272,6 +306,11 @@ def evaluate_counts(*, gt_csv: Path, sequence_csv: Path, inference_status_csv: P
     write_csv(per_video_csv, videos, ["split", "site", "video_stem", "gt_count", "pred_count", "signed_error", "absolute_error"])
     write_csv(per_site_csv, by_site, ["split", "site", "class_id", "class_name", "direction", "num_videos",
                                      "gt_count", "pred_count", "signed_error", "absolute_error_sum", "MAE_per_video", "nMAE"])
+    if per_species_csv is not None:
+        write_csv(per_species_csv, by_species,
+                  ["split", "class_id", "class_name", "num_videos", "gt_count",
+                   "pred_count", "signed_error", "absolute_error_sum",
+                   "MAE_per_video", "nMAE"])
     write_csv(events_csv, all_events, ["split", "video_stem", "site", "source", "class_name", "track_id", "segment", "class_id", "direction", "start_frame", "end_frame"])
     write_csv(coverage_csv_out, ledger, ["split", "video_stem", "site", "n_gt_rows", "status", "reason", "annotation_verified"])
     write_json(summary_json, summary)
@@ -297,6 +336,7 @@ def main(argv=None):
     p.add_argument("--per-group-csv", type=Path, required=True)
     p.add_argument("--per-video-csv", type=Path, required=True)
     p.add_argument("--per-site-csv", type=Path, required=True)
+    p.add_argument("--per-species-csv", type=Path)
     p.add_argument("--events-csv", type=Path, required=True)
     p.add_argument("--coverage-output-csv", type=Path, required=True)
     a = p.parse_args(argv)
@@ -306,7 +346,7 @@ def main(argv=None):
         settings=CountSettings(a.tracking_thresh, a.vote_method, a.drop_bounding_boxes, a.bound_line_ratio),
         scope=a.annotation_scope, coverage_csv=a.coverage_csv,
         summary_json=a.summary_json, per_group_csv=a.per_group_csv, per_video_csv=a.per_video_csv,
-        per_site_csv=a.per_site_csv,
+        per_site_csv=a.per_site_csv, per_species_csv=a.per_species_csv,
         events_csv=a.events_csv, coverage_csv_out=a.coverage_output_csv)
     print(f"Counting {a.split}: {result}")
 

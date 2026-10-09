@@ -149,6 +149,7 @@ def evaluate_tracking(*, gt_csv: Path, sequence_csv: Path, inference_status_csv:
                       predictions_parquet: Path, split: str, benchmark: str, tracker: str,
                       workdir_root: Path, summary_json: Path, per_sequence_csv: Path,
                       coverage_csv_out: Path, scope: str = "observed",
+                      data_yaml: Path | None = None, per_species_csv: Path | None = None,
                       coverage_csv: Path | None = None, backend: Any = None) -> dict:
     selected, ledger = select_sequences(sequence_csv=sequence_csv,
                                          inference_status_csv=inference_status_csv,
@@ -170,6 +171,19 @@ def evaluate_tracking(*, gt_csv: Path, sequence_csv: Path, inference_status_csv:
             benchmark=benchmark, split=split, tracker=tracker, selected=selected,
             trackeval_module=backend,
         )
+    species_rows = None
+    if per_species_csv is not None:
+        if data_yaml is None:
+            raise ValueError("--data-yaml required with --per-species-csv")
+        from .count_metrics import load_class_names
+        from .species_metrics import evaluate_species_tracking, SPECIES_COLUMNS
+        names = load_class_names(data_yaml)
+        with tempfile.TemporaryDirectory(prefix=f"species-{split}-", dir=workdir_root) as path:
+            species_rows = evaluate_species_tracking(
+                gt_csv=gt_csv, selected=selected, predictions=predictions,
+                names=names, split=split, benchmark=benchmark, tracker=tracker,
+                temp_path=Path(path), backend=backend)
+        write_csv(per_species_csv, species_rows, SPECIES_COLUMNS)
     write_csv(per_sequence_csv, per_seq, ["split", "site", "video_stem", "HOTA", "DetA", "AssA", "MOTA", "MOTP", "FP", "FN", "TP", "IDSW", "IDF1", "IDP", "IDR"])
     write_csv(coverage_csv_out, ledger, ["split", "video_stem", "site", "n_gt_rows", "status", "reason", "annotation_verified"])
     from collections import Counter
@@ -182,6 +196,8 @@ def evaluate_tracking(*, gt_csv: Path, sequence_csv: Path, inference_status_csv:
         "sequences_selected": len(ledger), "sequences_evaluated": len(selected),
         "exclusions": dict(Counter(x["reason"] for x in ledger if x["reason"])),
         "metrics": combined,
+        "species_scoring": "per-frame class-aware filtered MOT evaluation" if species_rows is not None else None,
+        "species_with_gt": sum(x["gt_detections"] > 0 for x in species_rows) if species_rows is not None else None,
     }
     write_json(summary_json, summary)
     return summary
@@ -202,13 +218,16 @@ def main(argv=None):
     p.add_argument("--coverage-output-csv", type=Path, required=True)
     p.add_argument("--annotation-scope", choices=["observed", "verified"], default="observed")
     p.add_argument("--coverage-csv", type=Path)
+    p.add_argument("--data-yaml", type=Path)
+    p.add_argument("--per-species-csv", type=Path)
     args = p.parse_args(argv)
     result = evaluate_tracking(gt_csv=args.gt_csv, sequence_csv=args.sequences_csv,
         inference_status_csv=args.inference_status_csv, predictions_parquet=args.predictions_parquet,
         split=args.split, benchmark=args.benchmark, tracker=args.tracker,
         workdir_root=args.workdir_root, summary_json=args.summary_json,
         per_sequence_csv=args.per_sequence_csv, coverage_csv_out=args.coverage_output_csv,
-        scope=args.annotation_scope, coverage_csv=args.coverage_csv)
+        scope=args.annotation_scope, coverage_csv=args.coverage_csv,
+        data_yaml=args.data_yaml, per_species_csv=args.per_species_csv)
     print(f"TrackEval {args.split}: {result}")
 
 

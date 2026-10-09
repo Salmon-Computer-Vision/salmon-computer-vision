@@ -564,6 +564,8 @@ stages:
         --split ${item}
         --benchmark ${tracking_eval.mot_benchmark}
         --tracker ${tracking_eval.tracker}
+        --data-yaml config/salmon_yolo.yaml
+        --per-species-csv data/03_processed/tracking_eval/${item}_tracking_per_species.csv
         --workdir-root ${config.dataset}/salmon_dataset/tracking_eval/workdir/metrics
         --annotation-scope ${tracking_eval.metric_annotation_scope}
         --coverage-csv data/03_processed/tracking_eval/${item}_annotation_coverage.csv
@@ -573,8 +575,11 @@ stages:
       deps:
         - scripts/evaluate_tracking_metrics.py
         - src/object_detection/tracking_eval/tracking_metrics.py
+        - src/object_detection/tracking_eval/species_metrics.py
         - src/object_detection/tracking_eval/eval_common.py
         - src/object_detection/tracking_eval/mot_format.py
+        - config/salmon_yolo.yaml
+        - config/plots/tracking_species_scores.vl.json
         - data/03_processed/tracking_eval/${item}_gt.csv
         - data/03_processed/tracking_eval/${item}_sequences.csv
         - data/03_processed/tracking_eval/${item}_predictions.parquet
@@ -588,6 +593,12 @@ stages:
         - tracking_eval.metric_annotation_scope
       metrics:
         - data/03_processed/tracking_eval/${item}_tracking_metrics.json
+      plots:
+        - data/03_processed/tracking_eval/${item}_tracking_per_species.csv:
+            x: HOTA
+            y: class_name
+            template: config/plots/tracking_species_scores.vl.json
+            title: Species-aware tracking HOTA
       outs:
         - data/03_processed/tracking_eval/${item}_tracking_per_sequence.csv
         - data/03_processed/tracking_eval/${item}_tracking_coverage.csv
@@ -615,6 +626,7 @@ stages:
         --per-group-csv data/03_processed/tracking_eval/${item}_count_per_group.csv
         --per-video-csv data/03_processed/tracking_eval/${item}_count_per_video.csv
         --per-site-csv data/03_processed/tracking_eval/${item}_count_per_site.csv
+        --per-species-csv data/03_processed/tracking_eval/${item}_count_per_species.csv
         --events-csv data/03_processed/tracking_eval/${item}_count_events.csv
         --coverage-output-csv data/03_processed/tracking_eval/${item}_count_coverage.csv
       deps:
@@ -627,12 +639,19 @@ stages:
         - data/03_processed/tracking_eval/${item}_inference_status.csv
         - data/03_processed/tracking_eval/${item}_annotation_coverage.csv
         - config/salmon_yolo.yaml
+        - config/plots/count_species_mae.vl.json
       params:
         - runtime.cuda
         - count_eval
         - tracking_eval.metric_annotation_scope
       metrics:
         - data/03_processed/tracking_eval/${item}_count_metrics.json
+      plots:
+        - data/03_processed/tracking_eval/${item}_count_per_species.csv:
+            x: MAE_per_video
+            y: class_name
+            template: config/plots/count_species_mae.vl.json
+            title: Species directional count MAE per video
       outs:
         - data/03_processed/tracking_eval/${item}_count_per_group.csv
         - data/03_processed/tracking_eval/${item}_count_per_video.csv
