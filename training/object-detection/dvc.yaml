@@ -534,6 +534,92 @@ stages:
         - data/03_processed/tracking_eval/${item}_predictions.parquet
         - data/03_processed/tracking_eval/${item}_inference_status.csv
         - data/03_processed/tracking_eval/${item}_inference_summary.json
+  evaluate_tracking_metrics:
+    foreach:
+      - val
+      - test
+    do:
+      cmd: >-
+        uv run
+        --extra ${runtime.cuda} scripts/evaluate_tracking_metrics.py
+        --gt-csv data/03_processed/tracking_eval/${item}_gt.csv
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --inference-status-csv data/03_processed/tracking_eval/${item}_inference_status.csv
+        --predictions-parquet data/03_processed/tracking_eval/${item}_predictions.parquet
+        --split ${item}
+        --benchmark ${tracking_eval.mot_benchmark}
+        --tracker ${tracking_eval.tracker}
+        --workdir-root ${config.dataset}/salmon_dataset/tracking_eval/workdir/metrics
+        --annotation-scope ${tracking_eval.metric_annotation_scope}
+        --summary-json data/03_processed/tracking_eval/${item}_tracking_metrics.json
+        --per-sequence-csv data/03_processed/tracking_eval/${item}_tracking_per_sequence.csv
+        --coverage-output-csv data/03_processed/tracking_eval/${item}_tracking_coverage.csv
+      deps:
+        - scripts/evaluate_tracking_metrics.py
+        - src/object_detection/tracking_eval/tracking_metrics.py
+        - src/object_detection/tracking_eval/eval_common.py
+        - src/object_detection/tracking_eval/mot_format.py
+        - data/03_processed/tracking_eval/${item}_gt.csv
+        - data/03_processed/tracking_eval/${item}_sequences.csv
+        - data/03_processed/tracking_eval/${item}_predictions.parquet
+        - data/03_processed/tracking_eval/${item}_inference_status.csv
+      params:
+        - runtime.cuda
+        - config.dataset
+        - tracking_eval.mot_benchmark
+        - tracking_eval.tracker
+        - tracking_eval.metric_annotation_scope
+      metrics:
+        - data/03_processed/tracking_eval/${item}_tracking_metrics.json
+      outs:
+        - data/03_processed/tracking_eval/${item}_tracking_per_sequence.csv
+        - data/03_processed/tracking_eval/${item}_tracking_coverage.csv
+  evaluate_fish_counts:
+    foreach:
+      - val
+      - test
+    do:
+      cmd: >-
+        uv run
+        --extra ${runtime.cuda} scripts/evaluate_fish_counts.py
+        --gt-csv data/03_processed/tracking_eval/${item}_gt.csv
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --inference-status-csv data/03_processed/tracking_eval/${item}_inference_status.csv
+        --predictions-parquet data/03_processed/tracking_eval/${item}_predictions.parquet
+        --data-yaml config/salmon_yolo.yaml
+        --split ${item}
+        --tracking-thresh ${count_eval.tracking_thresh}
+        --vote-method ${count_eval.vote_method}
+        --drop-bounding-boxes ${count_eval.drop_bounding_boxes}
+        --bound-line-ratio ${count_eval.bound_line_ratio}
+        --annotation-scope ${tracking_eval.metric_annotation_scope}
+        --summary-json data/03_processed/tracking_eval/${item}_count_metrics.json
+        --per-group-csv data/03_processed/tracking_eval/${item}_count_per_group.csv
+        --per-video-csv data/03_processed/tracking_eval/${item}_count_per_video.csv
+        --per-site-csv data/03_processed/tracking_eval/${item}_count_per_site.csv
+        --events-csv data/03_processed/tracking_eval/${item}_count_events.csv
+        --coverage-output-csv data/03_processed/tracking_eval/${item}_count_coverage.csv
+      deps:
+        - scripts/evaluate_fish_counts.py
+        - src/object_detection/tracking_eval/count_metrics.py
+        - src/object_detection/tracking_eval/eval_common.py
+        - data/03_processed/tracking_eval/${item}_gt.csv
+        - data/03_processed/tracking_eval/${item}_sequences.csv
+        - data/03_processed/tracking_eval/${item}_predictions.parquet
+        - data/03_processed/tracking_eval/${item}_inference_status.csv
+        - config/salmon_yolo.yaml
+      params:
+        - runtime.cuda
+        - count_eval
+        - tracking_eval.metric_annotation_scope
+      metrics:
+        - data/03_processed/tracking_eval/${item}_count_metrics.json
+      outs:
+        - data/03_processed/tracking_eval/${item}_count_per_group.csv
+        - data/03_processed/tracking_eval/${item}_count_per_video.csv
+        - data/03_processed/tracking_eval/${item}_count_events.csv
+        - data/03_processed/tracking_eval/${item}_count_coverage.csv
+        - data/03_processed/tracking_eval/${item}_count_per_site.csv
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py

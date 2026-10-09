@@ -70,4 +70,11 @@ tracking_eval:
   iou: 0.7
   imgsz: 640
   device: 1
+  metric_annotation_scope: observed  # preliminary metrics; full annotation coverage unverified
   max_videos: 0   # 0 means all
+
+count_eval:
+  tracking_thresh: 10
+  vote_method: all
+  drop_bounding_boxes: false
+  bound_line_ratio: 0.5
