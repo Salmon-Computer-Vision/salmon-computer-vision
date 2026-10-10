@@ -62,21 +62,43 @@ stages:
       outs:
       - data/02_interim/sites/${item}/yolo_annos
       - data/02_interim/sites/${item}/yolo_annos_stats
-  plot_site_class_stats:
-    foreach: ${data.sites}
-    do:
-      cmd: >-
-        scripts/plot_site_class_stats.py
-        --stats-dir data/02_interim/sites/${item}/yolo_annos_stats
-        --out-dir data/02_interim/sites/${item}/yolo_annos_stats_plots
-      deps:
-      - scripts/plot_site_class_stats.py
-      - src/object_detection/analysis/plots.py
-      - src/object_detection/analysis/cli.py
-      - data/02_interim/sites/${item}/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/${item}/yolo_annos_stats/site_class_box_counts.csv
-      outs:
-      - data/02_interim/sites/${item}/yolo_annos_stats_plots
+  aggregate_site_class_stats:
+    cmd: >-
+      python scripts/aggregate_site_class_stats.py
+      --params-yaml params.yaml
+      --sites-root data/02_interim/sites
+      --out-dir data/03_processed/annotation_stats
+    deps:
+      - scripts/aggregate_site_class_stats.py
+      - data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/bear/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/bear/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/copper/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/copper/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/Elbow/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/Elbow/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/koeye/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/koeye/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/redoubt/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/redoubt/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/chignik/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/chignik/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/klukshu/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/klukshu/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_box_counts.csv
+    params:
+      - data.sites
+    outs:
+      - data/03_processed/annotation_stats/site_class_frame_counts.csv
+      - data/03_processed/annotation_stats/site_class_box_counts.csv
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
@@ -754,6 +776,33 @@ plots:
       data/03_processed/tracking_eval/test_count_per_species.csv: class_name
     template: config/plots/count_species_comparison.vl.json
     title: GT vs predicted fish counts by species (test)
+- annotation_frame_counts:
+    x: class_name
+    y:
+      data/03_processed/annotation_stats/site_class_frame_counts.csv: frame_count
+    template: config/plots/site_class_counts_heatmap.vl.json
+    title: Annotated frames per species and site
+
+- annotation_box_counts:
+    x: class_name
+    y:
+      data/03_processed/annotation_stats/site_class_box_counts.csv: box_count
+    template: config/plots/site_class_counts_heatmap.vl.json
+    title: Annotated boxes per species and site
+
+- annotation_frame_share:
+    x: class_name
+    y:
+      data/03_processed/annotation_stats/site_class_frame_counts.csv: frame_pct_within_class
+    template: config/plots/site_class_share_heatmap.vl.json
+    title: Share of species-annotated frames by site (%)
+
+- annotation_box_share:
+    x: class_name
+    y:
+      data/03_processed/annotation_stats/site_class_box_counts.csv: box_pct_within_class
+    template: config/plots/site_class_share_heatmap.vl.json
+    title: Share of species boxes by site (%)
 - dvclive/plots/metrics:
     x: step
 - dvclive/plots/images
