@@ -62,38 +62,31 @@ stages:
       outs:
       - data/02_interim/sites/${item}/yolo_annos
       - data/02_interim/sites/${item}/yolo_annos_stats
+  collect_site_class_stats:
+    # Expand automatically for every site in params.yaml:data.sites.
+    # Only the two small statistics CSVs are copied (not the annotation shards).
+    foreach: ${data.sites}
+    do:
+      cmd: >-
+        src="data/02_interim/sites/${item}/yolo_annos_stats" &&
+        dst="data/02_interim/annotation_stats_by_site/${item}/yolo_annos_stats" &&
+        mkdir -p "$dst" &&
+        cp "$src/site_class_frame_counts.csv" "$dst/site_class_frame_counts.csv" &&
+        cp "$src/site_class_box_counts.csv" "$dst/site_class_box_counts.csv"
+      deps:
+        - data/02_interim/sites/${item}/yolo_annos_stats/site_class_frame_counts.csv
+        - data/02_interim/sites/${item}/yolo_annos_stats/site_class_box_counts.csv
+      outs:
+        - data/02_interim/annotation_stats_by_site/${item}/yolo_annos_stats
   aggregate_site_class_stats:
     cmd: >-
       python scripts/aggregate_site_class_stats.py
       --params-yaml params.yaml
-      --sites-root data/02_interim/sites
+      --sites-root data/02_interim/annotation_stats_by_site
       --out-dir data/03_processed/annotation_stats
     deps:
       - scripts/aggregate_site_class_stats.py
-      - data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/bear/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/bear/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/copper/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/copper/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/Elbow/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/Elbow/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/koeye/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/koeye/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/redoubt/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/redoubt/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/chignik/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/chignik/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/klukshu/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/klukshu/yolo_annos_stats/site_class_box_counts.csv
-      - data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_frame_counts.csv
-      - data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/annotation_stats_by_site
     params:
       - data.sites
     outs:

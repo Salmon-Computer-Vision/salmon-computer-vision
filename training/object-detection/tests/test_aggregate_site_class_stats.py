@@ -2,6 +2,7 @@
 import csv
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -104,8 +105,19 @@ def test_dvc_stage_named_plots_and_templates():
     dvc=yaml.safe_load((ROOT/'dvc.yaml').read_text())
     assert 'plot_site_class_stats' not in dvc['stages']
     stage=dvc['stages']['aggregate_site_class_stats']
-    assert len(stage['deps'])==25  # script + 12 sites * 2 source CSVs
+    assert stage['deps'] == [
+        'scripts/aggregate_site_class_stats.py',
+        'data/02_interim/annotation_stats_by_site',
+    ]
     assert 'data.sites' in stage['params']
+    assert '--sites-root data/02_interim/annotation_stats_by_site' in stage['cmd']
+    collector = dvc['stages']['collect_site_class_stats']
+    assert collector['foreach'] == '${data.sites}'
+    assert len(collector['do']['deps']) == 2
+    assert len(collector['do']['outs']) == 1
+    assert '${item}' in collector['do']['cmd']
+    # No named site appears as an aggregate dependency.
+    assert all('stephenssmolt' not in dep and 'koeye' not in dep for dep in stage['deps'])
     assert len(stage['outs'])==2
     names=[next(iter(item)) for item in dvc['plots'] if isinstance(item,dict)]
     assert len(set(names))==len(names)
@@ -118,3 +130,47 @@ def test_dvc_stage_named_plots_and_templates():
         obj=json.loads(template.read_text())
         assert obj['data']['values']=='<DVC_METRIC_DATA>'
         assert '<DVC_METRIC_Y>' in json.dumps(obj)
+
+
+def test_dynamic_site_selection_end_to_end(tmp_path):
+    # Emulate the foreach collector commands and the normal aggregation CLI.
+    # The site set can change without modifying dvc.yaml or the aggregator.
+    dvc = yaml.safe_load((ROOT / 'dvc.yaml').read_text())
+    collector = dvc['stages']['collect_site_class_stats']['do']
+    params, original = setup(tmp_path)
+    workroot = tmp_path / 'data' / '02_interim'
+    source = workroot / 'sites'
+    source.parent.mkdir(parents=True, exist_ok=True)
+    # Relocate test CSVs to the relative paths declared by the DVC stage.
+    import shutil
+    shutil.copytree(original, source)
+
+    def collect(site: str) -> None:
+        cmd = collector['cmd'].replace('${item}', site)
+        subprocess.run(cmd, shell=True, cwd=tmp_path, check=True)
+
+    for site in ['stephenssmolt', 'koeye']:
+        collect(site)
+    out = tmp_path / 'out'
+    stats_root = workroot / 'annotation_stats_by_site'
+    mod.main(['--params-yaml', str(params), '--sites-root', str(stats_root), '--out-dir', str(out)])
+    assert len(rows_by_key(out / 'site_class_frame_counts.csv')) == 4
+
+    # Add a third arbitrary site and change params: no hard-coded YAML deps needed.
+    for kind in ('frame', 'box'):
+        name = mod.KIND_SPECS[kind][0]
+        write_rows(source / 'new_site' / 'yolo_annos_stats' / name,
+                   'new_site', kind, [(0, 'Sockeye', 8), (1, 'Coho', 2)])
+    collect('new_site')
+    params.write_text(yaml.safe_dump({'data': {'sites': ['koeye', 'new_site']}}))
+    mod.main(['--params-yaml', str(params), '--sites-root', str(stats_root), '--out-dir', str(out)])
+    rows = rows_by_key(out / 'site_class_frame_counts.csv')
+    assert {site for site, _ in rows} == {'koeye', 'new_site'}
+    assert int(rows['new_site', 0]['frame_count']) == 8
+    assert float(rows['koeye', 0]['frame_pct_within_class']) == pytest.approx(100 * 6 / 14)
+    assert float(rows['new_site', 0]['frame_pct_within_class']) == pytest.approx(100 * 8 / 14)
+
+    # Removing a site doesn't accidentally retain it in the aggregate.
+    params.write_text(yaml.safe_dump({'data': {'sites': ['new_site']}}))
+    mod.main(['--params-yaml', str(params), '--sites-root', str(stats_root), '--out-dir', str(out)])
+    assert {site for site, _ in rows_by_key(out / 'site_class_frame_counts.csv')} == {'new_site'}
