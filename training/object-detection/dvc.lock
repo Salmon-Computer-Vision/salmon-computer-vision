@@ -4609,3 +4609,318 @@ stages:
       hash: md5
       md5: a33240c4f566e86ad7ce49150e9b3a20
       size: 12834
+  collect_site_class_stats@kitkiata:
+    cmd: src="data/02_interim/sites/kitkiata/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/kitkiata/yolo_annos_stats" 
+      && mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 1354f10438d9dc9ef6bcc940c2485291
+      size: 803
+    - path: 
+        data/02_interim/sites/kitkiata/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 1ee98d08d86f14636516ad15b9fcf644
+      size: 811
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/kitkiata/yolo_annos_stats
+      hash: md5
+      md5: 14c714b80b64d54638d85e7b4882894e.dir
+      size: 1614
+      nfiles: 2
+  collect_site_class_stats@kwakwa:
+    cmd: src="data/02_interim/sites/kwakwa/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/kwakwa/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: ba580d043b000aa2e72238e44593d421
+      size: 691
+    - path: 
+        data/02_interim/sites/kwakwa/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: a451694040beb9a65d911740a14db849
+      size: 697
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/kwakwa/yolo_annos_stats
+      hash: md5
+      md5: 47b4debecce9be2945b6edfe91243c3e.dir
+      size: 1388
+      nfiles: 2
+  collect_site_class_stats@klukshu:
+    cmd: src="data/02_interim/sites/klukshu/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/klukshu/yolo_annos_stats" &&
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/klukshu/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 9837834ff505e53a287bb23a00541d79
+      size: 676
+    - path: 
+        data/02_interim/sites/klukshu/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 72253a8078ecdf11ae570ce8b2bf8ccc
+      size: 681
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/klukshu/yolo_annos_stats
+      hash: md5
+      md5: 6608e9173ec209f1d36d840d111dfc5d.dir
+      size: 1357
+      nfiles: 2
+  collect_site_class_stats@redoubt:
+    cmd: src="data/02_interim/sites/redoubt/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/redoubt/yolo_annos_stats" &&
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/redoubt/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 4d342a5da98df62065a378220043cce7
+      size: 701
+    - path: 
+        data/02_interim/sites/redoubt/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: f5608a98971357dc9a4a79d90f7e885d
+      size: 707
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/redoubt/yolo_annos_stats
+      hash: md5
+      md5: f86d97429cbdd4d814c2402493c00f88.dir
+      size: 1408
+      nfiles: 2
+  collect_site_class_stats@kitwanga:
+    cmd: src="data/02_interim/sites/kitwanga/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/kitwanga/yolo_annos_stats" 
+      && mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 837d5074b7711a003861875153128dd3
+      size: 769
+    - path: 
+        data/02_interim/sites/kitwanga/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: fa83033b95adb1944c4afbeaca6306e9
+      size: 773
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/kitwanga/yolo_annos_stats
+      hash: md5
+      md5: 7f7eb82f7caac6ecede45ed38dd7b9d5.dir
+      size: 1542
+      nfiles: 2
+  collect_site_class_stats@koeye:
+    cmd: src="data/02_interim/sites/koeye/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/koeye/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/koeye/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 20b98460c9b11b23c5776f4c6a771ff3
+      size: 731
+    - path: 
+        data/02_interim/sites/koeye/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 763ea034f6eec30bc9eadebd120d8dd2
+      size: 736
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/koeye/yolo_annos_stats
+      hash: md5
+      md5: 7c109e02f12bf876649bb7cde5f953dc.dir
+      size: 1467
+      nfiles: 2
+  collect_site_class_stats@tankeeah:
+    cmd: src="data/02_interim/sites/tankeeah/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/tankeeah/yolo_annos_stats" 
+      && mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 7a876832cd60ff82771b6c06fe8f2fd6
+      size: 786
+    - path: 
+        data/02_interim/sites/tankeeah/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 26b6aa5cc7d99b2e5ef84265372bdd26
+      size: 794
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/tankeeah/yolo_annos_stats
+      hash: md5
+      md5: e52bab4d5997c09962c6270aa2264914.dir
+      size: 1580
+      nfiles: 2
+  collect_site_class_stats@bear:
+    cmd: src="data/02_interim/sites/bear/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/bear/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/bear/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: e481670964c5aca1f2a05b784665d33e
+      size: 694
+    - path: 
+        data/02_interim/sites/bear/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 6dfa4ce8242aa79ac0da7bc304463145
+      size: 698
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/bear/yolo_annos_stats
+      hash: md5
+      md5: 3ea5cf82a16fa2bf7ba0d18005a0ded9.dir
+      size: 1392
+      nfiles: 2
+  collect_site_class_stats@copper:
+    cmd: src="data/02_interim/sites/copper/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/copper/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/copper/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 8cca35b0ab72ebc1c3add8956e03adeb
+      size: 744
+    - path: 
+        data/02_interim/sites/copper/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 53f56f58b5816ea1696ab4630052d1b3
+      size: 751
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/copper/yolo_annos_stats
+      hash: md5
+      md5: e009ac41c920b6f01a58cf21a19694cd.dir
+      size: 1495
+      nfiles: 2
+  collect_site_class_stats@Elbow:
+    cmd: src="data/02_interim/sites/Elbow/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/Elbow/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/Elbow/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: f442b243ed887dc83500ca1b4c43ed64
+      size: 729
+    - path: 
+        data/02_interim/sites/Elbow/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 5609cde7ceaf143fb4a5a7c4411a7659
+      size: 735
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/Elbow/yolo_annos_stats
+      hash: md5
+      md5: 69586c7fd76fb66d8f2c8cbc72a2e440.dir
+      size: 1464
+      nfiles: 2
+  collect_site_class_stats@chignik:
+    cmd: src="data/02_interim/sites/chignik/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/chignik/yolo_annos_stats" &&
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/chignik/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 1268959d513325633e69264fd196e884
+      size: 741
+    - path: 
+        data/02_interim/sites/chignik/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: aa06c3a1f5bf5e0f3b7ba3a33e10a27f
+      size: 742
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/chignik/yolo_annos_stats
+      hash: md5
+      md5: f506aec1c9660dcf98a6220d54c0c642.dir
+      size: 1483
+      nfiles: 2
+  collect_site_class_stats@stephenssmolt:
+    cmd: src="data/02_interim/sites/stephenssmolt/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/stephenssmolt/yolo_annos_stats"
+      && mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: fd1ccf43dca371f6674746c6e24a962e
+      size: 826
+    - path: 
+        data/02_interim/sites/stephenssmolt/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: b61daeb85e85c3d70b0b45c58b39c268
+      size: 834
+    outs:
+    - path: 
+        data/02_interim/annotation_stats_by_site/stephenssmolt/yolo_annos_stats
+      hash: md5
+      md5: cb36f61ea7cf160b18ae3dc89fede8f1.dir
+      size: 1660
+      nfiles: 2
+  aggregate_site_class_stats:
+    cmd: python scripts/aggregate_site_class_stats.py --params-yaml params.yaml 
+      --sites-root data/02_interim/annotation_stats_by_site --out-dir 
+      data/03_processed/annotation_stats
+    deps:
+    - path: data/02_interim/annotation_stats_by_site
+      hash: md5
+      md5: 9d931926ebd175012ec8fe4e3ab2234d.dir
+      size: 18066
+      nfiles: 36
+    - path: scripts/aggregate_site_class_stats.py
+      hash: md5
+      md5: 821ae52f0de3d10aeb6742524339ffb5
+      size: 5428
+    params:
+      params.yaml:
+        data.sites:
+        - tankeeah
+        - kitwanga
+        - bear
+        - kitkiata
+        - copper
+        - kwakwa
+        - Elbow
+        - koeye
+        - redoubt
+        - chignik
+        - klukshu
+        - stephenssmolt
+    outs:
+    - path: data/03_processed/annotation_stats/site_class_box_counts.csv
+      hash: md5
+      md5: e54226c9b26d3352ff1fb169a2300f4c
+      size: 8454
+    - path: data/03_processed/annotation_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 837740509cd71312f5f24bc248fb89e3
+      size: 8456
