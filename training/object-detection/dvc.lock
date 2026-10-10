@@ -3705,16 +3705,16 @@ stages:
       size: 11185337
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 76a615be02978e3a3928267aa1862f55
-      size: 412344
+      md5: 6d02962f50a0232dd93a94d31ce8c87e
+      size: 478791
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 5707a293f1db9ef994240f66747058c2
-      size: 1497860
+      md5: 55664e66daaf3dc3ca0422da766c0252
+      size: 1776670
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: 51317d496f24361697ee43b0da630214
-      size: 675716
+      md5: 5df984625d15e09b43845649b37f2a7e
+      size: 528020
     - path: scripts/make_tracking_eval_set.py
       hash: md5
       md5: 2201259855c35f63c9dc98b04f396ad1
@@ -3730,8 +3730,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: 4abef413ecfeb50cdd23111afa48933e
-      size: 116868
+      md5: 8c6a68d0293a089d300da849d4a83658
+      size: 84060
   make_tracking_eval_set@test:
     cmd: scripts/make_tracking_eval_set.py --manifest 
       data/04_dataset/salmon_dataset/site_manifests/test.txt --split test 
@@ -3751,16 +3751,16 @@ stages:
       size: 11185337
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 76a615be02978e3a3928267aa1862f55
-      size: 412344
+      md5: 6d02962f50a0232dd93a94d31ce8c87e
+      size: 478791
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 5707a293f1db9ef994240f66747058c2
-      size: 1497860
+      md5: 55664e66daaf3dc3ca0422da766c0252
+      size: 1776670
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: 51317d496f24361697ee43b0da630214
-      size: 675716
+      md5: 5df984625d15e09b43845649b37f2a7e
+      size: 528020
     - path: scripts/make_tracking_eval_set.py
       hash: md5
       md5: 2201259855c35f63c9dc98b04f396ad1
@@ -3776,8 +3776,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: dd594840334c1723bb54cce0d5968398
-      size: 73509
+      md5: e51554341e117d52ddf241bd35579dcf
+      size: 73085
   build_tracking_ground_truth@val:
     cmd: scripts/build_tracking_ground_truth.py --eval-csv 
       data/03_processed/tracking_eval/val_videos.csv --site-index-dir 
@@ -3809,8 +3809,8 @@ stages:
       size: 19865
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: 4abef413ecfeb50cdd23111afa48933e
-      size: 116868
+      md5: 8c6a68d0293a089d300da849d4a83658
+      size: 84060
     - path: scripts/build_tracking_ground_truth.py
       hash: md5
       md5: 91f79488c63f89169790ff27009223ef
@@ -3834,12 +3834,12 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_gt.csv
       hash: md5
-      md5: cb77769673d0ddfd8ceff6a4c6e3eeb4
-      size: 31172360
+      md5: 3c210a5ba30577911e5c040576cb6140
+      size: 23172292
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 266d9000b69bfd55434123d8b03c290f
-      size: 97041
+      md5: 09937678f2719f4b6b3f98f93fcdedec
+      size: 69937
   build_tracking_ground_truth@test:
     cmd: scripts/build_tracking_ground_truth.py --eval-csv 
       data/03_processed/tracking_eval/test_videos.csv --site-index-dir 
@@ -3871,8 +3871,8 @@ stages:
       size: 19865
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: dd594840334c1723bb54cce0d5968398
-      size: 73509
+      md5: e51554341e117d52ddf241bd35579dcf
+      size: 73085
     - path: scripts/build_tracking_ground_truth.py
       hash: md5
       md5: 91f79488c63f89169790ff27009223ef
@@ -3896,12 +3896,12 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_gt.csv
       hash: md5
-      md5: 50d13071583a507433a7772109883f40
-      size: 12637548
+      md5: 4e865ce5d15e8d219cd8266d1e9a8d78
+      size: 13510949
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 7d0df269ec7bb5960cb6bd2468ea6bdb
-      size: 61017
+      md5: 6133fbd1dec8c80ade889162b091fde7
+      size: 60598
   materialize_mot_ground_truth@val:
     cmd: scripts/materialize_mot_ground_truth.py --gt-csv 
       data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
@@ -4000,8 +4000,8 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: 4abef413ecfeb50cdd23111afa48933e
-      size: 116868
+      md5: 8c6a68d0293a089d300da849d4a83658
+      size: 84060
     - path: scripts/materialize_tracking_videos.py
       hash: md5
       md5: 180c1365870f8aa120c5d4c66ba42912
@@ -4021,12 +4021,12 @@ stages:
       size: 0
     - path: data/03_processed/tracking_eval/val_video_download_status.csv
       hash: md5
-      md5: b91bca9b39ab3cd365cee3c0709bde74
-      size: 90069
+      md5: 16bf12bc188aba8d1bc3dc40de8dcbe3
+      size: 64916
     - path: data/03_processed/tracking_eval/val_video_download_summary.json
       hash: md5
-      md5: cf271a4e5fe264671b35cc9b9b014fb6
-      size: 142
+      md5: a4da737f0174ff9dccc54a6666d2dd60
+      size: 143
   materialize_tracking_videos@test:
     cmd: scripts/materialize_tracking_videos.py --eval-csv 
       data/03_processed/tracking_eval/test_videos.csv --split test --bucket 
@@ -4038,8 +4038,8 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: dd594840334c1723bb54cce0d5968398
-      size: 73509
+      md5: e51554341e117d52ddf241bd35579dcf
+      size: 73085
     - path: scripts/materialize_tracking_videos.py
       hash: md5
       md5: 180c1365870f8aa120c5d4c66ba42912
@@ -4059,19 +4059,19 @@ stages:
       size: 0
     - path: data/03_processed/tracking_eval/test_video_download_status.csv
       hash: md5
-      md5: ff3869d27b68f5735a4beb50a41fca00
-      size: 56591
+      md5: ec0467553cf9e98a468ff2c44e9fcb75
+      size: 56385
     - path: data/03_processed/tracking_eval/test_video_download_summary.json
       hash: md5
-      md5: 42272c8adb6a73c4d404d7a7d54d8184
-      size: 142
+      md5: 68228882491df656d7705e919d37788a
+      size: 143
   run_tracking_inference@val:
     cmd: uv run --extra cu124 scripts/run_tracking_inference.py --eval-csv 
       data/03_processed/tracking_eval/val_videos.csv --download-status-csv 
       data/03_processed/tracking_eval/val_video_download_status.csv 
       --sequences-csv data/03_processed/tracking_eval/val_sequences.csv --split 
       val --model 
-      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+      data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       --tracker botsort.yaml --conf 0.05 --iou 0.7 --imgsz 640 --device 1 
       --cache-dir 
       data/04_dataset/salmon_dataset/tracking_eval/workdir/inference_cache/val 
@@ -4083,21 +4083,21 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 266d9000b69bfd55434123d8b03c290f
-      size: 97041
+      md5: 09937678f2719f4b6b3f98f93fcdedec
+      size: 69937
     - path: data/03_processed/tracking_eval/val_video_download_status.csv
       hash: md5
-      md5: b91bca9b39ab3cd365cee3c0709bde74
-      size: 90069
+      md5: 16bf12bc188aba8d1bc3dc40de8dcbe3
+      size: 64916
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: 4abef413ecfeb50cdd23111afa48933e
-      size: 116868
+      md5: 8c6a68d0293a089d300da849d4a83658
+      size: 84060
     - path: 
-        data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+        data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       hash: md5
-      md5: 730080a3fb07b9f157bea89f707e9e52
-      size: 6249187
+      md5: ba2114b14ba5918cb511a273af269f5a
+      size: 6252515
     - path: scripts/run_tracking_inference.py
       hash: md5
       md5: 84c05ff36445af3b0cd62d350a48a0ad
@@ -4115,27 +4115,27 @@ stages:
         tracking_eval.imgsz: 640
         tracking_eval.iou: 0.7
         tracking_eval.tracker: botsort.yaml
-        train.run_name: tuned_full_run1
+        train.run_name: 2026-10-08_tuned_full_run_stephenssmolt
     outs:
     - path: data/03_processed/tracking_eval/val_inference_status.csv
       hash: md5
-      md5: a4f01bb1387f55233b1ada5873fd5767
-      size: 64583
+      md5: 4e5b225082980a7d563b80b9bdcfd2ec
+      size: 46814
     - path: data/03_processed/tracking_eval/val_inference_summary.json
       hash: md5
-      md5: b293e3e66fe1cc10fd31248430e82e98
-      size: 413
+      md5: 2e0a84008d958d8047c10e2484e5c432
+      size: 411
     - path: data/03_processed/tracking_eval/val_predictions.parquet
       hash: md5
-      md5: b5493eb92d8d923296f17eed058c4c4e
-      size: 3124305
+      md5: 86ecdc911f72a1a4cf26f13c8eea360c
+      size: 2204861
   run_tracking_inference@test:
     cmd: uv run --extra cu124 scripts/run_tracking_inference.py --eval-csv 
       data/03_processed/tracking_eval/test_videos.csv --download-status-csv 
       data/03_processed/tracking_eval/test_video_download_status.csv 
       --sequences-csv data/03_processed/tracking_eval/test_sequences.csv --split
       test --model 
-      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+      data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       --tracker botsort.yaml --conf 0.05 --iou 0.7 --imgsz 640 --device 1 
       --cache-dir 
       data/04_dataset/salmon_dataset/tracking_eval/workdir/inference_cache/test 
@@ -4147,21 +4147,21 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 7d0df269ec7bb5960cb6bd2468ea6bdb
-      size: 61017
+      md5: 6133fbd1dec8c80ade889162b091fde7
+      size: 60598
     - path: data/03_processed/tracking_eval/test_video_download_status.csv
       hash: md5
-      md5: ff3869d27b68f5735a4beb50a41fca00
-      size: 56591
+      md5: ec0467553cf9e98a468ff2c44e9fcb75
+      size: 56385
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: dd594840334c1723bb54cce0d5968398
-      size: 73509
+      md5: e51554341e117d52ddf241bd35579dcf
+      size: 73085
     - path: 
-        data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+        data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       hash: md5
-      md5: 730080a3fb07b9f157bea89f707e9e52
-      size: 6249187
+      md5: ba2114b14ba5918cb511a273af269f5a
+      size: 6252515
     - path: scripts/run_tracking_inference.py
       hash: md5
       md5: 84c05ff36445af3b0cd62d350a48a0ad
@@ -4179,20 +4179,20 @@ stages:
         tracking_eval.imgsz: 640
         tracking_eval.iou: 0.7
         tracking_eval.tracker: botsort.yaml
-        train.run_name: tuned_full_run1
+        train.run_name: 2026-10-08_tuned_full_run_stephenssmolt
     outs:
     - path: data/03_processed/tracking_eval/test_inference_status.csv
       hash: md5
-      md5: 3362037b8e2ac03a232f197f9a071555
-      size: 40733
+      md5: eb57351d6feffc2ba69edb0470a31544
+      size: 40769
     - path: data/03_processed/tracking_eval/test_inference_summary.json
       hash: md5
-      md5: 0cac7ce2041f8bc96969e7e722d50ca8
-      size: 414
+      md5: 6ef52a3895a47abe3d871d43c1e784f1
+      size: 412
     - path: data/03_processed/tracking_eval/test_predictions.parquet
       hash: md5
-      md5: 500bbee1245fdcad5ae548aea9a317af
-      size: 1536438
+      md5: 12e4f7f4d9037b26ad98fc77212f6f57
+      size: 1496084
   build_verified_annotation_coverage@val:
     cmd: python scripts/build_verified_annotation_coverage.py --sequences-csv 
       data/03_processed/tracking_eval/val_sequences.csv --split val --out-csv 
@@ -4200,8 +4200,8 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 266d9000b69bfd55434123d8b03c290f
-      size: 97041
+      md5: 09937678f2719f4b6b3f98f93fcdedec
+      size: 69937
     - path: scripts/build_verified_annotation_coverage.py
       hash: md5
       md5: f1dcf0cf2961c68d5d6c57857202c826
@@ -4209,8 +4209,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_annotation_coverage.csv
       hash: md5
-      md5: 1e59fd7c856d0ff5699f9dcfd0784152
-      size: 25336
+      md5: da4a38eef1b2816221911b3e103e275a
+      size: 18298
   build_verified_annotation_coverage@test:
     cmd: python scripts/build_verified_annotation_coverage.py --sequences-csv 
       data/03_processed/tracking_eval/test_sequences.csv --split test --out-csv 
@@ -4218,8 +4218,8 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 7d0df269ec7bb5960cb6bd2468ea6bdb
-      size: 61017
+      md5: 6133fbd1dec8c80ade889162b091fde7
+      size: 60598
     - path: scripts/build_verified_annotation_coverage.py
       hash: md5
       md5: f1dcf0cf2961c68d5d6c57857202c826
@@ -4227,8 +4227,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_annotation_coverage.csv
       hash: md5
-      md5: ac8f1fe29d43e5bad08575453ce6d6e9
-      size: 15845
+      md5: 22541bd00baae14c21309044fbe9fc4a
+      size: 15684
   evaluate_tracking_metrics@val:
     cmd: uv run --extra cu124 scripts/evaluate_tracking_metrics.py --gt-csv 
       data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
@@ -4259,24 +4259,24 @@ stages:
       size: 547
     - path: data/03_processed/tracking_eval/val_annotation_coverage.csv
       hash: md5
-      md5: 1e59fd7c856d0ff5699f9dcfd0784152
-      size: 25336
+      md5: da4a38eef1b2816221911b3e103e275a
+      size: 18298
     - path: data/03_processed/tracking_eval/val_gt.csv
       hash: md5
-      md5: cb77769673d0ddfd8ceff6a4c6e3eeb4
-      size: 31172360
+      md5: 3c210a5ba30577911e5c040576cb6140
+      size: 23172292
     - path: data/03_processed/tracking_eval/val_inference_status.csv
       hash: md5
-      md5: a4f01bb1387f55233b1ada5873fd5767
-      size: 64583
+      md5: 4e5b225082980a7d563b80b9bdcfd2ec
+      size: 46814
     - path: data/03_processed/tracking_eval/val_predictions.parquet
       hash: md5
-      md5: b5493eb92d8d923296f17eed058c4c4e
-      size: 3124305
+      md5: 86ecdc911f72a1a4cf26f13c8eea360c
+      size: 2204861
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 266d9000b69bfd55434123d8b03c290f
-      size: 97041
+      md5: 09937678f2719f4b6b3f98f93fcdedec
+      size: 69937
     - path: scripts/evaluate_tracking_metrics.py
       hash: md5
       md5: bd8a99eb5fe09f6d3a017a0f7f978cc6
@@ -4307,20 +4307,20 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_tracking_coverage.csv
       hash: md5
-      md5: 6628c9c7c2d249b336fe5efe581b258a
-      size: 23196
+      md5: 70940ce795fc6fb3742f98c893a67ecf
+      size: 16697
     - path: data/03_processed/tracking_eval/val_tracking_metrics.json
       hash: md5
-      md5: e221ffb729be95e44ff2f96bb1c0bc7d
-      size: 726
+      md5: 949ebe244485e6f70136d3580aa95255
+      size: 725
     - path: data/03_processed/tracking_eval/val_tracking_per_sequence.csv
       hash: md5
-      md5: 6c59d813c7146a67c87ec82733ceb465
-      size: 56494
+      md5: b8ebf87bc266d828827527b326b9db3c
+      size: 39717
     - path: data/03_processed/tracking_eval/val_tracking_per_species.csv
       hash: md5
-      md5: 30eb4974642c934675ab7962cb66485b
-      size: 2033
+      md5: 41e867c3598263e674701d19f2d11f13
+      size: 2058
   evaluate_tracking_metrics@test:
     cmd: uv run --extra cu124 scripts/evaluate_tracking_metrics.py --gt-csv 
       data/03_processed/tracking_eval/test_gt.csv --sequences-csv 
@@ -4351,24 +4351,24 @@ stages:
       size: 547
     - path: data/03_processed/tracking_eval/test_annotation_coverage.csv
       hash: md5
-      md5: ac8f1fe29d43e5bad08575453ce6d6e9
-      size: 15845
+      md5: 22541bd00baae14c21309044fbe9fc4a
+      size: 15684
     - path: data/03_processed/tracking_eval/test_gt.csv
       hash: md5
-      md5: 50d13071583a507433a7772109883f40
-      size: 12637548
+      md5: 4e865ce5d15e8d219cd8266d1e9a8d78
+      size: 13510949
     - path: data/03_processed/tracking_eval/test_inference_status.csv
       hash: md5
-      md5: 3362037b8e2ac03a232f197f9a071555
-      size: 40733
+      md5: eb57351d6feffc2ba69edb0470a31544
+      size: 40769
     - path: data/03_processed/tracking_eval/test_predictions.parquet
       hash: md5
-      md5: 500bbee1245fdcad5ae548aea9a317af
-      size: 1536438
+      md5: 12e4f7f4d9037b26ad98fc77212f6f57
+      size: 1496084
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 7d0df269ec7bb5960cb6bd2468ea6bdb
-      size: 61017
+      md5: 6133fbd1dec8c80ade889162b091fde7
+      size: 60598
     - path: scripts/evaluate_tracking_metrics.py
       hash: md5
       md5: bd8a99eb5fe09f6d3a017a0f7f978cc6
@@ -4399,20 +4399,20 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_tracking_coverage.csv
       hash: md5
-      md5: 7b5098c125c18f975f70adbc5663c2f9
-      size: 14660
+      md5: cbd35a7dc79fdf751c1af32efd0ab0ad
+      size: 14589
     - path: data/03_processed/tracking_eval/test_tracking_metrics.json
       hash: md5
-      md5: 43e6c3cb550c6c1ffde8ae1f03501db7
-      size: 727
+      md5: f63de75a426a3acfa33f75bfb4e84ff2
+      size: 726
     - path: data/03_processed/tracking_eval/test_tracking_per_sequence.csv
       hash: md5
-      md5: 11a87485172e1bd257356ff90dec6161
-      size: 35149
+      md5: d7c1ba57b6f6c0238a39e1b0017d74a8
+      size: 36085
     - path: data/03_processed/tracking_eval/test_tracking_per_species.csv
       hash: md5
-      md5: 33ebee110282f3923adcdf5f8bf8720f
-      size: 1976
+      md5: 5a15ac7bd70b9d4d27ce8a5d5ab7be65
+      size: 2083
   evaluate_fish_counts@val:
     cmd: uv run --extra cu124 scripts/evaluate_fish_counts.py --gt-csv 
       data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
@@ -4442,24 +4442,24 @@ stages:
       size: 547
     - path: data/03_processed/tracking_eval/val_annotation_coverage.csv
       hash: md5
-      md5: 1e59fd7c856d0ff5699f9dcfd0784152
-      size: 25336
+      md5: da4a38eef1b2816221911b3e103e275a
+      size: 18298
     - path: data/03_processed/tracking_eval/val_gt.csv
       hash: md5
-      md5: cb77769673d0ddfd8ceff6a4c6e3eeb4
-      size: 31172360
+      md5: 3c210a5ba30577911e5c040576cb6140
+      size: 23172292
     - path: data/03_processed/tracking_eval/val_inference_status.csv
       hash: md5
-      md5: a4f01bb1387f55233b1ada5873fd5767
-      size: 64583
+      md5: 4e5b225082980a7d563b80b9bdcfd2ec
+      size: 46814
     - path: data/03_processed/tracking_eval/val_predictions.parquet
       hash: md5
-      md5: b5493eb92d8d923296f17eed058c4c4e
-      size: 3124305
+      md5: 86ecdc911f72a1a4cf26f13c8eea360c
+      size: 2204861
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 266d9000b69bfd55434123d8b03c290f
-      size: 97041
+      md5: 09937678f2719f4b6b3f98f93fcdedec
+      size: 69937
     - path: scripts/evaluate_fish_counts.py
       hash: md5
       md5: 9b4314cb6a908f49a7b86785c90171dc
@@ -4484,32 +4484,32 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_count_coverage.csv
       hash: md5
-      md5: 6628c9c7c2d249b336fe5efe581b258a
-      size: 23196
+      md5: 70940ce795fc6fb3742f98c893a67ecf
+      size: 16697
     - path: data/03_processed/tracking_eval/val_count_events.csv
       hash: md5
-      md5: 5faee2d27876b98c7664b8aa3cbf66b2
-      size: 66755
+      md5: 1a52eaf933d7cee8f1d4e9d60e06c6ad
+      size: 45378
     - path: data/03_processed/tracking_eval/val_count_metrics.json
       hash: md5
-      md5: 9c5c03a9a619b1d73f3d6914c0ffd37c
-      size: 626
+      md5: e69bd668153b161fb3ecabc20ea3a0de
+      size: 624
     - path: data/03_processed/tracking_eval/val_count_per_group.csv
       hash: md5
-      md5: 29b38835151c270329f23700d08acfb9
-      size: 20412
+      md5: d0389ba0c88654b5459eb8dc27d650ae
+      size: 15141
     - path: data/03_processed/tracking_eval/val_count_per_site.csv
       hash: md5
-      md5: f6d9b08e92f418d5eccc36139da9b8b7
-      size: 1062
+      md5: 17fe5dbf12b8fdb5d198989437414e73
+      size: 1122
     - path: data/03_processed/tracking_eval/val_count_per_species.csv
       hash: md5
-      md5: 7320ba63d8c31c6fc52318774d03bfd5
-      size: 930
+      md5: 218998eccb81858645abe96f843567da
+      size: 948
     - path: data/03_processed/tracking_eval/val_count_per_video.csv
       hash: md5
-      md5: cf6dc29ad49bc12507eb1bc2eff13544
-      size: 20379
+      md5: 2925a102726db29cbdb1cf42b49ed711
+      size: 14672
   evaluate_fish_counts@test:
     cmd: uv run --extra cu124 scripts/evaluate_fish_counts.py --gt-csv 
       data/03_processed/tracking_eval/test_gt.csv --sequences-csv 
@@ -4541,24 +4541,24 @@ stages:
       size: 547
     - path: data/03_processed/tracking_eval/test_annotation_coverage.csv
       hash: md5
-      md5: ac8f1fe29d43e5bad08575453ce6d6e9
-      size: 15845
+      md5: 22541bd00baae14c21309044fbe9fc4a
+      size: 15684
     - path: data/03_processed/tracking_eval/test_gt.csv
       hash: md5
-      md5: 50d13071583a507433a7772109883f40
-      size: 12637548
+      md5: 4e865ce5d15e8d219cd8266d1e9a8d78
+      size: 13510949
     - path: data/03_processed/tracking_eval/test_inference_status.csv
       hash: md5
-      md5: 3362037b8e2ac03a232f197f9a071555
-      size: 40733
+      md5: eb57351d6feffc2ba69edb0470a31544
+      size: 40769
     - path: data/03_processed/tracking_eval/test_predictions.parquet
       hash: md5
-      md5: 500bbee1245fdcad5ae548aea9a317af
-      size: 1536438
+      md5: 12e4f7f4d9037b26ad98fc77212f6f57
+      size: 1496084
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 7d0df269ec7bb5960cb6bd2468ea6bdb
-      size: 61017
+      md5: 6133fbd1dec8c80ade889162b091fde7
+      size: 60598
     - path: scripts/evaluate_fish_counts.py
       hash: md5
       md5: 9b4314cb6a908f49a7b86785c90171dc
@@ -4583,29 +4583,29 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_count_coverage.csv
       hash: md5
-      md5: 7b5098c125c18f975f70adbc5663c2f9
-      size: 14660
+      md5: cbd35a7dc79fdf751c1af32efd0ab0ad
+      size: 14589
     - path: data/03_processed/tracking_eval/test_count_events.csv
       hash: md5
-      md5: c55cbc0012e1e5bb1009e4476e68252b
-      size: 30226
+      md5: 719cae445942b7f0c8d0a8c70eaa8f1b
+      size: 25845
     - path: data/03_processed/tracking_eval/test_count_metrics.json
       hash: md5
-      md5: 56626df0fb21c77bdb7b4e3c6e6b706a
+      md5: 30980f06fef49e19a42e92bde7813946
       size: 625
     - path: data/03_processed/tracking_eval/test_count_per_group.csv
       hash: md5
-      md5: 1ac1c0d30ce7e135eca2fbb396e625f0
-      size: 11332
+      md5: ff0f632e52f7559abef0eae959fb120f
+      size: 10076
     - path: data/03_processed/tracking_eval/test_count_per_site.csv
       hash: md5
-      md5: 30b2fd8f75593fc9e1b58c31922ad9eb
-      size: 1155
+      md5: fa050872bc2ac5570bede5ee7d18b449
+      size: 1164
     - path: data/03_processed/tracking_eval/test_count_per_species.csv
       hash: md5
-      md5: 90216876bfc53c1d41ca99004afb69fa
-      size: 945
+      md5: 8fbf13e52717630e216753877694579e
+      size: 960
     - path: data/03_processed/tracking_eval/test_count_per_video.csv
       hash: md5
-      md5: 8bbe35dac9bb52be605da880e0253c80
-      size: 12919
+      md5: a33240c4f566e86ad7ce49150e9b3a20
+      size: 12834
