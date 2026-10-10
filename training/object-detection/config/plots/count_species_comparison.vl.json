@@ -1,0 +1,148 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "values": "<DVC_METRIC_DATA>"
+  },
+  "title": {
+    "text": "<DVC_METRIC_TITLE>",
+    "anchor": "middle"
+  },
+  "transform": [
+    {
+      "filter": "toNumber(datum.gt_count) > 0 || toNumber(datum.pred_count) > 0"
+    },
+    {
+      "fold": [
+        "gt_count",
+        "pred_count"
+      ],
+      "as": [
+        "series",
+        "count"
+      ]
+    },
+    {
+      "calculate": "datum.series == \"gt_count\" ? \"Ground truth\" : \"Predicted\"",
+      "as": "source"
+    }
+  ],
+  "facet": {
+    "row": {
+      "field": "rev",
+      "type": "nominal",
+      "title": null,
+      "header": {
+        "labelFontSize": 12,
+        "labelFontWeight": "bold"
+      }
+    }
+  },
+  "spec": {
+    "width": 520,
+    "height": {
+      "step": 35
+    },
+    "layer": [
+      {
+        "mark": {
+          "type": "bar"
+        },
+        "encoding": {
+          "x": {
+            "field": "count",
+            "type": "quantitative",
+            "title": "Total crossing events",
+            "scale": {
+              "zero": true
+            }
+          },
+          "y": {
+            "field": "class_name",
+            "type": "nominal",
+            "title": null,
+            "sort": "-x"
+          },
+          "yOffset": {
+            "field": "source",
+            "type": "nominal"
+          },
+          "color": {
+            "field": "source",
+            "type": "nominal",
+            "legend": {
+              "title": null
+            },
+            "scale": {
+              "domain": [
+                "Ground truth",
+                "Predicted"
+              ],
+              "range": [
+                "#4A89B8",
+                "#D0873A"
+              ]
+            }
+          },
+          "tooltip": [
+            {
+              "field": "class_name",
+              "type": "nominal"
+            },
+            {
+              "field": "source",
+              "type": "nominal"
+            },
+            {
+              "field": "count",
+              "type": "quantitative"
+            },
+            {
+              "field": "MAE_per_video",
+              "type": "quantitative",
+              "format": ".3f"
+            },
+            {
+              "field": "nMAE",
+              "type": "quantitative",
+              "format": ".3f"
+            }
+          ]
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "dx": 4,
+          "baseline": "middle",
+          "align": "left",
+          "fontSize": 9
+        },
+        "encoding": {
+          "x": {
+            "field": "count",
+            "type": "quantitative"
+          },
+          "y": {
+            "field": "class_name",
+            "type": "nominal",
+            "sort": "-x"
+          },
+          "yOffset": {
+            "field": "source",
+            "type": "nominal"
+          },
+          "text": {
+            "field": "count",
+            "type": "quantitative",
+            "format": ".0f"
+          }
+        }
+      }
+    ]
+  },
+  "resolve": {
+    "scale": {
+      "y": "independent"
+    }
+  }
+}

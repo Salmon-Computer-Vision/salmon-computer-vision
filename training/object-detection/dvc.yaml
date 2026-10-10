@@ -18,12 +18,12 @@ stages:
       --json-root data/01_raw/labelstudio_annos
       --out-dir data/02_interim/labelstudio_site_index
     deps:
-      - scripts/index_labelstudio_sites.py
-      - src/object_detection/metadata/site_index.py
-      - src/object_detection/metadata/site_index_cli.py
-      - data/01_raw/labelstudio_annos
+    - scripts/index_labelstudio_sites.py
+    - src/object_detection/metadata/site_index.py
+    - src/object_detection/metadata/site_index_cli.py
+    - data/01_raw/labelstudio_annos
     outs:
-      - data/02_interim/labelstudio_site_index
+    - data/02_interim/labelstudio_site_index
   build_model_input:
     foreach: ${data.sites}
     do:
@@ -42,35 +42,56 @@ stages:
         ${data.neg}
         --negative-ratio ${data.neg_ratio}
         --negatives-per-video ${data.neg_per_vid}
+        --annotated-negative-sites "${data.neg_annotated_sites}"
+        --annotated-negatives-per-video ${data.neg_annotated_per_vid}
+        --negative-exclusion-frames ${data.neg_exclusion_frames}
         --stats-dir data/02_interim/sites/${item}/yolo_annos_stats
       params:
-        - data.neg
-        - data.neg_ratio
-        - data.neg_per_vid
+      - data.neg
+      - data.neg_ratio
+      - data.neg_per_vid
+      - data.neg_annotated_sites
+      - data.neg_annotated_per_vid
+      - data.neg_exclusion_frames
       deps:
-        - scripts/yolo_converter_ls_video.py
-        - src/object_detection/yolo_ls
-        - src/object_detection/utils
-        - data/02_interim/labelstudio_site_index/${item}.json
-        - config/salmon_yolo.yaml
+      - scripts/yolo_converter_ls_video.py
+      - src/object_detection/yolo_ls
+      - src/object_detection/utils
+      - data/02_interim/labelstudio_site_index/${item}.json
+      - config/salmon_yolo.yaml
       outs:
-        - data/02_interim/sites/${item}/yolo_annos
-        - data/02_interim/sites/${item}/yolo_annos_stats
-  plot_site_class_stats:
+      - data/02_interim/sites/${item}/yolo_annos
+      - data/02_interim/sites/${item}/yolo_annos_stats
+  collect_site_class_stats:
+    # Expand automatically for every site in params.yaml:data.sites.
+    # Only the two small statistics CSVs are copied (not the annotation shards).
     foreach: ${data.sites}
     do:
       cmd: >-
-        scripts/plot_site_class_stats.py
-        --stats-dir data/02_interim/sites/${item}/yolo_annos_stats
-        --out-dir data/02_interim/sites/${item}/yolo_annos_stats_plots
+        src="data/02_interim/sites/${item}/yolo_annos_stats" &&
+        dst="data/02_interim/annotation_stats_by_site/${item}/yolo_annos_stats" &&
+        mkdir -p "$dst" &&
+        cp "$src/site_class_frame_counts.csv" "$dst/site_class_frame_counts.csv" &&
+        cp "$src/site_class_box_counts.csv" "$dst/site_class_box_counts.csv"
       deps:
-        - scripts/plot_site_class_stats.py
-        - src/object_detection/analysis/plots.py
-        - src/object_detection/analysis/cli.py
         - data/02_interim/sites/${item}/yolo_annos_stats/site_class_frame_counts.csv
         - data/02_interim/sites/${item}/yolo_annos_stats/site_class_box_counts.csv
       outs:
-        - data/02_interim/sites/${item}/yolo_annos_stats_plots
+        - data/02_interim/annotation_stats_by_site/${item}/yolo_annos_stats
+  aggregate_site_class_stats:
+    cmd: >-
+      python scripts/aggregate_site_class_stats.py
+      --params-yaml params.yaml
+      --sites-root data/02_interim/annotation_stats_by_site
+      --out-dir data/03_processed/annotation_stats
+    deps:
+      - scripts/aggregate_site_class_stats.py
+      - data/02_interim/annotation_stats_by_site
+    params:
+      - data.sites
+    outs:
+      - data/03_processed/annotation_stats/site_class_frame_counts.csv
+      - data/03_processed/annotation_stats/site_class_box_counts.csv
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
@@ -111,27 +132,27 @@ stages:
         --test-frac 0.1 &&
         rm -rf data/02_interim/sites/${item}/split_labels_tmp
       deps:
-        - scripts/unpack_annos.sh
-        - scripts/make_splits.py
-        - src/object_detection/splits
-        - src/object_detection/utils
-        - data/02_interim/sites/${item}/yolo_annos
-        - data/02_interim/yolo_condition_negatives
-        - data/01_raw/salmon_vid_counts.csv
-        - data/01_raw/salmon_vid_counts_summary.csv
+      - scripts/unpack_annos.sh
+      - scripts/make_splits.py
+      - src/object_detection/splits
+      - src/object_detection/utils
+      - data/02_interim/sites/${item}/yolo_annos
+      - data/02_interim/yolo_condition_negatives
+      - data/01_raw/salmon_vid_counts.csv
+      - data/01_raw/salmon_vid_counts_summary.csv
       outs:
-        - data/03_processed/sites/${item}/splits_baseline
+      - data/03_processed/sites/${item}/splits_baseline
   build_video_metadata_index_all:
     cmd: >-
       scripts/build_video_metadata_index.py
       --json-dir data/01_raw/labelstudio_annos
       --out-csv data/02_interim/video_metadata_index.csv
     deps:
-      - src/object_detection/metadata/index.py
-      - src/object_detection/metadata/cli.py
-      - data/01_raw/labelstudio_annos
+    - src/object_detection/metadata/index.py
+    - src/object_detection/metadata/cli.py
+    - data/01_raw/labelstudio_annos
     outs:
-      - data/02_interim/video_metadata_index.csv
+    - data/02_interim/video_metadata_index.csv
   build_video_metadata_index:
     foreach: ${data.sites}
     do:
@@ -141,12 +162,12 @@ stages:
         --site ${item}
         --out-csv data/02_interim/sites/${item}/video_metadata_index.csv
       deps:
-        - scripts/filter_video_metadata_index.py
-        - src/object_detection/metadata/filter.py
-        - src/object_detection/metadata/filter_cli.py
-        - data/02_interim/video_metadata_index.csv
+      - scripts/filter_video_metadata_index.py
+      - src/object_detection/metadata/filter.py
+      - src/object_detection/metadata/filter_cli.py
+      - data/02_interim/video_metadata_index.csv
       outs:
-        - data/02_interim/sites/${item}/video_metadata_index.csv
+      - data/02_interim/sites/${item}/video_metadata_index.csv
   pack_split_dataset:
     foreach: ${data.sites}
     do:
@@ -157,24 +178,24 @@ stages:
         ${data.bucket}
         ${pack.download_workers}
       params:
-        - data.bucket
-        - config.dataset
-        - pack.download_workers
+      - data.bucket
+      - config.dataset
+      - pack.download_workers
       deps:
-        - scripts/unpack_annos.sh
-        - scripts/pack_split_dataset.py
-        - src/object_detection/frames/parsing.py
-        - src/object_detection/frames/extractor.py
-        - src/object_detection/frames/cli.py
-        - src/object_detection/yolo_ls/shards.py
-        - data/03_processed/sites/${item}/splits_baseline
-        - data/02_interim/sites/${item}/yolo_annos
-        - data/02_interim/sites/${item}/video_metadata_index.csv
-        - data/02_interim/yolo_condition_negatives
-        - config/salmon_yolo.yaml
+      - scripts/unpack_annos.sh
+      - scripts/pack_split_dataset.py
+      - src/object_detection/frames/parsing.py
+      - src/object_detection/frames/extractor.py
+      - src/object_detection/frames/cli.py
+      - src/object_detection/yolo_ls/shards.py
+      - data/03_processed/sites/${item}/splits_baseline
+      - data/02_interim/sites/${item}/yolo_annos
+      - data/02_interim/sites/${item}/video_metadata_index.csv
+      - data/02_interim/yolo_condition_negatives
+      - config/salmon_yolo.yaml
       outs:
-        - ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}:
-            persist: true
+      - ${config.dataset}/salmon_dataset/dataset_sharded/sites/${item}:
+          persist: true
   merge_packed_site_datasets:
     cmd: >-
       scripts/merge_packed_site_datasets.py
@@ -184,16 +205,16 @@ stages:
       --manifest-csv ${config.dataset}/packed_dataset_manifest.csv
       --params-yaml params.yaml
     params:
-      - data.sites
-      - config.dataset
+    - data.sites
+    - config.dataset
     deps:
-      - scripts/merge_packed_site_datasets.py
-      - src/object_detection/dataset/merge.py
-      - ${config.dataset}/salmon_dataset/dataset_sharded/sites
-      - config/salmon_yolo.yaml
+    - scripts/merge_packed_site_datasets.py
+    - src/object_detection/dataset/merge.py
+    - ${config.dataset}/salmon_dataset/dataset_sharded/sites
+    - config/salmon_yolo.yaml
     outs:
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests
-      - ${config.dataset}/packed_dataset_manifest.csv
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests
+    - ${config.dataset}/packed_dataset_manifest.csv
   make_site_manifests:
     cmd: >-
       scripts/make_site_manifests.py
@@ -256,24 +277,25 @@ stages:
       --sites ${preprocess.crop_top_half_sites}
       --crop top_half
       --min-visible-frac ${preprocess.crop_min_visible_frac}
-      --summary-json ${config.yolo_workdir}/preprocess_klukshu_top_half_summary.json &&
+      --summary-json ${config.yolo_workdir}/preprocess_klukshu_top_half_summary.json
+      &&
       touch ${config.yolo_workdir}/.unpack_complete
     params:
-      - config.dataset
-      - config.yolo_workdir
-      - preprocess.crop_top_half_sites
-      - preprocess.crop_min_visible_frac
+    - config.dataset
+    - config.yolo_workdir
+    - preprocess.crop_top_half_sites
+    - preprocess.crop_min_visible_frac
     deps:
-      - scripts/unpack_site_shards.py
-      - scripts/unpack_annos.sh
-      - scripts/crop_site_frames.py
-      - src/object_detection/preprocessing
-      - src/object_detection/utils
-      - ${config.dataset}/salmon_dataset/dataset_sharded/sites
-      - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/active_sites.txt
+    - scripts/unpack_site_shards.py
+    - scripts/unpack_annos.sh
+    - scripts/crop_site_frames.py
+    - src/object_detection/preprocessing
+    - src/object_detection/utils
+    - ${config.dataset}/salmon_dataset/dataset_sharded/sites
+    - ${config.dataset}/salmon_dataset/dataset_sharded/manifests/active_sites.txt
     outs:
-      - ${config.yolo_workdir}/.unpack_complete:
-          push: false
+    - ${config.yolo_workdir}/.unpack_complete:
+        push: false
   rewrite_manifest:
     cmd: >-
       cp ${config.dataset}/salmon_dataset/site_manifests/data.yaml ${config.yolo_workdir}/data.yaml
@@ -316,6 +338,7 @@ stages:
     - ${config.yolo_workdir}/train.txt
     - ${config.yolo_workdir}/train_small.txt
     - ${config.yolo_workdir}/val.txt
+    always_changed: true
   tune_yolo:
     cmd: >-
       CUDA_VISIBLE_DEVICES=${tune.device}
@@ -340,7 +363,6 @@ stages:
     - ${config.yolo_workdir}/data_small.yaml
     - ${config.yolo_workdir}/train_small.txt
     - ${config.yolo_workdir}/val.txt
-    - ${tune.model}
     params:
     - config.dataset
     - config.yolo_workdir
@@ -376,7 +398,6 @@ stages:
     - ${config.yolo_workdir}/train.txt
     - ${config.yolo_workdir}/val.txt
     - ${config.dataset}/salmon_dataset/tuning/yolov8n_small/${train.tune_dir}/args.yaml
-    - ${train.model}
     params:
     - train
     - config.dataset
@@ -385,26 +406,274 @@ stages:
     outs:
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}
     - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}_summary.json
-    frozen: true
-  make_tracking_test_set:
-    cmd: >-
-      uv run --extra ${runtime.cuda}
-      scripts/make_tracking_test_set.py
-      --test-manifest ${config.dataset}/salmon_dataset/site_manifests/test.txt
-      --metadata-csv data/02_interim/video_metadata_index.csv
-      --out-csv data/03_processed/tracking_eval/test_videos.csv
-      --videos-dir ${config.dataset}/salmon_dataset/tracking_eval/videos
-      --max-videos ${tracking_eval.max_videos}
-    deps:
-      - scripts/make_tracking_test_set.py
-      - src/object_detection/tracking_eval/test_set.py
+  make_tracking_eval_set:
+    foreach:
+    - val
+    - test
+    do:
+      cmd: >-
+        scripts/make_tracking_eval_set.py
+        --manifest ${config.dataset}/salmon_dataset/site_manifests/${item}.txt
+        --split ${item}
+        --metadata-csv data/02_interim/video_metadata_index.csv
+        --out-csv data/03_processed/tracking_eval/${item}_videos.csv
+        --videos-dir ${config.dataset}/salmon_dataset/tracking_eval/videos
+        --max-videos ${tracking_eval.max_videos}
+        --compare-manifest train=${config.dataset}/salmon_dataset/site_manifests/train.txt
+        --compare-manifest val=${config.dataset}/salmon_dataset/site_manifests/val.txt
+        --compare-manifest test=${config.dataset}/salmon_dataset/site_manifests/test.txt
+      deps:
+      - scripts/make_tracking_eval_set.py
+      - src/object_detection/tracking_eval/eval_set.py
+      - ${config.dataset}/salmon_dataset/site_manifests/train.txt
+      - ${config.dataset}/salmon_dataset/site_manifests/val.txt
       - ${config.dataset}/salmon_dataset/site_manifests/test.txt
       - data/02_interim/video_metadata_index.csv
-    params:
+      params:
       - config.dataset
       - tracking_eval.max_videos
-    outs:
-      - data/03_processed/tracking_eval/test_videos.csv
+      outs:
+      - data/03_processed/tracking_eval/${item}_videos.csv
+  build_tracking_ground_truth:
+    foreach:
+    - val
+    - test
+    do:
+      cmd: >-
+        scripts/build_tracking_ground_truth.py
+        --eval-csv data/03_processed/tracking_eval/${item}_videos.csv
+        --site-index-dir data/02_interim/labelstudio_site_index
+        --data-yaml config/salmon_yolo.yaml
+        --out-gt-csv data/03_processed/tracking_eval/${item}_gt.csv
+        --out-sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --metadata-csv data/02_interim/video_metadata_index.csv
+        --negative-metadata-csv data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+        --coord-mode ${tracking_eval.coord_mode}
+      deps:
+      - scripts/build_tracking_ground_truth.py
+      - src/object_detection/tracking_eval/ground_truth.py
+      - src/object_detection/yolo_ls/parsing.py
+      - src/object_detection/utils
+      - data/03_processed/tracking_eval/${item}_videos.csv
+      - data/02_interim/labelstudio_site_index
+      - data/02_interim/video_metadata_index.csv
+      - data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
+      - config/salmon_yolo.yaml
+      params:
+      - tracking_eval.coord_mode
+      outs:
+      - data/03_processed/tracking_eval/${item}_gt.csv
+      - data/03_processed/tracking_eval/${item}_sequences.csv
+  materialize_mot_ground_truth:
+    foreach:
+    - val
+    - test
+    do:
+      cmd: >-
+        scripts/materialize_mot_ground_truth.py
+        --gt-csv data/03_processed/tracking_eval/${item}_gt.csv
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --out-root ${config.dataset}/salmon_dataset/tracking_eval/mot_gt
+        --benchmark ${tracking_eval.mot_benchmark}
+        --split ${item}
+        --summary-json data/03_processed/tracking_eval/${item}_mot_summary.json
+      deps:
+      - scripts/materialize_mot_ground_truth.py
+      - src/object_detection/tracking_eval/mot_format.py
+      - data/03_processed/tracking_eval/${item}_gt.csv
+      - data/03_processed/tracking_eval/${item}_sequences.csv
+      params:
+      - config.dataset
+      - tracking_eval.mot_benchmark
+      outs:
+      - data/03_processed/tracking_eval/${item}_mot_summary.json
+  materialize_tracking_videos:
+    foreach:
+    - val
+    - test
+    do:
+      cmd: >-
+        scripts/materialize_tracking_videos.py
+        --eval-csv data/03_processed/tracking_eval/${item}_videos.csv
+        --split ${item}
+        --bucket ${data.bucket}
+        --workers ${pack.download_workers}
+        --status-csv data/03_processed/tracking_eval/${item}_video_download_status.csv
+        --summary-json data/03_processed/tracking_eval/${item}_video_download_summary.json
+        --glacier-log data/03_processed/tracking_eval/${item}_glacier_restore.log
+      deps:
+      - scripts/materialize_tracking_videos.py
+      - src/object_detection/tracking_eval/videos.py
+      - data/03_processed/tracking_eval/${item}_videos.csv
+      params:
+      - data.bucket
+      - pack.download_workers
+      outs:
+      - data/03_processed/tracking_eval/${item}_video_download_status.csv
+      - data/03_processed/tracking_eval/${item}_video_download_summary.json
+      - data/03_processed/tracking_eval/${item}_glacier_restore.log
+      always_changed: true
+  run_tracking_inference:
+    foreach:
+    - val
+    - test
+    do:
+      cmd: >-
+        uv run --extra ${runtime.cuda}
+        scripts/run_tracking_inference.py
+        --eval-csv data/03_processed/tracking_eval/${item}_videos.csv
+        --download-status-csv data/03_processed/tracking_eval/${item}_video_download_status.csv
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --split ${item}
+        --model ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
+        --tracker ${tracking_eval.tracker}
+        --conf ${tracking_eval.conf}
+        --iou ${tracking_eval.iou}
+        --imgsz ${tracking_eval.imgsz}
+        --device ${tracking_eval.device}
+        --cache-dir ${config.dataset}/salmon_dataset/tracking_eval/workdir/inference_cache/${item}
+        --predictions-parquet data/03_processed/tracking_eval/${item}_predictions.parquet
+        --inference-status-csv data/03_processed/tracking_eval/${item}_inference_status.csv
+        --summary-json data/03_processed/tracking_eval/${item}_inference_summary.json
+      deps:
+      - scripts/run_tracking_inference.py
+      - src/object_detection/tracking_eval/inference.py
+      - data/03_processed/tracking_eval/${item}_videos.csv
+      - data/03_processed/tracking_eval/${item}_video_download_status.csv
+      - data/03_processed/tracking_eval/${item}_sequences.csv
+      - ${config.dataset}/salmon_dataset/training/yolov8n_full/${train.run_name}/weights/best.pt
+      params:
+      - config.dataset
+      - train.run_name
+      - runtime.cuda
+      - tracking_eval.tracker
+      - tracking_eval.conf
+      - tracking_eval.iou
+      - tracking_eval.imgsz
+      - tracking_eval.device
+      outs:
+      - data/03_processed/tracking_eval/${item}_predictions.parquet
+      - data/03_processed/tracking_eval/${item}_inference_status.csv
+      - data/03_processed/tracking_eval/${item}_inference_summary.json
+  build_verified_annotation_coverage:
+    foreach:
+    - val
+    - test
+    do:
+      cmd: >-
+        python scripts/build_verified_annotation_coverage.py
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --split ${item}
+        --out-csv data/03_processed/tracking_eval/${item}_annotation_coverage.csv
+      deps:
+      - scripts/build_verified_annotation_coverage.py
+      - data/03_processed/tracking_eval/${item}_sequences.csv
+      outs:
+      - data/03_processed/tracking_eval/${item}_annotation_coverage.csv
+  evaluate_tracking_metrics:
+    foreach:
+    - val
+    - test
+    do:
+      cmd: >-
+        uv run
+        --extra ${runtime.cuda} scripts/evaluate_tracking_metrics.py
+        --gt-csv data/03_processed/tracking_eval/${item}_gt.csv
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --inference-status-csv data/03_processed/tracking_eval/${item}_inference_status.csv
+        --predictions-parquet data/03_processed/tracking_eval/${item}_predictions.parquet
+        --split ${item}
+        --benchmark ${tracking_eval.mot_benchmark}
+        --tracker ${tracking_eval.tracker}
+        --data-yaml config/salmon_yolo.yaml
+        --per-species-csv data/03_processed/tracking_eval/${item}_tracking_per_species.csv
+        --workdir-root ${config.dataset}/salmon_dataset/tracking_eval/workdir/metrics
+        --annotation-scope ${tracking_eval.metric_annotation_scope}
+        --coverage-csv data/03_processed/tracking_eval/${item}_annotation_coverage.csv
+        --summary-json data/03_processed/tracking_eval/${item}_tracking_metrics.json
+        --per-sequence-csv data/03_processed/tracking_eval/${item}_tracking_per_sequence.csv
+        --coverage-output-csv data/03_processed/tracking_eval/${item}_tracking_coverage.csv
+      deps:
+      - scripts/evaluate_tracking_metrics.py
+      - src/object_detection/tracking_eval/tracking_metrics.py
+      - src/object_detection/tracking_eval/species_metrics.py
+      - src/object_detection/tracking_eval/eval_common.py
+      - src/object_detection/tracking_eval/mot_format.py
+      - config/salmon_yolo.yaml
+      - config/plots/tracking_species_scores.vl.json
+      - data/03_processed/tracking_eval/${item}_gt.csv
+      - data/03_processed/tracking_eval/${item}_sequences.csv
+      - data/03_processed/tracking_eval/${item}_predictions.parquet
+      - data/03_processed/tracking_eval/${item}_inference_status.csv
+      - data/03_processed/tracking_eval/${item}_annotation_coverage.csv
+      params:
+      - runtime.cuda
+      - config.dataset
+      - tracking_eval.mot_benchmark
+      - tracking_eval.tracker
+      - tracking_eval.metric_annotation_scope
+      metrics:
+      - data/03_processed/tracking_eval/${item}_tracking_metrics.json
+      plots:
+      - data/03_processed/tracking_eval/${item}_tracking_per_species.csv:
+          x: HOTA
+          y: class_name
+          template: config/plots/tracking_species_scores.vl.json
+          title: Species-aware tracking HOTA (${item})
+      outs:
+      - data/03_processed/tracking_eval/${item}_tracking_per_sequence.csv
+      - data/03_processed/tracking_eval/${item}_tracking_coverage.csv
+  evaluate_fish_counts:
+    foreach:
+    - val
+    - test
+    do:
+      cmd: >-
+        uv run
+        --extra ${runtime.cuda} scripts/evaluate_fish_counts.py
+        --gt-csv data/03_processed/tracking_eval/${item}_gt.csv
+        --sequences-csv data/03_processed/tracking_eval/${item}_sequences.csv
+        --inference-status-csv data/03_processed/tracking_eval/${item}_inference_status.csv
+        --predictions-parquet data/03_processed/tracking_eval/${item}_predictions.parquet
+        --data-yaml config/salmon_yolo.yaml
+        --split ${item}
+        --tracking-thresh ${count_eval.tracking_thresh}
+        --vote-method ${count_eval.vote_method}
+        --drop-bounding-boxes ${count_eval.drop_bounding_boxes}
+        --bound-line-ratio ${count_eval.bound_line_ratio}
+        --annotation-scope ${tracking_eval.metric_annotation_scope}
+        --coverage-csv data/03_processed/tracking_eval/${item}_annotation_coverage.csv
+        --summary-json data/03_processed/tracking_eval/${item}_count_metrics.json
+        --per-group-csv data/03_processed/tracking_eval/${item}_count_per_group.csv
+        --per-video-csv data/03_processed/tracking_eval/${item}_count_per_video.csv
+        --per-site-csv data/03_processed/tracking_eval/${item}_count_per_site.csv
+        --per-species-csv data/03_processed/tracking_eval/${item}_count_per_species.csv
+        --events-csv data/03_processed/tracking_eval/${item}_count_events.csv
+        --coverage-output-csv data/03_processed/tracking_eval/${item}_count_coverage.csv
+      deps:
+      - scripts/evaluate_fish_counts.py
+      - src/object_detection/tracking_eval/count_metrics.py
+      - src/object_detection/tracking_eval/eval_common.py
+      - data/03_processed/tracking_eval/${item}_gt.csv
+      - data/03_processed/tracking_eval/${item}_sequences.csv
+      - data/03_processed/tracking_eval/${item}_predictions.parquet
+      - data/03_processed/tracking_eval/${item}_inference_status.csv
+      - data/03_processed/tracking_eval/${item}_annotation_coverage.csv
+      - config/salmon_yolo.yaml
+      - config/plots/count_species_mae.vl.json
+      params:
+      - runtime.cuda
+      - count_eval
+      - tracking_eval.metric_annotation_scope
+      metrics:
+      - data/03_processed/tracking_eval/${item}_count_metrics.json
+      outs:
+      - data/03_processed/tracking_eval/${item}_count_per_species.csv
+      - data/03_processed/tracking_eval/${item}_count_per_group.csv
+      - data/03_processed/tracking_eval/${item}_count_per_video.csv
+      - data/03_processed/tracking_eval/${item}_count_events.csv
+      - data/03_processed/tracking_eval/${item}_count_coverage.csv
+      - data/03_processed/tracking_eval/${item}_count_per_site.csv
   make_site_eval_workdir:
     cmd: >-
       scripts/make_site_eval_workdir.py
@@ -462,7 +731,7 @@ stages:
         x: ap50
         y: class_name
         title: Per-class AP50 on test set
-        template: bar_horizontal
+        template: config/site_resolve_independent_bars_with_values.vl.json
     outs:
     - ${config.dataset}/salmon_dataset/eval/yolov8n_full/${train.run_name}_test
 params:
@@ -470,6 +739,63 @@ params:
 metrics:
 - dvclive/metrics.json
 plots:
+- count_species_mae_val:
+    x: MAE_per_video
+    y:
+      data/03_processed/tracking_eval/val_count_per_species.csv: class_name
+    template: config/plots/count_species_mae.vl.json
+    title: Species directional count MAE per video (val)
+
+# Test - MAE
+- count_species_mae_test:
+    x: MAE_per_video
+    y:
+      data/03_processed/tracking_eval/test_count_per_species.csv: class_name
+    template: config/plots/count_species_mae.vl.json
+    title: Species directional count MAE per video (test)
+
+# Validation - GT vs predictions
+- count_species_comparison_val:
+    x: gt_count
+    y:
+      data/03_processed/tracking_eval/val_count_per_species.csv: class_name
+    template: config/plots/count_species_comparison.vl.json
+    title: GT vs predicted fish counts by species (val)
+
+# Test - GT vs predictions
+- count_species_comparison_test:
+    x: gt_count
+    y:
+      data/03_processed/tracking_eval/test_count_per_species.csv: class_name
+    template: config/plots/count_species_comparison.vl.json
+    title: GT vs predicted fish counts by species (test)
+- annotation_frame_counts:
+    x: class_name
+    y:
+      data/03_processed/annotation_stats/site_class_frame_counts.csv: frame_count
+    template: config/plots/site_class_counts_heatmap.vl.json
+    title: Annotated frames per species and site
+
+- annotation_box_counts:
+    x: class_name
+    y:
+      data/03_processed/annotation_stats/site_class_box_counts.csv: box_count
+    template: config/plots/site_class_counts_heatmap.vl.json
+    title: Annotated boxes per species and site
+
+- annotation_frame_share:
+    x: class_name
+    y:
+      data/03_processed/annotation_stats/site_class_frame_counts.csv: frame_pct_within_class
+    template: config/plots/site_class_share_heatmap.vl.json
+    title: Share of species-annotated frames by site (%)
+
+- annotation_box_share:
+    x: class_name
+    y:
+      data/03_processed/annotation_stats/site_class_box_counts.csv: box_pct_within_class
+    template: config/plots/site_class_share_heatmap.vl.json
+    title: Share of species boxes by site (%)
 - dvclive/plots/metrics:
     x: step
 - dvclive/plots/images

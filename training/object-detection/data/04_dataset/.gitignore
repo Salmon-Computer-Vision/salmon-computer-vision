@@ -1,2 +1,3 @@
 /packed_dataset_manifest.csv
 /salmon_dataset/yolo_workdir
+/salmon_dataset/tracking_eval/workdir/inference_cache

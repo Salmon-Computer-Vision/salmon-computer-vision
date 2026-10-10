@@ -26,6 +26,11 @@ data:
   neg: --include-negatives
   neg_ratio: 0.10
   neg_per_vid: 11
+  # Human-reviewed Label Studio tasks; add sites here as annotation coverage is verified.
+  neg_annotated_sites: stephenssmolt
+  neg_annotated_per_vid: 12
+  # Exclude neighboring frames around annotated fish to reduce borderline negatives.
+  neg_exclusion_frames: 3
   bucket: prod-salmonvision-edge-assets-labelstudio-source
 config:
   dataset: data/04_dataset
@@ -45,16 +50,16 @@ tune:
   iterations: 20
   model: yolov8n.pt
 train:
-  device: 0,1
-  batch: 128
+  device: 1
+  batch: 64
   patience: 50
   tune_dir: tune15
   model: yolov8n.pt
-  run_name: tuned_full_run1
+  run_name: 2026-10-08_tuned_full_run_stephenssmolt
 exp:
-  train_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
-  val_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
-  test_sites: tankeeah kitwanga bear kitkiata copper kwakwa Elbow koeye redoubt chignik klukshu
+  train_sites: stephenssmolt
+  val_sites: stephenssmolt
+  test_sites: stephenssmolt
 eval:
   imgsz: 640
   batch: 32
@@ -63,9 +68,18 @@ eval:
 runtime:
   cuda: cu124
 tracking_eval:
-  tracker: bytetrack.yaml
+  tracker: botsort.yaml
+  coord_mode: percent
+  mot_benchmark: SalmonVision
   conf: 0.05
   iou: 0.7
   imgsz: 640
-  device: 0
+  device: 1
+  metric_annotation_scope: verified  # Label Studio tasks are human-reviewed; see annotation_coverage.csv
   max_videos: 0   # 0 means all
+
+count_eval:
+  tracking_thresh: 10
+  vote_method: all
+  drop_bounding_boxes: false
+  bound_line_ratio: 0.5

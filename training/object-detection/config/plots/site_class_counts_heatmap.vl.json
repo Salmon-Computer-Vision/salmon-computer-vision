@@ -1,0 +1,110 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {
+    "values": "<DVC_METRIC_DATA>"
+  },
+  "title": {
+    "text": "<DVC_METRIC_TITLE>",
+    "anchor": "middle"
+  },
+  "facet": {
+    "row": {
+      "field": "rev",
+      "type": "nominal",
+      "title": null,
+      "header": {
+        "labelFontSize": 12,
+        "labelFontWeight": "bold"
+      }
+    }
+  },
+  "spec": {
+    "width": {
+      "step": 44
+    },
+    "height": {
+      "step": 23
+    },
+    "layer": [
+      {
+        "mark": {
+          "type": "rect",
+          "stroke": "#cccccc",
+          "strokeWidth": 0.3
+        },
+        "encoding": {
+          "x": {
+            "field": "class_name",
+            "type": "nominal",
+            "title": "Species",
+            "axis": {
+              "labelAngle": -50,
+              "labelLimit": 145
+            }
+          },
+          "y": {
+            "field": "site",
+            "type": "nominal",
+            "title": "Site"
+          },
+          "color": {
+            "field": "<DVC_METRIC_Y>",
+            "type": "quantitative",
+            "title": "Annotated count",
+            "scale": {
+              "type": "symlog",
+              "constant": 1,
+              "scheme": "blues"
+            }
+          },
+          "tooltip": [
+            {
+              "field": "site",
+              "type": "nominal"
+            },
+            {
+              "field": "class_name",
+              "type": "nominal"
+            },
+            {
+              "field": "<DVC_METRIC_Y>",
+              "type": "quantitative",
+              "format": ",d"
+            }
+          ]
+        }
+      },
+      {
+        "mark": {
+          "type": "text",
+          "fontSize": 9
+        },
+        "encoding": {
+          "x": {
+            "field": "class_name",
+            "type": "nominal"
+          },
+          "y": {
+            "field": "site",
+            "type": "nominal"
+          },
+          "text": {
+            "field": "<DVC_METRIC_Y>",
+            "type": "quantitative",
+            "format": "~s"
+          },
+          "opacity": {
+            "condition": {
+              "test": "datum[\"<DVC_METRIC_Y>\"] > 0",
+              "value": 1
+            },
+            "value": 0
+          },
+          "color": {
+            "value": "#15212b"
+          }
+        }
+      }
+    ]
+  }
+}

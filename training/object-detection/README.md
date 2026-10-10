@@ -247,6 +247,49 @@ flowchart TD
     class EVALSET,EVAL,RESULTS eval;
 ```
 
+Tracking metrics evaluation pipeline:
+
+```
+make_tracking_eval_set@val
+make_tracking_eval_set@test
+          │
+          ▼
+build_tracking_ground_truth@val
+build_tracking_ground_truth@test
+          │
+          ▼
+materialize_tracking_videos
+          │
+          ▼
+run_tracker@val
+          │
+          ▼
+evaluate_tracking@val
+    HOTA
+    DetA
+    AssA
+    MOTA
+    IDF1
+          │
+          ▼
+evaluate_counts@val
+    MAE
+    nMAE
+    directional/species counts
+
+
+                  after tracker/config selection
+
+
+run_tracker@test
+          │
+          ▼
+evaluate_tracking@test
+          │
+          ▼
+evaluate_counts@test
+```
+
 Run the following to run the entire pipeline:
 ```bash
 dvc repro
@@ -311,7 +354,7 @@ dvc repro --force --single-item pack_split_dataset
 
 Run tests with
 ```
-uv run pytest
+uv run --extra cu124 pytest
 ```
 
 #### Issue: Object is of storage class GLACIER
@@ -346,7 +389,29 @@ Once the requests have been sent, use the same script to check the status:
 
 The last line should say when all the objects are ready for download.
 
-### Plot AP50 by site
+### Plotting 
+
+#### Frame Counts + Training Plots
+
+All of these plots are incorporated into DVC either automatically or aggregated
+through the `aggregate_site_class_stats` stage in the case of frame and box
+counts.
+
+Simply run the following after reproducing the pipeline:
+
+```
+dvc plots show
+```
+
+This creates an HTML in `dvc_plots` with the plots.
+
+Run a simple http server and connect to it through an SSH tunnel
+```bash
+cd dvc_plots
+python -m http.server
+```
+
+#### AP50
 
 To evaluate over all test sites, run the following command:
 
@@ -369,3 +434,100 @@ Run a simple http server and connect to it through SSH tunnel
 cd dvc_plots
 python -m http.server
 ```
+
+#### Tracking and counting metrics
+
+```bash
+# Current workspace (single revision)
+scripts/plot_species_metrics.sh val hota
+scripts/plot_species_metrics.sh test idf1
+scripts/plot_species_metrics.sh test count-compare
+scripts/plot_species_metrics.sh test count-mae
+
+# Compare revisions with species metrics already produced:
+scripts/plot_species_metrics.sh test hota tracking-site-koeye tracking-site-tankeeah
+scripts/plot_species_metrics.sh test count-compare tracking-site-koeye tracking-site-tankeeah
+```
+
+Plot types: `hota`, `idf1`, `deta`, `assa` (bounded 0–1 bars);
+`count-compare` (GT vs predicted total directional events as grouped bars);
+`count-mae` (MAE per video by species, nonnegative/unbounded).
+
+### Dev
+
+#### `run_tracking_inference` stage:
+
+Prediction columns (`x_px`, `y_px`, `width_px`, `height_px` are **zero-based
+original-image pixels**, not normalized and not cropped):
+
+```text
+split,site,video_stem,frame_idx,mot_frame,track_id,class_id,confidence,x_px,y_px,width_px,height_px
+```
+
+`frame_idx` starts at 0; `mot_frame=frame_idx+1`; track IDs are 1-based per
+video. This is **not** a MOT text file. A subsequent TrackEval stage will
+convert to MOT's 10-column tracker format and add 1 to the x/y origin. Frames
+with no confirmed IDs have zero prediction rows; counts of untracked returned
+detections are recorded separately. Track IDs are reset before every new video.
+
+**Evaluation safety:** The status file distinguishes `ok`, `unavailable`,
+`missing_local_video`, and `error`. An `ok` video with zero fish remains in the
+evaluation coverage. The module fails the DVC stage for inference or local-file
+errors, and rejects video/GT metadata inconsistencies larger than 1% (minimum
+tolerance 2 frames); it never silently declares those sequences evaluated.
+Missing/archived source videos remain explicitly excluded, not counted as
+negatives. The TrackEval stage must build the seqmap only from `ok` sequences
+and report the full coverage denominator.
+
+
+#### `evaluate_tracking_metrics` stage:
+
+The current upstream GT builder records observed Label Studio objects. It does
+not prove that every fish was labeled throughout each entire MP4. Treat both
+MOT and counting scores as **provisional**. The default `observed` scope:
+
+* includes video iff inference completed all metadata-reported frames, GT exists,
+  and GT has at least one box;
+* excludes zero-GT videos unless *separately verified* as fully annotated;
+* still cannot rule out missing fish in nonempty videos.
+
+For publishable metrics, curate an independent CSV such as:
+
+```csv
+video_stem,fully_annotated
+GWA-stephenssmolt-jetsonnx-0_20260507_173911_M,true
+...
+```
+
+Then set `--annotation-scope verified --coverage-csv path/to/coverage.csv`
+for **both** scripts. To use this through DVC, add the coverage file as a
+`deps:` entry and add those CLI args in both new `cmd:` sections. A verified
+empty-GT sequence is included and its tracker detections correctly become
+false positives. Neither stage silently treats an unlabeled video as negative.
+
+#### Parameters
+
+Under `data:` in `params.yaml`:
+
+```yaml
+neg: --include-negatives
+neg_ratio: 0.10
+neg_per_vid: 11
+neg_annotated_sites: stephenssmolt
+neg_annotated_per_vid: 12
+neg_exclusion_frames: 3
+```
+
+- `neg_annotated_sites`: comma-separated or space-separated **human-reviewed**
+  site names. Use an empty string to disable annotated-video negatives. The
+  existing empty-video sampling remains enabled by `--include-negatives`.
+- `neg_annotated_per_vid`: max candidate frames from each annotated video,
+  before the global negative ratio cap.
+- `neg_exclusion_frames`: safety margin of **original video frames** around
+  every human-annotated/interpolated frame. Does not refer to sampled stride
+  positions. 0 means no margin.
+- `neg_ratio`: combined cap for negatives from *both* empty and annotated
+  videos, expressed as a fraction of final positive+negative labels.
+
+The converter reuses the same frame stride and `video_hash`-based offset as
+positives, so extracted frame numbers match the existing pack stage.
