@@ -391,6 +391,26 @@ The last line should say when all the objects are ready for download.
 
 ### Plotting 
 
+#### Frame Counts + Training Plots
+
+All of these plots are incorporated into DVC either automatically or aggregated
+through the `aggregate_site_class_stats` stage in the case of frame and box
+counts.
+
+Simply run the following after reproducing the pipeline:
+
+```
+dvc plots show
+```
+
+This creates an HTML in `dvc_plots` with the plots.
+
+Run a simple http server and connect to it through an SSH tunnel
+```bash
+cd dvc_plots
+python -m http.server
+```
+
 #### AP50
 
 To evaluate over all test sites, run the following command:
