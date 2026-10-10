@@ -55,7 +55,7 @@ train:
   patience: 50
   tune_dir: tune15
   model: yolov8n.pt
-  run_name: tuned_full_run1
+  run_name: 2026-10-08_tuned_full_run_stephenssmolt
 exp:
   train_sites: stephenssmolt
   val_sites: stephenssmolt

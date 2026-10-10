@@ -350,8 +350,8 @@ stages:
       size: 96
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites
       hash: md5
-      md5: 1f20bafb3ff044c57deb7bd7532d1529.dir
-      size: 35719935325
+      md5: 9877b059bb6bfe4e888f7f3cb10d2056.dir
+      size: 34699959604
       nfiles: 102
     - path: scripts/crop_site_frames.py
       hash: md5
@@ -397,8 +397,8 @@ stages:
     deps:
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 5707a293f1db9ef994240f66747058c2
-      size: 1497860
+      md5: 55664e66daaf3dc3ca0422da766c0252
+      size: 1776670
     - path: scripts/make_train_small.py
       hash: md5
       md5: b387575a44366a3a0a29b2c88ebd2f95
@@ -418,8 +418,8 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/site_manifests/train_small.txt
       hash: md5
-      md5: 5707a293f1db9ef994240f66747058c2
-      size: 1497860
+      md5: 55664e66daaf3dc3ca0422da766c0252
+      size: 1776670
   tune_yolo:
     cmd: CUDA_VISIBLE_DEVICES=0 uv run --extra cu124 scripts/tune_yolo.py 
       --data-yaml data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml 
@@ -494,9 +494,9 @@ stages:
       --args-yaml 
       data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/args.yaml 
       --out-dir data/04_dataset/salmon_dataset/training/yolov8n_full --run-name 
-      tuned_full_run1 --epochs 150 --batch 64 --device 1 --workers 16 --patience
-      50 --summary-json 
-      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
+      2026-10-08_tuned_full_run_stephenssmolt --epochs 150 --batch 64 --device 1
+      --workers 16 --patience 50 --summary-json 
+      data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_summary.json
     deps:
     - path: data/04_dataset/salmon_dataset/tuning/yolov8n_small/tune15/args.yaml
       hash: md5
@@ -508,12 +508,12 @@ stages:
       size: 312
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
       hash: md5
-      md5: f75a4cec8f97785c092b39f836ce8762
-      size: 4044222
+      md5: b10fdad7f686b4a017ec683d17aebc05
+      size: 4797009
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: 9e808795cc2d3999d4303b03a53ce618
-      size: 1858219
+      md5: 1f268bdd50328a3bdc0530e4865b1cb3
+      size: 1452055
     - path: scripts/train_yolo_best.py
       hash: md5
       md5: b4071b24f32b11d743a2c21cd8daadbd
@@ -526,10 +526,6 @@ stages:
       hash: md5
       md5: 2699c80e696f5e0b1e46bad1df853219
       size: 2876
-    - path: yolov8n.pt
-      hash: md5
-      md5: 95a2449609c73cd69a072b09daaff0cc
-      size: 6549796
     params:
       params.yaml:
         config.dataset: data/04_dataset
@@ -541,29 +537,30 @@ stages:
           patience: 50
           tune_dir: tune15
           model: yolov8n.pt
-          run_name: tuned_full_run1
+          run_name: 2026-10-08_tuned_full_run_stephenssmolt
     outs:
-    - path: data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1
+    - path: 
+        data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt
       hash: md5
-      md5: a8ce006ed1ade8a5ff6820206c4a1e74.dir
-      size: 18220293
+      md5: 846650e72a047760c48f811b10520011.dir
+      size: 18375587
       nfiles: 24
     - path: 
-        data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1_summary.json
+        data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_summary.json
       hash: md5
-      md5: 50c130b563059a537df55f1ae8c58e77
-      size: 58161
+      md5: e48cef37605593578fb0b1bdf5678bc4
+      size: 58249
   evaluate:
     cmd: uv run --extra cu124 scripts/eval_yolo.py --model 
-      data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+      data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       --data-yaml 
       /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/site_eval_workdir/data.yaml
       --out-dir data/04_dataset/salmon_dataset/eval/yolov8n_full --run-name 
-      tuned_full_run1_test --split test --imgsz 640 --batch 32 --device 1 
-      --workers 8 --summary-json 
-      data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+      2026-10-08_tuned_full_run_stephenssmolt_test --split test --imgsz 640 
+      --batch 32 --device 1 --workers 8 --summary-json 
+      data/04_dataset/salmon_dataset/eval/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_test_summary.json
       --plot-json 
-      data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
+      data/04_dataset/salmon_dataset/eval/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_test_plot.json
     deps:
     - path: data/04_dataset/salmon_dataset/site_eval_workdir/data.yaml
       hash: md5
@@ -571,13 +568,13 @@ stages:
       size: 684
     - path: data/04_dataset/salmon_dataset/site_eval_workdir/test.txt
       hash: md5
-      md5: 83d4f06bc19bd67839222b888d3cfefd
-      size: 1123488
+      md5: e3008035c00ea8e354bd49fd2821858d
+      size: 1304532
     - path: 
-        data/04_dataset/salmon_dataset/training/yolov8n_full/tuned_full_run1/weights/best.pt
+        data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       hash: md5
-      md5: 730080a3fb07b9f157bea89f707e9e52
-      size: 6249187
+      md5: ba2114b14ba5918cb511a273af269f5a
+      size: 6252515
     - path: scripts/eval_yolo.py
       hash: md5
       md5: ff79161891fc4d99deedb2b7de2abd8f
@@ -601,24 +598,24 @@ stages:
           device: 1
           workers: 8
         runtime.cuda: cu124
-        train.run_name: tuned_full_run1
+        train.run_name: 2026-10-08_tuned_full_run_stephenssmolt
     outs:
     - path: 
-        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test
+        data/04_dataset/salmon_dataset/eval/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_test
       hash: md5
-      md5: c1d1bf9a178ab4759a6c9d04e5626f61.dir
-      size: 10019443
+      md5: 801b3413259fd788b86c5468f7e7ab2b.dir
+      size: 8390601
       nfiles: 13
     - path: 
-        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_plot.json
+        data/04_dataset/salmon_dataset/eval/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_test_plot.json
       hash: md5
-      md5: 80eb53a754cb05f75754894536093e01
-      size: 1219
+      md5: b240b1121dd34ef8eae24e7a41c13307
+      size: 1267
     - path: 
-        data/04_dataset/salmon_dataset/eval/yolov8n_full/tuned_full_run1_test_summary.json
+        data/04_dataset/salmon_dataset/eval/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_test_summary.json
       hash: md5
-      md5: e59674492c229d1e38beeb6f41210061
-      size: 2700
+      md5: 14864285347ff78687c863ae91f71223
+      size: 2822
   make_site_manifests:
     cmd: scripts/make_site_manifests.py --manifests-root 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests --out-root 
@@ -632,16 +629,16 @@ stages:
       size: 708
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt
       hash: md5
-      md5: 9f28c1541e927deea9b1803eb90a5998
-      size: 6909818
+      md5: ecfea73d82de1deb5eda2093ecad54c8
+      size: 6740611
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt
       hash: md5
-      md5: c27c7aef293ef098288201f0fb8b6f71
-      size: 29890087
+      md5: cc907fe6cccfaaa3626063db3c0eb3f7
+      size: 28897823
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt
       hash: md5
-      md5: 9498b696d88560a82cc400110f6492d8
-      size: 9759057
+      md5: ec028b36d89168a56753f96988fe0a3d
+      size: 9656029
     - path: scripts/make_site_manifests.py
       hash: md5
       md5: 6a0322b5269cc81ec2a4ca420527c173
@@ -673,20 +670,20 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/site_manifests/site_manifest_summary.json
       hash: md5
-      md5: adf09b44e1e4a18f10a5a14b63a619de
+      md5: ebb87cee025d68e341caa2691fd9601c
       size: 70
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 76a615be02978e3a3928267aa1862f55
-      size: 412344
+      md5: 6d02962f50a0232dd93a94d31ce8c87e
+      size: 478791
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 5707a293f1db9ef994240f66747058c2
-      size: 1497860
+      md5: 55664e66daaf3dc3ca0422da766c0252
+      size: 1776670
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: 51317d496f24361697ee43b0da630214
-      size: 675716
+      md5: 5df984625d15e09b43845649b37f2a7e
+      size: 528020
   rewrite_manifest:
     cmd: cp data/04_dataset/salmon_dataset/site_manifests/data.yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data.yaml && cp 
@@ -720,20 +717,20 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 76a615be02978e3a3928267aa1862f55
-      size: 412344
+      md5: 6d02962f50a0232dd93a94d31ce8c87e
+      size: 478791
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 5707a293f1db9ef994240f66747058c2
-      size: 1497860
+      md5: 55664e66daaf3dc3ca0422da766c0252
+      size: 1776670
     - path: data/04_dataset/salmon_dataset/site_manifests/train_small.txt
       hash: md5
-      md5: 5707a293f1db9ef994240f66747058c2
-      size: 1497860
+      md5: 55664e66daaf3dc3ca0422da766c0252
+      size: 1776670
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: 51317d496f24361697ee43b0da630214
-      size: 675716
+      md5: 5df984625d15e09b43845649b37f2a7e
+      size: 528020
     - path: data/04_dataset/salmon_dataset/yolo_workdir/.unpack_complete
       hash: md5
       md5: d41d8cd98f00b204e9800998ecf8427e
@@ -761,20 +758,20 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
       hash: md5
-      md5: 83d4f06bc19bd67839222b888d3cfefd
-      size: 1123488
+      md5: e3008035c00ea8e354bd49fd2821858d
+      size: 1304532
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
       hash: md5
-      md5: f75a4cec8f97785c092b39f836ce8762
-      size: 4044222
+      md5: b10fdad7f686b4a017ec683d17aebc05
+      size: 4797009
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
       hash: md5
-      md5: f75a4cec8f97785c092b39f836ce8762
-      size: 4044222
+      md5: b10fdad7f686b4a017ec683d17aebc05
+      size: 4797009
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: 9e808795cc2d3999d4303b03a53ce618
-      size: 1858219
+      md5: 1f268bdd50328a3bdc0530e4865b1cb3
+      size: 1452055
   plot_site_class_stats:
     cmd: scripts/plot_site_class_stats.py --stats-dir 
       data/02_interim/yolo_annos_stats --out-dir 
@@ -819,8 +816,8 @@ stages:
     deps:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt
       hash: md5
-      md5: 9f28c1541e927deea9b1803eb90a5998
-      size: 6909818
+      md5: ecfea73d82de1deb5eda2093ecad54c8
+      size: 6740611
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
       hash: md5
       md5: e6e439914481fba14b685095cbff4279
@@ -848,8 +845,8 @@ stages:
       size: 684
     - path: data/04_dataset/salmon_dataset/site_eval_workdir/test.txt
       hash: md5
-      md5: 83d4f06bc19bd67839222b888d3cfefd
-      size: 1123488
+      md5: e3008035c00ea8e354bd49fd2821858d
+      size: 1304532
   index_labelstudio_sites:
     cmd: scripts/index_labelstudio_sites.py --json-root 
       data/01_raw/labelstudio_annos --out-dir 
@@ -909,7 +906,9 @@ stages:
       data/02_interim/sites/chignik/yolo_annos/empty_vids.txt --shard-size 
       100000 --include-sites chignik --frame-stride 3 --frame-offset-mode 
       video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
-      11 --stats-dir data/02_interim/sites/chignik/yolo_annos_stats
+      11 --annotated-negative-sites "stephenssmolt" 
+      --annotated-negatives-per-video 12 --negative-exclusion-frames 3 
+      --stats-dir data/02_interim/sites/chignik/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -930,25 +929,28 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
     - path: data/02_interim/sites/chignik/yolo_annos
       hash: md5
-      md5: 88820064f81425971828701712368697.dir
-      size: 24403072
+      md5: fabc0cc1e1c94b6c9a0c9f3c936ff35b.dir
+      size: 24382592
       nfiles: 2
     - path: data/02_interim/sites/chignik/yolo_annos_stats
       hash: md5
-      md5: 755084185fe609179f07499492522ac1.dir
-      size: 10642
-      nfiles: 5
+      md5: 13886b0ccc860c015ee5a0b997b5c346.dir
+      size: 130289
+      nfiles: 8
   build_model_input@redoubt:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
       data/02_interim/labelstudio_site_index/redoubt.json --data-yaml 
@@ -957,7 +959,9 @@ stages:
       data/02_interim/sites/redoubt/yolo_annos/empty_vids.txt --shard-size 
       100000 --include-sites redoubt --frame-stride 3 --frame-offset-mode 
       video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
-      11 --stats-dir data/02_interim/sites/redoubt/yolo_annos_stats
+      11 --annotated-negative-sites "stephenssmolt" 
+      --annotated-negatives-per-video 12 --negative-exclusion-frames 3 
+      --stats-dir data/02_interim/sites/redoubt/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -978,12 +982,15 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
@@ -994,9 +1001,9 @@ stages:
       nfiles: 2
     - path: data/02_interim/sites/redoubt/yolo_annos_stats
       hash: md5
-      md5: d33eb83d540962cd15f7d8845a4bbe95.dir
-      size: 10430
-      nfiles: 5
+      md5: c3babaf3b02d75d8def072baae786e57.dir
+      size: 54022
+      nfiles: 8
   split_data@redoubt:
     cmd: rm -rf data/02_interim/sites/redoubt/split_labels_tmp && mkdir -p 
       data/02_interim/sites/redoubt/split_labels_tmp && scripts/unpack_annos.sh 
@@ -1059,7 +1066,9 @@ stages:
       data/02_interim/sites/koeye/yolo_annos/empty_vids.txt --shard-size 100000 
       --include-sites koeye --frame-stride 3 --frame-offset-mode video_hash 
       --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
-      --stats-dir data/02_interim/sites/koeye/yolo_annos_stats
+      --annotated-negative-sites "stephenssmolt" --annotated-negatives-per-video
+      12 --negative-exclusion-frames 3 --stats-dir 
+      data/02_interim/sites/koeye/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1080,25 +1089,28 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
     - path: data/02_interim/sites/koeye/yolo_annos
       hash: md5
-      md5: d385008188ebb67bb52fbd10f7c91006.dir
-      size: 69643137
+      md5: 3d0e221d624508e86764107511ba6b8a.dir
+      size: 69632897
       nfiles: 2
     - path: data/02_interim/sites/koeye/yolo_annos_stats
       hash: md5
-      md5: 919a5dff6ffbc1b49f2a11b94258a02e.dir
-      size: 10720
-      nfiles: 5
+      md5: 24fc19fad24e4724a6db18a198e3433f.dir
+      size: 273615
+      nfiles: 8
   build_model_input@bear:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
       data/02_interim/labelstudio_site_index/bear.json --data-yaml 
@@ -1107,7 +1119,9 @@ stages:
       data/02_interim/sites/bear/yolo_annos/empty_vids.txt --shard-size 100000 
       --include-sites bear --frame-stride 3 --frame-offset-mode video_hash 
       --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
-      --stats-dir data/02_interim/sites/bear/yolo_annos_stats
+      --annotated-negative-sites "stephenssmolt" --annotated-negatives-per-video
+      12 --negative-exclusion-frames 3 --stats-dir 
+      data/02_interim/sites/bear/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1128,25 +1142,28 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
     - path: data/02_interim/sites/bear/yolo_annos
       hash: md5
-      md5: 967586ff4860fe8cbee5ec8ce1a99dd5.dir
-      size: 49566430
+      md5: f993d5dc84184757cbe5ea7764a6204e.dir
+      size: 49545950
       nfiles: 2
     - path: data/02_interim/sites/bear/yolo_annos_stats
       hash: md5
-      md5: 7fe3853f03447d67cf6266404a330a7b.dir
-      size: 10545
-      nfiles: 5
+      md5: 6bc61d148d36aeabb3ff5d15d4ccaf94.dir
+      size: 213933
+      nfiles: 8
   build_model_input@copper:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
       data/02_interim/labelstudio_site_index/copper.json --data-yaml 
@@ -1155,7 +1172,9 @@ stages:
       data/02_interim/sites/copper/yolo_annos/empty_vids.txt --shard-size 100000
       --include-sites copper --frame-stride 3 --frame-offset-mode video_hash 
       --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
-      --stats-dir data/02_interim/sites/copper/yolo_annos_stats
+      --annotated-negative-sites "stephenssmolt" --annotated-negatives-per-video
+      12 --negative-exclusion-frames 3 --stats-dir 
+      data/02_interim/sites/copper/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1176,25 +1195,28 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
     - path: data/02_interim/sites/copper/yolo_annos
       hash: md5
-      md5: 18996df030e30f392cd140632a779e39.dir
+      md5: 95f43f79207276b5f839f4d06716b492.dir
       size: 55108624
       nfiles: 2
     - path: data/02_interim/sites/copper/yolo_annos_stats
       hash: md5
-      md5: 3d3cbff6bf8f95410345c6f4027f5172.dir
-      size: 10750
-      nfiles: 5
+      md5: e3aa268b3cacc179d5e6e4083b3d81bf.dir
+      size: 429416
+      nfiles: 8
   split_data@copper:
     cmd: rm -rf data/02_interim/sites/copper/split_labels_tmp && mkdir -p 
       data/02_interim/sites/copper/split_labels_tmp && scripts/unpack_annos.sh 
@@ -1217,7 +1239,7 @@ stages:
       size: 1031
     - path: data/02_interim/sites/copper/yolo_annos
       hash: md5
-      md5: 18996df030e30f392cd140632a779e39.dir
+      md5: 95f43f79207276b5f839f4d06716b492.dir
       size: 55108624
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
@@ -1246,8 +1268,8 @@ stages:
     outs:
     - path: data/03_processed/sites/copper/splits_baseline
       hash: md5
-      md5: de1c391bfd1ae4e5e042c9bace12726b.dir
-      size: 3255409
+      md5: 778e48d55c1af06f24a2064a3bb2f46b.dir
+      size: 3255472
       nfiles: 5
   build_model_input@kwakwa:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
@@ -1257,7 +1279,9 @@ stages:
       data/02_interim/sites/kwakwa/yolo_annos/empty_vids.txt --shard-size 100000
       --include-sites kwakwa --frame-stride 3 --frame-offset-mode video_hash 
       --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
-      --stats-dir data/02_interim/sites/kwakwa/yolo_annos_stats
+      --annotated-negative-sites "stephenssmolt" --annotated-negatives-per-video
+      12 --negative-exclusion-frames 3 --stats-dir 
+      data/02_interim/sites/kwakwa/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1278,25 +1302,28 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
     - path: data/02_interim/sites/kwakwa/yolo_annos
       hash: md5
-      md5: 6c9295413413947a38d2f417c2e6320c.dir
+      md5: 45ec6dcd05608c7a837192d88ebe731d.dir
       size: 23757095
       nfiles: 2
     - path: data/02_interim/sites/kwakwa/yolo_annos_stats
       hash: md5
-      md5: 0bcf7e1f99d8f578f0bec98b1590adbf.dir
-      size: 10421
-      nfiles: 5
+      md5: 5a6d18c0483aadfa2a356370b6712886.dir
+      size: 131000
+      nfiles: 8
   split_data@kwakwa:
     cmd: rm -rf data/02_interim/sites/kwakwa/split_labels_tmp && mkdir -p 
       data/02_interim/sites/kwakwa/split_labels_tmp && scripts/unpack_annos.sh 
@@ -1319,7 +1346,7 @@ stages:
       size: 1031
     - path: data/02_interim/sites/kwakwa/yolo_annos
       hash: md5
-      md5: 6c9295413413947a38d2f417c2e6320c.dir
+      md5: 45ec6dcd05608c7a837192d88ebe731d.dir
       size: 23757095
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
@@ -1348,8 +1375,8 @@ stages:
     outs:
     - path: data/03_processed/sites/kwakwa/splits_baseline
       hash: md5
-      md5: d11de6e5eb70b22722788360bbdc7cfb.dir
-      size: 1376488
+      md5: 9eb3b1250c89e72fc03d2bcf4d02b070.dir
+      size: 1376521
       nfiles: 5
   build_model_input@tankeeah:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
@@ -1359,7 +1386,9 @@ stages:
       data/02_interim/sites/tankeeah/yolo_annos/empty_vids.txt --shard-size 
       100000 --include-sites tankeeah --frame-stride 3 --frame-offset-mode 
       video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
-      11 --stats-dir data/02_interim/sites/tankeeah/yolo_annos_stats
+      11 --annotated-negative-sites "stephenssmolt" 
+      --annotated-negatives-per-video 12 --negative-exclusion-frames 3 
+      --stats-dir data/02_interim/sites/tankeeah/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1380,25 +1409,28 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
     - path: data/02_interim/sites/tankeeah/yolo_annos
       hash: md5
-      md5: 1cb8c51dc0c22422d2c42e721360cc27.dir
+      md5: 1136e6d26f81db1df846a9856fc709c0.dir
       size: 249945514
       nfiles: 4
     - path: data/02_interim/sites/tankeeah/yolo_annos_stats
       hash: md5
-      md5: fc9b88c8635056bbc313112ef02e1473.dir
-      size: 10919
-      nfiles: 5
+      md5: 446e560624edc5b762d66a620b0b8c94.dir
+      size: 1190616
+      nfiles: 8
   split_data@tankeeah:
     cmd: rm -rf data/02_interim/sites/tankeeah/split_labels_tmp && mkdir -p 
       data/02_interim/sites/tankeeah/split_labels_tmp && scripts/unpack_annos.sh
@@ -1421,7 +1453,7 @@ stages:
       size: 1031
     - path: data/02_interim/sites/tankeeah/yolo_annos
       hash: md5
-      md5: 1cb8c51dc0c22422d2c42e721360cc27.dir
+      md5: 1136e6d26f81db1df846a9856fc709c0.dir
       size: 249945514
       nfiles: 4
     - path: data/02_interim/yolo_condition_negatives
@@ -1450,8 +1482,8 @@ stages:
     outs:
     - path: data/03_processed/sites/tankeeah/splits_baseline
       hash: md5
-      md5: 5fa20d1ea5cc57338fba1c4cb2cda11c.dir
-      size: 13664127
+      md5: 953dd74db9c4f0b9bc5bc66f60d42a56.dir
+      size: 13664723
       nfiles: 5
   build_model_input@kitwanga:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
@@ -1461,7 +1493,9 @@ stages:
       data/02_interim/sites/kitwanga/yolo_annos/empty_vids.txt --shard-size 
       100000 --include-sites kitwanga --frame-stride 3 --frame-offset-mode 
       video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
-      11 --stats-dir data/02_interim/sites/kitwanga/yolo_annos_stats
+      11 --annotated-negative-sites "stephenssmolt" 
+      --annotated-negatives-per-video 12 --negative-exclusion-frames 3 
+      --stats-dir data/02_interim/sites/kitwanga/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1482,12 +1516,15 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
@@ -1498,9 +1535,9 @@ stages:
       nfiles: 2
     - path: data/02_interim/sites/kitwanga/yolo_annos_stats
       hash: md5
-      md5: 0f7055235a99f4cc2cc167c2abfdb2e8.dir
-      size: 10766
-      nfiles: 5
+      md5: dc9d9b56b9fb22a3675ec4789a39f402.dir
+      size: 108943
+      nfiles: 8
   build_model_input@kitkiata:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
       data/02_interim/labelstudio_site_index/kitkiata.json --data-yaml 
@@ -1509,7 +1546,9 @@ stages:
       data/02_interim/sites/kitkiata/yolo_annos/empty_vids.txt --shard-size 
       100000 --include-sites kitkiata --frame-stride 3 --frame-offset-mode 
       video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
-      11 --stats-dir data/02_interim/sites/kitkiata/yolo_annos_stats
+      11 --annotated-negative-sites "stephenssmolt" 
+      --annotated-negatives-per-video 12 --negative-exclusion-frames 3 
+      --stats-dir data/02_interim/sites/kitkiata/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1530,25 +1569,28 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
     - path: data/02_interim/sites/kitkiata/yolo_annos
       hash: md5
-      md5: 4155bcabf8458218b29be90b494d28c7.dir
+      md5: 1791d31236a9e3f924031a07a4c15a4a.dir
       size: 122035105
       nfiles: 3
     - path: data/02_interim/sites/kitkiata/yolo_annos_stats
       hash: md5
-      md5: 8c9a73c6947aa36b53f2d7b76aa93404.dir
-      size: 11011
-      nfiles: 5
+      md5: 4faa6418a65932b06131807d7641972a.dir
+      size: 501620
+      nfiles: 8
   split_data@chignik:
     cmd: rm -rf data/02_interim/sites/chignik/split_labels_tmp && mkdir -p 
       data/02_interim/sites/chignik/split_labels_tmp && scripts/unpack_annos.sh 
@@ -1571,8 +1613,8 @@ stages:
       size: 1031
     - path: data/02_interim/sites/chignik/yolo_annos
       hash: md5
-      md5: 88820064f81425971828701712368697.dir
-      size: 24403072
+      md5: fabc0cc1e1c94b6c9a0c9f3c936ff35b.dir
+      size: 24382592
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
@@ -1600,8 +1642,8 @@ stages:
     outs:
     - path: data/03_processed/sites/chignik/splits_baseline
       hash: md5
-      md5: 1df3a9cb83cfa13cd3a4f557d069dba1.dir
-      size: 1469479
+      md5: 19e2734a60ccaad38139d922582dc90d.dir
+      size: 1466125
       nfiles: 5
   build_model_input@stephenssmolt:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
@@ -1679,8 +1721,8 @@ stages:
       size: 1031
     - path: data/02_interim/sites/bear/yolo_annos
       hash: md5
-      md5: 967586ff4860fe8cbee5ec8ce1a99dd5.dir
-      size: 49566430
+      md5: f993d5dc84184757cbe5ea7764a6204e.dir
+      size: 49545950
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
@@ -1708,8 +1750,8 @@ stages:
     outs:
     - path: data/03_processed/sites/bear/splits_baseline
       hash: md5
-      md5: 7f8d41f335965d438d275dffd63313a0.dir
-      size: 2704997
+      md5: b2cba0223de892f8a4639d6fe650b734.dir
+      size: 2703183
       nfiles: 5
   build_model_input@klukshu:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
@@ -1719,7 +1761,9 @@ stages:
       data/02_interim/sites/klukshu/yolo_annos/empty_vids.txt --shard-size 
       100000 --include-sites klukshu --frame-stride 3 --frame-offset-mode 
       video_hash --include-negatives --negative-ratio 0.1 --negatives-per-video 
-      11 --stats-dir data/02_interim/sites/klukshu/yolo_annos_stats
+      11 --annotated-negative-sites "stephenssmolt" 
+      --annotated-negatives-per-video 12 --negative-exclusion-frames 3 
+      --stats-dir data/02_interim/sites/klukshu/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1740,12 +1784,15 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
@@ -1756,9 +1803,9 @@ stages:
       nfiles: 2
     - path: data/02_interim/sites/klukshu/yolo_annos_stats
       hash: md5
-      md5: 4d5139225c6a27625197efb70cb06a8e.dir
-      size: 10263
-      nfiles: 5
+      md5: 45462f79adeb0b62df1e384ca64d363f.dir
+      size: 31111
+      nfiles: 8
   split_data@klukshu:
     cmd: rm -rf data/02_interim/sites/klukshu/split_labels_tmp && mkdir -p 
       data/02_interim/sites/klukshu/split_labels_tmp && scripts/unpack_annos.sh 
@@ -1835,7 +1882,7 @@ stages:
       size: 1031
     - path: data/02_interim/sites/kitkiata/yolo_annos
       hash: md5
-      md5: 4155bcabf8458218b29be90b494d28c7.dir
+      md5: 1791d31236a9e3f924031a07a4c15a4a.dir
       size: 122035105
       nfiles: 3
     - path: data/02_interim/yolo_condition_negatives
@@ -1864,8 +1911,8 @@ stages:
     outs:
     - path: data/03_processed/sites/kitkiata/splits_baseline
       hash: md5
-      md5: 5524bbe0904c31601a1808d16f1eaa5a.dir
-      size: 7461775
+      md5: bcb3cc77c2ac6ef0906e1b99549e3ede.dir
+      size: 7458154
       nfiles: 5
   split_data@stephenssmolt:
     cmd: rm -rf data/02_interim/sites/stephenssmolt/split_labels_tmp && mkdir -p
@@ -1930,7 +1977,9 @@ stages:
       data/02_interim/sites/Elbow/yolo_annos/empty_vids.txt --shard-size 100000 
       --include-sites Elbow --frame-stride 3 --frame-offset-mode video_hash 
       --include-negatives --negative-ratio 0.1 --negatives-per-video 11 
-      --stats-dir data/02_interim/sites/Elbow/yolo_annos_stats
+      --annotated-negative-sites "stephenssmolt" --annotated-negatives-per-video
+      12 --negative-exclusion-frames 3 --stats-dir 
+      data/02_interim/sites/Elbow/yolo_annos_stats
     deps:
     - path: config/salmon_yolo.yaml
       hash: md5
@@ -1951,25 +2000,28 @@ stages:
       nfiles: 6
     - path: src/object_detection/yolo_ls
       hash: md5
-      md5: f0074e8f027766b3d31f1d3236e66b4e.dir
-      size: 129696
+      md5: 0636c0fcb43c09b5441cc0f8cbb23651.dir
+      size: 150557
       nfiles: 15
     params:
       params.yaml:
         data.neg: --include-negatives
+        data.neg_annotated_per_vid: 12
+        data.neg_annotated_sites: stephenssmolt
+        data.neg_exclusion_frames: 3
         data.neg_per_vid: 11
         data.neg_ratio: 0.1
     outs:
     - path: data/02_interim/sites/Elbow/yolo_annos
       hash: md5
-      md5: 7a6eaa31707be4769ce0cd63d0ec7f76.dir
+      md5: 6cec3719056d7d5c88d192b7a57cc6ec.dir
       size: 77317946
       nfiles: 2
     - path: data/02_interim/sites/Elbow/yolo_annos_stats
       hash: md5
-      md5: 3c54572d4a258c5f64f1c17dfc8bcc6f.dir
-      size: 10692
-      nfiles: 5
+      md5: 89c00d1c961c5964f143f56e4f1054f5.dir
+      size: 2475402
+      nfiles: 8
   split_data@Elbow:
     cmd: rm -rf data/02_interim/sites/Elbow/split_labels_tmp && mkdir -p 
       data/02_interim/sites/Elbow/split_labels_tmp && scripts/unpack_annos.sh 
@@ -1992,7 +2044,7 @@ stages:
       size: 1031
     - path: data/02_interim/sites/Elbow/yolo_annos
       hash: md5
-      md5: 7a6eaa31707be4769ce0cd63d0ec7f76.dir
+      md5: 6cec3719056d7d5c88d192b7a57cc6ec.dir
       size: 77317946
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
@@ -2021,7 +2073,7 @@ stages:
     outs:
     - path: data/03_processed/sites/Elbow/splits_baseline
       hash: md5
-      md5: 1396ce4e57eae677ec86c2d37758b6fe.dir
+      md5: 9ed487027956d0a479bc1169322aa12c.dir
       size: 4386764
       nfiles: 5
   split_data@kitwanga:
@@ -2100,8 +2152,8 @@ stages:
       size: 1031
     - path: data/02_interim/sites/koeye/yolo_annos
       hash: md5
-      md5: d385008188ebb67bb52fbd10f7c91006.dir
-      size: 69643137
+      md5: 3d0e221d624508e86764107511ba6b8a.dir
+      size: 69632897
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
@@ -2129,8 +2181,8 @@ stages:
     outs:
     - path: data/03_processed/sites/koeye/splits_baseline
       hash: md5
-      md5: c7e2eaf5315330f5cc011a23b7597ae6.dir
-      size: 3890548
+      md5: 820bd7d17deeeaa85e55a5651e46b02d.dir
+      size: 3889311
       nfiles: 5
   plot_site_class_stats@copper:
     cmd: scripts/plot_site_class_stats.py --stats-dir 
@@ -2854,7 +2906,7 @@ stages:
       size: 2341661
     - path: data/02_interim/sites/tankeeah/yolo_annos
       hash: md5
-      md5: 1cb8c51dc0c22422d2c42e721360cc27.dir
+      md5: 1136e6d26f81db1df846a9856fc709c0.dir
       size: 249945514
       nfiles: 4
     - path: data/02_interim/yolo_condition_negatives
@@ -2864,8 +2916,8 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/tankeeah/splits_baseline
       hash: md5
-      md5: 5fa20d1ea5cc57338fba1c4cb2cda11c.dir
-      size: 13664127
+      md5: 953dd74db9c4f0b9bc5bc66f60d42a56.dir
+      size: 13664723
       nfiles: 5
     - path: scripts/pack_split_dataset.py
       hash: md5
@@ -2899,8 +2951,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/tankeeah
       hash: md5
-      md5: f7a9c47aedde2d406b59c658a4bad535.dir
-      size: 10891598013
+      md5: d930c06fe18813fad78341888c9a0b59.dir
+      size: 10650904189
       nfiles: 11
   pack_split_dataset@kitwanga:
     cmd: scripts/pack_split_dataset_site.sh kitwanga data/04_dataset 
@@ -2978,8 +3030,8 @@ stages:
       size: 404530
     - path: data/02_interim/sites/bear/yolo_annos
       hash: md5
-      md5: 967586ff4860fe8cbee5ec8ce1a99dd5.dir
-      size: 49566430
+      md5: f993d5dc84184757cbe5ea7764a6204e.dir
+      size: 49545950
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
@@ -2988,8 +3040,8 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/bear/splits_baseline
       hash: md5
-      md5: 7f8d41f335965d438d275dffd63313a0.dir
-      size: 2704997
+      md5: b2cba0223de892f8a4639d6fe650b734.dir
+      size: 2703183
       nfiles: 5
     - path: scripts/pack_split_dataset.py
       hash: md5
@@ -3023,8 +3075,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/bear
       hash: md5
-      md5: 409b7ceaa1885b0d69cefc0857be2823.dir
-      size: 2043386975
+      md5: 3fafb47797997cf761a7cb35692d7bf0.dir
+      size: 2042022610
       nfiles: 8
   pack_split_dataset@kitkiata:
     cmd: scripts/pack_split_dataset_site.sh kitkiata data/04_dataset 
@@ -3040,7 +3092,7 @@ stages:
       size: 983551
     - path: data/02_interim/sites/kitkiata/yolo_annos
       hash: md5
-      md5: 4155bcabf8458218b29be90b494d28c7.dir
+      md5: 1791d31236a9e3f924031a07a4c15a4a.dir
       size: 122035105
       nfiles: 3
     - path: data/02_interim/yolo_condition_negatives
@@ -3050,8 +3102,8 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/kitkiata/splits_baseline
       hash: md5
-      md5: 5524bbe0904c31601a1808d16f1eaa5a.dir
-      size: 7461775
+      md5: bcb3cc77c2ac6ef0906e1b99549e3ede.dir
+      size: 7458154
       nfiles: 5
     - path: scripts/pack_split_dataset.py
       hash: md5
@@ -3085,8 +3137,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kitkiata
       hash: md5
-      md5: e416a6d3269c767ae76792e2a9092ece.dir
-      size: 7829574141
+      md5: b9168203a2f4733230df2b3572cfb0b6.dir
+      size: 7375719955
       nfiles: 9
   pack_split_dataset@copper:
     cmd: scripts/pack_split_dataset_site.sh copper data/04_dataset 
@@ -3102,7 +3154,7 @@ stages:
       size: 843969
     - path: data/02_interim/sites/copper/yolo_annos
       hash: md5
-      md5: 18996df030e30f392cd140632a779e39.dir
+      md5: 95f43f79207276b5f839f4d06716b492.dir
       size: 55108624
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
@@ -3112,8 +3164,8 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/copper/splits_baseline
       hash: md5
-      md5: de1c391bfd1ae4e5e042c9bace12726b.dir
-      size: 3255409
+      md5: 778e48d55c1af06f24a2064a3bb2f46b.dir
+      size: 3255472
       nfiles: 5
     - path: scripts/pack_split_dataset.py
       hash: md5
@@ -3147,8 +3199,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/copper
       hash: md5
-      md5: f096764a52efefc0f07538526404ce52.dir
-      size: 2153455062
+      md5: a0eb2fc4941502d0800b02fe43d98dd3.dir
+      size: 2082672943
       nfiles: 8
   pack_split_dataset@kwakwa:
     cmd: scripts/pack_split_dataset_site.sh kwakwa data/04_dataset 
@@ -3164,7 +3216,7 @@ stages:
       size: 232751
     - path: data/02_interim/sites/kwakwa/yolo_annos
       hash: md5
-      md5: 6c9295413413947a38d2f417c2e6320c.dir
+      md5: 45ec6dcd05608c7a837192d88ebe731d.dir
       size: 23757095
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
@@ -3174,8 +3226,8 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/kwakwa/splits_baseline
       hash: md5
-      md5: d11de6e5eb70b22722788360bbdc7cfb.dir
-      size: 1376488
+      md5: 9eb3b1250c89e72fc03d2bcf4d02b070.dir
+      size: 1376521
       nfiles: 5
     - path: scripts/pack_split_dataset.py
       hash: md5
@@ -3209,8 +3261,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/kwakwa
       hash: md5
-      md5: c3ed2f89e855e1fc22e21c9dd87513e7.dir
-      size: 946181161
+      md5: 2a08a573f081eca7616ff9e7c740c088.dir
+      size: 925372264
       nfiles: 8
   pack_split_dataset@Elbow:
     cmd: scripts/pack_split_dataset_site.sh Elbow data/04_dataset 
@@ -3226,7 +3278,7 @@ stages:
       size: 5132280
     - path: data/02_interim/sites/Elbow/yolo_annos
       hash: md5
-      md5: 7a6eaa31707be4769ce0cd63d0ec7f76.dir
+      md5: 6cec3719056d7d5c88d192b7a57cc6ec.dir
       size: 77317946
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
@@ -3236,7 +3288,7 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/Elbow/splits_baseline
       hash: md5
-      md5: 1396ce4e57eae677ec86c2d37758b6fe.dir
+      md5: 9ed487027956d0a479bc1169322aa12c.dir
       size: 4386764
       nfiles: 5
     - path: scripts/pack_split_dataset.py
@@ -3271,8 +3323,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/Elbow
       hash: md5
-      md5: 283062d7cc2410dc197c2088f615711e.dir
-      size: 4616605821
+      md5: 3577f3fc00df842a4111edeb7c38dbf7.dir
+      size: 4294097885
       nfiles: 9
   pack_split_dataset@koeye:
     cmd: scripts/pack_split_dataset_site.sh koeye data/04_dataset 
@@ -3288,8 +3340,8 @@ stages:
       size: 516389
     - path: data/02_interim/sites/koeye/yolo_annos
       hash: md5
-      md5: d385008188ebb67bb52fbd10f7c91006.dir
-      size: 69643137
+      md5: 3d0e221d624508e86764107511ba6b8a.dir
+      size: 69632897
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
@@ -3298,8 +3350,8 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/koeye/splits_baseline
       hash: md5
-      md5: c7e2eaf5315330f5cc011a23b7597ae6.dir
-      size: 3890548
+      md5: 820bd7d17deeeaa85e55a5651e46b02d.dir
+      size: 3889311
       nfiles: 5
     - path: scripts/pack_split_dataset.py
       hash: md5
@@ -3333,8 +3385,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/koeye
       hash: md5
-      md5: 506fefcd14dc4d975b387b0a22b5acdd.dir
-      size: 3369761618
+      md5: 5668c2ec1c0310459540023711912e65.dir
+      size: 3368838372
       nfiles: 8
   pack_split_dataset@redoubt:
     cmd: scripts/pack_split_dataset_site.sh redoubt data/04_dataset 
@@ -3412,8 +3464,8 @@ stages:
       size: 241217
     - path: data/02_interim/sites/chignik/yolo_annos
       hash: md5
-      md5: 88820064f81425971828701712368697.dir
-      size: 24403072
+      md5: fabc0cc1e1c94b6c9a0c9f3c936ff35b.dir
+      size: 24382592
       nfiles: 2
     - path: data/02_interim/yolo_condition_negatives
       hash: md5
@@ -3422,8 +3474,8 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/chignik/splits_baseline
       hash: md5
-      md5: 1df3a9cb83cfa13cd3a4f557d069dba1.dir
-      size: 1469479
+      md5: 19e2734a60ccaad38139d922582dc90d.dir
+      size: 1466125
       nfiles: 5
     - path: scripts/pack_split_dataset.py
       hash: md5
@@ -3457,8 +3509,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/chignik
       hash: md5
-      md5: 46a896685d81dc40a190baced91a18c1.dir
-      size: 680239555
+      md5: 03cd5edcdb556a75d3592990342ae636.dir
+      size: 678688832
       nfiles: 8
   pack_split_dataset@klukshu:
     cmd: scripts/pack_split_dataset_site.sh klukshu data/04_dataset 
@@ -3597,8 +3649,8 @@ stages:
       size: 547
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites
       hash: md5
-      md5: 1f20bafb3ff044c57deb7bd7532d1529.dir
-      size: 35719935325
+      md5: 9877b059bb6bfe4e888f7f3cb10d2056.dir
+      size: 34699959604
       nfiles: 102
     - path: scripts/merge_packed_site_datasets.py
       hash: md5
@@ -3627,12 +3679,12 @@ stages:
     outs:
     - path: data/04_dataset/packed_dataset_manifest.csv
       hash: md5
-      md5: 13db755366dee1a399cbee8f72dcabeb
-      size: 6549873
+      md5: 7296d898ca13d7f971edacf0d050df9e
+      size: 8756411
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests
       hash: md5
-      md5: a6f7531e4aaa15fa3dc493c05f1fb97d.dir
-      size: 46559766
+      md5: 4d8fc7f8507e36940f9723c3f79b03c4.dir
+      size: 45295267
       nfiles: 5
   make_tracking_eval_set@val:
     cmd: scripts/make_tracking_eval_set.py --manifest 
