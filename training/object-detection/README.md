@@ -336,15 +336,15 @@ dvc repro pack_split_dataset@tankeeah
 ```
 
 Stage `update_raw` is made frozen to prevent always checking the S3 for changes.
-If there is an update to the JSON files exported from label studio, you can force
-the stage to run:
+If there is an update to the JSON files exported from label studio, you must unfreeze the stage `--force` does not work:
 
 ```
-dvc repro --force update_raw
+dvc unfreeze update_raw
 ```
 
-Note that the `--force` flag will also force depended on stages to run, so also
-adding `--single-item` might be a good idea for a stage in the middle of the
+You can also unfreeze by editing the `dvc.yaml` and changing the `frozen: true` to `frozen: false`
+
+Using the `--single-item` flag might be a good idea for a stage in the middle of the
 pipeline. For example, if you want to force re-run the packing stage due to
 errors in downloading:
 
