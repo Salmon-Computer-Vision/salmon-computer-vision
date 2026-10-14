@@ -38,6 +38,12 @@ config:
   real_yolo_workdir: /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/yolo_workdir
   eval_workdir: /mnt/harukassd4tb/masamim/salmon-computer-vision/training/object-detection/data/04_dataset/salmon_dataset/site_eval_workdir
   ray_tmp: /mnt/harukassd4tb/masamim
+split:
+  # Keep complete-video holdouts even for sites with only 1-2 recording days.
+  # If fewer than 5 total distinct videos exist, relax both minima to 1;
+  # fewer than 3 videos causes a clear error instead of empty holdouts.
+  min_val_videos: 2
+  min_test_videos: 2
 pack:
   download_workers: 8
 preprocess:

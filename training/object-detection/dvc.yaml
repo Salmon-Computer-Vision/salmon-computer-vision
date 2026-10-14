@@ -129,8 +129,13 @@ stages:
         --seed 42
         --train-frac 0.8
         --val-frac 0.1
-        --test-frac 0.1 &&
+        --test-frac 0.1
+        --min-val-videos ${split.min_val_videos}
+        --min-test-videos ${split.min_test_videos} &&
         rm -rf data/02_interim/sites/${item}/split_labels_tmp
+      params:
+      - split.min_val_videos
+      - split.min_test_videos
       deps:
       - scripts/unpack_annos.sh
       - scripts/make_splits.py
