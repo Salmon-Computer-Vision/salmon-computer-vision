@@ -74,10 +74,10 @@ stages:
         cp "$src/site_class_frame_counts.csv" "$dst/site_class_frame_counts.csv" &&
         cp "$src/site_class_box_counts.csv" "$dst/site_class_box_counts.csv"
       deps:
-        - data/02_interim/sites/${item}/yolo_annos_stats/site_class_frame_counts.csv
-        - data/02_interim/sites/${item}/yolo_annos_stats/site_class_box_counts.csv
+      - data/02_interim/sites/${item}/yolo_annos_stats/site_class_frame_counts.csv
+      - data/02_interim/sites/${item}/yolo_annos_stats/site_class_box_counts.csv
       outs:
-        - data/02_interim/annotation_stats_by_site/${item}/yolo_annos_stats
+      - data/02_interim/annotation_stats_by_site/${item}/yolo_annos_stats
   aggregate_site_class_stats:
     cmd: >-
       python scripts/aggregate_site_class_stats.py
@@ -85,13 +85,13 @@ stages:
       --sites-root data/02_interim/annotation_stats_by_site
       --out-dir data/03_processed/annotation_stats
     deps:
-      - scripts/aggregate_site_class_stats.py
-      - data/02_interim/annotation_stats_by_site
+    - scripts/aggregate_site_class_stats.py
+    - data/02_interim/annotation_stats_by_site
     params:
-      - data.sites
+    - data.sites
     outs:
-      - data/03_processed/annotation_stats/site_class_frame_counts.csv
-      - data/03_processed/annotation_stats/site_class_box_counts.csv
+    - data/03_processed/annotation_stats/site_class_frame_counts.csv
+    - data/03_processed/annotation_stats/site_class_box_counts.csv
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
@@ -772,7 +772,8 @@ plots:
 - annotation_frame_counts:
     x: class_name
     y:
-      data/03_processed/annotation_stats/site_class_frame_counts.csv: frame_count
+      data/03_processed/annotation_stats/site_class_frame_counts.csv: 
+        frame_count
     template: config/plots/site_class_counts_heatmap.vl.json
     title: Annotated frames per species and site
 
@@ -786,14 +787,16 @@ plots:
 - annotation_frame_share:
     x: class_name
     y:
-      data/03_processed/annotation_stats/site_class_frame_counts.csv: frame_pct_within_class
+      data/03_processed/annotation_stats/site_class_frame_counts.csv: 
+        frame_pct_within_class
     template: config/plots/site_class_share_heatmap.vl.json
     title: Share of species-annotated frames by site (%)
 
 - annotation_box_share:
     x: class_name
     y:
-      data/03_processed/annotation_stats/site_class_box_counts.csv: box_pct_within_class
+      data/03_processed/annotation_stats/site_class_box_counts.csv: 
+        box_pct_within_class
     template: config/plots/site_class_share_heatmap.vl.json
     title: Share of species boxes by site (%)
 - dvclive/plots/metrics:
