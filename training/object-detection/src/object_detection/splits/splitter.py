@@ -1,5 +1,5 @@
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Iterable, Any
 from collections import Counter
@@ -51,6 +51,9 @@ class GroupStats:
 
     # list of frame rel_paths (for manifest writing)
     frame_paths: List[str]
+    # Video-level aggregates let the fallback reassign *complete videos* without
+    # re-reading hundreds of thousands of YOLO frame labels.
+    video_stats: Dict[str, "GroupStats"] = field(default_factory=dict)
 
 
 # -----------------------------
@@ -133,6 +136,25 @@ def build_groups(
         g.area_counts.update(area_counts)
         g.ar_counts.update(ar_counts)
         g.frame_paths.append(rel_path)
+
+        v = g.video_stats.get(video_stem)
+        if v is None:
+            v = GroupStats(
+                group_id=video_stem, site=site, device=meta["device"],
+                date=meta["date"], n_frames=0, n_boxes=0,
+                class_counts=Counter(), tod_counts=Counter(),
+                density_counts=Counter(), area_counts=Counter(),
+                ar_counts=Counter(), frame_paths=[],
+            )
+            g.video_stats[video_stem] = v
+        v.n_frames += 1
+        v.n_boxes += n_boxes
+        v.class_counts.update(class_counts)
+        v.tod_counts[tod] += 1
+        v.density_counts[dens_bin] += 1
+        v.area_counts.update(area_counts)
+        v.ar_counts.update(ar_counts)
+        v.frame_paths.append(rel_path)
 
     if skipped:
         print(f"[make_splits] skipped {skipped} files due to parse issues")
@@ -359,3 +381,183 @@ def write_manifest(out_path: Path, rel_paths: List[str]):
     rel_paths.sort()
     out_path.write_text("\n".join(rel_paths) + ("\n" if rel_paths else ""))
 
+
+
+# -----------------------------
+# Minimum video coverage / sparse-day fallback
+# -----------------------------
+
+def enforce_minimum_video_splits(
+    groups: Dict[str, GroupStats],
+    train: SplitState,
+    val: SplitState,
+    test: SplitState,
+    *,
+    seed: int,
+    train_frac: float,
+    val_frac: float,
+    test_frac: float,
+    min_val_videos: int = 2,
+    min_test_videos: int = 2,
+) -> Tuple[SplitState, SplitState, SplitState, Dict[str, str], Dict[str, Any]]:
+    """Guarantee complete-video holdouts when at least three videos exist.
+
+    Prefer moving whole site/device/day groups. If that cannot populate all
+    partitions, assign chronological *blocks of videos* from opposite ends of
+    the timeline; never divide a video's frame labels across splits.
+
+    On small datasets where two holdout videos each would leave no train videos,
+    lower both holdout minima to 1 and record the adjustment. With fewer than
+    three videos, fail loudly rather than silently writing empty holdouts.
+    """
+    if min_val_videos < 0 or min_test_videos < 0:
+        raise ValueError("Minimum video counts must be non-negative")
+    if not (0 < train_frac <= 1 and 0 <= val_frac < 1 and 0 <= test_frac < 1):
+        raise ValueError("Invalid split fractions")
+    if any(not g.video_stats for g in groups.values()):
+        raise ValueError("Missing video_stats: build groups using build_groups()")
+
+    videos: Dict[str, GroupStats] = {}
+    parent: Dict[str, str] = {}
+    for group_id, group in sorted(groups.items()):
+        for stem, v in group.video_stats.items():
+            if stem in videos:
+                raise ValueError(f"Video in multiple source groups: {stem}")
+            videos[stem], parent[stem] = v, group_id
+    total_videos = len(videos)
+    if total_videos < 3:
+        raise ValueError(
+            f"Only {total_videos} distinct video(s) with labels found; need at "
+            "least 3 to keep nonempty train/val/test without splitting videos."
+        )
+
+    requested = {"val": min_val_videos, "test": min_test_videos, "train": 1}
+    if total_videos >= min_val_videos + min_test_videos + 1:
+        effective = requested.copy()
+    else:
+        # If requested two-video holdouts are impossible, favor one video in
+        # each evaluation split plus at least one independent training video.
+        effective = {"train": 1, "val": int(val_frac > 0 and min_val_videos > 0),
+                     "test": int(test_frac > 0 and min_test_videos > 0)}
+    if sum(effective.values()) > total_videos:
+        raise ValueError("Requested minimum split sizes exceed available videos")
+
+    assign: Dict[str, str] = {}
+    for state in (train, val, test):
+        for gid in state.group_ids:
+            for stem in groups[gid].video_stats:
+                if stem in assign:
+                    raise ValueError(f"Duplicate group assignment for video {stem}")
+                assign[stem] = state.name
+    if set(assign) != set(videos):
+        raise ValueError("Greedy split failed to assign every video exactly once")
+
+    def counts():
+        return {name: sum(1 for a in assign.values() if a == name)
+                for name in ("train", "val", "test")}
+
+    def valid():
+        c = counts()
+        return all(c[name] >= minimum for name, minimum in effective.items())
+
+    mode = "day_groups"
+    # First repair the greedy assignment using whole groups only, preserving
+    # temporal isolation. No such repair is possible for fewer than 3 groups.
+    if not valid() and len(groups) >= 3:
+        for destination in ("train", "val", "test"):
+            while counts()[destination] < effective[destination]:
+                current = counts()
+                choices = []
+                for gid, group in groups.items():
+                    current_splits = {assign[stem] for stem in group.video_stats}
+                    if len(current_splits) != 1:
+                        continue
+                    donor = next(iter(current_splits))
+                    if donor == destination:
+                        continue
+                    n = len(group.video_stats)
+                    if current[donor] - n < effective[donor]:
+                        continue
+                    desired = {"train": train_frac, "val": val_frac,
+                               "test": test_frac}[destination]
+                    target = desired * sum(v.n_frames for v in videos.values())
+                    have = sum(v.n_frames for stem, v in videos.items()
+                               if assign[stem] == destination)
+                    choices.append((abs(target - (have + group.n_frames)),
+                                    group.n_frames, gid, group))
+                if not choices:
+                    break
+                _, _, _, selected = min(choices, key=lambda x: x[:3])
+                for stem in selected.video_stats:
+                    assign[stem] = destination
+        if valid():
+            mode = "repaired_day_groups"
+
+    if not valid():
+        # Exact group isolation is infeasible (or the greedily assigned groups
+        # could not be moved). Use deterministic, consecutive *video* blocks.
+        # Separating earliest from latest provides less temporal interleaving
+        # than uniformly random video assignments from the same day.
+        mode = "temporal_video_blocks"
+        order = sorted(videos, key=lambda stem: (
+            videos[stem].date, videos[stem].site, videos[stem].device,
+            stem.split("_")[2] if stem.count("_") >= 2 else stem,
+            stem,
+        ))
+        assign = {stem: "train" for stem in videos}
+        available = list(order)
+        targets = {
+            "val": val_frac * sum(v.n_frames for v in videos.values()),
+            "test": test_frac * sum(v.n_frames for v in videos.values()),
+        }
+        # Reserve the other evaluation split's minimum and one train video.
+        for destination, from_left, reserve in (
+            ("val", True, effective["test"] + effective["train"]),
+            ("test", False, effective["train"]),
+        ):
+            selected_frames = 0
+            selected_n = 0
+            while len(available) > reserve and (
+                selected_n < effective[destination]
+                or selected_frames < targets[destination]
+            ):
+                stem = available.pop(0 if from_left else -1)
+                assign[stem] = destination
+                selected_frames += videos[stem].n_frames
+                selected_n += 1
+
+    if not valid():
+        raise RuntimeError(f"Could not satisfy video minima: {counts()} < {effective}")
+
+    # Rebuild counters at video granularity for a correct report even when a
+    # source day is shared across splits. Restore original group IDs in states.
+    results = {}
+    for name, fraction in (("train", train_frac), ("val", val_frac), ("test", test_frac)):
+        state = SplitState(name, fraction)
+        included = sorted(stem for stem, assigned in assign.items() if assigned == name)
+        for stem in included:
+            state.add_group(videos[stem])
+        state.group_ids = sorted({parent[stem] for stem in included})
+        results[name] = state
+
+    split_by_group = {}
+    for stem, dest in assign.items():
+        split_by_group.setdefault(parent[stem], set()).add(dest)
+    broken = sorted(gid for gid, splits in split_by_group.items() if len(splits) > 1)
+    details = {
+        "strategy": mode,
+        "total_videos": total_videos,
+        "requested_min_videos": requested,
+        "effective_min_videos": effective,
+        "minimums_reduced": requested != effective,
+        "actual_videos": counts(),
+        "groups_shared_across_splits": broken,
+        "n_groups_shared_across_splits": len(broken),
+        "note": (
+            "Video-block fallback breaks site/device/day isolation but never "
+            "divides a video; temporal leakage between neighboring clips is "
+            "possible. Consider independent days for final test reporting."
+            if broken else "All site/device/day groups remain isolated."
+        ),
+    }
+    return results["train"], results["val"], results["test"], assign, details

@@ -8,6 +8,7 @@ from object_detection.splits.splitter import (
         split_groups_greedy,
         write_manifest,
         summarize_split,
+        enforce_minimum_video_splits,
 )
 
 def main():
@@ -22,6 +23,10 @@ def main():
     ap.add_argument("--train-frac", type=float, default=0.80)
     ap.add_argument("--val-frac", type=float, default=0.10)
     ap.add_argument("--test-frac", type=float, default=0.10)
+    ap.add_argument("--min-val-videos", type=int, default=2,
+                    help="Minimum distinct videos in validation (default: 2)")
+    ap.add_argument("--min-test-videos", type=int, default=2,
+                    help="Minimum distinct videos in test (default: 2)")
     ap.add_argument("--limit-files", type=int, default=None,
                     help="Debug: limit to N random label files")
 
@@ -68,6 +73,25 @@ def main():
         weights=weights,
     )
 
+    train, val, test, video_assignments, coverage = enforce_minimum_video_splits(
+        groups, train, val, test,
+        seed=args.seed,
+        train_frac=args.train_frac,
+        val_frac=args.val_frac,
+        test_frac=args.test_frac,
+        min_val_videos=args.min_val_videos,
+        min_test_videos=args.min_test_videos,
+    )
+    print(f"[make_splits] assignment strategy={coverage['strategy']} "
+          f"videos={coverage['actual_videos']} "
+          f"shared_groups={coverage['n_groups_shared_across_splits']}")
+    if coverage['minimums_reduced']:
+        print("[make_splits] WARNING: insufficient distinct videos for requested "
+              f"minimums; using {coverage['effective_min_videos']}")
+    if coverage['n_groups_shared_across_splits']:
+        print("[make_splits] WARNING: video-level fallback splits day/device groups; "
+              "neighboring clips can be temporally correlated")
+
     out_dir = args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -76,14 +100,37 @@ def main():
     write_manifest(out_dir / "val.txt", val.frame_paths)
     write_manifest(out_dir / "test.txt", test.frame_paths)
 
-    # Group assignment CSV
+    # Group assignment CSV: report *subgroup* counts accurately if a date
+    # spans multiple splits. The same group_id can legitimately appear more
+    # than once with distinct split labels under temporal-video fallback.
+    group_rows = {}
+    video_rows = []
+    for gid, g in sorted(groups.items()):
+        for stem, v in sorted(g.video_stats.items()):
+            name = video_assignments[stem]
+            video_rows.append((stem, name, gid, g.site, g.device, g.date,
+                               v.n_frames, v.n_boxes))
+            key = (gid, name)
+            entry = group_rows.setdefault(key, {"frames": 0, "boxes": 0,
+                                                "videos": 0, "group": g})
+            entry["frames"] += v.n_frames
+            entry["boxes"] += v.n_boxes
+            entry["videos"] += 1
+
     with (out_dir / "group_assignments.csv").open("w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["group_id", "split", "site", "device", "date", "n_frames", "n_boxes"])
-        for s in [train, val, test]:
-            for gid in s.group_ids:
-                g = groups[gid]
-                w.writerow([gid, s.name, g.site, g.device, g.date, g.n_frames, g.n_boxes])
+        w.writerow(["group_id", "split", "site", "device", "date",
+                    "n_frames", "n_boxes", "n_videos"])
+        for (gid, name), d in sorted(group_rows.items()):
+            g = d["group"]
+            w.writerow([gid, name, g.site, g.device, g.date,
+                        d["frames"], d["boxes"], d["videos"]])
+
+    with (out_dir / "video_assignments.csv").open("w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["video_stem", "split", "group_id", "site", "device",
+                    "date", "n_frames", "n_boxes"])
+        w.writerows(sorted(video_rows))
 
     # JSON report
     full_report = {
@@ -94,8 +141,10 @@ def main():
             "fractions": {"train": args.train_frac, "val": args.val_frac, "test": args.test_frac},
             "weights": weights,
             "grouping": "group_id = site|device|YYYYMMDD",
+            "minimum_val_videos": args.min_val_videos,
+            "minimum_test_videos": args.min_test_videos,
             "notes": [
-                "Split is group-wise to reduce leakage from temporally adjacent frames.",
+                "Split starts group-wise; fallback may break day/device groups when needed to ensure complete-video holdouts.",
                 "Time-of-day bucket derives from video clip HHMMSS in stem; frames inherit clip bucket.",
                 "Balancing is soft; rare classes are prioritized earlier in greedy assignment.",
             ],
@@ -103,17 +152,18 @@ def main():
         "targets": {
             "total_frames": report["total_frames"],
             "target_frames": report["target_frames"],
-            "actual_frames": report["actual_frames"],
+            "actual_frames": {"train": train.n_frames, "val": val.n_frames, "test": test.n_frames},
             "global_class_dist": report["class_dist"],
             "global_tod_dist": report["tod_dist"],
             "global_density_dist": report["density_dist"],
             "global_area_dist": report["area_dist"],
             "global_ar_dist": report["ar_dist"],
         },
+        "video_coverage": coverage,
         "splits": {
-            "train": summarize_split(train),
-            "val": summarize_split(val),
-            "test": summarize_split(test),
+            "train": {**summarize_split(train), "n_videos": coverage["actual_videos"]["train"]},
+            "val": {**summarize_split(val), "n_videos": coverage["actual_videos"]["val"]},
+            "test": {**summarize_split(test), "n_videos": coverage["actual_videos"]["test"]},
         },
     }
 
@@ -124,6 +174,7 @@ def main():
     print(f"  {out_dir / 'val.txt'}   ({len(val.frame_paths)} frames)")
     print(f"  {out_dir / 'test.txt'}  ({len(test.frame_paths)} frames)")
     print(f"  {out_dir / 'group_assignments.csv'}")
+    print(f"  {out_dir / 'video_assignments.csv'}")
     print(f"  {out_dir / 'split_report.json'}")
 
 
