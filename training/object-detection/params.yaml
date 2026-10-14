@@ -18,10 +18,10 @@ data:
     data/01_raw/sv_water_conditions/SV_conditions_tracking_tenas_2025.csv
   neg: --include-negatives
   neg_ratio: 0.10
-  neg_per_vid: 11
+  neg_per_vid: 70
   # Human-reviewed Label Studio tasks; add sites here as annotation coverage is verified.
-  neg_annotated_sites: stephenssmolt
-  neg_annotated_per_vid: 12
+  neg_annotated_sites: brechin fcn fcs fsc pp
+  neg_annotated_per_vid: 40
   # Exclude neighboring frames around annotated fish to reduce borderline negatives.
   neg_exclusion_frames: 3
   bucket: prod-salmonvision-edge-assets-labelstudio-source
@@ -56,9 +56,9 @@ train:
   model: yolov8n.pt
   run_name: 2026-10-08_tuned_full_run_stephenssmolt
 exp:
-  train_sites: stephenssmolt
-  val_sites: stephenssmolt
-  test_sites: stephenssmolt
+  train_sites: brechin fcn fcs fsc pp
+  val_sites: brechin fcn fcs fsc pp
+  test_sites: brechin fcn fcs fsc pp
 eval:
   imgsz: 640
   batch: 32
