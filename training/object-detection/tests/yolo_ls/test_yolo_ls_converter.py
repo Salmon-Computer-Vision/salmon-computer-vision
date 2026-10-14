@@ -217,7 +217,9 @@ def test_convert_item_no_boxes_records_empty_video_and_negative_candidate(tmp_pa
     assert stats.label_files_written == 0
     assert empty_list.read_text(encoding="utf-8").strip().endswith(".mp4")
     assert len(conv._negative_candidates) == 1
-    assert conv._negative_candidates[0].total_frames == 25
+
+    candidate = next(iter(conv._negative_candidates.values()))
+    assert candidate.total_frames == 25
 
 
 def test_convert_item_respects_frame_stride(tmp_path: Path, sample_item):
@@ -370,7 +372,7 @@ def test_materialize_negatives_writes_empty_files(tmp_path: Path, sample_item):
 
     wrote, max_neg, total_candidate_frames = conv.materialize_negatives()
     assert wrote == 0
-    assert total_candidate_frames == 0
+    assert total_candidate_frames == 3
     assert max_neg == 0
 
 

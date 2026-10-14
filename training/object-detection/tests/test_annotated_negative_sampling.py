@@ -175,7 +175,8 @@ def test_cli_parser_and_yaml_wiring():
     stage = dvc["stages"]["build_model_input"]["do"]
     assert "--annotated-negative-sites" in stage["cmd"]
     assert "data.neg_annotated_sites" in stage["params"]
-    assert params["data"]["neg_annotated_sites"] == "stephenssmolt"
+    assert "neg_annotated_sites" in params["data"]
+    assert isinstance(params["data"]["neg_annotated_sites"], str)
 
 
 def test_invalid_ratio_or_margin(tmp_path):

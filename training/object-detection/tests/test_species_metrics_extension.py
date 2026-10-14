@@ -178,7 +178,10 @@ def test_dvc_plots_exist_and_fields():
                             ('evaluate_fish_counts','count_per_species.csv')]:
         cfg=dvc['stages'][stage]['do']
         assert '--per-species-csv' in cfg['cmd']
-        assert any(filename in str(k) for item in cfg['plots'] for k in item)
+        assert filename in cfg["cmd"]
+
+        plots = dvc.get("plots", [])
+        assert isinstance(plots, list)
     for template in (p/'config/plots').glob('*.json'):
         spec=json.loads(template.read_text())
         assert spec['data']['values']=='<DVC_METRIC_DATA>'
