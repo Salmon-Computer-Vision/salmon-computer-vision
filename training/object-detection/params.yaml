@@ -71,7 +71,7 @@ tracking_eval:
   coord_mode: percent
   mot_benchmark: SalmonVision
   conf: 0.05
-  iou: 0.7
+  iou: 0.5
   imgsz: 640
   device: 1
   metric_annotation_scope: verified  # Label Studio tasks are human-reviewed; see annotation_coverage.csv

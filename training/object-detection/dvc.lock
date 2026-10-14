@@ -350,8 +350,8 @@ stages:
       size: 23
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites
       hash: md5
-      md5: 3a35878891ca772fa5a2e97a58cd4386.dir
-      size: 99970230382
+      md5: e14ca7e8a048373c65740fcc93cc9ded.dir
+      size: 99970230410
       nfiles: 149
     - path: scripts/crop_site_frames.py
       hash: md5
@@ -3650,8 +3650,8 @@ stages:
       size: 547
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites
       hash: md5
-      md5: 3a35878891ca772fa5a2e97a58cd4386.dir
-      size: 99970230382
+      md5: e14ca7e8a048373c65740fcc93cc9ded.dir
+      size: 99970230410
       nfiles: 149
     - path: scripts/merge_packed_site_datasets.py
       hash: md5
@@ -3695,20 +3695,20 @@ stages:
     deps:
     - path: data/02_interim/video_metadata_index.csv
       hash: md5
-      md5: 0ca998c8c3035944f920c89789d6434a
-      size: 11185337
+      md5: 312cb3de64d1c0cf9652ea9ebefd0a8a
+      size: 11630408
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 6d02962f50a0232dd93a94d31ce8c87e
-      size: 478791
+      md5: 336453e9121220b8b5977725d1f7dc7c
+      size: 3664922
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 55664e66daaf3dc3ca0422da766c0252
-      size: 1776670
+      md5: 3746a559f81465988e543811c92a9b21
+      size: 25715156
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: 5df984625d15e09b43845649b37f2a7e
-      size: 528020
+      md5: f191266e0a2a0f899611d7d7d3cc532b
+      size: 3244970
     - path: scripts/make_tracking_eval_set.py
       hash: md5
       md5: 2201259855c35f63c9dc98b04f396ad1
@@ -3724,8 +3724,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: 8c6a68d0293a089d300da849d4a83658
-      size: 84060
+      md5: c8dd90b11e46f456653b85bf314313d2
+      size: 41824
   make_tracking_eval_set@test:
     cmd: scripts/make_tracking_eval_set.py --manifest 
       data/04_dataset/salmon_dataset/site_manifests/test.txt --split test 
@@ -3741,20 +3741,20 @@ stages:
     deps:
     - path: data/02_interim/video_metadata_index.csv
       hash: md5
-      md5: 0ca998c8c3035944f920c89789d6434a
-      size: 11185337
+      md5: 312cb3de64d1c0cf9652ea9ebefd0a8a
+      size: 11630408
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 6d02962f50a0232dd93a94d31ce8c87e
-      size: 478791
+      md5: 336453e9121220b8b5977725d1f7dc7c
+      size: 3664922
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 55664e66daaf3dc3ca0422da766c0252
-      size: 1776670
+      md5: 3746a559f81465988e543811c92a9b21
+      size: 25715156
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: 5df984625d15e09b43845649b37f2a7e
-      size: 528020
+      md5: f191266e0a2a0f899611d7d7d3cc532b
+      size: 3244970
     - path: scripts/make_tracking_eval_set.py
       hash: md5
       md5: 2201259855c35f63c9dc98b04f396ad1
@@ -3770,8 +3770,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: e51554341e117d52ddf241bd35579dcf
-      size: 73085
+      md5: be2fba2db7dc02b973540e6abb29a97b
+      size: 52048
   build_tracking_ground_truth@val:
     cmd: scripts/build_tracking_ground_truth.py --eval-csv 
       data/03_processed/tracking_eval/val_videos.csv --site-index-dir 
@@ -3789,13 +3789,13 @@ stages:
       size: 547
     - path: data/02_interim/labelstudio_site_index
       hash: md5
-      md5: ca0d311020af9d4ae061512084c9eaf8.dir
-      size: 20589
-      nfiles: 13
+      md5: aed67a4bff3f77f93b7db2ffaa6c8d35.dir
+      size: 23723
+      nfiles: 18
     - path: data/02_interim/video_metadata_index.csv
       hash: md5
-      md5: 0ca998c8c3035944f920c89789d6434a
-      size: 11185337
+      md5: 312cb3de64d1c0cf9652ea9ebefd0a8a
+      size: 11630408
     - path: 
         data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       hash: md5
@@ -3803,8 +3803,8 @@ stages:
       size: 19865
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: 8c6a68d0293a089d300da849d4a83658
-      size: 84060
+      md5: c8dd90b11e46f456653b85bf314313d2
+      size: 41824
     - path: scripts/build_tracking_ground_truth.py
       hash: md5
       md5: 91f79488c63f89169790ff27009223ef
@@ -3828,12 +3828,12 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_gt.csv
       hash: md5
-      md5: 3c210a5ba30577911e5c040576cb6140
-      size: 23172292
+      md5: 9c6a7b90cc90518809dc27c8fb2f33aa
+      size: 62836691
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 09937678f2719f4b6b3f98f93fcdedec
-      size: 69937
+      md5: 25e5f1864553cf38bf7ef98af1e31960
+      size: 37476
   build_tracking_ground_truth@test:
     cmd: scripts/build_tracking_ground_truth.py --eval-csv 
       data/03_processed/tracking_eval/test_videos.csv --site-index-dir 
@@ -3851,13 +3851,13 @@ stages:
       size: 547
     - path: data/02_interim/labelstudio_site_index
       hash: md5
-      md5: ca0d311020af9d4ae061512084c9eaf8.dir
-      size: 20589
-      nfiles: 13
+      md5: aed67a4bff3f77f93b7db2ffaa6c8d35.dir
+      size: 23723
+      nfiles: 18
     - path: data/02_interim/video_metadata_index.csv
       hash: md5
-      md5: 0ca998c8c3035944f920c89789d6434a
-      size: 11185337
+      md5: 312cb3de64d1c0cf9652ea9ebefd0a8a
+      size: 11630408
     - path: 
         data/02_interim/yolo_condition_negatives/condition_negative_video_metadata.csv
       hash: md5
@@ -3865,8 +3865,8 @@ stages:
       size: 19865
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: e51554341e117d52ddf241bd35579dcf
-      size: 73085
+      md5: be2fba2db7dc02b973540e6abb29a97b
+      size: 52048
     - path: scripts/build_tracking_ground_truth.py
       hash: md5
       md5: 91f79488c63f89169790ff27009223ef
@@ -3890,12 +3890,12 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_gt.csv
       hash: md5
-      md5: 4e865ce5d15e8d219cd8266d1e9a8d78
-      size: 13510949
+      md5: 1ef35cb5487824112b23c6cfacd38e58
+      size: 72625130
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 6133fbd1dec8c80ade889162b091fde7
-      size: 60598
+      md5: e79c3cabb5600995b0bbbc8ebc2eafdd
+      size: 46489
   materialize_mot_ground_truth@val:
     cmd: scripts/materialize_mot_ground_truth.py --gt-csv 
       data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
@@ -4887,9 +4887,9 @@ stages:
     deps:
     - path: data/02_interim/annotation_stats_by_site
       hash: md5
-      md5: 9d931926ebd175012ec8fe4e3ab2234d.dir
-      size: 18066
-      nfiles: 36
+      md5: e68b9f4390a24ff98630a3535c2a89b1.dir
+      size: 24242
+      nfiles: 51
     - path: scripts/aggregate_site_class_stats.py
       hash: md5
       md5: 821ae52f0de3d10aeb6742524339ffb5
@@ -4897,27 +4897,20 @@ stages:
     params:
       params.yaml:
         data.sites:
-        - tankeeah
-        - kitwanga
-        - bear
-        - kitkiata
-        - copper
-        - kwakwa
-        - Elbow
-        - koeye
-        - redoubt
-        - chignik
-        - klukshu
-        - stephenssmolt
+        - brechin
+        - fcn
+        - fcs
+        - fsc
+        - pp
     outs:
     - path: data/03_processed/annotation_stats/site_class_box_counts.csv
       hash: md5
-      md5: e54226c9b26d3352ff1fb169a2300f4c
-      size: 8454
+      md5: 89c1abccc4b381ed1d7606a804ad51a2
+      size: 2768
     - path: data/03_processed/annotation_stats/site_class_frame_counts.csv
       hash: md5
-      md5: 837740509cd71312f5f24bc248fb89e3
-      size: 8456
+      md5: 54484137e1eeb2b153fe6b7c5992d220
+      size: 2768
   build_model_input@brechin:
     cmd: scripts/yolo_converter_ls_video.py --input-manifest 
       data/02_interim/labelstudio_site_index/brechin.json --data-yaml 
@@ -5893,3 +5886,114 @@ stages:
       md5: bc829eaeba445f79dc2cb9e931be0543.dir
       size: 19515265065
       nfiles: 9
+  collect_site_class_stats@brechin:
+    cmd: src="data/02_interim/sites/brechin/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/brechin/yolo_annos_stats" &&
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: 
+        data/02_interim/sites/brechin/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 03b05979862f1b254cad80412ee21da5
+      size: 677
+    - path: 
+        data/02_interim/sites/brechin/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: c7329a8c46fe3b362e9234a15ac899e7
+      size: 683
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/brechin/yolo_annos_stats
+      hash: md5
+      md5: 5fea30ba20c02a849cd33ec1a29e9ba6.dir
+      size: 1360
+      nfiles: 2
+  collect_site_class_stats@fcn:
+    cmd: src="data/02_interim/sites/fcn/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/fcn/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: data/02_interim/sites/fcn/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: e9c97e793da32fba6e6b090bbda0fadf
+      size: 600
+    - path: 
+        data/02_interim/sites/fcn/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: cc06c89a42be45b5e8e107cce4488e04
+      size: 607
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/fcn/yolo_annos_stats
+      hash: md5
+      md5: f5032d6ba359221dc5b6a24169080a3c.dir
+      size: 1207
+      nfiles: 2
+  collect_site_class_stats@fcs:
+    cmd: src="data/02_interim/sites/fcs/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/fcs/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: data/02_interim/sites/fcs/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: a9c05e1d09ed8f2a121730e68272cc3a
+      size: 600
+    - path: 
+        data/02_interim/sites/fcs/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: eee0b32639386c49972698ee97c21c8f
+      size: 604
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/fcs/yolo_annos_stats
+      hash: md5
+      md5: ae3a05b4bd5c703e0930913eec6da251.dir
+      size: 1204
+      nfiles: 2
+  collect_site_class_stats@fsc:
+    cmd: src="data/02_interim/sites/fsc/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/fsc/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: data/02_interim/sites/fsc/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 579bafad83e2409cb4933fbedfdbd658
+      size: 572
+    - path: 
+        data/02_interim/sites/fsc/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 2516f16d23fbb39280c26fb13bdd068d
+      size: 578
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/fsc/yolo_annos_stats
+      hash: md5
+      md5: a19207964dfdab4fd5a8f2305ffa048e.dir
+      size: 1150
+      nfiles: 2
+  collect_site_class_stats@pp:
+    cmd: src="data/02_interim/sites/pp/yolo_annos_stats" && 
+      dst="data/02_interim/annotation_stats_by_site/pp/yolo_annos_stats" && 
+      mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
+      "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
+      "$dst/site_class_box_counts.csv"
+    deps:
+    - path: data/02_interim/sites/pp/yolo_annos_stats/site_class_box_counts.csv
+      hash: md5
+      md5: 86406a448222ab1be85e7574230a2bc1
+      size: 579
+    - path: 
+        data/02_interim/sites/pp/yolo_annos_stats/site_class_frame_counts.csv
+      hash: md5
+      md5: 354e257dcd81eff2e486a91f8ec286e3
+      size: 586
+    outs:
+    - path: data/02_interim/annotation_stats_by_site/pp/yolo_annos_stats
+      hash: md5
+      md5: e0515dbe8f10ab3b9cf9160a4ba0a81a.dir
+      size: 1165
+      nfiles: 2
