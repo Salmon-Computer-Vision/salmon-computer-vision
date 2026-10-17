@@ -350,9 +350,9 @@ stages:
       size: 23
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites
       hash: md5
-      md5: e14ca7e8a048373c65740fcc93cc9ded.dir
-      size: 99970230410
-      nfiles: 149
+      md5: 62d35c9150dc2d7d4a99499c008500c4.dir
+      size: 99970060984
+      nfiles: 148
     - path: scripts/crop_site_frames.py
       hash: md5
       md5: b91ef4cf18556102a4724e77e1a41d88
@@ -397,8 +397,8 @@ stages:
     deps:
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 3746a559f81465988e543811c92a9b21
-      size: 25715156
+      md5: 2e41de09b7221f03185a03250340e4e8
+      size: 21941676
     - path: scripts/make_train_small.py
       hash: md5
       md5: b387575a44366a3a0a29b2c88ebd2f95
@@ -418,8 +418,8 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/site_manifests/train_small.txt
       hash: md5
-      md5: bfe87ca7f492e6b0a5d827ba055dba70
-      size: 1757711
+      md5: aacfcfe94f107b148116bff4c7904cf3
+      size: 1760793
   tune_yolo:
     cmd: CUDA_VISIBLE_DEVICES=0 uv run --extra cu124 scripts/tune_yolo.py 
       --data-yaml data/04_dataset/salmon_dataset/yolo_workdir/data_small.yaml 
@@ -508,12 +508,12 @@ stages:
       size: 312
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
       hash: md5
-      md5: eda5fcca139661f14776b0c38fbc8c6f
-      size: 77943899
+      md5: a8d451b0c88ca4886d0d8ba5ac6868f5
+      size: 66428279
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: fa24512ad1a117e2467e07b146a8ca13
-      size: 9942171
+      md5: 366f24ef1e22ef9c0d3342de2ce7b406
+      size: 15627046
     - path: scripts/train_yolo_best.py
       hash: md5
       md5: b4071b24f32b11d743a2c21cd8daadbd
@@ -542,14 +542,14 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt
       hash: md5
-      md5: 45bc90b2ecdcad52e00506053ccde587.dir
-      size: 17847604
+      md5: 6a9d8dd5e2ef4132eabeafe0b272ee0c.dir
+      size: 18569627
       nfiles: 21
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_summary.json
       hash: md5
-      md5: 6121794cec6653b7ce73ff28551f2d08
-      size: 57099
+      md5: fa21e8dc5f08d8adb0d2dc28c52115ea
+      size: 57100
   evaluate:
     cmd: uv run --extra cu124 scripts/eval_yolo.py --model 
       data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
@@ -568,13 +568,13 @@ stages:
       size: 684
     - path: data/04_dataset/salmon_dataset/site_eval_workdir/test.txt
       hash: md5
-      md5: f75d310d7180b7d212d73b547f31b636
-      size: 10991990
+      md5: b2f58a070113bfcdef38b21736d26231
+      size: 16725190
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       hash: md5
-      md5: 16d1d4b99a29b948157d7931de291f94
-      size: 6235747
+      md5: f78cbb43e8d4eb6f4c562ed12a89027b
+      size: 6246819
     - path: scripts/eval_yolo.py
       hash: md5
       md5: ff79161891fc4d99deedb2b7de2abd8f
@@ -603,19 +603,19 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_test
       hash: md5
-      md5: 7dfd54230c0bf55800451b4ebd6eb152.dir
-      size: 51686131
+      md5: 90382e334535c60e181128cf4d333327.dir
+      size: 63271151
       nfiles: 13
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_test_plot.json
       hash: md5
-      md5: 71ed67df93effad476812c6957eac9f0
-      size: 567
+      md5: 2a399ba95376a003f6edc36cd71921f1
+      size: 566
     - path: 
         data/04_dataset/salmon_dataset/eval/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt_test_summary.json
       hash: md5
-      md5: 715fccdf1ff0000f712be64582502102
-      size: 1647
+      md5: 31dd359eb787bfbb8bf01c90cd976e23
+      size: 1645
   make_site_manifests:
     cmd: scripts/make_site_manifests.py --manifests-root 
       data/04_dataset/salmon_dataset/dataset_sharded/manifests --out-root 
@@ -630,16 +630,16 @@ stages:
       size: 708
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt
       hash: md5
-      md5: 336453e9121220b8b5977725d1f7dc7c
-      size: 3664922
+      md5: a913b623ee9b8747c8bc347010fb8a4a
+      size: 5521697
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/train.txt
       hash: md5
-      md5: 3746a559f81465988e543811c92a9b21
-      size: 25715156
+      md5: 2e41de09b7221f03185a03250340e4e8
+      size: 21941676
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/val.txt
       hash: md5
-      md5: f191266e0a2a0f899611d7d7d3cc532b
-      size: 3244970
+      md5: ce7599bb68b9a5c4584bb8adca92888c
+      size: 5064130
     - path: scripts/make_site_manifests.py
       hash: md5
       md5: 6a0322b5269cc81ec2a4ca420527c173
@@ -671,20 +671,20 @@ stages:
     - path: 
         data/04_dataset/salmon_dataset/site_manifests/site_manifest_summary.json
       hash: md5
-      md5: ecb16b1dc0b103626d2af49a9925648c
+      md5: 30449cf6820e238bffba06f1ff82be27
       size: 73
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 336453e9121220b8b5977725d1f7dc7c
-      size: 3664922
+      md5: a913b623ee9b8747c8bc347010fb8a4a
+      size: 5521697
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 3746a559f81465988e543811c92a9b21
-      size: 25715156
+      md5: 2e41de09b7221f03185a03250340e4e8
+      size: 21941676
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: f191266e0a2a0f899611d7d7d3cc532b
-      size: 3244970
+      md5: ce7599bb68b9a5c4584bb8adca92888c
+      size: 5064130
   rewrite_manifest:
     cmd: cp data/04_dataset/salmon_dataset/site_manifests/data.yaml 
       data/04_dataset/salmon_dataset/yolo_workdir/data.yaml && cp 
@@ -718,20 +718,20 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 336453e9121220b8b5977725d1f7dc7c
-      size: 3664922
+      md5: a913b623ee9b8747c8bc347010fb8a4a
+      size: 5521697
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 3746a559f81465988e543811c92a9b21
-      size: 25715156
+      md5: 2e41de09b7221f03185a03250340e4e8
+      size: 21941676
     - path: data/04_dataset/salmon_dataset/site_manifests/train_small.txt
       hash: md5
-      md5: bfe87ca7f492e6b0a5d827ba055dba70
-      size: 1757711
+      md5: aacfcfe94f107b148116bff4c7904cf3
+      size: 1760793
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: f191266e0a2a0f899611d7d7d3cc532b
-      size: 3244970
+      md5: ce7599bb68b9a5c4584bb8adca92888c
+      size: 5064130
     - path: data/04_dataset/salmon_dataset/yolo_workdir/.unpack_complete
       hash: md5
       md5: d41d8cd98f00b204e9800998ecf8427e
@@ -759,20 +759,20 @@ stages:
       size: 318
     - path: data/04_dataset/salmon_dataset/yolo_workdir/test.txt
       hash: md5
-      md5: f75d310d7180b7d212d73b547f31b636
-      size: 10991990
+      md5: b2f58a070113bfcdef38b21736d26231
+      size: 16725190
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train.txt
       hash: md5
-      md5: eda5fcca139661f14776b0c38fbc8c6f
-      size: 77943899
+      md5: a8d451b0c88ca4886d0d8ba5ac6868f5
+      size: 66428279
     - path: data/04_dataset/salmon_dataset/yolo_workdir/train_small.txt
       hash: md5
-      md5: a1ce59ab9501ad7f9166df34b2da19f7
-      size: 5327711
+      md5: 7ea6b9fa00b9126f516df51e81e21476
+      size: 5330793
     - path: data/04_dataset/salmon_dataset/yolo_workdir/val.txt
       hash: md5
-      md5: fa24512ad1a117e2467e07b146a8ca13
-      size: 9942171
+      md5: 366f24ef1e22ef9c0d3342de2ce7b406
+      size: 15627046
   plot_site_class_stats:
     cmd: scripts/plot_site_class_stats.py --stats-dir 
       data/02_interim/yolo_annos_stats --out-dir 
@@ -817,8 +817,8 @@ stages:
     deps:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests/test.txt
       hash: md5
-      md5: 336453e9121220b8b5977725d1f7dc7c
-      size: 3664922
+      md5: a913b623ee9b8747c8bc347010fb8a4a
+      size: 5521697
     - path: data/04_dataset/salmon_dataset/yolo_workdir/data.yaml
       hash: md5
       md5: e6e439914481fba14b685095cbff4279
@@ -846,8 +846,8 @@ stages:
       size: 684
     - path: data/04_dataset/salmon_dataset/site_eval_workdir/test.txt
       hash: md5
-      md5: f75d310d7180b7d212d73b547f31b636
-      size: 10991990
+      md5: b2f58a070113bfcdef38b21736d26231
+      size: 16725190
   index_labelstudio_sites:
     cmd: scripts/index_labelstudio_sites.py --json-root 
       data/01_raw/labelstudio_annos --out-dir 
@@ -3650,9 +3650,9 @@ stages:
       size: 547
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites
       hash: md5
-      md5: e14ca7e8a048373c65740fcc93cc9ded.dir
-      size: 99970230410
-      nfiles: 149
+      md5: 62d35c9150dc2d7d4a99499c008500c4.dir
+      size: 99970060984
+      nfiles: 148
     - path: scripts/merge_packed_site_datasets.py
       hash: md5
       md5: 570af779d421728bc60a41b2dc1344e6
@@ -3673,12 +3673,12 @@ stages:
     outs:
     - path: data/04_dataset/packed_dataset_manifest.csv
       hash: md5
-      md5: 6191e70d1c203798da4227942746f3ce
-      size: 160098
+      md5: 880ea28408f31b487bd5904037c18d4b
+      size: 159897
     - path: data/04_dataset/salmon_dataset/dataset_sharded/manifests
       hash: md5
-      md5: b134ce934c200317b4c26606065e7439.dir
-      size: 32625779
+      md5: 369630d1b13b2023f4bf94fd8843b33f.dir
+      size: 32528234
       nfiles: 5
   make_tracking_eval_set@val:
     cmd: scripts/make_tracking_eval_set.py --manifest 
@@ -3699,16 +3699,16 @@ stages:
       size: 11630408
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 336453e9121220b8b5977725d1f7dc7c
-      size: 3664922
+      md5: a913b623ee9b8747c8bc347010fb8a4a
+      size: 5521697
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 3746a559f81465988e543811c92a9b21
-      size: 25715156
+      md5: 2e41de09b7221f03185a03250340e4e8
+      size: 21941676
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: f191266e0a2a0f899611d7d7d3cc532b
-      size: 3244970
+      md5: ce7599bb68b9a5c4584bb8adca92888c
+      size: 5064130
     - path: scripts/make_tracking_eval_set.py
       hash: md5
       md5: 2201259855c35f63c9dc98b04f396ad1
@@ -3724,8 +3724,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: c8dd90b11e46f456653b85bf314313d2
-      size: 41824
+      md5: 1acf063b44c15553725eaa82056ac569
+      size: 66495
   make_tracking_eval_set@test:
     cmd: scripts/make_tracking_eval_set.py --manifest 
       data/04_dataset/salmon_dataset/site_manifests/test.txt --split test 
@@ -3745,16 +3745,16 @@ stages:
       size: 11630408
     - path: data/04_dataset/salmon_dataset/site_manifests/test.txt
       hash: md5
-      md5: 336453e9121220b8b5977725d1f7dc7c
-      size: 3664922
+      md5: a913b623ee9b8747c8bc347010fb8a4a
+      size: 5521697
     - path: data/04_dataset/salmon_dataset/site_manifests/train.txt
       hash: md5
-      md5: 3746a559f81465988e543811c92a9b21
-      size: 25715156
+      md5: 2e41de09b7221f03185a03250340e4e8
+      size: 21941676
     - path: data/04_dataset/salmon_dataset/site_manifests/val.txt
       hash: md5
-      md5: f191266e0a2a0f899611d7d7d3cc532b
-      size: 3244970
+      md5: ce7599bb68b9a5c4584bb8adca92888c
+      size: 5064130
     - path: scripts/make_tracking_eval_set.py
       hash: md5
       md5: 2201259855c35f63c9dc98b04f396ad1
@@ -3770,8 +3770,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: be2fba2db7dc02b973540e6abb29a97b
-      size: 52048
+      md5: e57ab45c6e8613c0923e71fdfa8696e5
+      size: 71762
   build_tracking_ground_truth@val:
     cmd: scripts/build_tracking_ground_truth.py --eval-csv 
       data/03_processed/tracking_eval/val_videos.csv --site-index-dir 
@@ -3803,8 +3803,8 @@ stages:
       size: 19865
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: c8dd90b11e46f456653b85bf314313d2
-      size: 41824
+      md5: 1acf063b44c15553725eaa82056ac569
+      size: 66495
     - path: scripts/build_tracking_ground_truth.py
       hash: md5
       md5: 91f79488c63f89169790ff27009223ef
@@ -3828,12 +3828,12 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_gt.csv
       hash: md5
-      md5: 9c6a7b90cc90518809dc27c8fb2f33aa
-      size: 62836691
+      md5: 3f84706ecdd377bfc96ec2cfe50c1cfd
+      size: 98349910
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 25e5f1864553cf38bf7ef98af1e31960
-      size: 37476
+      md5: d1384fe61375b0858ddff2d46f5b38bf
+      size: 59600
   build_tracking_ground_truth@test:
     cmd: scripts/build_tracking_ground_truth.py --eval-csv 
       data/03_processed/tracking_eval/test_videos.csv --site-index-dir 
@@ -3865,8 +3865,8 @@ stages:
       size: 19865
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: be2fba2db7dc02b973540e6abb29a97b
-      size: 52048
+      md5: e57ab45c6e8613c0923e71fdfa8696e5
+      size: 71762
     - path: scripts/build_tracking_ground_truth.py
       hash: md5
       md5: 91f79488c63f89169790ff27009223ef
@@ -3890,12 +3890,12 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_gt.csv
       hash: md5
-      md5: 1ef35cb5487824112b23c6cfacd38e58
-      size: 72625130
+      md5: e6c9488695c10b24a07d0c5b17f336ba
+      size: 108484129
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: e79c3cabb5600995b0bbbc8ebc2eafdd
-      size: 46489
+      md5: 55c89e1495056ee89471f44931aab0d2
+      size: 63913
   materialize_mot_ground_truth@val:
     cmd: scripts/materialize_mot_ground_truth.py --gt-csv 
       data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
@@ -3994,8 +3994,8 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: 8c6a68d0293a089d300da849d4a83658
-      size: 84060
+      md5: 1acf063b44c15553725eaa82056ac569
+      size: 66495
     - path: scripts/materialize_tracking_videos.py
       hash: md5
       md5: 180c1365870f8aa120c5d4c66ba42912
@@ -4015,11 +4015,11 @@ stages:
       size: 0
     - path: data/03_processed/tracking_eval/val_video_download_status.csv
       hash: md5
-      md5: 16bf12bc188aba8d1bc3dc40de8dcbe3
-      size: 64916
+      md5: badb630189fd586b5f6d6572f232313c
+      size: 54240
     - path: data/03_processed/tracking_eval/val_video_download_summary.json
       hash: md5
-      md5: a4da737f0174ff9dccc54a6666d2dd60
+      md5: ab2efcfbaf6995d18786c32c29be3053
       size: 143
   materialize_tracking_videos@test:
     cmd: scripts/materialize_tracking_videos.py --eval-csv 
@@ -4032,8 +4032,8 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: e51554341e117d52ddf241bd35579dcf
-      size: 73085
+      md5: e57ab45c6e8613c0923e71fdfa8696e5
+      size: 71762
     - path: scripts/materialize_tracking_videos.py
       hash: md5
       md5: 180c1365870f8aa120c5d4c66ba42912
@@ -4053,11 +4053,11 @@ stages:
       size: 0
     - path: data/03_processed/tracking_eval/test_video_download_status.csv
       hash: md5
-      md5: ec0467553cf9e98a468ff2c44e9fcb75
-      size: 56385
+      md5: 6b90ce637e5ba2b81b89e40159cce2ca
+      size: 58373
     - path: data/03_processed/tracking_eval/test_video_download_summary.json
       hash: md5
-      md5: 68228882491df656d7705e919d37788a
+      md5: 22ef53b7271471f042d51ff2c17648c0
       size: 143
   run_tracking_inference@val:
     cmd: uv run --extra cu124 scripts/run_tracking_inference.py --eval-csv 
@@ -4066,7 +4066,7 @@ stages:
       --sequences-csv data/03_processed/tracking_eval/val_sequences.csv --split 
       val --model 
       data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
-      --tracker botsort.yaml --conf 0.05 --iou 0.7 --imgsz 640 --device 1 
+      --tracker botsort.yaml --conf 0.05 --iou 0.5 --imgsz 640 --device 1 
       --cache-dir 
       data/04_dataset/salmon_dataset/tracking_eval/workdir/inference_cache/val 
       --predictions-parquet 
@@ -4077,21 +4077,21 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 09937678f2719f4b6b3f98f93fcdedec
-      size: 69937
+      md5: d1384fe61375b0858ddff2d46f5b38bf
+      size: 59600
     - path: data/03_processed/tracking_eval/val_video_download_status.csv
       hash: md5
-      md5: 16bf12bc188aba8d1bc3dc40de8dcbe3
-      size: 64916
+      md5: badb630189fd586b5f6d6572f232313c
+      size: 54240
     - path: data/03_processed/tracking_eval/val_videos.csv
       hash: md5
-      md5: 8c6a68d0293a089d300da849d4a83658
-      size: 84060
+      md5: 1acf063b44c15553725eaa82056ac569
+      size: 66495
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       hash: md5
-      md5: ba2114b14ba5918cb511a273af269f5a
-      size: 6252515
+      md5: f78cbb43e8d4eb6f4c562ed12a89027b
+      size: 6246819
     - path: scripts/run_tracking_inference.py
       hash: md5
       md5: 84c05ff36445af3b0cd62d350a48a0ad
@@ -4107,22 +4107,22 @@ stages:
         tracking_eval.conf: 0.05
         tracking_eval.device: 1
         tracking_eval.imgsz: 640
-        tracking_eval.iou: 0.7
+        tracking_eval.iou: 0.5
         tracking_eval.tracker: botsort.yaml
         train.run_name: 2026-10-08_tuned_full_run_stephenssmolt
     outs:
     - path: data/03_processed/tracking_eval/val_inference_status.csv
       hash: md5
-      md5: 4e5b225082980a7d563b80b9bdcfd2ec
-      size: 46814
+      md5: bce6b9de120da99c3c6982537886fff8
+      size: 40505
     - path: data/03_processed/tracking_eval/val_inference_summary.json
       hash: md5
-      md5: 2e0a84008d958d8047c10e2484e5c432
-      size: 411
+      md5: 2a96931aa145c3b3ee3d073284301d15
+      size: 416
     - path: data/03_processed/tracking_eval/val_predictions.parquet
       hash: md5
-      md5: 86ecdc911f72a1a4cf26f13c8eea360c
-      size: 2204861
+      md5: 8892fd4ea69f275345a7f1eff8396903
+      size: 11524906
   run_tracking_inference@test:
     cmd: uv run --extra cu124 scripts/run_tracking_inference.py --eval-csv 
       data/03_processed/tracking_eval/test_videos.csv --download-status-csv 
@@ -4130,7 +4130,7 @@ stages:
       --sequences-csv data/03_processed/tracking_eval/test_sequences.csv --split
       test --model 
       data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
-      --tracker botsort.yaml --conf 0.05 --iou 0.7 --imgsz 640 --device 1 
+      --tracker botsort.yaml --conf 0.05 --iou 0.5 --imgsz 640 --device 1 
       --cache-dir 
       data/04_dataset/salmon_dataset/tracking_eval/workdir/inference_cache/test 
       --predictions-parquet 
@@ -4141,21 +4141,21 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 6133fbd1dec8c80ade889162b091fde7
-      size: 60598
+      md5: 55c89e1495056ee89471f44931aab0d2
+      size: 63913
     - path: data/03_processed/tracking_eval/test_video_download_status.csv
       hash: md5
-      md5: ec0467553cf9e98a468ff2c44e9fcb75
-      size: 56385
+      md5: 6b90ce637e5ba2b81b89e40159cce2ca
+      size: 58373
     - path: data/03_processed/tracking_eval/test_videos.csv
       hash: md5
-      md5: e51554341e117d52ddf241bd35579dcf
-      size: 73085
+      md5: e57ab45c6e8613c0923e71fdfa8696e5
+      size: 71762
     - path: 
         data/04_dataset/salmon_dataset/training/yolov8n_full/2026-10-08_tuned_full_run_stephenssmolt/weights/best.pt
       hash: md5
-      md5: ba2114b14ba5918cb511a273af269f5a
-      size: 6252515
+      md5: f78cbb43e8d4eb6f4c562ed12a89027b
+      size: 6246819
     - path: scripts/run_tracking_inference.py
       hash: md5
       md5: 84c05ff36445af3b0cd62d350a48a0ad
@@ -4171,22 +4171,22 @@ stages:
         tracking_eval.conf: 0.05
         tracking_eval.device: 1
         tracking_eval.imgsz: 640
-        tracking_eval.iou: 0.7
+        tracking_eval.iou: 0.5
         tracking_eval.tracker: botsort.yaml
         train.run_name: 2026-10-08_tuned_full_run_stephenssmolt
     outs:
     - path: data/03_processed/tracking_eval/test_inference_status.csv
       hash: md5
-      md5: eb57351d6feffc2ba69edb0470a31544
-      size: 40769
+      md5: 524d4097ce968ed3ae1e9c0432e7a9ce
+      size: 43814
     - path: data/03_processed/tracking_eval/test_inference_summary.json
       hash: md5
-      md5: 6ef52a3895a47abe3d871d43c1e784f1
-      size: 412
+      md5: 607dae8b6abd10f10ba8fc9ef9fc68ed
+      size: 416
     - path: data/03_processed/tracking_eval/test_predictions.parquet
       hash: md5
-      md5: 12e4f7f4d9037b26ad98fc77212f6f57
-      size: 1496084
+      md5: 030f7bc1293a588ea3151e358c3365b6
+      size: 13684983
   build_verified_annotation_coverage@val:
     cmd: python scripts/build_verified_annotation_coverage.py --sequences-csv 
       data/03_processed/tracking_eval/val_sequences.csv --split val --out-csv 
@@ -4194,8 +4194,8 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 09937678f2719f4b6b3f98f93fcdedec
-      size: 69937
+      md5: d1384fe61375b0858ddff2d46f5b38bf
+      size: 59600
     - path: scripts/build_verified_annotation_coverage.py
       hash: md5
       md5: f1dcf0cf2961c68d5d6c57857202c826
@@ -4203,8 +4203,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_annotation_coverage.csv
       hash: md5
-      md5: da4a38eef1b2816221911b3e103e275a
-      size: 18298
+      md5: 3d4da4b558c7230a736a5816acbe2938
+      size: 15907
   build_verified_annotation_coverage@test:
     cmd: python scripts/build_verified_annotation_coverage.py --sequences-csv 
       data/03_processed/tracking_eval/test_sequences.csv --split test --out-csv 
@@ -4212,8 +4212,8 @@ stages:
     deps:
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 6133fbd1dec8c80ade889162b091fde7
-      size: 60598
+      md5: 55c89e1495056ee89471f44931aab0d2
+      size: 63913
     - path: scripts/build_verified_annotation_coverage.py
       hash: md5
       md5: f1dcf0cf2961c68d5d6c57857202c826
@@ -4221,8 +4221,8 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_annotation_coverage.csv
       hash: md5
-      md5: 22541bd00baae14c21309044fbe9fc4a
-      size: 15684
+      md5: 7c906c8b589399e6c6d0b8e15b79b468
+      size: 16894
   evaluate_tracking_metrics@val:
     cmd: uv run --extra cu124 scripts/evaluate_tracking_metrics.py --gt-csv 
       data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
@@ -4253,24 +4253,24 @@ stages:
       size: 547
     - path: data/03_processed/tracking_eval/val_annotation_coverage.csv
       hash: md5
-      md5: da4a38eef1b2816221911b3e103e275a
-      size: 18298
+      md5: 3d4da4b558c7230a736a5816acbe2938
+      size: 15907
     - path: data/03_processed/tracking_eval/val_gt.csv
       hash: md5
-      md5: 3c210a5ba30577911e5c040576cb6140
-      size: 23172292
+      md5: 3f84706ecdd377bfc96ec2cfe50c1cfd
+      size: 98349910
     - path: data/03_processed/tracking_eval/val_inference_status.csv
       hash: md5
-      md5: 4e5b225082980a7d563b80b9bdcfd2ec
-      size: 46814
+      md5: bce6b9de120da99c3c6982537886fff8
+      size: 40505
     - path: data/03_processed/tracking_eval/val_predictions.parquet
       hash: md5
-      md5: 86ecdc911f72a1a4cf26f13c8eea360c
-      size: 2204861
+      md5: 8892fd4ea69f275345a7f1eff8396903
+      size: 11524906
     - path: data/03_processed/tracking_eval/val_sequences.csv
       hash: md5
-      md5: 09937678f2719f4b6b3f98f93fcdedec
-      size: 69937
+      md5: d1384fe61375b0858ddff2d46f5b38bf
+      size: 59600
     - path: scripts/evaluate_tracking_metrics.py
       hash: md5
       md5: bd8a99eb5fe09f6d3a017a0f7f978cc6
@@ -4301,20 +4301,20 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/val_tracking_coverage.csv
       hash: md5
-      md5: 70940ce795fc6fb3742f98c893a67ecf
-      size: 16697
+      md5: 9fce62725d91b07ba9e1bbb22b2f9641
+      size: 12324
     - path: data/03_processed/tracking_eval/val_tracking_metrics.json
       hash: md5
-      md5: 949ebe244485e6f70136d3580aa95255
-      size: 725
+      md5: b78eb4c6a1117a83dca63fd60072a3b2
+      size: 732
     - path: data/03_processed/tracking_eval/val_tracking_per_sequence.csv
       hash: md5
-      md5: b8ebf87bc266d828827527b326b9db3c
-      size: 39717
+      md5: c523dfe552df7532b58b182a9d617ad8
+      size: 29638
     - path: data/03_processed/tracking_eval/val_tracking_per_species.csv
       hash: md5
-      md5: 41e867c3598263e674701d19f2d11f13
-      size: 2058
+      md5: f89b87b81a02110d4215729df9c4722b
+      size: 1594
   evaluate_tracking_metrics@test:
     cmd: uv run --extra cu124 scripts/evaluate_tracking_metrics.py --gt-csv 
       data/03_processed/tracking_eval/test_gt.csv --sequences-csv 
@@ -4345,24 +4345,24 @@ stages:
       size: 547
     - path: data/03_processed/tracking_eval/test_annotation_coverage.csv
       hash: md5
-      md5: 22541bd00baae14c21309044fbe9fc4a
-      size: 15684
+      md5: 7c906c8b589399e6c6d0b8e15b79b468
+      size: 16894
     - path: data/03_processed/tracking_eval/test_gt.csv
       hash: md5
-      md5: 4e865ce5d15e8d219cd8266d1e9a8d78
-      size: 13510949
+      md5: e6c9488695c10b24a07d0c5b17f336ba
+      size: 108484129
     - path: data/03_processed/tracking_eval/test_inference_status.csv
       hash: md5
-      md5: eb57351d6feffc2ba69edb0470a31544
-      size: 40769
+      md5: 524d4097ce968ed3ae1e9c0432e7a9ce
+      size: 43814
     - path: data/03_processed/tracking_eval/test_predictions.parquet
       hash: md5
-      md5: 12e4f7f4d9037b26ad98fc77212f6f57
-      size: 1496084
+      md5: 030f7bc1293a588ea3151e358c3365b6
+      size: 13684983
     - path: data/03_processed/tracking_eval/test_sequences.csv
       hash: md5
-      md5: 6133fbd1dec8c80ade889162b091fde7
-      size: 60598
+      md5: 55c89e1495056ee89471f44931aab0d2
+      size: 63913
     - path: scripts/evaluate_tracking_metrics.py
       hash: md5
       md5: bd8a99eb5fe09f6d3a017a0f7f978cc6
@@ -4393,20 +4393,20 @@ stages:
     outs:
     - path: data/03_processed/tracking_eval/test_tracking_coverage.csv
       hash: md5
-      md5: cbd35a7dc79fdf751c1af32efd0ab0ad
-      size: 14589
+      md5: e21166b495cfbbbce7c8cc209d958fc5
+      size: 13449
     - path: data/03_processed/tracking_eval/test_tracking_metrics.json
       hash: md5
-      md5: f63de75a426a3acfa33f75bfb4e84ff2
-      size: 726
+      md5: 9cb3db0b0c5ff53672dd74aaddc849f3
+      size: 734
     - path: data/03_processed/tracking_eval/test_tracking_per_sequence.csv
       hash: md5
-      md5: d7c1ba57b6f6c0238a39e1b0017d74a8
-      size: 36085
+      md5: 4f43765c5ce3732faf6ffbbc4bd56ef3
+      size: 32486
     - path: data/03_processed/tracking_eval/test_tracking_per_species.csv
       hash: md5
-      md5: 5a15ac7bd70b9d4d27ce8a5d5ab7be65
-      size: 2083
+      md5: 1c3d6281a0c9fee146d55e168941654b
+      size: 1665
   evaluate_fish_counts@val:
     cmd: uv run --extra cu124 scripts/evaluate_fish_counts.py --gt-csv 
       data/03_processed/tracking_eval/val_gt.csv --sequences-csv 
@@ -5185,7 +5185,8 @@ stages:
       data/02_interim/sites/brechin/split_labels_tmp && scripts/make_splits.py 
       --labels-root data/02_interim/sites/brechin/split_labels_tmp --out-dir 
       data/03_processed/sites/brechin/splits_baseline --sites brechin --seed 42 
-      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 --min-val-videos 2 
+      --min-test-videos 2 && rm -rf 
       data/02_interim/sites/brechin/split_labels_tmp
     deps:
     - path: data/01_raw/salmon_vid_counts.csv
@@ -5216,20 +5217,24 @@ stages:
       size: 552
     - path: src/object_detection/splits
       hash: md5
-      md5: 809d5acd572623d575c9dc0fe89cc739.dir
-      size: 59810
+      md5: fc2c7673f947f2ea82efee645f54b204.dir
+      size: 86310
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
       md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
+    params:
+      params.yaml:
+        split.min_test_videos: 2
+        split.min_val_videos: 2
     outs:
     - path: data/03_processed/sites/brechin/splits_baseline
       hash: md5
-      md5: 44715e28b0259c7d0684f7ce7696215e.dir
-      size: 8492275
-      nfiles: 5
+      md5: d5708fdf07dc9a0b46cd4ed8fab04a59.dir
+      size: 8526169
+      nfiles: 6
   split_data@fcn:
     cmd: rm -rf data/02_interim/sites/fcn/split_labels_tmp && mkdir -p 
       data/02_interim/sites/fcn/split_labels_tmp && scripts/unpack_annos.sh 
@@ -5239,8 +5244,8 @@ stages:
       data/02_interim/sites/fcn/split_labels_tmp && scripts/make_splits.py 
       --labels-root data/02_interim/sites/fcn/split_labels_tmp --out-dir 
       data/03_processed/sites/fcn/splits_baseline --sites fcn --seed 42 
-      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
-      data/02_interim/sites/fcn/split_labels_tmp
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 --min-val-videos 2 
+      --min-test-videos 2 && rm -rf data/02_interim/sites/fcn/split_labels_tmp
     deps:
     - path: data/01_raw/salmon_vid_counts.csv
       hash: md5
@@ -5270,20 +5275,24 @@ stages:
       size: 552
     - path: src/object_detection/splits
       hash: md5
-      md5: 809d5acd572623d575c9dc0fe89cc739.dir
-      size: 59810
+      md5: fc2c7673f947f2ea82efee645f54b204.dir
+      size: 86310
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
       md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
+    params:
+      params.yaml:
+        split.min_test_videos: 2
+        split.min_val_videos: 2
     outs:
     - path: data/03_processed/sites/fcn/splits_baseline
       hash: md5
-      md5: 33d49d24ae0d811f144682fdcfcfff86.dir
-      size: 7675725
-      nfiles: 5
+      md5: 4845799b5daf1f02aa48ab8a64a17adf.dir
+      size: 7700937
+      nfiles: 6
   split_data@fcs:
     cmd: rm -rf data/02_interim/sites/fcs/split_labels_tmp && mkdir -p 
       data/02_interim/sites/fcs/split_labels_tmp && scripts/unpack_annos.sh 
@@ -5293,8 +5302,8 @@ stages:
       data/02_interim/sites/fcs/split_labels_tmp && scripts/make_splits.py 
       --labels-root data/02_interim/sites/fcs/split_labels_tmp --out-dir 
       data/03_processed/sites/fcs/splits_baseline --sites fcs --seed 42 
-      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
-      data/02_interim/sites/fcs/split_labels_tmp
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 --min-val-videos 2 
+      --min-test-videos 2 && rm -rf data/02_interim/sites/fcs/split_labels_tmp
     deps:
     - path: data/01_raw/salmon_vid_counts.csv
       hash: md5
@@ -5324,20 +5333,24 @@ stages:
       size: 552
     - path: src/object_detection/splits
       hash: md5
-      md5: 809d5acd572623d575c9dc0fe89cc739.dir
-      size: 59810
+      md5: fc2c7673f947f2ea82efee645f54b204.dir
+      size: 86310
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
       md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
+    params:
+      params.yaml:
+        split.min_test_videos: 2
+        split.min_val_videos: 2
     outs:
     - path: data/03_processed/sites/fcs/splits_baseline
       hash: md5
-      md5: d641098d7fa48cfa9b04a7c396de5169.dir
-      size: 8142802
-      nfiles: 5
+      md5: ac80c150d38e5d50cac417bc9ef38558.dir
+      size: 8174322
+      nfiles: 6
   split_data@fsc:
     cmd: rm -rf data/02_interim/sites/fsc/split_labels_tmp && mkdir -p 
       data/02_interim/sites/fsc/split_labels_tmp && scripts/unpack_annos.sh 
@@ -5347,8 +5360,8 @@ stages:
       data/02_interim/sites/fsc/split_labels_tmp && scripts/make_splits.py 
       --labels-root data/02_interim/sites/fsc/split_labels_tmp --out-dir 
       data/03_processed/sites/fsc/splits_baseline --sites fsc --seed 42 
-      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
-      data/02_interim/sites/fsc/split_labels_tmp
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 --min-val-videos 2 
+      --min-test-videos 2 && rm -rf data/02_interim/sites/fsc/split_labels_tmp
     deps:
     - path: data/01_raw/salmon_vid_counts.csv
       hash: md5
@@ -5378,20 +5391,24 @@ stages:
       size: 552
     - path: src/object_detection/splits
       hash: md5
-      md5: 809d5acd572623d575c9dc0fe89cc739.dir
-      size: 59810
+      md5: fc2c7673f947f2ea82efee645f54b204.dir
+      size: 86310
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
       md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
+    params:
+      params.yaml:
+        split.min_test_videos: 2
+        split.min_val_videos: 2
     outs:
     - path: data/03_processed/sites/fsc/splits_baseline
       hash: md5
-      md5: 7cb370e40758532b66e8c970f6c14275.dir
-      size: 136171
-      nfiles: 5
+      md5: 65989507acb68e7447635e0877437325.dir
+      size: 138540
+      nfiles: 6
   split_data@pp:
     cmd: rm -rf data/02_interim/sites/pp/split_labels_tmp && mkdir -p 
       data/02_interim/sites/pp/split_labels_tmp && scripts/unpack_annos.sh 
@@ -5401,8 +5418,8 @@ stages:
       data/02_interim/sites/pp/split_labels_tmp && scripts/make_splits.py 
       --labels-root data/02_interim/sites/pp/split_labels_tmp --out-dir 
       data/03_processed/sites/pp/splits_baseline --sites pp --seed 42 
-      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 && rm -rf 
-      data/02_interim/sites/pp/split_labels_tmp
+      --train-frac 0.8 --val-frac 0.1 --test-frac 0.1 --min-val-videos 2 
+      --min-test-videos 2 && rm -rf data/02_interim/sites/pp/split_labels_tmp
     deps:
     - path: data/01_raw/salmon_vid_counts.csv
       hash: md5
@@ -5432,20 +5449,24 @@ stages:
       size: 552
     - path: src/object_detection/splits
       hash: md5
-      md5: 809d5acd572623d575c9dc0fe89cc739.dir
-      size: 59810
+      md5: fc2c7673f947f2ea82efee645f54b204.dir
+      size: 86310
       nfiles: 9
     - path: src/object_detection/utils
       hash: md5
       md5: e5157dad97686a473451975985738514.dir
       size: 4638
       nfiles: 6
+    params:
+      params.yaml:
+        split.min_test_videos: 2
+        split.min_val_videos: 2
     outs:
     - path: data/03_processed/sites/pp/splits_baseline
       hash: md5
-      md5: 2214034d37bdb960919ac0121bb14112.dir
-      size: 5028045
-      nfiles: 5
+      md5: 0ad2c188fc89b2ab6b02fce302a47fb4.dir
+      size: 5050048
+      nfiles: 6
   build_video_metadata_index@brechin:
     cmd: scripts/filter_video_metadata_index.py --input-csv 
       data/02_interim/video_metadata_index.csv --site brechin --out-csv 
@@ -5600,9 +5621,9 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/brechin/splits_baseline
       hash: md5
-      md5: 44715e28b0259c7d0684f7ce7696215e.dir
-      size: 8492275
-      nfiles: 5
+      md5: d5708fdf07dc9a0b46cd4ed8fab04a59.dir
+      size: 8526169
+      nfiles: 6
     - path: scripts/pack_split_dataset.py
       hash: md5
       md5: 27e6ab25d4fc12902fd5c0a880c18171
@@ -5635,7 +5656,7 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/brechin
       hash: md5
-      md5: 813c03a2f97002b91ae098b885c9fd73.dir
+      md5: 2a31ae9d937e3dc191283ba5d415e7b5.dir
       size: 18487289254
       nfiles: 9
   pack_split_dataset@fcn:
@@ -5662,9 +5683,9 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/fcn/splits_baseline
       hash: md5
-      md5: 33d49d24ae0d811f144682fdcfcfff86.dir
-      size: 7675725
-      nfiles: 5
+      md5: 4845799b5daf1f02aa48ab8a64a17adf.dir
+      size: 7700937
+      nfiles: 6
     - path: scripts/pack_split_dataset.py
       hash: md5
       md5: 27e6ab25d4fc12902fd5c0a880c18171
@@ -5697,8 +5718,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/fcn
       hash: md5
-      md5: 3e2a9596a79545c219d3995b963ab573.dir
-      size: 4668407993
+      md5: 9a6ab02dd8ad0e2e026affed91aa494c.dir
+      size: 4668341238
       nfiles: 10
   pack_split_dataset@fcs:
     cmd: scripts/pack_split_dataset_site.sh fcs data/04_dataset 
@@ -5724,9 +5745,9 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/fcs/splits_baseline
       hash: md5
-      md5: d641098d7fa48cfa9b04a7c396de5169.dir
-      size: 8142802
-      nfiles: 5
+      md5: ac80c150d38e5d50cac417bc9ef38558.dir
+      size: 8174322
+      nfiles: 6
     - path: scripts/pack_split_dataset.py
       hash: md5
       md5: 27e6ab25d4fc12902fd5c0a880c18171
@@ -5759,9 +5780,9 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/fcs
       hash: md5
-      md5: 4f39bf031bcf2ce840eb06b96230e1d2.dir
-      size: 22302647914
-      nfiles: 11
+      md5: 8299c35619802b62cbe86695a15dd936.dir
+      size: 22302567990
+      nfiles: 10
   pack_split_dataset@fsc:
     cmd: scripts/pack_split_dataset_site.sh fsc data/04_dataset 
       prod-salmonvision-edge-assets-labelstudio-source 8
@@ -5786,9 +5807,9 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/fsc/splits_baseline
       hash: md5
-      md5: 7cb370e40758532b66e8c970f6c14275.dir
-      size: 136171
-      nfiles: 5
+      md5: 65989507acb68e7447635e0877437325.dir
+      size: 138540
+      nfiles: 6
     - path: scripts/pack_split_dataset.py
       hash: md5
       md5: 27e6ab25d4fc12902fd5c0a880c18171
@@ -5821,8 +5842,8 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/fsc
       hash: md5
-      md5: 749eb21cc2339083755ba153c14c12ab.dir
-      size: 296660552
+      md5: 29207a035765f03887cb6fb7e0eb1313.dir
+      size: 296637805
       nfiles: 8
   pack_split_dataset@pp:
     cmd: scripts/pack_split_dataset_site.sh pp data/04_dataset 
@@ -5848,9 +5869,9 @@ stages:
       nfiles: 4
     - path: data/03_processed/sites/pp/splits_baseline
       hash: md5
-      md5: 2214034d37bdb960919ac0121bb14112.dir
-      size: 5028045
-      nfiles: 5
+      md5: 0ad2c188fc89b2ab6b02fce302a47fb4.dir
+      size: 5050048
+      nfiles: 6
     - path: scripts/pack_split_dataset.py
       hash: md5
       md5: 27e6ab25d4fc12902fd5c0a880c18171
@@ -5883,7 +5904,7 @@ stages:
     outs:
     - path: data/04_dataset/salmon_dataset/dataset_sharded/sites/pp
       hash: md5
-      md5: bc829eaeba445f79dc2cb9e931be0543.dir
+      md5: 8a21c5abfcc015adeed595d9f49eaeeb.dir
       size: 19515265065
       nfiles: 9
   collect_site_class_stats@brechin:
