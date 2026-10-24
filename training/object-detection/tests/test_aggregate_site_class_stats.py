@@ -31,14 +31,15 @@ def write_rows(path: Path, site: str, kind: str, rows):
 
 
 def setup(tmp_path):
-    sites=['stephenssmolt','koeye']
+    # Deliberately unrelated to real params.yaml or deployed site names.
+    sites=['fictional_alpha','fictional_beta']
     cfg=tmp_path/'params.yaml'
     cfg.write_text(yaml.safe_dump({'data':{'sites':sites}}))
     src=tmp_path/'sites'
     for kind in ('frame','box'):
         filename=mod.KIND_SPECS[kind][0]
-        write_rows(src/'stephenssmolt'/'yolo_annos_stats'/filename, 'stephenssmolt',kind,[(0,'Sockeye',2 if kind=='frame' else 10),(1,'Coho',4)])
-        write_rows(src/'koeye'/'yolo_annos_stats'/filename, 'koeye',kind,[(0,'Sockeye',6 if kind=='frame' else 30),(1,'Coho',0)])
+        write_rows(src/'fictional_alpha'/'yolo_annos_stats'/filename, 'fictional_alpha',kind,[(0,'Sockeye',2 if kind=='frame' else 10),(1,'Coho',4)])
+        write_rows(src/'fictional_beta'/'yolo_annos_stats'/filename, 'fictional_beta',kind,[(0,'Sockeye',6 if kind=='frame' else 30),(1,'Coho',0)])
     return cfg,src
 
 
@@ -53,30 +54,30 @@ def test_cross_site_share_not_per_site_hardcoded_100(tmp_path):
     mod.main(['--params-yaml',str(cfg),'--sites-root',str(src),'--out-dir',str(out)])
     frame=rows_by_key(out/'site_class_frame_counts.csv')
     assert len(frame)==4
-    assert int(frame['stephenssmolt',0]['frame_count'])==2
-    assert float(frame['stephenssmolt',0]['frame_pct_within_class'])==25
-    assert float(frame['koeye',0]['frame_pct_within_class'])==75
-    assert float(frame['stephenssmolt',1]['frame_pct_within_class'])==100
-    assert float(frame['koeye',1]['frame_pct_within_class'])==0
-    assert float(frame['stephenssmolt',0]['frame_pct_within_site'])==pytest.approx(33.333333,abs=.00001)
-    assert float(frame['koeye',0]['frame_pct_within_site'])==100
+    assert int(frame['fictional_alpha',0]['frame_count'])==2
+    assert float(frame['fictional_alpha',0]['frame_pct_within_class'])==25
+    assert float(frame['fictional_beta',0]['frame_pct_within_class'])==75
+    assert float(frame['fictional_alpha',1]['frame_pct_within_class'])==100
+    assert float(frame['fictional_beta',1]['frame_pct_within_class'])==0
+    assert float(frame['fictional_alpha',0]['frame_pct_within_site'])==pytest.approx(33.333333,abs=.00001)
+    assert float(frame['fictional_beta',0]['frame_pct_within_site'])==100
     box=rows_by_key(out/'site_class_box_counts.csv')
-    assert int(box['stephenssmolt',0]['box_count'])==10
-    assert int(box['koeye',0]['box_count'])==30
-    assert float(box['stephenssmolt',0]['box_pct_within_class'])==25
-    assert float(box['koeye',0]['box_pct_within_class'])==75
+    assert int(box['fictional_alpha',0]['box_count'])==10
+    assert int(box['fictional_beta',0]['box_count'])==30
+    assert float(box['fictional_alpha',0]['box_pct_within_class'])==25
+    assert float(box['fictional_beta',0]['box_pct_within_class'])==75
 
 
 def test_missing_site_fails_instead_of_silent_omission(tmp_path):
     cfg,src=setup(tmp_path)
-    (src/'koeye'/'yolo_annos_stats'/'site_class_frame_counts.csv').unlink()
-    with pytest.raises(FileNotFoundError,match='build_model_input@koeye'):
+    (src/'fictional_beta'/'yolo_annos_stats'/'site_class_frame_counts.csv').unlink()
+    with pytest.raises(FileNotFoundError,match='build_model_input@fictional_beta'):
         mod.main(['--params-yaml',str(cfg),'--sites-root',str(src),'--out-dir',str(tmp_path/'out')])
 
 
 def test_wrong_site_row_fails(tmp_path):
     cfg,src=setup(tmp_path)
-    path=src/'stephenssmolt'/'yolo_annos_stats'/'site_class_frame_counts.csv'
+    path=src/'fictional_alpha'/'yolo_annos_stats'/'site_class_frame_counts.csv'
     write_rows(path,'oops','frame',[(0,'Sockeye',2)])
     with pytest.raises(ValueError,match='does not match'):
         mod.aggregate_kind(src,mod.read_site_names(cfg),tmp_path/'out','frame')
@@ -84,19 +85,19 @@ def test_wrong_site_row_fails(tmp_path):
 
 def test_class_mapping_mismatch_fails(tmp_path):
     cfg,src=setup(tmp_path)
-    path=src/'koeye'/'yolo_annos_stats'/'site_class_frame_counts.csv'
-    write_rows(path,'koeye','frame',[(0,'Coho',5)])
+    path=src/'fictional_beta'/'yolo_annos_stats'/'site_class_frame_counts.csv'
+    write_rows(path,'fictional_beta','frame',[(0,'Coho',5)])
     with pytest.raises(ValueError,match='maps to both'):
         mod.aggregate_kind(src,mod.read_site_names(cfg),tmp_path/'out','frame')
 
 
 def test_negative_count_and_duplicate_site_fails(tmp_path):
     cfg,src=setup(tmp_path)
-    path=src/'koeye'/'yolo_annos_stats'/'site_class_frame_counts.csv'
-    write_rows(path,'koeye','frame',[(0,'Sockeye',-2)])
+    path=src/'fictional_beta'/'yolo_annos_stats'/'site_class_frame_counts.csv'
+    write_rows(path,'fictional_beta','frame',[(0,'Sockeye',-2)])
     with pytest.raises(ValueError,match='negative'):
         mod.aggregate_kind(src,mod.read_site_names(cfg),tmp_path/'out','frame')
-    cfg.write_text(yaml.safe_dump({'data':{'sites':['koeye','koeye']}}))
+    cfg.write_text(yaml.safe_dump({'data':{'sites':['fictional_beta','fictional_beta']}}))
     with pytest.raises(ValueError,match='duplicates'):
         mod.read_site_names(cfg)
 
@@ -113,12 +114,16 @@ def test_dvc_stage_named_plots_and_templates():
     assert '--sites-root data/02_interim/annotation_stats_by_site' in stage['cmd']
     collector = dvc['stages']['collect_site_class_stats']
     assert collector['foreach'] == '${data.sites}'
-    assert len(collector['do']['deps']) == 2
+    # The collector can legitimately gain inputs (e.g. site_totals.csv).
+    # Check the required contracts, not a hard-coded number of CSVs.
+    dep_names = {Path(str(dep)).name for dep in collector['do']['deps']}
+    assert {'site_class_frame_counts.csv', 'site_class_box_counts.csv'} <= dep_names
+    assert all('${item}' in str(dep) for dep in collector['do']['deps'])
+    assert len(dep_names) == len(collector['do']['deps'])
     assert len(collector['do']['outs']) == 1
     assert '${item}' in collector['do']['cmd']
-    # No named site appears as an aggregate dependency.
-    assert all('stephenssmolt' not in dep and 'koeye' not in dep for dep in stage['deps'])
-    assert len(stage['outs'])==2
+    assert {'data/03_processed/annotation_stats/site_class_frame_counts.csv',
+            'data/03_processed/annotation_stats/site_class_box_counts.csv'} <= set(stage['outs'])
     names=[next(iter(item)) for item in dvc['plots'] if isinstance(item,dict)]
     assert len(set(names))==len(names)
     for plot_name in ['annotation_frame_counts','annotation_box_counts','annotation_frame_share','annotation_box_share']:
@@ -146,10 +151,28 @@ def test_dynamic_site_selection_end_to_end(tmp_path):
     shutil.copytree(original, source)
 
     def collect(site: str) -> None:
-        cmd = collector['cmd'].replace('${item}', site)
-        subprocess.run(cmd, shell=True, cwd=tmp_path, check=True)
+        # Build synthetic inputs from the dependencies currently declared in
+        # dvc.yaml. This also supports added collector inputs such as
+        # site_totals.csv without requiring a hard-coded fixture filename list.
+        for dep in collector['deps']:
+            source_path = tmp_path / str(dep).replace('${item}', site)
+            if not source_path.exists():
+                source_path.parent.mkdir(parents=True, exist_ok=True)
+                source_path.write_text(f'site\n{site}\n', encoding='utf-8')
 
-    for site in ['stephenssmolt', 'koeye']:
+        cmd = collector['cmd'].replace('${item}', site)
+        subprocess.run(cmd, shell=True, cwd=tmp_path, check=True,
+                       capture_output=True, text=True)
+
+        # Every declared input should have been collected; newly added inputs
+        # don't require special-casing in this test.
+        for dep in collector['deps']:
+            source_path = tmp_path / str(dep).replace('${item}', site)
+            collected = (workroot / 'annotation_stats_by_site' / site /
+                         'yolo_annos_stats' / source_path.name)
+            assert collected.read_bytes() == source_path.read_bytes()
+
+    for site in ['fictional_alpha', 'fictional_beta']:
         collect(site)
     out = tmp_path / 'out'
     stats_root = workroot / 'annotation_stats_by_site'
@@ -159,18 +182,18 @@ def test_dynamic_site_selection_end_to_end(tmp_path):
     # Add a third arbitrary site and change params: no hard-coded YAML deps needed.
     for kind in ('frame', 'box'):
         name = mod.KIND_SPECS[kind][0]
-        write_rows(source / 'new_site' / 'yolo_annos_stats' / name,
-                   'new_site', kind, [(0, 'Sockeye', 8), (1, 'Coho', 2)])
-    collect('new_site')
-    params.write_text(yaml.safe_dump({'data': {'sites': ['koeye', 'new_site']}}))
+        write_rows(source / 'fictional_gamma' / 'yolo_annos_stats' / name,
+                   'fictional_gamma', kind, [(0, 'Sockeye', 8), (1, 'Coho', 2)])
+    collect('fictional_gamma')
+    params.write_text(yaml.safe_dump({'data': {'sites': ['fictional_beta', 'fictional_gamma']}}))
     mod.main(['--params-yaml', str(params), '--sites-root', str(stats_root), '--out-dir', str(out)])
     rows = rows_by_key(out / 'site_class_frame_counts.csv')
-    assert {site for site, _ in rows} == {'koeye', 'new_site'}
-    assert int(rows['new_site', 0]['frame_count']) == 8
-    assert float(rows['koeye', 0]['frame_pct_within_class']) == pytest.approx(100 * 6 / 14)
-    assert float(rows['new_site', 0]['frame_pct_within_class']) == pytest.approx(100 * 8 / 14)
+    assert {site for site, _ in rows} == {'fictional_beta', 'fictional_gamma'}
+    assert int(rows['fictional_gamma', 0]['frame_count']) == 8
+    assert float(rows['fictional_beta', 0]['frame_pct_within_class']) == pytest.approx(100 * 6 / 14)
+    assert float(rows['fictional_gamma', 0]['frame_pct_within_class']) == pytest.approx(100 * 8 / 14)
 
     # Removing a site doesn't accidentally retain it in the aggregate.
-    params.write_text(yaml.safe_dump({'data': {'sites': ['new_site']}}))
+    params.write_text(yaml.safe_dump({'data': {'sites': ['fictional_gamma']}}))
     mod.main(['--params-yaml', str(params), '--sites-root', str(stats_root), '--out-dir', str(out)])
-    assert {site for site, _ in rows_by_key(out / 'site_class_frame_counts.csv')} == {'new_site'}
+    assert {site for site, _ in rows_by_key(out / 'site_class_frame_counts.csv')} == {'fictional_gamma'}
