@@ -64,7 +64,7 @@ stages:
       - data/02_interim/sites/${item}/yolo_annos_stats
   collect_site_class_stats:
     # Expand automatically for every site in params.yaml:data.sites.
-    # Only the two small statistics CSVs are copied (not the annotation shards).
+    # Only the small statistics CSVs are copied (not the annotation shards).
     foreach: ${data.sites}
     do:
       cmd: >-
@@ -72,10 +72,12 @@ stages:
         dst="data/02_interim/annotation_stats_by_site/${item}/yolo_annos_stats" &&
         mkdir -p "$dst" &&
         cp "$src/site_class_frame_counts.csv" "$dst/site_class_frame_counts.csv" &&
-        cp "$src/site_class_box_counts.csv" "$dst/site_class_box_counts.csv"
+        cp "$src/site_class_box_counts.csv" "$dst/site_class_box_counts.csv" &&
+        cp "$src/site_totals.csv" "$dst/site_totals.csv"
       deps:
         - data/02_interim/sites/${item}/yolo_annos_stats/site_class_frame_counts.csv
         - data/02_interim/sites/${item}/yolo_annos_stats/site_class_box_counts.csv
+        - data/02_interim/sites/${item}/yolo_annos_stats/site_totals.csv
       outs:
         - data/02_interim/annotation_stats_by_site/${item}/yolo_annos_stats
   aggregate_site_class_stats:
@@ -92,6 +94,19 @@ stages:
     outs:
       - data/03_processed/annotation_stats/site_class_frame_counts.csv
       - data/03_processed/annotation_stats/site_class_box_counts.csv
+  aggregate_site_totals:
+    cmd: >-
+      python scripts/aggregate_site_totals.py
+      --params-yaml params.yaml
+      --sites-root data/02_interim/annotation_stats_by_site
+      --out-csv data/03_processed/annotation_stats/site_totals.csv
+    deps:
+      - scripts/aggregate_site_totals.py
+      - data/02_interim/annotation_stats_by_site
+    params:
+      - data.sites
+    outs:
+      - data/03_processed/annotation_stats/site_totals.csv
   build_condition_negatives:
     cmd: >-
       scripts/create_condition_negatives.py
@@ -801,6 +816,27 @@ plots:
       data/03_processed/annotation_stats/site_class_box_counts.csv: box_pct_within_class
     template: config/plots/site_class_share_heatmap.vl.json
     title: Share of species boxes by site (%)
+- annotation_site_videos:
+    x: total_videos_with_boxes
+    y:
+      data/03_processed/annotation_stats/site_totals.csv: site
+    template: config/plots/site_totals_bars.vl.json
+    title: Videos containing annotated fish by site
+
+- annotation_site_frames:
+    x: total_frames_with_boxes
+    y:
+      data/03_processed/annotation_stats/site_totals.csv: site
+    template: config/plots/site_totals_bars.vl.json
+    title: Annotated positive frames by site
+
+- annotation_site_boxes:
+    x: total_boxes
+    y:
+      data/03_processed/annotation_stats/site_totals.csv: site
+    template: config/plots/site_totals_bars.vl.json
+    title: Annotated fish boxes by site
+
 - dvclive/plots/metrics:
     x: step
 - dvclive/plots/images

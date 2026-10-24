@@ -1,0 +1,45 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"values": "<DVC_METRIC_DATA>"},
+  "title": {"text": "<DVC_METRIC_TITLE>", "anchor": "middle"},
+  "transform": [{"filter": "datum.site != 'ALL_SITES'"}],
+  "facet": {
+    "row": {
+      "field": "rev", "type": "nominal", "title": null,
+      "header": {"labelFontSize": 12, "labelFontWeight": "bold"}
+    }
+  },
+  "spec": {
+    "width": "<DVC_METRIC_PLOT_WIDTH>",
+    "height": {"step": 20},
+    "layer": [
+      {
+        "mark": {"type": "bar"},
+        "encoding": {
+          "x": {
+            "field": "<DVC_METRIC_X>", "type": "quantitative",
+            "title": "<DVC_METRIC_X_LABEL>",
+            "scale": {"zero": true}
+          },
+          "y": {
+            "field": "<DVC_METRIC_Y>", "type": "nominal",
+            "title": null, "sort": "-x"
+          },
+          "tooltip": [
+            {"field": "site", "type": "nominal"},
+            {"field": "<DVC_METRIC_X>", "type": "quantitative", "format": ",.0f"}
+          ]
+        }
+      },
+      {
+        "mark": {"type": "text", "align": "left", "baseline": "middle", "dx": 4},
+        "encoding": {
+          "x": {"field": "<DVC_METRIC_X>", "type": "quantitative"},
+          "y": {"field": "<DVC_METRIC_Y>", "type": "nominal", "sort": "-x"},
+          "text": {"field": "<DVC_METRIC_X>", "type": "quantitative", "format": ",.0f"}
+        }
+      }
+    ]
+  },
+  "resolve": {"scale": {"y": "independent"}}
+}
