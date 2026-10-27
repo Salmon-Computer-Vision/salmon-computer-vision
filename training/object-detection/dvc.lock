@@ -5912,7 +5912,8 @@ stages:
       dst="data/02_interim/annotation_stats_by_site/brechin/yolo_annos_stats" &&
       mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
       "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
-      "$dst/site_class_box_counts.csv"
+      "$dst/site_class_box_counts.csv" && cp "$src/site_totals.csv" 
+      "$dst/site_totals.csv"
     deps:
     - path: 
         data/02_interim/sites/brechin/yolo_annos_stats/site_class_box_counts.csv
@@ -5924,18 +5925,23 @@ stages:
       hash: md5
       md5: c7329a8c46fe3b362e9234a15ac899e7
       size: 683
+    - path: data/02_interim/sites/brechin/yolo_annos_stats/site_totals.csv
+      hash: md5
+      md5: 05eea9ce69dddb6f026cef3abeaad235
+      size: 287
     outs:
     - path: data/02_interim/annotation_stats_by_site/brechin/yolo_annos_stats
       hash: md5
-      md5: 5fea30ba20c02a849cd33ec1a29e9ba6.dir
-      size: 1360
-      nfiles: 2
+      md5: 906ac4e255a9a46827aa11c49c72b649.dir
+      size: 1647
+      nfiles: 3
   collect_site_class_stats@fcn:
     cmd: src="data/02_interim/sites/fcn/yolo_annos_stats" && 
       dst="data/02_interim/annotation_stats_by_site/fcn/yolo_annos_stats" && 
       mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
       "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
-      "$dst/site_class_box_counts.csv"
+      "$dst/site_class_box_counts.csv" && cp "$src/site_totals.csv" 
+      "$dst/site_totals.csv"
     deps:
     - path: data/02_interim/sites/fcn/yolo_annos_stats/site_class_box_counts.csv
       hash: md5
@@ -5946,18 +5952,23 @@ stages:
       hash: md5
       md5: cc06c89a42be45b5e8e107cce4488e04
       size: 607
+    - path: data/02_interim/sites/fcn/yolo_annos_stats/site_totals.csv
+      hash: md5
+      md5: ce307a27074568d9e75cd5cf4eaff84b
+      size: 284
     outs:
     - path: data/02_interim/annotation_stats_by_site/fcn/yolo_annos_stats
       hash: md5
-      md5: f5032d6ba359221dc5b6a24169080a3c.dir
-      size: 1207
-      nfiles: 2
+      md5: a5ce0bc2c7fad5fa2b3901ef8a7915ba.dir
+      size: 1491
+      nfiles: 3
   collect_site_class_stats@fcs:
     cmd: src="data/02_interim/sites/fcs/yolo_annos_stats" && 
       dst="data/02_interim/annotation_stats_by_site/fcs/yolo_annos_stats" && 
       mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
       "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
-      "$dst/site_class_box_counts.csv"
+      "$dst/site_class_box_counts.csv" && cp "$src/site_totals.csv" 
+      "$dst/site_totals.csv"
     deps:
     - path: data/02_interim/sites/fcs/yolo_annos_stats/site_class_box_counts.csv
       hash: md5
@@ -5968,18 +5979,23 @@ stages:
       hash: md5
       md5: eee0b32639386c49972698ee97c21c8f
       size: 604
+    - path: data/02_interim/sites/fcs/yolo_annos_stats/site_totals.csv
+      hash: md5
+      md5: a87cbe8f0c2b87a2a1a073893b3fe090
+      size: 283
     outs:
     - path: data/02_interim/annotation_stats_by_site/fcs/yolo_annos_stats
       hash: md5
-      md5: ae3a05b4bd5c703e0930913eec6da251.dir
-      size: 1204
-      nfiles: 2
+      md5: c35b1fe6534ccefe40c5047fdd8ffaac.dir
+      size: 1487
+      nfiles: 3
   collect_site_class_stats@fsc:
     cmd: src="data/02_interim/sites/fsc/yolo_annos_stats" && 
       dst="data/02_interim/annotation_stats_by_site/fsc/yolo_annos_stats" && 
       mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
       "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
-      "$dst/site_class_box_counts.csv"
+      "$dst/site_class_box_counts.csv" && cp "$src/site_totals.csv" 
+      "$dst/site_totals.csv"
     deps:
     - path: data/02_interim/sites/fsc/yolo_annos_stats/site_class_box_counts.csv
       hash: md5
@@ -5990,18 +6006,23 @@ stages:
       hash: md5
       md5: 2516f16d23fbb39280c26fb13bdd068d
       size: 578
+    - path: data/02_interim/sites/fsc/yolo_annos_stats/site_totals.csv
+      hash: md5
+      md5: ad4fbdac5e2d4e1e706730a761582fdc
+      size: 271
     outs:
     - path: data/02_interim/annotation_stats_by_site/fsc/yolo_annos_stats
       hash: md5
-      md5: a19207964dfdab4fd5a8f2305ffa048e.dir
-      size: 1150
-      nfiles: 2
+      md5: 8b8b95bc180e8f7c1269908c56cc77bc.dir
+      size: 1421
+      nfiles: 3
   collect_site_class_stats@pp:
     cmd: src="data/02_interim/sites/pp/yolo_annos_stats" && 
       dst="data/02_interim/annotation_stats_by_site/pp/yolo_annos_stats" && 
       mkdir -p "$dst" && cp "$src/site_class_frame_counts.csv" 
       "$dst/site_class_frame_counts.csv" && cp "$src/site_class_box_counts.csv" 
-      "$dst/site_class_box_counts.csv"
+      "$dst/site_class_box_counts.csv" && cp "$src/site_totals.csv" 
+      "$dst/site_totals.csv"
     deps:
     - path: data/02_interim/sites/pp/yolo_annos_stats/site_class_box_counts.csv
       hash: md5
@@ -6012,9 +6033,40 @@ stages:
       hash: md5
       md5: 354e257dcd81eff2e486a91f8ec286e3
       size: 586
+    - path: data/02_interim/sites/pp/yolo_annos_stats/site_totals.csv
+      hash: md5
+      md5: 17e3b0dbbdf9bbe751ab42e2961c3a42
+      size: 279
     outs:
     - path: data/02_interim/annotation_stats_by_site/pp/yolo_annos_stats
       hash: md5
-      md5: e0515dbe8f10ab3b9cf9160a4ba0a81a.dir
-      size: 1165
-      nfiles: 2
+      md5: b2782a680178d1d407cd1833da2b6385.dir
+      size: 1444
+      nfiles: 3
+  aggregate_site_totals:
+    cmd: python scripts/aggregate_site_totals.py --params-yaml params.yaml 
+      --sites-root data/02_interim/annotation_stats_by_site --out-csv 
+      data/03_processed/annotation_stats/site_totals.csv
+    deps:
+    - path: data/02_interim/annotation_stats_by_site
+      hash: md5
+      md5: faaac3f3245c47645e96d42f971f6072.dir
+      size: 25646
+      nfiles: 56
+    - path: scripts/aggregate_site_totals.py
+      hash: md5
+      md5: 2bdb503deb47dcfaab3d129b4e578338
+      size: 5866
+    params:
+      params.yaml:
+        data.sites:
+        - brechin
+        - fcn
+        - fcs
+        - fsc
+        - pp
+    outs:
+    - path: data/03_processed/annotation_stats/site_totals.csv
+      hash: md5
+      md5: 3c895284911acad5f377284fce3a7430
+      size: 904
