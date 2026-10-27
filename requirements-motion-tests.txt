@@ -1,0 +1,8 @@
+# Use Python 3.8+ (including older Jetson environments).
+pytest>=7,<9
+pytest-cov>=4,<6
+pytest-timeout>=2,<3
+# Production dependencies (OpenCV is deliberately NOT installed here).
+numpy>=1.24.2,<2
+requests
+ffmpeg-python
