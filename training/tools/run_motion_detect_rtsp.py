@@ -188,6 +188,7 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
         warmup_seconds,
         sonar,
         composite,
+        rotate_90=None,
     ):
     """Run one camera and report exactly one terminal result."""
     try:
@@ -206,6 +207,7 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
                 shutdown_event=shutdown_event,
                 sonar=sonar,
                 composite=composite,
+                rotate_90=rotate_90,
                 )
     except Exception as exc:
         logger.exception("[%s] detector thread crashed", cam_name)
@@ -436,6 +438,7 @@ def main(args):
                         args.warmup_seconds,
                         args.sonar,
                         composite,
+                        args.rotate_90,
                     ),
                     name=f"MotionDetector-{cam_name}",
                     daemon=False,
@@ -497,12 +500,14 @@ def main(args):
         motion_trigger_seconds=args.motion_trigger_seconds,
         warmup_seconds=args.warmup_seconds,
         sonar=args.sonar,
+        rotate_90=args.rotate_90,
     )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
     parser.add_argument("input", help="The input string. Normally an RTSP URL starting with rtsp:// of a camera. If it is a video path, set the --video flag.")
     parser.add_argument("save_folder", help="Folder where video clips will be saved")
+    parser.add_argument("--rotate-90", choices=["cw", "ccw"], default=None, help="Rotate every frame 90 degrees clockwise (cw) or counterclockwise (ccw) before resizing, detection, and recording")
     parser.add_argument("--video", action='store_true', help="Set this flag for videos, and it will use the filename to determine clip filenames")
     parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from input")
     parser.add_argument("--camera-width", type=int, default=None, help="Works only for USB camera. Request camera width")

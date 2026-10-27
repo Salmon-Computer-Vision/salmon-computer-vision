@@ -1213,9 +1213,12 @@ class MotionDetector:
         sonar: bool = False,
         composite: Optional[bool] = None,
         shutdown_event=None,
+        rotate_90: Optional[str] = None,
     ):
         # When enabled, each completed motion clip gets a matching JSON file in
         # <device_root>/device_settings/ for downstream sonar processing.
+        if rotate_90 not in (None, "cw", "ccw"):
+            raise ValueError("rotate_90 must be None, cw, or ccw")
         self.sonar = bool(sonar)
         if composite is not None:
             self.composite = bool(composite)
@@ -1382,6 +1385,8 @@ class MotionDetector:
                 frame = np.ascontiguousarray(item.frame)
                 if isinstance(frame, str):
                     frame = cv2.imread(frame)
+                if rotate_90 is not None:
+                    frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE if rotate_90 == "cw" else cv2.ROTATE_90_COUNTERCLOCKWISE)
                 frame = cv2.resize(frame, FRAME_RESIZE, interpolation=cv2.INTER_AREA)
 
                 if self.save_cont_video:
