@@ -29,7 +29,7 @@ def test_source_classification(loader, source, count, expected):
 
 @pytest.mark.parametrize('target,expected', [(None, list(range(12))), (30, list(range(12))), (10, [1,3,5,7,9,11])])
 def test_file_sampling_preserves_order_and_sentinel(loader, target, expected, clock):
-    loader.is_video = True; loader.vid_fps = 20; loader.target_fps = target
+    loader._is_video = True; loader.vid_fps = 20; loader.target_fps = target
     loader.cap = Mock()
     loader.cap.read.side_effect = [(True, i) for i in range(12)] + [(False, None)]
     loader._read_frames()
@@ -38,7 +38,7 @@ def test_file_sampling_preserves_order_and_sentinel(loader, target, expected, cl
     assert actual == expected + [None]
 
 def test_live_sampling_resyncs_after_stall(loader, clock):
-    loader.is_video = False; loader.vid_fps = 90000; loader.target_fps = 2
+    loader._is_video = False; loader.vid_fps = 90000; loader.target_fps = 2
     samples = iter([(100, 0), (100.1, 1), (100.5, 2), (105, 3), (105.1, 4), (105.5, 5)])
     def read():
         try: clock.now, value = next(samples)
@@ -54,7 +54,7 @@ def test_live_eof_full_queue_inserts_sentinel(loader, clock):
     import queue
     loader.frame_buffer = queue.Queue(maxsize=1)
     loader.frame_buffer.put('old')
-    loader.is_video = False
+    loader._is_video = False
     loader.cap = Mock(); loader.cap.read.return_value = (False, None)
     loader._read_frames()
     assert loader.frame_buffer.get_nowait() is None

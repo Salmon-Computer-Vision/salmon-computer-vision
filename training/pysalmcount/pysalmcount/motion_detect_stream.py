@@ -1511,8 +1511,9 @@ class MotionDetector:
                             head.value = (head.value + 1) % buffer_length
                             break
 
-                        if not self.motion_detected:
-                            # Pre-roll mode: drop oldest frame to keep latest pre-roll.
+                        if not self.motion_detected or not self.save_video:
+                            # No saver drains the ring when motion saving is disabled.
+                            # Keep the latest frames instead of waiting for a consumer.
                             tail.value = (tail.value + 1) % buffer_length
                             continue
 

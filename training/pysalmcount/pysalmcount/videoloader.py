@@ -39,6 +39,7 @@ class VideoLoader(DataLoader):
         self.num_clips = len(vid_sources)
         self.clip_gen = iter(vid_sources)
         self.cur_clip = None
+        self._is_video = False
         self.gstreamer_on = gstreamer_on
 
         self.frame_buffer = Queue(maxsize=buffer_size)
@@ -100,11 +101,11 @@ class VideoLoader(DataLoader):
             raise VideoCaptureError(f"Error: Could not open video stream {raw_clip}.")
 
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.is_video = self._detect_source_type(raw_clip)
+        self._is_video = self._detect_source_type(raw_clip)
 
         reported_fps = self.cap.get(cv2.CAP_PROP_FPS)
 
-        if self.is_video:
+        if self._is_video:
             self.vid_fps = reported_fps
 
             if self.vid_fps <= 0 or self.vid_fps > 1000:
@@ -312,7 +313,7 @@ class VideoLoader(DataLoader):
           when FFmpeg/OpenCV drains buffered frames quickly.
         """
 
-        is_live_stream = not self.is_video
+        is_live_stream = not self._is_video
 
         # -----------------------------
         # Video-file downsampling setup
@@ -321,7 +322,7 @@ class VideoLoader(DataLoader):
         ratio = 1.0
         accum = 0.0
 
-        if self.is_video:
+        if self._is_video:
             keep_all_file_frames = (
                 self.target_fps is None
                 or not math.isfinite(self.vid_fps)
@@ -390,7 +391,7 @@ class VideoLoader(DataLoader):
 
             keep = True
 
-            if self.is_video:
+            if self._is_video:
                 # For files, downsample based on source FPS.
                 if not keep_all_file_frames:
                     accum += ratio
@@ -423,7 +424,7 @@ class VideoLoader(DataLoader):
                 dropped_by_sampler += 1
                 continue
 
-            if self.is_video:
+            if self._is_video:
                 # For files, block so no selected frames are dropped.
                 self.frame_buffer.put(frame, block=True)
                 kept_count += 1
@@ -480,7 +481,7 @@ class VideoLoader(DataLoader):
         return timestamp
 
     def is_video(self):
-        return self.is_video
+        return self._is_video
 
     def classes(self) -> dict:
         """

@@ -1,5 +1,26 @@
 # Motion-detection pytest suite
 
+## Layout
+
+```text
+salmon-computer-vision/
+├── pytest-motion.ini
+├── requirements-motion-tests.txt
+├── README-motion-tests.md
+└── tests/motion_detection/
+    ├── conftest.py
+    ├── test_coordinator.py
+    ├── test_compositor.py
+    ├── test_detector_and_saver.py
+    ├── test_videoloader.py
+    ├── test_utils.py
+    ├── test_cli.py
+    ├── test_smoke.py
+    └── test_known_regressions.py
+```
+
+The tests import your checkout from `training/pysalmcount` and load the CLI from `training/tools/run_motion_detect_rtsp.py`. They do not require an editable package installation. Keep your real `pysalmcount/__init__.py`.
+
 ## Run on a development machine
 
 From the repository root, in a separate environment:
@@ -71,11 +92,4 @@ Add `-e SALMON_TEST_HARDWARE=1` and select `-m hardware` to exercise its CPU GSt
 | CLI and helpers | Camera arguments, unsafe/duplicate names, pipeline selection, URL files, device naming, shutdown fan-out, compositor flushing, metadata parsing, health-check cadence and request errors |
 | Local smoke tests | Actual FFmpeg encode/composite/probe, decoded top/bottom colors and black placeholders, actual threaded file loading, CLI `--help`, detector loop with deterministic foreground masks |
 
-All generated media and sidecars use pytest temporary directories. HTTP requests are blocked in the test process; background health pings are stubbed for detector-loop tests. Camera/network capture construction is mocked in unit tests. A 30-second per-test timeout bounds unexpected hangs. The known deadlock reproducer has its own eight-second subprocess timeout, which kills and reaps the child.
-
-## Known defects exposed by the suite
-
-Two tests use `xfail(strict=True)` and accept only their specific observed exception. They assert desired behavior, not the buggy behavior. Unexpected passes fail the suite so the marker is removed when the underlying defect is fixed. Run with `--runxfail` to expose these as ordinary failures.
-
-1. **Detection without saving can hang.** Once motion starts with `save_video=False`, the full-ring path waits for a consumer that was never created. The reproducer uses a synthetic eight-frame source; the process cannot reach EOF. The relevant loop is in `MotionDetector.run()` around the `_ring_is_full` check. A likely fix is to bypass saver buffering or continue dropping the oldest frame whenever motion saving is disabled. Production code is unchanged here.
-2. **`VideoLoader.is_video()` becomes uncallable.** `next_clip()` assigns a boolean to `self.is_video`, shadowing the method required by `DataLoader`. The regression calls the public method after opening a mocked capture and receives `TypeError`. A fix needs a separate backing attribute and consistent updates to internal references.
+All generated media and sidecars use pytest temporary directories. HTTP requests are blocked in the test process; background health pings are stubbed for detector-loop tests. Camera/network capture construction is mocked in unit tests. A 30-second per-test timeout bounds unexpected hangs. The deadlock regression test has its own eight-second subprocess timeout, which kills and reaps the child.
