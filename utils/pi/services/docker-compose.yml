@@ -23,7 +23,7 @@ services:
       - /etc/group:/etc/group:ro
     restart: always
     command: >
-      bash -c "python3 training/tools/run_motion_detect_rtsp.py ${FLAGS} --device-id ${DEVICE_ID} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
+      "training/tools/run_motion_detect_rtsp.py ${FLAGS} --device-id ${DEVICE_ID} --fps ${FPS} '${RTSP_URL}' \"${DRIVE}\""
   log-sync:
     build: 
       context: .

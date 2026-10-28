@@ -12,17 +12,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgstreamer-plugins-base1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install -U pip && python3 -m pip install -U ffmpeg-python
+RUN /usr/bin/python3 -m venv --system-site-packages /opt/salmon-venv \
+    && /opt/salmon-venv/bin/python -m pip install -U pip \
+    && /opt/salmon-venv/bin/python -m pip install -U ffmpeg-python
 
 ARG USER=Salmon-Computer-Vision REPO=salmon-computer-vision BRANCH=master
 ADD https://api.github.com/repos/${USER}/${REPO}/git/refs/heads/${BRANCH} version.json
 RUN git clone --branch ${BRANCH} --depth 1 https://github.com/${USER}/${REPO}.git /tools
 
-RUN python3 -m pip install -e /tools/training/pysalmcount
+RUN /opt/salmon-venv/bin/python -m pip install \
+       -e /tools/training/pysalmcount \
+    && /opt/salmon-venv/bin/python -c \
+       "import cv2; from pysalmcount import motion_detect_stream, videoloader"
 
 COPY run_all_videos.py /app/run_all_videos.py
 
 # Set working directory
 WORKDIR /tools
 
-CMD ["bash"]
+ENTRYPOINT ["/opt/salmon-venv/bin/python"]
