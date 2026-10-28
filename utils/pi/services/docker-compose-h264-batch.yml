@@ -36,4 +36,5 @@ services:
       - --device-id
       - ${ARCHIVE_DEVICE_ID:?Set ARCHIVE_DEVICE_ID for output filenames}
       - --encoder
+      - ${FLAGS}
       - cpu-h264
