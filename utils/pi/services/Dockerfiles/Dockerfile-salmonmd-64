@@ -2,6 +2,7 @@ FROM balenalib/raspberrypi5-python:3.11-bookworm-build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git ffmpeg python3-opencv \
+    python3-venv \
     gstreamer1.0-tools \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
