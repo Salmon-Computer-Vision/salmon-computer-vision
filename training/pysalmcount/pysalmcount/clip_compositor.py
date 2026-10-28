@@ -45,6 +45,8 @@ class CompositeJob:
     save_prefix: str
     fps: float
     sonar: bool
+    frame_width: int = 1280
+    frame_height: int = 720
 
 
 @dataclass(frozen=True)
@@ -151,7 +153,7 @@ def build_ffmpeg_cmd(
                 "-t",
                 f"{aligned_duration:.6f}",
                 "-i",
-                f"color=c=black:s=1280x720:r={fps_str}",
+                f"color=c=black:s={job.frame_width}x{job.frame_height}:r={fps_str}",
             ])
         else:
             cmd.extend(["-i", str(source.path)])
@@ -169,7 +171,7 @@ def build_ffmpeg_cmd(
         filters.append(
             f"[{index}:v]trim=start_frame={trim}:end_frame={end_frame},"
             "setpts=PTS-STARTPTS,"
-            f"scale=1280:-2,setsar=1,fps={fps_str}[v{index}]"
+            f"scale={job.frame_width}:{job.frame_height},setsar=1,fps={fps_str}[v{index}]"
         )
     inputs = "".join(f"[v{index}]" for index in range(len(job.sources)))
     filters.append(
@@ -335,6 +337,8 @@ def find_stale_composite_jobs(
     stale_after_seconds: float,
     *,
     now: Optional[float] = None,
+    frame_width: int = 1280,
+    frame_height: int = 720,
 ) -> List[CompositeJob]:
     """Recover complete per-camera clips left behind by a prior process."""
     parts_dir = Path(parts_dir)
@@ -450,5 +454,7 @@ def find_stale_composite_jobs(
             save_prefix=save_prefix,
             fps=float(fps),
             sonar=bool(sonar),
+            frame_width=frame_width,
+            frame_height=frame_height,
         ))
     return jobs

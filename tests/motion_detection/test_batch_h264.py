@@ -209,15 +209,17 @@ def test_worker_preserves_midnight_crossing_and_provenance(batch,tmp_path,monkey
     monkeypatch.setattr(batch,'probe',lambda p:dict(nb_frames='400' if p.name.startswith('input_') else '60',avg_frame_rate='2/1'))
     out=tmp_path/'result'; out.mkdir()
     job=dict(input=str(tmp_path/'input_20260720_235900.mp4'),output=str(out),
-        settings=dict(settings,rotate_90='cw'),source={'relative_path':'20260720/2359/CH01.h264'},
+        settings=dict(settings,rotate_90='cw',frame_width=480,frame_height=704),source={'relative_path':'20260720/2359/CH01.h264'},
         folder_start='2026-07-20T23:59:00',prefix='device_CH01')
     path=tmp_path/'job.json'; path.write_text(json.dumps(job))
     batch.worker(path)
     assert calls[0]['fps']==2 and calls[0]['rotate_90']=='cw'
+    assert (calls[0]['frame_width'],calls[0]['frame_height'])==(480,704)
     data=json.loads(next((out/'motion_vids_metadata').glob('*.json')).read_text())
     assert data['archive_source']['motion_trigger_time']=='2026-07-21T00:01:00'
     assert data['archive_source']['folder_start']=='2026-07-20T23:59:00'
     assert data['archive_source']['motion_trigger_frame']==240
+    assert (data['archive_source']['frame_width'],data['archive_source']['frame_height'])==(480,704)
     assert json.loads((out/'worker-result.json').read_text())['processed_frames']==400
 
 

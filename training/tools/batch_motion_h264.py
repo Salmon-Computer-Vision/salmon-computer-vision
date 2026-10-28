@@ -242,6 +242,7 @@ def worker(job_path):
         intervals = detector.run(
             fps=cfg['source_fps'], cpu_h264=(cfg['encoder'] == 'cpu-h264'),
             orin=(cfg['encoder'] == 'opencv'), rotate_90=cfg['rotate_90'],
+            frame_width=cfg.get('frame_width', 1280), frame_height=cfg.get('frame_height', 720),
             algo=cfg['algo'], min_contour_area=cfg['min_contour_area'],
             motion_trigger_seconds=cfg['motion_trigger_seconds'],
             warmup_seconds=cfg['warmup_seconds'], bitrate=cfg['bitrate'],
@@ -270,6 +271,8 @@ def worker(job_path):
                 'motion_end_frame': last, 'motion_trigger_time': trigger.isoformat(),
                 'filename_time_basis': 'motion trigger; clip includes earlier pre-roll',
                 'rotate_90': cfg['rotate_90'],
+                'frame_width': cfg.get('frame_width', 1280),
+                'frame_height': cfg.get('frame_height', 720),
             }
             write_json(sidecar, payload)
         write_json(out / 'worker-result.json', {'input_frames': expected_frames,
@@ -297,6 +300,8 @@ def parse_args(argv=None):
     parser.add_argument('--source-fps', required=True, type=positive_int,
                         help='Original integer recording FPS; all frames are processed at this rate')
     parser.add_argument('--device-id', required=True, help='Filename prefix, e.g. HIRMD-koeye-pi-0')
+    parser.add_argument('--frame-width', type=positive_int, default=1280, help='Processing/output width after rotation (even)')
+    parser.add_argument('--frame-height', type=positive_int, default=720, help='Processing/output height after rotation (even)')
     parser.add_argument('--rotate-90', choices=['cw', 'ccw'])
     parser.add_argument('--encoder', choices=['cpu-h264', 'opencv'], default='cpu-h264',
                         help='cpu-h264 uses GStreamer x264; opencv uses the existing avc1 writer')
@@ -312,6 +317,8 @@ def parse_args(argv=None):
                         help='Seconds allowed for each remux/worker (default: 6 hours)')
     parser.add_argument('--dry-run', action='store_true', help='List selected sources and timestamps; write nothing')
     args = parser.parse_args(argv)
+    if args.frame_width % 2 or args.frame_height % 2:
+        parser.error("--frame-width and --frame-height must be positive even integers")
     if not re.fullmatch(r'[A-Za-z0-9_-]+', args.device_id):
         parser.error('--device-id must contain only letters, digits, underscores, or hyphens')
     if not math.isfinite(args.motion_trigger_seconds) or args.motion_trigger_seconds <= 0:
@@ -335,7 +342,7 @@ def main(argv=None):
         sources = sources[:args.limit]
     if not sources:
         raise ValueError('No YYYYMMDD/HHMM/*.h264 inputs found')
-    settings = {key: getattr(args, key) for key in ('source_fps', 'device_id', 'rotate_90',
+    settings = {key: getattr(args, key) for key in ('source_fps', 'device_id', 'rotate_90', 'frame_width', 'frame_height',
                 'encoder', 'algo', 'min_contour_area', 'motion_trigger_seconds',
                 'warmup_seconds', 'bitrate', 'recording_timezone')}
     if args.dry_run:

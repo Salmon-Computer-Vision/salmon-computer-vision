@@ -189,6 +189,8 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
         sonar,
         composite,
         rotate_90=None,
+        frame_width=1280,
+        frame_height=720,
     ):
     """Run one camera and report exactly one terminal result."""
     try:
@@ -208,6 +210,8 @@ def _run_detector_in_thread(det, fps, algo, orin, raspi, staging, cam_name, stat
                 sonar=sonar,
                 composite=composite,
                 rotate_90=rotate_90,
+                frame_width=frame_width,
+                frame_height=frame_height,
                 )
     except Exception as exc:
         logger.exception("[%s] detector thread crashed", cam_name)
@@ -351,6 +355,8 @@ def main(args):
                 fps=fps,
                 sonar=args.sonar,
                 stale_after_seconds=md.COMPOSITE_TIMEOUT_SECONDS,
+                frame_width=args.frame_width,
+                frame_height=args.frame_height,
             )
             for job in recovered_jobs:
                 logger.warning(
@@ -376,6 +382,8 @@ def main(args):
             composite_save_prefix=(canonical_save_prefix if composite else None),
             composite_fps=(fps if composite else None),
             composite_sonar=args.sonar,
+            frame_width=args.frame_width,
+            frame_height=args.frame_height,
         )
         status_queue = queue.Queue()
         shutdown_event = threading.Event()
@@ -439,6 +447,8 @@ def main(args):
                         args.sonar,
                         composite,
                         args.rotate_90,
+                        args.frame_width,
+                        args.frame_height,
                     ),
                     name=f"MotionDetector-{cam_name}",
                     daemon=False,
@@ -501,12 +511,16 @@ def main(args):
         warmup_seconds=args.warmup_seconds,
         sonar=args.sonar,
         rotate_90=args.rotate_90,
+        frame_width=args.frame_width,
+        frame_height=args.frame_height,
     )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Salmon Motion Detection and Video Clip Saving")
     parser.add_argument("input", help="The input string. Normally an RTSP URL starting with rtsp:// of a camera. If it is a video path, set the --video flag.")
     parser.add_argument("save_folder", help="Folder where video clips will be saved")
+    parser.add_argument("--frame-width", type=int, default=1280, help="Processing/output width after rotation (positive even integer)")
+    parser.add_argument("--frame-height", type=int, default=720, help="Processing/output height after rotation (positive even integer)")
     parser.add_argument("--rotate-90", choices=["cw", "ccw"], default=None, help="Rotate every frame 90 degrees clockwise (cw) or counterclockwise (ccw) before resizing, detection, and recording")
     parser.add_argument("--video", action='store_true', help="Set this flag for videos, and it will use the filename to determine clip filenames")
     parser.add_argument("--fps", default=None, help="Optionally set the FPS if it is not able to get it from input")
@@ -583,6 +597,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    if args.frame_width < 2 or args.frame_height < 2 or args.frame_width % 2 or args.frame_height % 2:
+        parser.error("--frame-width and --frame-height must be positive even integers")
 
     if args.multi_camera:
         try:

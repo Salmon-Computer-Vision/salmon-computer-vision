@@ -112,7 +112,8 @@ class MotionEventCoordinator:
                  composite_save_prefix: Optional[str] = None,
                  composite_fps: Optional[float] = None,
                  composite_sonar: bool = False,
-                 composite_timeout_seconds: float = COMPOSITE_TIMEOUT_SECONDS):
+                 composite_timeout_seconds: float = COMPOSITE_TIMEOUT_SECONDS,
+                 frame_width: int = 1280, frame_height: int = 720):
         if len(cam_names) < 2:
             raise ValueError(
                 "MotionEventCoordinator requires N >= 2 cameras, got "
@@ -158,6 +159,8 @@ class MotionEventCoordinator:
             float(composite_fps) if composite_fps is not None else None
         )
         self._composite_sonar = bool(composite_sonar)
+        self._frame_width = frame_width
+        self._frame_height = frame_height
         self._composite_timeout_seconds = float(composite_timeout_seconds)
         # Completed clips arrive after leave_event(), so this barrier is kept
         # independent from the active recording set.
@@ -392,6 +395,8 @@ class MotionEventCoordinator:
             save_prefix=self._composite_save_prefix,
             fps=self._composite_fps,
             sonar=self._composite_sonar,
+            frame_width=self._frame_width,
+            frame_height=self._frame_height,
         )
 
     def report_part_finished(
@@ -1214,9 +1219,14 @@ class MotionDetector:
         composite: Optional[bool] = None,
         shutdown_event=None,
         rotate_90: Optional[str] = None,
+        frame_width: int = 1280,
+        frame_height: int = 720,
     ):
         # When enabled, each completed motion clip gets a matching JSON file in
         # <device_root>/device_settings/ for downstream sonar processing.
+        for name, value in (("frame_width", frame_width), ("frame_height", frame_height)):
+            if type(value) is not int or value < 2 or value % 2:
+                raise ValueError(f"{name} must be a positive even integer (YUV420 encoder requirement)")
         if rotate_90 not in (None, "cw", "ccw"):
             raise ValueError("rotate_90 must be None, cw, or ccw")
         self.sonar = bool(sonar)
@@ -1272,7 +1282,7 @@ class MotionDetector:
         MAX_CLIP = MAX_CLIP_SECONDS       # seconds
         MAX_CONTINUOUS = 30 * 60          # seconds; unrelated to motion clips
 
-        FRAME_RESIZE = (1280, 720)
+        FRAME_RESIZE = (frame_width, frame_height)
 
         # Race-safe directory creation for multi-cam threads sharing one
         # device_id folder. os.mkdir's no-exist check was not thread-safe.
