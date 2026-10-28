@@ -1,0 +1,39 @@
+services:
+  h264-batch:
+    image: ${SALMONMD_IMAGE:?Set SALMONMD_IMAGE to your Raspberry Pi salmonmd image}
+    init: true
+    shm_size: "512mb"
+    restart: "no"
+    working_dir: /tools
+    stop_grace_period: 30s
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONPATH: /tools/training/pysalmcount
+    volumes:
+      - type: bind
+        source: ${SALMON_REPO:?Set SALMON_REPO to the absolute checkout path on the Pi}
+        target: /tools
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${H264_INPUT_ROOT:?Set H264_INPUT_ROOT to the archive root on the Pi}
+        target: /archive
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${H264_OUTPUT_ROOT:?Set H264_OUTPUT_ROOT to an existing writable output folder on the Pi}
+        target: /output
+        bind:
+          create_host_path: false
+    entrypoint: ["python3", "training/tools/batch_motion_h264.py"]
+    command:
+      - /archive
+      - /output
+      - --source-fps
+      - ${SOURCE_FPS:?Set SOURCE_FPS to the original recording FPS}
+      - --device-id
+      - ${ARCHIVE_DEVICE_ID:?Set ARCHIVE_DEVICE_ID for output filenames}
+      - --encoder
+      - cpu-h264
