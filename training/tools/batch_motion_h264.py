@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import shlex
 import signal
 import subprocess
 import sys
@@ -128,7 +129,7 @@ def write_json(path, payload):
         os.fsync(handle.fileno())
 
 
-def is_complete(final, expected_signature):
+def is_complete(final, expected_signature, sync_layout=False):
     if not final.exists():
         return False
     marker = final / 'complete.json'
@@ -140,6 +141,11 @@ def is_complete(final, expected_signature):
             rel = Path(output['path'])
             if rel.is_absolute() or '..' in rel.parts:
                 raise ValueError('invalid output path in manifest')
+            # In sync layout these files are moved out for upload. The durable
+            # manifest remains authoritative after rclone removes uploaded clips.
+            if (sync_layout and rel.parts[0] in ('motion_vids', 'motion_vids_metadata')
+                    and not (final / rel).exists()):
+                continue
             if (final / rel).stat().st_size != output['size']:
                 raise ValueError(f'output changed: {rel}')
         if manifest['schema'] != SCHEMA:
@@ -163,20 +169,41 @@ def output_lock(root):
             fcntl.flock(handle, fcntl.LOCK_UN)
 
 
+def publish_for_sync(final, output, key):
+    """Publish only validated files; preserve source paths to avoid collisions.
+
+    Each directory rename is atomic on the output filesystem. On interruption,
+    retry moves remaining directories; absent source directories were already
+    published (and may since have been uploaded and removed).
+    """
+    for folder in ('motion_vids_metadata', 'motion_vids'):
+        source = final / folder
+        if not source.exists():
+            continue
+        target = output / folder / key
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists():
+            raise RuntimeError(f'Refusing to overwrite published output: {target}')
+        os.rename(source, target)
+
+
 def process_source(source, root, output, settings, timeout):
     identity = source_identity(source, root)
     stamp = folder_timestamp(source)
     key = source.relative_to(root).with_suffix('')
-    final = output / 'results' / key
+    sync_layout = settings.get('sync_layout', False)
+    final = output / ('.batch-state/results' if sync_layout else 'results') / key
     expected_signature = signature(identity, settings)
-    if is_complete(final, expected_signature):
+    if is_complete(final, expected_signature, sync_layout):
+        if sync_layout:
+            publish_for_sync(final, output, key)
         LOG.info('SKIP completed %s', identity['relative_path'])
         return 'skipped'
     if identity['size'] == 0:
         raise RuntimeError(f'Empty input file: {source}')
     workspace = output / '.work'
     workspace.mkdir(exist_ok=True)
-    logs = output / 'logs' / key
+    logs = output / ('device_logs' if sync_layout else 'logs') / key
     logs.mkdir(parents=True, exist_ok=True)
     # One source per staging directory. Only a completed result gets published.
     with tempfile.TemporaryDirectory(prefix='source-', dir=workspace) as name:
@@ -207,6 +234,8 @@ def process_source(source, root, output, settings, timeout):
         })
         final.parent.mkdir(parents=True, exist_ok=True)
         os.rename(stage, final)
+        if sync_layout:
+            publish_for_sync(final, output, key)
     LOG.info('DONE %s -> %s', source, final)
     return 'processed'
 
@@ -297,6 +326,8 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input_root', type=Path, help='Contains YYYYMMDD/HHMM/*.h264')
     parser.add_argument('output_root', type=Path, help='Writable result/work/log directory')
+    parser.add_argument('--sync-layout', action='store_true',
+                        help='Output root is DRIVE/ORGID/SITE_NAME/DEVICE; publish motion_vids, metadata and device_logs for syncing')
     parser.add_argument('--source-fps', required=True, type=positive_int,
                         help='Original integer recording FPS; all frames are processed at this rate')
     parser.add_argument('--device-id', required=True, help='Filename prefix, e.g. HIRMD-koeye-pi-0')
@@ -316,7 +347,10 @@ def parse_args(argv=None):
     parser.add_argument('--job-timeout', type=positive_int, default=21600,
                         help='Seconds allowed for each remux/worker (default: 6 hours)')
     parser.add_argument('--dry-run', action='store_true', help='List selected sources and timestamps; write nothing')
-    args = parser.parse_args(argv)
+    # Compose list entries do not split a multi-flag string. Parse optional
+    # environment defaults as arguments, never as shell code; CLI wins.
+    defaults = shlex.split(os.environ.get('H264_BATCH_FLAGS', ''))
+    args = parser.parse_args(defaults + (sys.argv[1:] if argv is None else list(argv)))
     if args.frame_width % 2 or args.frame_height % 2:
         parser.error("--frame-width and --frame-height must be positive even integers")
     if not re.fullmatch(r'[A-Za-z0-9_-]+', args.device_id):
@@ -344,7 +378,7 @@ def main(argv=None):
         raise ValueError('No YYYYMMDD/HHMM/*.h264 inputs found')
     settings = {key: getattr(args, key) for key in ('source_fps', 'device_id', 'rotate_90', 'frame_width', 'frame_height',
                 'encoder', 'algo', 'min_contour_area', 'motion_trigger_seconds',
-                'warmup_seconds', 'bitrate', 'recording_timezone')}
+                'warmup_seconds', 'bitrate', 'recording_timezone', 'sync_layout')}
     if args.dry_run:
         for source in sources:
             print(f'{folder_timestamp(source).isoformat()}  {source.relative_to(root)}')

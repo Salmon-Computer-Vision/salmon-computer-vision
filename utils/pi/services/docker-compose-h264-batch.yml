@@ -8,6 +8,7 @@ services:
     stop_grace_period: 30s
     environment:
       PYTHONUNBUFFERED: "1"
+      H264_BATCH_FLAGS: "${FLAGS:-}"
       PYTHONPATH: /tools/training/pysalmcount
     volumes:
       - type: bind
@@ -23,7 +24,7 @@ services:
         bind:
           create_host_path: false
       - type: bind
-        source: ${H264_OUTPUT_ROOT:?Set H264_OUTPUT_ROOT to an existing writable output folder on the Pi}
+        source: ${DRIVE:?Set DRIVE}/${ORGID:?Set ORGID}/${SITE_NAME:?Set SITE_NAME}/${DEVICE_ID:?Set DEVICE_ID}
         target: /output
         bind:
           create_host_path: false
@@ -34,7 +35,11 @@ services:
       - --source-fps
       - ${SOURCE_FPS:?Set SOURCE_FPS to the original recording FPS}
       - --device-id
-      - ${ARCHIVE_DEVICE_ID:?Set ARCHIVE_DEVICE_ID for output filenames}
+      - ${ORGID:?Set ORGID}-${SITE_NAME:?Set SITE_NAME}-${DEVICE_ID:?Set DEVICE_ID}
       - --encoder
       - cpu-h264
-      - ${FLAGS}
+      - --sync-layout
+      - --frame-width
+      - "${FRAME_WIDTH:-704}"
+      - --frame-height
+      - "${FRAME_HEIGHT:-480}"
