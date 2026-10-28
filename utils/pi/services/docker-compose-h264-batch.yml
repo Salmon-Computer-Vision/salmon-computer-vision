@@ -27,7 +27,7 @@ services:
         target: /output
         bind:
           create_host_path: false
-    entrypoint: ["python3", "training/tools/batch_motion_h264.py"]
+    entrypoint: ["/opt/salmon-venv/bin/python", "training/tools/batch_motion_h264.py"]
     command:
       - /archive
       - /output
