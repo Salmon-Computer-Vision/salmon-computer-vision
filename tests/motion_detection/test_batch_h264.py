@@ -138,7 +138,8 @@ def test_command_timeout_is_failure_and_child_is_reaped(batch,tmp_path):
 
 
 @pytest.mark.smoke
-def test_real_raw_h264_batch_no_motion_and_resume(batch,tmp_path,settings):
+@pytest.mark.parametrize('sync_layout', [False, True])
+def test_real_raw_h264_batch_no_motion_and_resume(batch,tmp_path,settings,sync_layout):
     import shutil
     if not shutil.which('ffmpeg') or not shutil.which('ffprobe'): pytest.skip('FFmpeg required')
     root=tmp_path/'input'; path=make_source(root,'20260720/2359/CH01.h264')
@@ -148,10 +149,11 @@ def test_real_raw_h264_batch_no_motion_and_resume(batch,tmp_path,settings):
     out=tmp_path/'out'
     command=[sys.executable,str(batch.SCRIPT),str(root),str(out),'--source-fps','2',
              '--device-id','test-device','--warmup-seconds','2','--job-timeout','30']
+    if sync_layout: command.append('--sync-layout')
     first=subprocess.run(command,capture_output=True,text=True,timeout=45)
     logs='\n'.join(p.read_text() for p in out.glob('logs/**/*.log'))
     assert first.returncode==0,first.stderr+'\n'+logs
-    final=out/'results/20260720/2359/CH01'
+    final=out/('.batch-state/results' if sync_layout else 'results')/'20260720/2359/CH01'
     manifest=json.loads((final/'complete.json').read_text())
     assert manifest['worker']['input_frames']==4
     assert manifest['worker']['processed_frames']==4
@@ -159,7 +161,14 @@ def test_real_raw_h264_batch_no_motion_and_resume(batch,tmp_path,settings):
     assert manifest['folder_start']=='2026-07-20T23:59:00'
     second=subprocess.run(command,capture_output=True,text=True,timeout=10)
     assert second.returncode==0 and 'SKIP completed' in second.stderr
-    assert len(list(out.glob('logs/**/*.log')))==1
+    assert len(list(out.glob('logs/**/*.log'))) == (0 if sync_layout else 1)
+    raw = out/'device_logs/raw/test-device_motion_detection_logs'
+    content = raw.read_text()
+    assert ' - INFO [batch_motion_h264.py:' in content
+    assert 'PROCESS ' in content and 'DONE ' in content and 'Finished:' in content
+    assert 'SKIP completed' in content
+    if sync_layout:
+        assert '[videoloader.py:' in content or '[motion_detect_stream.py:' in content
 
 @pytest.mark.smoke
 @pytest.mark.parametrize('bframes', [0, 2])
@@ -257,7 +266,7 @@ def test_sync_layout_publish_upload_resume(batch, tmp_path, monkeypatch, setting
     monkeypatch.setattr(batch, 'run_checked', run)
     assert batch.process_source(source, root, out, settings, 30) == 'processed'
     key = Path(relative).with_suffix('')
-    assert list((out/'device_logs'/key).glob('*.log'))
+    assert not (out/'device_logs'/key).exists()  # One device log, not per-input logs.
     assert (out/'.batch-state/results'/key/'complete.json').is_file()
     for folder in ('motion_vids', 'motion_vids_metadata'):
         files = list((out/folder/key).iterdir())
@@ -315,3 +324,120 @@ def test_env_flags_split_without_shell_and_cli_wins(batch, monkeypatch):
     assert args.rotate_90 == 'cw'
     assert args.limit == 1
     assert args.recording_timezone == 'America/Vancouver'
+
+
+def test_device_logging_names_format_utc_and_append(batch, tmp_path):
+    import logging
+    import time
+    with batch.device_logging(tmp_path, 'SFU-dev-jetsonorin-0') as path:
+        record = logging.LogRecord('detector', logging.INFO, 'motion_detect_stream.py',
+                                   712, 'Writing motion video to clip.mp4', (), None)
+        record.created = 0
+        record.msecs = 0
+        logging.getLogger().handle(record)
+        assert path == tmp_path/'device_logs/raw/SFU-dev-jetsonorin-0_motion_detection_logs'
+        handler = next(h for h in logging.getLogger().handlers if isinstance(h, batch.MotionLogHandler))
+        assert handler.utc is True and handler.formatter.converter is time.gmtime
+    first = path.read_text()
+    assert '1970-01-01 00:00:00,000 - INFO [motion_detect_stream.py:712] - Writing motion video to clip.mp4' in first
+    with batch.device_logging(tmp_path, 'SFU-dev-jetsonorin-0'):
+        batch.LOG.info('second run')
+    assert path.read_text().startswith(first)
+    assert 'second run' in path.read_text()
+    assert not any(isinstance(h, batch.MotionLogHandler) for h in logging.getLogger().handlers)
+
+
+def test_device_logging_daily_rotation_name(batch, tmp_path):
+    import calendar
+    import logging
+    with batch.device_logging(tmp_path, 'SFU-dev-jetsonorin-0') as path:
+        batch.LOG.info('before midnight')
+        handler = next(h for h in logging.getLogger().handlers if isinstance(h, batch.MotionLogHandler))
+        handler.rolloverAt = calendar.timegm((2026, 6, 10, 0, 0, 0))
+        handler.doRollover()
+        batch.LOG.info('after midnight')
+        archived = path.with_name(path.name + '_20260609.txt')
+        assert 'before midnight' in archived.read_text()
+        assert 'after midnight' not in archived.read_text()
+        assert 'after midnight' in path.read_text()
+        assert not list(path.parent.glob('*.20260609'))
+
+
+def test_subprocess_logs_forwarded_with_original_location_and_native_errors(batch, tmp_path):
+    with batch.device_logging(tmp_path, 'device') as path:
+        batch.run_checked([sys.executable, '-c',
+            'import sys; '
+            'print("2026-07-20 14:00:00,123 - INFO [motion_detect_stream.py:712] - Writing motion video to clip.mp4"); '
+            'print("native FFmpeg diagnostic", file=sys.stderr)'], None, 10)
+        content = path.read_text()
+        assert '2026-07-20 14:00:00,123 - INFO [motion_detect_stream.py:712] - Writing motion video to clip.mp4' in content
+        assert '[subprocess] native FFmpeg diagnostic' in content
+
+
+def test_spawn_entrypoint_enables_saver_info_logging(batch, tmp_path):
+    # multiprocessing imports the entry script under precisely this module name.
+    with batch.device_logging(tmp_path, 'device') as path:
+        batch.run_checked([sys.executable, '-c',
+            'import runpy, logging, sys; '
+            'runpy.run_path(sys.argv[1], run_name="__mp_main__"); '
+            'logging.getLogger("pysalmcount.motion_detect_stream").info("Saving metadata file to harddrive: clip.json")',
+            str(batch.SCRIPT)], None, 10)
+        assert ' - INFO [' in path.read_text()
+        assert 'Saving metadata file to harddrive: clip.json' in path.read_text()
+
+
+def test_child_failure_and_parent_traceback_reach_device_log(batch, tmp_path):
+    with batch.device_logging(tmp_path, 'device') as path:
+        try:
+            batch.run_checked([sys.executable, '-c',
+                               'raise RuntimeError("encoder failed")'], None, 10)
+        except subprocess.CalledProcessError:
+            batch.LOG.exception('FAILED source')
+        content = path.read_text()
+        assert 'RuntimeError: encoder failed' in content
+        assert ' - ERROR [' in content and 'FAILED source' in content
+
+
+def test_previous_logging_only_pipeline_can_resume_but_changed_settings_cannot(batch, tmp_path, settings):
+    source = make_source(tmp_path/'input')
+    identity = batch.source_identity(source, tmp_path/'input')
+    previous = batch.previous_pipeline_if_compatible()
+    assert previous
+    final = tmp_path/'result'
+    final.mkdir()
+    old_signature = batch.signature(identity, settings, previous)
+    (final/'complete.json').write_text(json.dumps(
+        {'schema': 1, 'signature': old_signature, 'outputs': []}))
+    assert batch.is_complete(final, batch.signature(identity, settings),
+                             compatible_signature=old_signature)
+    changed = dict(settings, source_fps=30)
+    with pytest.raises(RuntimeError, match='Cannot resume'):
+        batch.is_complete(final, batch.signature(identity, changed),
+                          compatible_signature=batch.signature(identity, changed, previous))
+
+
+def test_previous_pipeline_compatibility_disabled_for_changed_detector(batch, tmp_path, monkeypatch):
+    import shutil
+    package = tmp_path/'package'
+    shutil.copytree(batch.PACKAGE, package)
+    (package/'utils.py').write_text((package/'utils.py').read_text() + '\n# changed\n')
+    monkeypatch.setattr(batch, 'PACKAGE', package)
+    assert batch.previous_pipeline_if_compatible() is None
+
+
+def test_actual_spawned_process_logging_reaches_parent_file(batch, tmp_path):
+    helper = tmp_path/'spawn_logger.py'
+    helper.write_text(
+        'import runpy, sys, logging, multiprocessing as mp\n'
+        'runpy.run_path(sys.argv[1], run_name="__mp_main__")\n'
+        'def save():\n'
+        '    logging.getLogger("pysalmcount.motion_detect_stream").info("Saving pid=123 file=clip.mp4 frame=30")\n'
+        'if __name__ == "__main__":\n'
+        '    mp.set_start_method("spawn")\n'
+        '    p = mp.Process(target=save)\n'
+        '    p.start()\n'
+        '    p.join()\n'
+        '    sys.exit(p.exitcode)\n')
+    with batch.device_logging(tmp_path, 'device') as path:
+        batch.run_checked([sys.executable, str(helper), str(batch.SCRIPT)], None, 10)
+        assert 'Saving pid=123 file=clip.mp4 frame=30' in path.read_text()

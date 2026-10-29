@@ -5,12 +5,13 @@ Requires the previously updated pysalmcount (including rotate_90). Source files
 are never modified. Each source is independently processed at its original FPS.
 """
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from datetime import datetime, timedelta
 import fcntl
 import hashlib
 import json
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import math
 import os
 from pathlib import Path
@@ -21,11 +22,83 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 
 LOG = logging.getLogger('batch_motion')
 SCHEMA = 1
 SCRIPT = Path(__file__).resolve()
 PACKAGE = SCRIPT.parents[1] / 'pysalmcount' / 'pysalmcount'
+
+
+
+LOG_FORMAT = '%(asctime)s - %(levelname)s [%(filename)s:%(lineno)d] - %(message)s'
+
+
+def log_formatter():
+    formatter = logging.Formatter(LOG_FORMAT)
+    formatter.converter = time.gmtime
+    return formatter
+
+
+def setup_console_logging():
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+    for handler in logging.getLogger().handlers:
+        handler.setFormatter(log_formatter())
+
+
+class MotionLogHandler(TimedRotatingFileHandler):
+    def rotation_filename(self, default_name):
+        path = Path(default_name)
+        return str(path.with_name(f"{path.stem}_{path.suffix.lstrip('.')}.txt"))
+
+
+@contextmanager
+def device_logging(output, device_id):
+    """One parent-owned rotating file; children forward through their pipes."""
+    directory = output / 'device_logs' / 'raw'
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / f'{device_id}_motion_detection_logs'
+    handler = MotionLogHandler(path, when='midnight', interval=1,
+                               encoding='utf-8', utc=True)
+    handler.suffix = '%Y%m%d'
+    handler.setFormatter(log_formatter())
+    root = logging.getLogger()
+    previous_level = root.level
+    root.setLevel(logging.INFO)
+    root.addHandler(handler)
+    try:
+        LOG.info('Writing logs to %s', path)
+        yield path
+    finally:
+        root.removeHandler(handler)
+        handler.close()
+        root.setLevel(previous_level)
+
+
+CHILD_LOG = re.compile(
+    r'^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - '
+    r'(DEBUG|INFO|WARNING|ERROR|CRITICAL) \[([^\]]+):(\d+)\] - (.*)$')
+
+
+def forward_child_output(stream):
+    """Keep detector timestamps/locations; label native diagnostics separately."""
+    import calendar
+    with stream:
+        for line in stream:
+            text = line.rstrip('\r\n')
+            match = CHILD_LOG.match(text)
+            if match:
+                timestamp, level, filename, lineno, message = match.groups()
+                record = logging.LogRecord('batch_child', getattr(logging, level),
+                                           filename, int(lineno), message, (), None)
+                dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S,%f')
+                record.created = calendar.timegm(dt.timetuple()) + dt.microsecond / 1e6
+                record.msecs = dt.microsecond / 1000
+                logging.getLogger().handle(record)
+            else:
+                # Includes FFmpeg diagnostics and traceback continuation lines.
+                LOG.info('[subprocess] %s', text)
 
 
 def folder_timestamp(path):
@@ -74,9 +147,24 @@ def pipeline_digest():
     return digest.hexdigest()
 
 
-def signature(identity, settings):
+# Permit the immediately preceding runner after this logging-only upgrade.
+# Any detector dependency change disables this compatibility path.
+PREVIOUS_PIPELINE = 'b5bcb8be991bb4ae009e6e3a92271fa7d741cadc70966d1f64e64131332938f7'
+PREVIOUS_DEPENDENCIES = '0ac1ac700c43f24ba2259f5e2cf1bb897549e5d279fdfc3040934cd8ac2333e2'
+
+
+def previous_pipeline_if_compatible():
+    digest = hashlib.sha256()
+    for name in ('__init__.py', 'dataloader.py', 'videoloader.py',
+                 'motion_detect_stream.py', 'clip_compositor.py', 'utils.py'):
+        digest.update(name.encode())
+        digest.update((PACKAGE / name).read_bytes())
+    return PREVIOUS_PIPELINE if digest.hexdigest() == PREVIOUS_DEPENDENCIES else None
+
+
+def signature(identity, settings, pipeline=None):
     payload = {'schema': SCHEMA, 'source': identity, 'settings': settings,
-               'pipeline_sha256': pipeline_digest()}
+               'pipeline_sha256': pipeline or pipeline_digest()}
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
 
@@ -90,8 +178,13 @@ def remux_command(source, target, fps):
 
 def run_checked(command, log, timeout):
     """Bound each job and kill its whole process group on timeout/interruption."""
-    proc = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT,
-                            start_new_session=True)
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE if log is None else log,
+                            stderr=subprocess.STDOUT, start_new_session=True,
+                            text=True, encoding='utf-8', errors='replace')
+    reader = None
+    if log is None:
+        reader = threading.Thread(target=forward_child_output, args=(proc.stdout,), daemon=True)
+        reader.start()
     try:
         code = proc.wait(timeout=timeout)
         if code:
@@ -109,6 +202,9 @@ def run_checked(command, log, timeout):
                     pass
         proc.wait()
         raise
+    finally:
+        if reader is not None:
+            reader.join(timeout=5)
 
 
 def probe(path):
@@ -129,13 +225,14 @@ def write_json(path, payload):
         os.fsync(handle.fileno())
 
 
-def is_complete(final, expected_signature, sync_layout=False):
+def is_complete(final, expected_signature, sync_layout=False, compatible_signature=None):
     if not final.exists():
         return False
     marker = final / 'complete.json'
     try:
         manifest = json.loads(marker.read_text())
-        if manifest['signature'] != expected_signature:
+        if (manifest['signature'] != expected_signature and
+                (compatible_signature is None or manifest['signature'] != compatible_signature)):
             raise ValueError('source, settings, or pipeline changed')
         for output in manifest['outputs']:
             rel = Path(output['path'])
@@ -194,7 +291,9 @@ def process_source(source, root, output, settings, timeout):
     sync_layout = settings.get('sync_layout', False)
     final = output / ('.batch-state/results' if sync_layout else 'results') / key
     expected_signature = signature(identity, settings)
-    if is_complete(final, expected_signature, sync_layout):
+    previous = previous_pipeline_if_compatible()
+    compatible = signature(identity, settings, previous) if previous else None
+    if is_complete(final, expected_signature, sync_layout, compatible):
         if sync_layout:
             publish_for_sync(final, output, key)
         LOG.info('SKIP completed %s', identity['relative_path'])
@@ -203,8 +302,9 @@ def process_source(source, root, output, settings, timeout):
         raise RuntimeError(f'Empty input file: {source}')
     workspace = output / '.work'
     workspace.mkdir(exist_ok=True)
-    logs = output / ('device_logs' if sync_layout else 'logs') / key
-    logs.mkdir(parents=True, exist_ok=True)
+    logs = output / 'logs' / key
+    if not sync_layout:
+        logs.mkdir(parents=True, exist_ok=True)
     # One source per staging directory. Only a completed result gets published.
     with tempfile.TemporaryDirectory(prefix='source-', dir=workspace) as name:
         work = Path(name)
@@ -216,9 +316,11 @@ def process_source(source, root, output, settings, timeout):
                'prefix': settings['device_id'] + '_' + source.stem}
         job_path = work / 'job.json'
         write_json(job_path, job)
-        log_path = logs / f'{work.name}.log'
+        log_path = (output / 'device_logs/raw' /
+                    f"{settings['device_id']}_motion_detection_logs" if sync_layout
+                    else logs / f'{work.name}.log')
         LOG.info('PROCESS %s (folder start %s); log=%s', source, stamp, log_path)
-        with log_path.open('w') as log:
+        with (nullcontext(None) if sync_layout else log_path.open('w')) as log:
             run_checked(remux_command(source, media, settings['source_fps']), log, timeout)
             run_checked([sys.executable, str(SCRIPT), '_worker', str(job_path)], log, timeout)
         if source_identity(source, root) != identity:
@@ -389,7 +491,7 @@ def main(argv=None):
             raise RuntimeError(f'Required executable not found: {tool}')
     output.mkdir(parents=True, exist_ok=True)
     failed = processed = skipped = 0
-    with output_lock(output):
+    with output_lock(output), device_logging(output, args.device_id):
         for source in sources:
             try:
                 result = process_source(source, root, output, settings, args.job_timeout)
@@ -398,12 +500,17 @@ def main(argv=None):
             except Exception:
                 failed += 1
                 LOG.exception('FAILED %s; source unchanged; continuing', source)
-    LOG.info('Finished: processed=%d skipped=%d failed=%d', processed, skipped, failed)
+        LOG.info('Finished: processed=%d skipped=%d failed=%d', processed, skipped, failed)
     return 1 if failed else 0
 
 
+# multiprocessing spawn runs this module as __mp_main__: configure saver logs
+# there too, without opening a shared rotating file in child processes.
+if __name__ in ('__main__', '__mp_main__'):
+    setup_console_logging()
+
+
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     if len(sys.argv) > 1 and sys.argv[1] == '_worker':
         worker(sys.argv[2])
