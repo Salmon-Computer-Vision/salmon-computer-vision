@@ -27,7 +27,8 @@ services:
         source: ${DRIVE:?Set DRIVE}/${ORGID:?Set ORGID}/${SITE_NAME:?Set SITE_NAME}/${DEVICE_ID:?Set DEVICE_ID}
         target: /output
         bind:
-          create_host_path: false
+          # Create DRIVE/ORGID/SITE_NAME/DEVICE_ID on first run.
+          create_host_path: true
     entrypoint: ["/opt/salmon-venv/bin/python", "training/tools/batch_motion_h264.py"]
     command:
       - /archive
