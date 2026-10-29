@@ -246,7 +246,7 @@ def test_same_drive_output_subdirectory_is_supported(batch,tmp_path,capsys):
 def test_sync_layout_publish_upload_resume(batch, tmp_path, monkeypatch, settings, relative):
     root = tmp_path/'input'
     source = make_source(root, relative)
-    out = tmp_path/'hdd/UCHU/henderson/UCHU-henderson-pi-0'
+    out = tmp_path/'hdd/UCHU/henderson/pi-0'
     out.mkdir(parents=True)
     settings = dict(settings, sync_layout=True)
     calls = []
@@ -256,11 +256,12 @@ def test_sync_layout_publish_upload_resume(batch, tmp_path, monkeypatch, setting
             Path(command[-1]).write_bytes(b'remux')
         else:
             job = json.loads(Path(command[-1]).read_text())
+            assert job['prefix'] == settings['device_id']
             stage = Path(job['output'])
             (stage/'worker-result.json').write_text('{"motion_clips":1}')
             for folder, filename, data in [
-                ('motion_vids', 'UCHU-henderson-pi-0_CH01_20260720_140001_M.mp4', b'clip'),
-                ('motion_vids_metadata', 'UCHU-henderson-pi-0_CH01_20260720_140001_M.json', b'{}')]:
+                ('motion_vids', 'UCHU-henderson-pi-0_20260720_140001_M.mp4', b'clip'),
+                ('motion_vids_metadata', 'UCHU-henderson-pi-0_20260720_140001_M.json', b'{}')]:
                 (stage/folder).mkdir()
                 (stage/folder/filename).write_bytes(data)
     monkeypatch.setattr(batch, 'run_checked', run)
@@ -269,7 +270,8 @@ def test_sync_layout_publish_upload_resume(batch, tmp_path, monkeypatch, setting
     assert not (out/'device_logs'/key).exists()  # One device log, not per-input logs.
     assert (out/'.batch-state/results'/key/'complete.json').is_file()
     for folder in ('motion_vids', 'motion_vids_metadata'):
-        files = list((out/folder/key).iterdir())
+        files = list((out/folder).iterdir())
+        assert all(p.is_file() for p in files)
         assert len(files) == 1
         files[0].unlink()  # Simulate successful rclone move.
     assert batch.process_source(source, root, out, settings, 30) == 'skipped'
@@ -278,36 +280,58 @@ def test_sync_layout_publish_upload_resume(batch, tmp_path, monkeypatch, setting
         batch.process_source(source, root, out, dict(settings, source_fps=30), 30)
 
 
-def test_sync_publish_recovers_partial_directory_moves(batch, tmp_path, monkeypatch):
+def test_sync_publish_recovers_after_atomic_move(batch, tmp_path, monkeypatch):
     final, output = tmp_path/'stage', tmp_path/'out'
-    for folder in ('motion_vids_metadata', 'motion_vids'):
-        (final/folder).mkdir(parents=True)
-        (final/folder/'clip').write_bytes(b'complete')
-    key = Path('20260720/1400/CH01')
-    rename = batch.os.rename
+    (final/'motion_vids').mkdir(parents=True)
+    (final/'motion_vids/a.mp4').write_bytes(b'first')
+    (final/'motion_vids/b.mp4').write_bytes(b'second')
+    rename = batch.rename_no_replace
     def interrupted(src, dst):
-        if src.name == 'motion_vids':
-            raise OSError('interrupted')
         rename(src, dst)
-    monkeypatch.setattr(batch.os, 'rename', interrupted)
+        raise OSError('interrupted after publish')
+    monkeypatch.setattr(batch, 'rename_no_replace', interrupted)
     with pytest.raises(OSError):
-        batch.publish_for_sync(final, output, key)
-    # Metadata may already have been uploaded before retry.
-    (output/'motion_vids_metadata'/key/'clip').unlink()
-    monkeypatch.setattr(batch.os, 'rename', rename)
-    batch.publish_for_sync(final, output, key)
-    assert (output/'motion_vids'/key/'clip').read_bytes() == b'complete'
+        batch.publish_for_sync(final, output, Path('key'))
+    (output/'motion_vids/a.mp4').unlink()  # Already uploaded.
+    monkeypatch.setattr(batch, 'rename_no_replace', rename)
+    batch.publish_for_sync(final, output, Path('key'))
+    assert not (output/'motion_vids/a.mp4').exists()
+    assert (output/'motion_vids/b.mp4').read_bytes() == b'second'
 
 
 def test_sync_publish_refuses_collision(batch, tmp_path):
     final, output = tmp_path/'stage', tmp_path/'out'
     (final/'motion_vids').mkdir(parents=True)
-    target = output/'motion_vids/20260720/1400/CH01'
-    target.mkdir(parents=True)
-    (target/'existing.mp4').write_bytes(b'keep')
+    (final/'motion_vids/clip.mp4').write_bytes(b'new')
+    target = output/'motion_vids/clip.mp4'
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b'keep')
     with pytest.raises(RuntimeError, match='Refusing to overwrite'):
         batch.publish_for_sync(final, output, Path('20260720/1400/CH01'))
-    assert (target/'existing.mp4').read_bytes() == b'keep'
+    assert target.read_bytes() == b'keep'
+
+
+def test_flat_names_remain_reserved_after_upload(batch, tmp_path):
+    output = tmp_path/'out'
+    for name in ('first', 'second'):
+        stage = tmp_path/name/'motion_vids'
+        stage.mkdir(parents=True)
+        (stage/'same.mp4').write_bytes(name.encode())
+    batch.publish_for_sync(tmp_path/'first', output, Path('20260720/1400/CH01'))
+    (output/'motion_vids/same.mp4').unlink()
+    with pytest.raises(RuntimeError, match='Refusing to overwrite'):
+        batch.publish_for_sync(tmp_path/'second', output, Path('20260720/1400/CH02'))
+    assert not (output/'motion_vids/same.mp4').exists()
+
+
+def test_atomic_publish_refuses_racing_destination(batch, tmp_path):
+    src, dst = tmp_path/'source', tmp_path/'destination'
+    src.write_bytes(b'new')
+    dst.write_bytes(b'keep')
+    with pytest.raises(FileExistsError):
+        batch.rename_no_replace(src, dst)
+    assert src.read_bytes() == b'new'
+    assert dst.read_bytes() == b'keep'
 
 
 def test_sync_layout_cli_opt_in(batch):

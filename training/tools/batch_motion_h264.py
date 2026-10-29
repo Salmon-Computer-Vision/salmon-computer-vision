@@ -147,9 +147,9 @@ def pipeline_digest():
     return digest.hexdigest()
 
 
-# Permit the immediately preceding runner after this logging-only upgrade.
+# Permit the immediately preceding runner after this output-layout-only upgrade.
 # Any detector dependency change disables this compatibility path.
-PREVIOUS_PIPELINE = 'b5bcb8be991bb4ae009e6e3a92271fa7d741cadc70966d1f64e64131332938f7'
+PREVIOUS_PIPELINE = '10f8e385a025ad8a47f8ff558ac88bd7dbd544ba359d797753b28d3c1efc3e94'
 PREVIOUS_DEPENDENCIES = '0ac1ac700c43f24ba2259f5e2cf1bb897549e5d279fdfc3040934cd8ac2333e2'
 
 
@@ -266,22 +266,52 @@ def output_lock(root):
             fcntl.flock(handle, fcntl.LOCK_UN)
 
 
-def publish_for_sync(final, output, key):
-    """Publish only validated files; preserve source paths to avoid collisions.
+def rename_no_replace(source, target):
+    """Linux atomic rename that refuses to replace an existing destination."""
+    import ctypes
+    libc = ctypes.CDLL(None, use_errno=True)
+    rename = libc.renameat2
+    rename.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int,
+                       ctypes.c_char_p, ctypes.c_uint]
+    rename.restype = ctypes.c_int
+    if rename(-100, os.fsencode(source), -100, os.fsencode(target), 1):
+        error = ctypes.get_errno()
+        raise OSError(error, os.strerror(error), str(target))
 
-    Each directory rename is atomic on the output filesystem. On interruption,
-    retry moves remaining directories; absent source directories were already
-    published (and may since have been uploaded and removed).
-    """
+
+def publish_for_sync(final, output, key):
+    """Publish flat files atomically; retain name ownership after upload."""
+    pending = []
     for folder in ('motion_vids_metadata', 'motion_vids'):
         source = final / folder
         if not source.exists():
             continue
-        target = output / folder / key
-        target.parent.mkdir(parents=True, exist_ok=True)
-        if target.exists():
-            raise RuntimeError(f'Refusing to overwrite published output: {target}')
-        os.rename(source, target)
+        target_dir = output / folder
+        target_dir.mkdir(parents=True, exist_ok=True)
+        claims = output / '.batch-state' / 'published' / folder
+        claims.mkdir(parents=True, exist_ok=True)
+        for path in sorted(source.iterdir()):
+            if not path.is_file() or path.is_symlink():
+                raise RuntimeError(f'Unexpected staged output: {path}')
+            target = target_dir / path.name
+            claim = claims / (path.name + '.json')
+            state = json.loads(claim.read_text()) if claim.exists() else None
+            if (state is not None and state['source'] != key.as_posix()) or os.path.lexists(target):
+                raise RuntimeError(f'Refusing to overwrite published output: {target}')
+            pending.append((path, target, claim, state))
+
+    # Reserve each name before publishing. Atomic moves leave no source file
+    # after success, so retries cannot recreate files already removed by sync.
+    for path, target, claim, state in pending:
+        if state is None:
+            temp = claim.with_suffix('.tmp')
+            write_json(temp, {'source': key.as_posix()})
+            os.replace(temp, claim)
+        rename_no_replace(path, target)
+    for folder in ('motion_vids_metadata', 'motion_vids'):
+        source = final / folder
+        if source.exists():
+            source.rmdir()
 
 
 def process_source(source, root, output, settings, timeout):
@@ -313,7 +343,8 @@ def process_source(source, root, output, settings, timeout):
         media = work / f'input_{stamp:%Y%m%d_%H%M%S}.mp4'
         job = {'input': str(media), 'output': str(stage), 'settings': settings,
                'source': identity, 'folder_start': stamp.isoformat(),
-               'prefix': settings['device_id'] + '_' + source.stem}
+               'prefix': (settings['device_id'] if sync_layout else
+                          settings['device_id'] + '_' + source.stem)}
         job_path = work / 'job.json'
         write_json(job_path, job)
         log_path = (output / 'device_logs/raw' /
